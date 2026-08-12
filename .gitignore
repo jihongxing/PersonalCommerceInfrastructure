@@ -4,6 +4,7 @@ coverage/
 .next/
 apps/web/.next/
 output/playwright/
+output/backups/
 .env
 .env.*
 !.env.example

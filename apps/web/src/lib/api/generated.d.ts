@@ -334,8 +334,22 @@ export interface operations {
                     "application/json": {
                         /** @enum {unknown} */
                         service: "vs-01-api";
+                        status: "ready" | "not_ready";
                         /** @enum {unknown} */
-                        status: "ready";
+                        version: "v1";
+                    };
+                };
+            };
+            /** @description Default Response */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {unknown} */
+                        service: "vs-01-api";
+                        status: "ready" | "not_ready";
                         /** @enum {unknown} */
                         version: "v1";
                     };

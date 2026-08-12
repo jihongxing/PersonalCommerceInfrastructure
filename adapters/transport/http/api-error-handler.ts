@@ -4,6 +4,7 @@ import {
   ApplicationError,
   type ApplicationErrorCategory,
 } from '../../../applications/core/application-error.js';
+import type { SafeLogger } from '../../observability/safe-logger.js';
 const statusByCategory: Readonly<Record<ApplicationErrorCategory, number>> = {
   validation: 400,
   authentication: 401,
@@ -54,7 +55,7 @@ function sendApplicationError(
   });
 }
 
-export function registerApiErrorHandling(server: FastifyInstance): void {
+export function registerApiErrorHandling(server: FastifyInstance, logger?: SafeLogger): void {
   server.addHook('onRequest', (request, reply, done) => {
     reply.header('x-correlation-id', correlationId(request));
     done();
@@ -80,7 +81,12 @@ export function registerApiErrorHandling(server: FastifyInstance): void {
 
     const applicationError = applicationErrorFromFastify(error);
     if (applicationError.category === 'internal') {
-      request.log.error({ error }, 'unhandled_api_error');
+      logger?.error('unhandled_api_error', {
+        correlationId: request.id,
+        errorName: error.name,
+        method: request.method,
+        path: request.routeOptions.url ?? request.url,
+      });
     }
     sendApplicationError(applicationError, request, reply);
   });

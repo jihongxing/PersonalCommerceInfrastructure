@@ -1,0 +1,20 @@
+{
+  "GET /api/v1/creator/identity": "getCreatorIdentity",
+  "GET /api/v1/creator/offerings": "listCreatorServiceOfferings",
+  "GET /api/v1/creator/requests": "listCreatorSubmittedRequests",
+  "GET /api/v1/health": "getApiHealth",
+  "GET /api/v1/public/offerings/{offeringId}": "getPublicServiceOffering",
+  "GET /api/v1/public/requests/{resultAccessToken}": "getCustomerRequestResult",
+  "GET /api/v1/readiness": "getApiReadiness",
+  "PATCH /api/v1/creator/identity": "updateCreatorIdentity",
+  "PATCH /api/v1/creator/offerings/{offeringId}": "updateCreatorServiceOffering",
+  "POST /api/v1/creator/identity": "createCreatorIdentity",
+  "POST /api/v1/creator/identity/capabilities": "addCreatorCapability",
+  "POST /api/v1/creator/offerings": "createCreatorServiceOffering",
+  "POST /api/v1/creator/offerings/{offeringId}/distribution": "recordCreatorExternalDistribution",
+  "POST /api/v1/creator/offerings/{offeringId}/publish": "publishCreatorServiceOffering",
+  "POST /api/v1/creator/offerings/{offeringId}/unpublish": "unpublishCreatorServiceOffering",
+  "POST /api/v1/creator/requests/{actionId}/confirm": "confirmCreatorRequest",
+  "POST /api/v1/creator/requests/{actionId}/decline": "declineCreatorRequest",
+  "POST /api/v1/public/offerings/{offeringId}/requests": "submitCustomerRequest"
+}

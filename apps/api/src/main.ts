@@ -14,8 +14,9 @@ import {
 import { LogNotificationAdapter } from '../../../adapters/notifications/log-notification-adapter.js';
 import { createSafeLogger } from '../../../adapters/observability/safe-logger.js';
 import { createApiServer } from './create-api-server.js';
+import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js';
 
-export async function startApi(): Promise<void> {
+export async function startApi(): Promise<ApiRuntime> {
   const configuration = loadConfiguration();
   const logger = createSafeLogger(configuration.logLevel);
   const composition =
@@ -38,7 +39,9 @@ export async function startApi(): Promise<void> {
           creatorIdentityService: composition.service,
           serviceOfferingService: composition.offeringService,
           customerRequestService: composition.customerRequestService,
+          checkReadiness: () => composition.database.checkReadiness(),
           corsAllowedOrigins: [configuration.webReferenceClientOrigin],
+          logger,
           publicOrigin: configuration.webReferenceClientOrigin,
         },
   );
@@ -48,16 +51,41 @@ export async function startApi(): Promise<void> {
       host: configuration.apiHost,
       port: configuration.apiPort,
     });
+    logger.info('api_started', {
+      environment: configuration.environment,
+      host: configuration.apiHost,
+      port: configuration.apiPort,
+    });
   } catch (error) {
     if (composition !== undefined) {
       await composition.database.close();
     }
     throw error;
   }
+
+  return {
+    server,
+    close: async () => {
+      await server.close();
+      if (composition !== undefined) {
+        await composition.database.close();
+      }
+    },
+  };
 }
 
 const entryPath = process.argv[1];
 
 if (entryPath !== undefined && import.meta.url === pathToFileURL(resolve(entryPath)).href) {
-  await startApi();
+  try {
+    const runtime = await startApi();
+    const configuration = loadConfiguration();
+    installGracefulShutdown(runtime, createSafeLogger(configuration.logLevel));
+  } catch (error) {
+    const logger = createSafeLogger('error');
+    logger.error('api_start_failed', {
+      errorName: error instanceof Error ? error.name : 'UnknownError',
+    });
+    process.exitCode = 1;
+  }
 }

@@ -1,4 +1,4 @@
-export type AppEnvironment = 'development' | 'test';
+export type AppEnvironment = 'development' | 'test' | 'production';
 
 export interface AppConfiguration {
   readonly apiHost: string;
@@ -18,7 +18,7 @@ export interface AuthConfiguration {
   readonly creatorActorMappings: ReadonlyMap<string, string>;
 }
 
-const supportedEnvironments = new Set<AppEnvironment>(['development', 'test']);
+const supportedEnvironments = new Set<AppEnvironment>(['development', 'test', 'production']);
 const supportedLogLevels = new Set<AppConfiguration['logLevel']>([
   'debug',
   'info',
@@ -56,6 +56,13 @@ export function loadConfiguration(environment: NodeJS.ProcessEnv = process.env):
     new URL(webReferenceClientOrigin);
   } catch (cause) {
     throw new Error('WEB_REFERENCE_CLIENT_ORIGIN must be a valid URL.', { cause });
+  }
+
+  if (
+    appEnvironment === 'production' &&
+    environment.WEB_REFERENCE_CLIENT_ORIGIN?.trim() === undefined
+  ) {
+    throw new Error('WEB_REFERENCE_CLIENT_ORIGIN is required in production.');
   }
 
   return {

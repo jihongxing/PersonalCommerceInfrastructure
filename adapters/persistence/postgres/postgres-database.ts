@@ -8,6 +8,7 @@ export type ProductDatabase = PostgresJsDatabase<typeof schema>;
 export interface PostgresDatabaseConnection {
   readonly client: Sql;
   readonly database: ProductDatabase;
+  checkReadiness(): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -20,6 +21,9 @@ export function createPostgresDatabase(databaseUrl: string): PostgresDatabaseCon
   return {
     client,
     database: drizzle(client, { schema }),
+    checkReadiness: async () => {
+      await client`select 1`;
+    },
     close: async () => {
       await client.end();
     },

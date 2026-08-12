@@ -1,0 +1,14 @@
+.git
+.gstack
+.next
+apps/web/.next
+coverage
+dist
+node_modules
+apps/web/node_modules
+output
+.env
+.env.*
+!deploy/.env.production.example
+*.log
+*.tsbuildinfo

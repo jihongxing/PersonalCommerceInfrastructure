@@ -8,7 +8,14 @@ import {
   ReadinessResponseSchema,
 } from '../../../contracts/api/v1/system-contracts.js';
 
-export function registerSystemRoutes(server: FastifyInstance): void {
+export interface SystemRouteDependencies {
+  readonly checkReadiness?: () => Promise<void>;
+}
+
+export function registerSystemRoutes(
+  server: FastifyInstance,
+  dependencies: SystemRouteDependencies = {},
+): void {
   server.get(
     `${ApiBasePath}/health`,
     {
@@ -34,14 +41,26 @@ export function registerSystemRoutes(server: FastifyInstance): void {
         operationId: 'getApiReadiness',
         response: {
           200: ReadinessResponseSchema,
+          503: ReadinessResponseSchema,
         },
         tags: ['system'],
       },
     },
-    () => ({
-      service: ApiServiceName,
-      status: 'ready' as const,
-      version: ApiVersion,
-    }),
+    async (_request, reply) => {
+      try {
+        await dependencies.checkReadiness?.();
+        return {
+          service: ApiServiceName,
+          status: 'ready' as const,
+          version: ApiVersion,
+        };
+      } catch {
+        return reply.status(503).send({
+          service: ApiServiceName,
+          status: 'not_ready' as const,
+          version: ApiVersion,
+        });
+      }
+    },
   );
 }

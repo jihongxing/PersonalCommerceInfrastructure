@@ -14,7 +14,7 @@
 
 - FR-001–FR-053 are implemented for the frozen VS-01 contract.
 - AT-001–AT-013 pass.
-- Final preflight passes with 147 Vitest tests: 139 passed and 8 conditional external-environment tests skipped.
+- M9 final preflight passes with 151 Vitest tests: 143 passed and 8 conditional external-environment tests skipped.
 - System Edge acceptance passes with 16 tests and no skipped tests.
 
 ### Boundaries

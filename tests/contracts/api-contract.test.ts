@@ -28,6 +28,13 @@ describe('API v1 contracts', () => {
         version: 'v1',
       }),
     ).toBe(true);
+    expect(
+      Value.Check(ReadinessResponseSchema, {
+        service: 'vs-01-api',
+        status: 'not_ready',
+        version: 'v1',
+      }),
+    ).toBe(true);
   });
 
   it('requires a stable error envelope and correlation id', () => {

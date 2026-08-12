@@ -20,3 +20,51 @@ jobs:
       - name: Run governance and project checks
         shell: pwsh
         run: ./scripts/test/preflight.ps1
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6-bookworm
+        env:
+          POSTGRES_DB: personal_commerce_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d personal_commerce_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/personal_commerce_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm test:persistence
+
+  deployment-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f deploy/Dockerfile.api -t personal-commerce-api:m9 .
+      - name: Build Web image
+        run: >-
+          docker build
+          --build-arg NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3000
+          -f deploy/Dockerfile.web
+          -t personal-commerce-web:m9
+          .
+      - name: Run production deployment drill
+        shell: pwsh
+        run: ./scripts/operations/test-production-deployment.ps1 -ContainerCli docker

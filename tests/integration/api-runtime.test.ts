@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ApplicationError } from '../../applications/core/application-error.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
+import { createSafeLogger } from '../../adapters/observability/safe-logger.js';
 import { registerApiErrorHandling } from '../../adapters/transport/http/api-error-handler.js';
 
 describe('API runtime skeleton', () => {
@@ -34,6 +35,56 @@ describe('API runtime skeleton', () => {
       status: 'ready',
       version: 'v1',
     });
+
+    await server.close();
+  });
+
+  it('reports dependency readiness failures without failing liveness', async () => {
+    const server = await createApiServer({
+      checkReadiness: () => Promise.reject(new Error('database unavailable')),
+    });
+
+    const health = await server.inject({
+      method: 'GET',
+      url: '/api/v1/health',
+    });
+    const readiness = await server.inject({
+      method: 'GET',
+      url: '/api/v1/readiness',
+    });
+
+    expect(health.statusCode).toBe(200);
+    expect(readiness.statusCode).toBe(503);
+    expect(readiness.json()).toEqual({
+      service: 'vs-01-api',
+      status: 'not_ready',
+      version: 'v1',
+    });
+
+    await server.close();
+  });
+
+  it('writes correlated request lifecycle logs without credentials', async () => {
+    const messages: string[] = [];
+    const server = await createApiServer({
+      logger: createSafeLogger('info', (message) => {
+        messages.push(message);
+      }),
+    });
+
+    const response = await server.inject({
+      headers: {
+        authorization: 'Bearer secret-token',
+      },
+      method: 'GET',
+      url: '/api/v1/health',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(messages.some((message) => message.includes('api_request_started'))).toBe(true);
+    expect(messages.some((message) => message.includes('api_request_completed'))).toBe(true);
+    expect(messages.join('\n')).toContain(response.headers['x-correlation-id']);
+    expect(messages.join('\n')).not.toContain('secret-token');
 
     await server.close();
   });

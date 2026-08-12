@@ -59,7 +59,7 @@ Preflight 还会使用系统 Edge 启动 API 与 Web Reference Client，执行�
 
 VS-01 的 M1–M8、FR-001–FR-053 与 AT-001–AT-013 已完成。最终验证为：
 
-- Vitest：147 tests，139 passed / 8 条件 skipped；
+- Vitest：151 tests，143 passed / 8 条件 skipped；
 - System Edge：16 passed / 0 skipped；
 - Web Production Build、格式、Lint、类型、迁移和治理检查通过。
 

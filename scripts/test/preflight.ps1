@@ -33,6 +33,7 @@ if (-not $SkipProjectTests) {
   Invoke-Checked { pnpm typecheck } "Typecheck"
   Invoke-Checked { pnpm test } "Tests"
   Invoke-Checked { pnpm build } "Build"
+  Invoke-Checked { pnpm check:openapi } "OpenAPI compatibility"
   Invoke-Checked { pnpm web:generate-api } "Web API client generation"
   Invoke-Checked { pnpm web:typecheck } "Web typecheck"
   Invoke-Checked { pnpm build:web } "Web build"

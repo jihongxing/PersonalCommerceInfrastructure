@@ -41,7 +41,7 @@ export const HealthResponseSchema = Type.Object(
 export const ReadinessResponseSchema = Type.Object(
   {
     service: Type.Literal(ApiServiceName),
-    status: Type.Literal('ready'),
+    status: Type.Union([Type.Literal('ready'), Type.Literal('not_ready')]),
     version: Type.Literal(ApiVersion),
   },
   { additionalProperties: false },

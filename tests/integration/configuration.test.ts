@@ -32,8 +32,24 @@ describe('configuration bootstrap', () => {
     });
   });
 
+  it('loads production configuration only with an explicit public origin', () => {
+    expect(
+      loadConfiguration({
+        APP_ENV: 'production',
+        WEB_REFERENCE_CLIENT_ORIGIN: 'https://commerce.example.test',
+      }),
+    ).toMatchObject({
+      environment: 'production',
+      webReferenceClientOrigin: 'https://commerce.example.test',
+    });
+
+    expect(() => loadConfiguration({ APP_ENV: 'production' })).toThrow(
+      'WEB_REFERENCE_CLIENT_ORIGIN is required in production.',
+    );
+  });
+
   it('rejects unsupported environment values', () => {
-    expect(() => loadConfiguration({ APP_ENV: 'production' })).toThrow('Unsupported APP_ENV');
+    expect(() => loadConfiguration({ APP_ENV: 'staging' })).toThrow('Unsupported APP_ENV');
   });
 
   it('rejects invalid API binding configuration', () => {

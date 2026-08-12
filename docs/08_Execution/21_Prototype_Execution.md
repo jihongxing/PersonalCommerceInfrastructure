@@ -961,22 +961,33 @@ Deviation / Product Decision
 - 未冻结具体颜色值、字体、间距数值、CSS Variables、Tailwind 配置或组件代码；
 - 未修改产品对象、Flow、PRD、API Contract、状态机、Canonical Event 或 VS-01 范围。
 
-### CU-OPS-01 — Deployable Prototype Hardening Plan
+### M9 — Deployable Prototype Hardening
 
 **目的**
 
 在不修改 VS-01 产品行为的前提下，将 Prototype Ready 基线推进为可重复部署、可观测、
 可恢复并具备安全升级路径的运行系统。
 
-**状态**：Planned
+**状态**：Complete
 
 **范围**
 
-- Production 配置、启动校验与优雅关闭；
-- API、Web、PostgreSQL 的可重复部署产物；
-- CI 中的真实 PostgreSQL Migration / Persistence 门禁；
-- 依赖感知 Readiness、关联日志与错误诊断；
-- Backup / Restore、Deployment Smoke 与 Rollback 演练。
+- `CU-OPS-01` Runtime Lifecycle：Production 配置、启动校验、依赖感知 Readiness 与优雅关闭；
+- `CU-OPS-02` Reproducible Deployment：API、Web、PostgreSQL、Migration Job 与 Production-like 运行栈；
+- `CU-OPS-03` CI Delivery Gates：真实 PostgreSQL Migration / Persistence、OpenAPI Compatibility、镜像构建与 Smoke；
+- `CU-OPS-04` Observability and Recovery：关联日志、错误诊断、Backup / Restore 与 Rollback 演练。
+
+**完成证据**
+
+- `ROADMAP.md` 已冻结 M9.1–M9.4 的任务、验收标准与 Exit Gate；
+- `CU-OPS-01` 已实现 `production` 配置、数据库依赖 Readiness、请求关联 ID、脱敏访问日志与 `SIGINT` / `SIGTERM` 优雅关闭；
+- `CU-OPS-02` 已建立 API / Web Dockerfile、PostgreSQL + Migration Job Production-like Compose，以及无明文 Secret 的示例配置；
+- `CU-OPS-03` 已将 OpenAPI Compatibility、真实 PostgreSQL Persistence、镜像构建与 Production Deployment Drill 接入 CI；
+- `CU-OPS-04` 已建立 Deployment Smoke、Backup / Restore、应用回滚 Smoke、最低告警条件和运行 Runbook；
+- `pnpm test:deployment` 已通过：临时 PostgreSQL Migration、API / Web 镜像、Health / Readiness / OpenAPI / Web Smoke、Backup / Restore、SIGTERM 优雅关闭与应用回滚 Smoke 均通过；
+- M9 最终 `pnpm preflight` 已于 2026-08-12 通过：151 tests（143 passed / 8 conditional skipped）、System Edge 16 passed / 0 skipped、Web Production Build 通过；
+- `pnpm typecheck`、`pnpm test:governance`、`pnpm check:openapi` 与受影响文件 Prettier 检查均通过；
+- M9 不修改 `FR-001–FR-053`、AT-001–AT-013 产品语义、状态机、权限、Canonical Event 或 Deferred Capability。
 
 **边界**
 

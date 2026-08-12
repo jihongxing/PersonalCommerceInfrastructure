@@ -960,3 +960,28 @@ Deviation / Product Decision
 - 已明确 Web、App 与微信小程序的同义适配约束；
 - 未冻结具体颜色值、字体、间距数值、CSS Variables、Tailwind 配置或组件代码；
 - 未修改产品对象、Flow、PRD、API Contract、状态机、Canonical Event 或 VS-01 范围。
+
+### CU-OPS-01 — Deployable Prototype Hardening Plan
+
+**目的**
+
+在不修改 VS-01 产品行为的前提下，将 Prototype Ready 基线推进为可重复部署、可观测、
+可恢复并具备安全升级路径的运行系统。
+
+**状态**：Planned
+
+**范围**
+
+- Production 配置、启动校验与优雅关闭；
+- API、Web、PostgreSQL 的可重复部署产物；
+- CI 中的真实 PostgreSQL Migration / Persistence 门禁；
+- 依赖感知 Readiness、关联日志与错误诊断；
+- Backup / Restore、Deployment Smoke 与 Rollback 演练。
+
+**边界**
+
+- 不修改 `FR-001–FR-053`；
+- 不修改 AT-001–AT-013 的产品语义；
+- 不新增产品对象、状态、权限或 Canonical Event；
+- 不引入 Payment、Settlement、Refund、Marketplace、CRM、自动排期或履约工作流；
+- 任何后续产品行为变化仍必须先登记 `DEV-###`。

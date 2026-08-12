@@ -1,6 +1,6 @@
 # Personal Commerce Infrastructure
 
-当前仓库已完成 VS-01 受控原型，并进入 Product Review / Cohort 0 Readiness 阶段。
+当前仓库已完成 VS-01 受控原型，并进入 M9 Deployable Prototype Hardening 工程阶段。
 
 当前版本：`0.1.0`  
 当前交付状态：`Prototype Ready`
@@ -63,5 +63,5 @@ VS-01 的 M1–M8、FR-001–FR-053 与 AT-001–AT-013 已完成。最终验证
 - System Edge：16 passed / 0 skipped；
 - Web Production Build、格式、Lint、类型、迁移和治理检查通过。
 
-下一阶段不得自动扩展产品能力。应先完成 Product Review，冻结 Cohort 0 的真实城市、
-Design Partner 名单、Owner、实验定义与 Shadow Commerce 运营边界。
+下一阶段不得自动扩展产品能力。工程重点是把已通过验收的原型加固为可部署、可迁移、
+可观测、可恢复且能够安全升级的运行系统。

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+apps/web/.next/
+apps/web/next-env.d.ts
+apps/web/src/lib/api/generated.d.ts
+output/playwright/
+pnpm-lock.yaml
+apps/web/src/design-system/generated-tokens.css

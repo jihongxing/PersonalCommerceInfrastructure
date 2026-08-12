@@ -1,0 +1,63 @@
+{
+  "name": "personal-commerce-infrastructure",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.22.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx apps/prototype/src/main.ts",
+    "dev:api": "tsx apps/api/src/main.ts",
+    "dev:web": "pnpm --filter @personal-commerce/web dev -- -p 3001",
+    "build": "tsc -p tsconfig.build.json",
+    "build:web": "pnpm --filter @personal-commerce/web build",
+    "start": "node dist/apps/prototype/src/main.js",
+    "start:api": "node dist/apps/api/src/main.js",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "pnpm build && node scripts/database/check-migrations.mjs",
+    "db:migrate": "tsx scripts/database/migrate.ts",
+    "web:generate-api": "pnpm build && pnpm --filter @personal-commerce/web generate-api",
+    "web:typecheck": "pnpm --filter @personal-commerce/web typecheck",
+    "format": "prettier --write adapters applications apps contracts database design-system modules tests scripts database drizzle.config.ts eslint.config.js playwright.config.ts vitest.config.ts package.json tsconfig.json tsconfig.build.json pnpm-workspace.yaml .github/workflows/ci.yml",
+    "format:check": "prettier --check adapters applications apps contracts database design-system modules tests scripts database drizzle.config.ts eslint.config.js playwright.config.ts vitest.config.ts package.json tsconfig.json tsconfig.build.json pnpm-workspace.yaml .github/workflows/ci.yml",
+    "lint": "eslint adapters apps database modules tests \"applications/**/*.ts\" \"contracts/**/*.ts\" \"scripts/**/*.ts\" \"scripts/**/*.mjs\" drizzle.config.ts playwright.config.ts vitest.config.ts --no-error-on-unmatched-pattern",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:domain": "vitest run modules",
+    "test:contracts": "vitest run tests/contracts tests/integration/api-runtime.test.ts",
+    "test:governance": "vitest run tests/governance",
+    "test:persistence": "vitest run tests/persistence",
+    "test:auth:provider": "vitest run tests/integration/supabase-auth-provider.integration.test.ts",
+    "test:acceptance": "vitest run tests/acceptance",
+    "test:acceptance:browser": "playwright test",
+    "check:user-copy": "node scripts/governance/check-user-facing-copy.mjs",
+    "check:design-tokens": "node scripts/design/check-token-calibration.mjs",
+    "design:generate-web-tokens": "node scripts/design/generate-web-token-adapter.mjs",
+    "check:web-token-adapter": "node scripts/design/check-web-token-adapter.mjs",
+    "check:web-design-system": "node scripts/governance/check-web-design-system.mjs",
+    "preflight": "powershell.exe -File scripts/test/preflight.ps1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.62.1",
+    "@types/node": "22.20.1",
+    "drizzle-kit": "0.31.10",
+    "eslint": "9.39.5",
+    "prettier": "3.9.6",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.67.0",
+    "vitest": "4.1.10"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.8.1",
+    "@fastify/type-provider-typebox": "6.1.0",
+    "@supabase/supabase-js": "2.112.3",
+    "drizzle-orm": "0.45.2",
+    "fastify": "5.11.3",
+    "postgres": "3.4.9",
+    "typebox": "1.0.13"
+  }
+}

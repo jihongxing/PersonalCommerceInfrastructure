@@ -1,0 +1,171 @@
+/* This file is generated from design-system/tokens/design-tokens.json. Do not edit manually. */
+:root {
+  --pci-primitive-color-warm-50: #f8f7f4;
+  --pci-primitive-color-warm-100: #f1eee8;
+  --pci-primitive-color-warm-200: #e5e1da;
+  --pci-primitive-color-warm-500: #746e65;
+  --pci-primitive-color-warm-800: #383b37;
+  --pci-primitive-color-warm-900: #1c2423;
+  --pci-primitive-color-teal-100: #c8e6de;
+  --pci-primitive-color-teal-300: #78b9ab;
+  --pci-primitive-color-teal-600: #176b5d;
+  --pci-primitive-color-teal-700: #0f594e;
+  --pci-primitive-color-teal-800: #0a463e;
+  --pci-primitive-color-red-100: #fde2e0;
+  --pci-primitive-color-red-600: #b42318;
+  --pci-primitive-color-red-700: #8f1b13;
+  --pci-primitive-color-amber-100: #fcefc7;
+  --pci-primitive-color-amber-700: #8a5700;
+  --pci-primitive-color-blue-100: #ddebff;
+  --pci-primitive-color-blue-700: #1858a8;
+  --pci-primitive-color-white: #ffffff;
+  --pci-primitive-font-family-system-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --pci-primitive-font-weight-regular: 400;
+  --pci-primitive-font-weight-medium: 500;
+  --pci-primitive-font-weight-semibold: 600;
+  --pci-primitive-font-weight-bold: 700;
+  --pci-primitive-size-font-100: 0.8125rem;
+  --pci-primitive-size-font-200: 0.875rem;
+  --pci-primitive-size-font-300: 1rem;
+  --pci-primitive-size-font-400: 1.125rem;
+  --pci-primitive-size-font-500: 1.375rem;
+  --pci-primitive-size-font-600: 1.75rem;
+  --pci-primitive-size-font-700: 2.25rem;
+  --pci-primitive-size-space-100: 0.25rem;
+  --pci-primitive-size-space-200: 0.5rem;
+  --pci-primitive-size-space-300: 0.75rem;
+  --pci-primitive-size-space-400: 1rem;
+  --pci-primitive-size-space-500: 1.5rem;
+  --pci-primitive-size-space-600: 2rem;
+  --pci-primitive-size-space-700: 3rem;
+  --pci-primitive-size-space-800: 4rem;
+  --pci-primitive-size-radius-100: 0.5rem;
+  --pci-primitive-size-radius-200: 0.75rem;
+  --pci-primitive-size-radius-300: 1rem;
+  --pci-primitive-size-radius-full: 9999px;
+  --pci-primitive-size-elevation-subtle: 0 1px 2px rgb(28 36 35 / 0.06);
+  --pci-primitive-size-elevation-raised: 0 12px 32px rgb(28 36 35 / 0.1);
+  --pci-primitive-size-elevation-overlay: 0 24px 56px rgb(28 36 35 / 0.18);
+  --pci-primitive-size-control-minimum-touch-target: 2.75rem;
+  --pci-primitive-size-control-focus-ring-width: 0.1875rem;
+  --pci-primitive-size-motion-quick: 120ms;
+  --pci-primitive-size-motion-standard: 180ms;
+  --pci-primitive-size-motion-reduced: 0ms;
+  --pci-semantic-color-background-canvas: #f8f7f4;
+  --pci-semantic-color-background-surface: #ffffff;
+  --pci-semantic-color-background-surface-raised: #ffffff;
+  --pci-semantic-color-background-subtle: #f1eee8;
+  --pci-semantic-color-background-disabled: #e5e1da;
+  --pci-semantic-color-background-inverse: #1c2423;
+  --pci-semantic-color-text-primary: #1c2423;
+  --pci-semantic-color-text-secondary: #383b37;
+  --pci-semantic-color-text-muted: #746e65;
+  --pci-semantic-color-text-inverse: #ffffff;
+  --pci-semantic-color-text-disabled: #746e65;
+  --pci-semantic-color-icon-primary: #1c2423;
+  --pci-semantic-color-icon-secondary: #383b37;
+  --pci-semantic-color-icon-inverse: #ffffff;
+  --pci-semantic-color-border-default: #c8c1b7;
+  --pci-semantic-color-border-subtle: #e5e1da;
+  --pci-semantic-color-border-strong: #7c756b;
+  --pci-semantic-color-border-focus: #176b5d;
+  --pci-semantic-color-focus-ring: #176b5d;
+  --pci-semantic-color-action-primary-default: #176b5d;
+  --pci-semantic-color-action-primary-hover: #0f594e;
+  --pci-semantic-color-action-primary-pressed: #0a463e;
+  --pci-semantic-color-action-primary-disabled: #78b9ab;
+  --pci-semantic-color-action-secondary-default: #ffffff;
+  --pci-semantic-color-action-secondary-hover: #f1eee8;
+  --pci-semantic-color-action-secondary-pressed: #e5e1da;
+  --pci-semantic-color-action-destructive-default: #b42318;
+  --pci-semantic-color-action-destructive-hover: #8f1b13;
+  --pci-semantic-color-action-destructive-pressed: #8f1b13;
+  --pci-semantic-color-feedback-success: #176b5d;
+  --pci-semantic-color-feedback-warning: #8a5700;
+  --pci-semantic-color-feedback-error: #b42318;
+  --pci-semantic-color-feedback-info: #1858a8;
+  --pci-semantic-typography-display-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-display-font-size: 2.25rem;
+  --pci-semantic-typography-display-line-height: 1.15;
+  --pci-semantic-typography-display-font-weight: 700;
+  --pci-semantic-typography-display-letter-spacing: -0.02em;
+  --pci-semantic-typography-heading-page-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-heading-page-font-size: 1.75rem;
+  --pci-semantic-typography-heading-page-line-height: 1.25;
+  --pci-semantic-typography-heading-page-font-weight: 700;
+  --pci-semantic-typography-heading-page-letter-spacing: -0.01em;
+  --pci-semantic-typography-heading-section-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-heading-section-font-size: 1.375rem;
+  --pci-semantic-typography-heading-section-line-height: 1.35;
+  --pci-semantic-typography-heading-section-font-weight: 600;
+  --pci-semantic-typography-heading-section-letter-spacing: 0em;
+  --pci-semantic-typography-body-default-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-body-default-font-size: 1rem;
+  --pci-semantic-typography-body-default-line-height: 1.5;
+  --pci-semantic-typography-body-default-font-weight: 400;
+  --pci-semantic-typography-body-default-letter-spacing: 0em;
+  --pci-semantic-typography-body-small-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-body-small-font-size: 0.875rem;
+  --pci-semantic-typography-body-small-line-height: 1.45;
+  --pci-semantic-typography-body-small-font-weight: 400;
+  --pci-semantic-typography-body-small-letter-spacing: 0em;
+  --pci-semantic-typography-label-default-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-label-default-font-size: 0.875rem;
+  --pci-semantic-typography-label-default-line-height: 1.35;
+  --pci-semantic-typography-label-default-font-weight: 600;
+  --pci-semantic-typography-label-default-letter-spacing: 0em;
+  --pci-semantic-typography-caption-font-family: var(
+    --pci-primitive-font-family-system-sans
+  );
+  --pci-semantic-typography-caption-font-size: 0.8125rem;
+  --pci-semantic-typography-caption-line-height: 1.4;
+  --pci-semantic-typography-caption-font-weight: 400;
+  --pci-semantic-typography-caption-letter-spacing: 0em;
+  --pci-semantic-space-inline-xs: 0.25rem;
+  --pci-semantic-space-inline-sm: 0.5rem;
+  --pci-semantic-space-inline-md: 0.75rem;
+  --pci-semantic-space-inline-lg: 1rem;
+  --pci-semantic-space-stack-xs: 0.25rem;
+  --pci-semantic-space-stack-sm: 0.5rem;
+  --pci-semantic-space-stack-md: 0.75rem;
+  --pci-semantic-space-stack-lg: 1rem;
+  --pci-semantic-space-stack-xl: 1.5rem;
+  --pci-semantic-space-inset-control: 0.75rem;
+  --pci-semantic-space-inset-surface: 1.5rem;
+  --pci-semantic-space-inset-page: 1.5rem;
+  --pci-semantic-space-layout-section: 2rem;
+  --pci-semantic-space-layout-page: 3rem;
+  --pci-semantic-radius-control-default: 0.75rem;
+  --pci-semantic-radius-surface-default: 1rem;
+  --pci-semantic-radius-surface-emphasized: 1rem;
+  --pci-semantic-radius-avatar-full: 9999px;
+  --pci-semantic-elevation-none: none;
+  --pci-semantic-elevation-subtle: 0 1px 2px rgb(28 36 35 / 0.06);
+  --pci-semantic-elevation-raised: 0 12px 32px rgb(28 36 35 / 0.1);
+  --pci-semantic-elevation-overlay: 0 24px 56px rgb(28 36 35 / 0.18);
+  --pci-semantic-control-minimum-touch-target: 2.75rem;
+  --pci-semantic-control-focus-ring-width: 0.1875rem;
+  --pci-semantic-motion-quick: 120ms;
+  --pci-semantic-motion-standard: 180ms;
+  --pci-semantic-motion-reduced: 0ms;
+  --pci-semantic-accessibility-contrast-text-minimum: 4.5;
+  --pci-semantic-accessibility-contrast-large-text-minimum: 3;
+  --pci-semantic-accessibility-contrast-non-text-minimum: 3;
+  --pci-semantic-accessibility-font-scaling-minimum-supported-scale: 1;
+  --pci-semantic-accessibility-font-scaling-maximum-supported-scale: 2;
+  --pci-semantic-accessibility-focus-minimum-ring-width: 0.1875rem;
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.next/
+apps/web/.next/
+output/playwright/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.gstack/

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Personal Commerce Design Token Source",
+  "type": "object",
+  "required": ["metadata", "primitive", "semantic"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "status", "source", "platformAgnostic"]
+    },
+    "primitive": {
+      "type": "object",
+      "required": ["color", "font", "size"]
+    },
+    "semantic": {
+      "type": "object",
+      "required": [
+        "color",
+        "typography",
+        "space",
+        "radius",
+        "elevation",
+        "control",
+        "motion",
+        "accessibility"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

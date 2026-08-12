@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786451525925,
+      "tag": "0000_solid_otto_octavius",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786462954274,
+      "tag": "0001_chemical_vampiro",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786549350000,
+      "tag": "0002_green_sauron",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786580000000,
+      "tag": "0003_m4_distribution_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786584000000,
+      "tag": "0004_m5_customer_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786588000000,
+      "tag": "0005_m6_request_result_access",
+      "breakpoints": true
+    }
+  ]
+}

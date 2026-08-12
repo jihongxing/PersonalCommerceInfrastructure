@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "tests",
+    "vitest.config.ts",
+    "drizzle.config.ts",
+    "playwright.config.ts",
+    "dist",
+    "node_modules",
+    "coverage",
+    "apps/web"
+  ]
+}

@@ -1011,6 +1011,7 @@ Deviation / Product Decision
 - 2026-08-13 Production-like Compose 复验未形成通过证据：本机 `podman compose` 委托外部 Docker Compose provider 后超时，最终未遗留容器、网络、卷或端口；不将该次环境超时误报为 Compose 通过，需在可用 Compose provider / Registry 环境重跑；
 - 2026-08-14 修复 GitHub Actions CI：`deployment-build` 补齐 Node 22、pnpm 10.22.0 与依赖安装；Web Token Adapter 校验规范化 CRLF / LF 换行，避免 Windows 生成物在 Linux Runner 被误判为过期；
 - 2026-08-14 GitHub Actions 复验显示 `deployment-build` 与 `postgres-integration` 已通过；为消除 Windows Runner 的全仓 Prettier 跨平台换行误报，统一设置 `endOfLine: auto`，并将 `checkout`、`setup-node`、`pnpm/action-setup` 升级到 Node 24 兼容版本；
+- 2026-08-14 GitHub Actions `preflight` 进一步确认 Windows Runner 缺少 Playwright `ffmpeg`，导致视频保留配置下浏览器页面无法创建；CI 已在依赖安装后显式执行 `pnpm exec playwright install ffmpeg`；
 - `pnpm typecheck`、`pnpm test:governance`、`pnpm check:openapi` 与受影响文件 Prettier 检查均通过；
 - M9 不修改 `FR-001–FR-053`、AT-001–AT-013 产品语义、状态机、权限、Canonical Event 或 Deferred Capability。
 

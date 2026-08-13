@@ -35,6 +35,9 @@
 3. [03 — Core Abstraction](./01_Strategy/03_Core_Abstraction.md)  
    定义 Creator、商业资产、可交易库存、商品和交易之间的底层关系。
 
+4. [04 — North Star & End State](./01_Strategy/04_North_Star_End_State.md)
+   定义项目终局北极星、终局必须成立的产品事实、长期衡量框架和阶段闸门。
+
 ### Market
 
 4. [04 — Creator Commerce Taxonomy](./02_Market/04_Creator_Commerce_Taxonomy.md)  

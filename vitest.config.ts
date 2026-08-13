@@ -5,6 +5,8 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html'],
     },
+    fileParallelism: false,
+    maxWorkers: 1,
     include: [
       'adapters/**/*.test.ts',
       'apps/web/**/*.test.ts',

@@ -864,6 +864,23 @@ Deviation / Product Decision
 
 ## 14. 临时 Change Unit
 
+### STRAT-01 — North Star End State
+
+**目的**
+
+补齐独立的终局北极星目标与长期校准合同，避免 MVP 交付成为缺少共同终点的局部功能积累。
+
+**状态**：Complete
+
+**证据**
+
+- `docs/01_Strategy/04_North_Star_End_State.md` 已建立；
+- 已明确一句话北极星、终局必须成立的产品事实、五层终局产品模型、长期结果指标、反指标和阶段闸门；
+- 已明确 Creator 是起点，Personal Commerce Infrastructure 是终点；
+- 已明确终局方向不得反向扩大 VS-01 范围；
+- `docs/README.md` 已加入战略文档索引；
+- 未修改 VS-01、`FR-001–FR-053`、`AT-001–AT-013`、领域对象、状态转换、Canonical Event、权限或当前 MVP 产品行为。
+
 ### UI-LANG-01 — 用户界面语言治理
 
 **目的**
@@ -985,7 +1002,13 @@ Deviation / Product Decision
 - `CU-OPS-03` 已将 OpenAPI Compatibility、真实 PostgreSQL Persistence、镜像构建与 Production Deployment Drill 接入 CI；
 - `CU-OPS-04` 已建立 Deployment Smoke、Backup / Restore、应用回滚 Smoke、最低告警条件和运行 Runbook；
 - `pnpm test:deployment` 已通过：临时 PostgreSQL Migration、API / Web 镜像、Health / Readiness / OpenAPI / Web Smoke、Backup / Restore、SIGTERM 优雅关闭与应用回滚 Smoke 均通过；
-- M9 最终 `pnpm preflight` 已于 2026-08-12 通过：151 tests（143 passed / 8 conditional skipped）、System Edge 16 passed / 0 skipped、Web Production Build 通过；
+- `vitest.config.ts` 已将测试文件并行度固定为单 worker，避免 Windows 默认文件并行启动竞争触发 5 秒超时；`pnpm preflight` 已于 2026-08-13 通过：151 tests（143 passed / 8 conditional skipped）、System Edge 16 passed / 0 skipped、Web Production Build 通过；
+- 2026-08-13 使用 Podman 5.7.1 完成 Production Deployment Drill：API / Web 镜像构建、6 个 Migration、Health / Readiness / OpenAPI / Web Smoke、Backup / Restore、SIGTERM 优雅关闭与应用回滚 Smoke 均通过；
+- 2026-08-13 使用缓存的 `postgres:17` 容器完成真实 PostgreSQL 证据：Migration Job 成功，`tests/persistence` 的 5 项测试全部通过；尝试拉取 `postgres:17.6-bookworm` 时受 Docker Hub 网络超时影响，未将该次失败计入产品或代码失败；
+- 2026-08-13 本地未配置 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_TEST_EMAIL`、`SUPABASE_TEST_PASSWORD`，因此真实 Hosted Supabase Provider 测试保持 5 项 conditional skip；该验证只能在受控环境注入凭据后执行，不以本地 Mock 或 Skip 作为通过证据；
+- 真实依赖复验入口保持可复现：PostgreSQL 使用 `DATABASE_URL=... pnpm db:migrate && pnpm test:persistence`，Hosted Supabase 使用 `RUN_REAL_SUPABASE_AUTH_TESTS=1 pnpm test:auth:provider`，后者缺少四项凭据时必须停止并报告缺失项；
+- `.github/workflows/ci.yml` 已新增仅允许 `workflow_dispatch` 触发的 `supabase-provider` Job；该 Job 注入受控 GitHub Secrets 后运行 `pnpm test:auth:provider`，用于持续保留真实 Hosted Provider 通过或失败的证据；
+- 2026-08-13 Production-like Compose 复验未形成通过证据：本机 `podman compose` 委托外部 Docker Compose provider 后超时，最终未遗留容器、网络、卷或端口；不将该次环境超时误报为 Compose 通过，需在可用 Compose provider / Registry 环境重跑；
 - `pnpm typecheck`、`pnpm test:governance`、`pnpm check:openapi` 与受影响文件 Prettier 检查均通过；
 - M9 不修改 `FR-001–FR-053`、AT-001–AT-013 产品语义、状态机、权限、Canonical Event 或 Deferred Capability。
 

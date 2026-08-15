@@ -10,6 +10,7 @@ import type { SubmitCustomerRequestCommand } from '../../../applications/custome
 import {
   CustomerRequestResultSchema,
   CreatorDecisionResponseSchema,
+  CreatorConfirmedRequestListSchema,
   CreatorSubmittedRequestListSchema,
   PublicOfferingResponseSchema,
   SubmitCustomerRequestSchema,
@@ -141,6 +142,25 @@ export function registerCustomerRequestRoutes(
     },
     async (request) => ({
       requests: await dependencies.service.listCreatorSubmittedRequests(requireContext(request)),
+    }),
+  );
+
+  server.get(
+    '/api/v1/creator/confirmed-requests',
+    {
+      schema: {
+        operationId: 'listCreatorConfirmedRequests',
+        response: {
+          200: CreatorConfirmedRequestListSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['customer-request'],
+      },
+      preHandler: authenticate,
+    },
+    async (request) => ({
+      requests: await dependencies.service.listCreatorConfirmedRequests(requireContext(request)),
     }),
   );
 

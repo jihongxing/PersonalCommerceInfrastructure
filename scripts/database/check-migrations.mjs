@@ -26,6 +26,13 @@ const firstMigration = await readFile(
   resolve(migrationsDirectory, journalMigrationFiles[0]),
   'utf8',
 );
+const migrationText = (
+  await Promise.all(
+    journalMigrationFiles.map((migrationFile) =>
+      readFile(resolve(migrationsDirectory, migrationFile), 'utf8'),
+    ),
+  )
+).join('\n');
 
 for (const requiredFragment of [
   'CREATE TABLE "product_events"',
@@ -42,13 +49,13 @@ for (const requiredFragment of [
 }
 
 for (const eventName of canonicalEventNames) {
-  if (!firstMigration.includes(`'${eventName}'`)) {
+  if (!migrationText.includes(`'${eventName}'`)) {
     throw new Error(`Migration is missing canonical event: ${eventName}`);
   }
 }
 
-if (/\b(payment|settlement|refund|marketplace|customer_crm)\b/iu.test(firstMigration)) {
-  throw new Error('Migration contains a deferred capability.');
+if (/CREATE TABLE\s+"?(payment|settlement|refund|marketplace|customer_crm)/iu.test(migrationText)) {
+  throw new Error('Migration creates a deferred capability table.');
 }
 
 process.stdout.write(`Migration check passed: ${journalMigrationFiles.join(', ')}`);

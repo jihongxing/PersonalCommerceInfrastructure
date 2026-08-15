@@ -4,6 +4,7 @@ import {
   loadAuthConfiguration,
   loadConfiguration,
   loadDatabaseConfiguration,
+  loadOperationsAuthConfiguration,
 } from '../../apps/prototype/src/configuration/bootstrap.js';
 
 describe('configuration bootstrap', () => {
@@ -117,8 +118,73 @@ describe('auth configuration bootstrap', () => {
       loadAuthConfiguration({
         SUPABASE_URL: 'https://example.supabase.co',
         SUPABASE_ANON_KEY: 'anon-key',
+      }),
+    ).toThrow('CREATOR_ACTOR_MAPPINGS is required for Supabase Auth operations.');
+    expect(() =>
+      loadAuthConfiguration({
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon-key',
+        CREATOR_ACTOR_MAPPINGS: '   ',
+      }),
+    ).toThrow('CREATOR_ACTOR_MAPPINGS is required for Supabase Auth operations.');
+    expect(() =>
+      loadAuthConfiguration({
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon-key',
         CREATOR_ACTOR_MAPPINGS: '[]',
       }),
     ).toThrow('CREATOR_ACTOR_MAPPINGS must be a valid JSON object.');
+    expect(() =>
+      loadAuthConfiguration({
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon-key',
+        CREATOR_ACTOR_MAPPINGS: '{}',
+      }),
+    ).toThrow('CREATOR_ACTOR_MAPPINGS must be a valid JSON object.');
+    expect(() =>
+      loadAuthConfiguration({
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon-key',
+        CREATOR_ACTOR_MAPPINGS: '{"other:user-1":"creator-1"}',
+      }),
+    ).toThrow('CREATOR_ACTOR_MAPPINGS must be a valid JSON object.');
+    expect(() =>
+      loadAuthConfiguration({
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon-key',
+        CREATOR_ACTOR_MAPPINGS: '{"supabase: ":"creator-1"}',
+      }),
+    ).toThrow('CREATOR_ACTOR_MAPPINGS must be a valid JSON object.');
+  });
+});
+
+describe('operations auth configuration bootstrap', () => {
+  it('loads controlled Pilot Operations authentication configuration', () => {
+    expect(
+      loadOperationsAuthConfiguration({
+        OPERATIONS_ACCESS_TOKEN: ' controlled-operations-token ',
+        OPERATIONS_OPERATOR_ID: ' pilot-operator-1 ',
+      }),
+    ).toEqual({
+      operationsAccessToken: 'controlled-operations-token',
+      operationsOperatorId: 'pilot-operator-1',
+    });
+  });
+
+  it('rejects missing or weak Operations configuration', () => {
+    expect(() => loadOperationsAuthConfiguration({})).toThrow(
+      'OPERATIONS_ACCESS_TOKEN must contain at least 16 characters.',
+    );
+    expect(() =>
+      loadOperationsAuthConfiguration({
+        OPERATIONS_ACCESS_TOKEN: 'short',
+        OPERATIONS_OPERATOR_ID: 'pilot-operator-1',
+      }),
+    ).toThrow('OPERATIONS_ACCESS_TOKEN must contain at least 16 characters.');
+    expect(() =>
+      loadOperationsAuthConfiguration({
+        OPERATIONS_ACCESS_TOKEN: 'controlled-operations-token',
+      }),
+    ).toThrow('OPERATIONS_OPERATOR_ID is required for Pilot Operations records.');
   });
 });

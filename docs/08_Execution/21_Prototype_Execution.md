@@ -651,12 +651,17 @@ Implementation Issue
 
 ### 7.4 Initial Deviation Register
 
-| Deviation ID | Related PRD                                | Status            | Note                                                                                                                                                                                                                                                                                                        |
-| ------------ | ------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DEV-001      | FR-029 / FR-030 / FR-031 / AT-006 / AT-007 | Closed — Verified | PRD 冻结“最小可联系信息”与“服务相关 Request 信息”，未冻结字段名；M5 以 `contactName`、`contactMethod`、`requestMessage` 实现最小可处理 Request，不新增 CRM、账号注册、支付或预约能力。                                                                                                                      |
-| DEV-002      | FR-023 / AT-005 / `storefront_viewed`      | Closed — Verified | 公开入口允许 Customer 在未提交 Request 前保持匿名，但 Canonical Event 需要 actor ID；M5 以请求关联 ID 作为匿名访问的技术 actor 标识，只记录公开 Storefront 打开事实，不创建 Customer 或平台账号。                                                                                                           |
-| DEV-003      | FR-041 / AT-008 / AT-009                   | Closed — Verified | 匿名 Customer 提交后需要查看 Confirmed / Declined 结果，但 VS-01 不创建账号；M6 返回仅能读取该 Request 结果的轻量访问 token，并由公开结果页与 System Edge AT-008 / AT-009 验证；不创建 Session、CRM、支付或履约能力。                                                                                       |
-| DEV-004      | FR-045 / FR-046 / FR-047 / ENG-010         | Closed — Verified | M7 Controlled Prototype 使用可替换 Notification Port；测试环境使用 In-Memory Adapter，当前运行时使用脱敏 Log Adapter，并由 Creator 待处理列表与 Customer 结果页验证正确角色可得知状态变化。通知失败隔离测试通过；不宣称真实短信、邮件或推送 Provider 已通过验证；通知中心、读状态、偏好与营销推送仍不实现。 |
+| Deviation ID | Related PRD                                | Status            | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DEV-001      | FR-029 / FR-030 / FR-031 / AT-006 / AT-007 | Closed — Verified | PRD 冻结“最小可联系信息”与“服务相关 Request 信息”，未冻结字段名；M5 以 `contactName`、`contactMethod`、`requestMessage` 实现最小可处理 Request，不新增 CRM、账号注册、支付或预约能力。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| DEV-002      | FR-023 / AT-005 / `storefront_viewed`      | Closed — Verified | 公开入口允许 Customer 在未提交 Request 前保持匿名，但 Canonical Event 需要 actor ID；M5 以请求关联 ID 作为匿名访问的技术 actor 标识，只记录公开 Storefront 打开事实，不创建 Customer 或平台账号。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| DEV-003      | FR-041 / AT-008 / AT-009                   | Closed — Verified | 匿名 Customer 提交后需要查看 Confirmed / Declined 结果，但 VS-01 不创建账号；M6 返回仅能读取该 Request 结果的轻量访问 token，并由公开结果页与 System Edge AT-008 / AT-009 验证；不创建 Session、CRM、支付或履约能力。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| DEV-004      | FR-045 / FR-046 / FR-047 / ENG-010         | Closed — Verified | M7 Controlled Prototype 使用可替换 Notification Port；测试环境使用 In-Memory Adapter，当前运行时使用脱敏 Log Adapter，并由 Creator 待处理列表与 Customer 结果页验证正确角色可得知状态变化。通知失败隔离测试通过；不宣称真实短信、邮件或推送 Provider 已通过验证；通知中心、读状态、偏好与营销推送仍不实现。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| DEV-005      | FR-052 / FR-053 / CR-06                    | Closed — Verified | 2026-08-14 产品最高负责人批准 First Commerce Slice。已将 Confirmed Request 的 `external_paid_verified` 与 `fulfillment_observed` 实现为受控 Pilot Operations 外部事实记录；Commerce Action 保持 `confirmed`，未新增付款、退款、结算、托管或履约状态，未处理支付凭据。每个 Request / 事实类型只允许一条记录并幂等返回，保留证据引用、发生时间、操作者与审计关联。应用、API、PostgreSQL Migration、OpenAPI、浏览器和本地部署验证通过。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| DEV-006      | VS-02 FR-201–FR-210 / D-MCL-GATE-01        | Closed — Verified | 产品最高负责人已解除 Gate 0C 对 VS-02 产品化与 Provider-neutral Build 的阻塞。`35_VS02_Paid_Service_PRD.md` 与 `36_Engineering_Governance_Delta.md` 已冻结。VS-02A 已完成：Provider-neutral Money Domain、Canonical Event、应用用例、Order/Payment/Fulfillment/Settlement/append-only Earnings Ledger/Withdrawal 的 PostgreSQL Schema、Migration 与 Repository、事务注入、OpenAPI Contract、HTTP Routes、Creator Orders/Earnings/Wallet/Withdrawal Intent UX、Customer 的只读 Payment State，以及 `pilot_operations` 受控 Payment / Settlement / Withdrawal Fact 注入。浏览器已跑通 Confirmed Request → Order → Payment Pending → controlled Payment Confirmed → Fulfillment → Settlement → Ledger Projection → Withdrawal Intent → controlled Withdrawal Completed；Customer Request 仍保持 `confirmed`，不被误写为真实付款或履约。2026-08-15 验证通过：`pnpm test`（160 passed / 8 skipped）、`pnpm build`、`pnpm db:check`、`pnpm check:openapi`、`pnpm web:typecheck`、`pnpm format:check`、`pnpm lint`、`git diff --check` 与 `pnpm exec playwright test tests/acceptance/browser/zz-vs02a-confirmed-request-to-earnings.spec.ts --project=system-edge`。真实 Provider Adapter、真实 KYC、真实 Checkout/Webhook、真实资金、真实 Withdrawal 与 Controlled Real-money Pilot 仍未实现，继续由 `35A_Provider_Qualification_Dossier.md` 约束。 |
+| DEV-007      | VS-02B / `37_VS02B_Provider_Integration_Readiness.md` | Closed — Verified | 2026-08-15 完成 Provider Integration Readiness。新增 Provider-neutral Payment / Settlement / Withdrawal Ports、Verified Provider Fact、Provider Fact Receipt Guard、Capability Registry 与仅用于本地验证的 `ReferenceProviderAdapter`；Provider Fact 经 Adapter verification 后才由 Application Policy 映射至既有 `pilot_operations` 受控 Money Use Case。相同 Provider Event、同终态重复、冲突终态、晚到 sequence、金额/币种不一致均由 Contract / Application Tests 验证，且提现失败仅通过追加 `withdrawal_failed` Ledger Entry 恢复可用余额，未写入 Wallet Balance。2026-08-15 验证通过：`pnpm test`（167 passed / 8 skipped）、`pnpm build`、`pnpm db:check`、`pnpm check:openapi`、`pnpm web:typecheck`、`pnpm format:check`、`pnpm lint`、`git diff --check` 与 VS-02A Playwright 回归。未创建 HTTP Webhook Endpoint，未接入微信、支付宝、Stripe、PayPal 或其他真实 Provider，未使用真实 Secret、KYC、Checkout、账户、资金或提现；VS-02B 状态为 Provider Integration Ready，而非 Provider Integrated。 |
+| DEV-008      | VS-02C / `38_VS02C_Provider_Adapter_Qualification.md` | Closed — Verified | 2026-08-15 完成第一个 Provider-specific Adapter 的工程资格化。根据 `35A_Provider_Qualification_Dossier.md`，选择微信支付“平台收付通”作为 `CONDITIONAL` Primary Provider Candidate：其公开能力底稿为二级商户、冻结/解冻、平台佣金、分账、余额和提现的强候选，但 CNY 399 舞蹈私教 Service Commerce、Creator 主体、平台角色、退款/争议/负余额、5–10 Creator Pilot 与官方 Test 环境仍缺 Provider 书面确认。新增隔离的 WeChat Pay Adapter Skeleton、Creator Account Mapping、受控 Test Transport、Payment / Settlement / Withdrawal Request/Response/Event/Error Mapping 和 Refund Signal Mapping；全部映射到 VS-02B Provider-neutral Port / Fact，未修改 Money Domain、Wallet 或 Ledger。Provider-specific Contract 验证了金额/币种、幂等、重复/冲突/晚到事件、错误归一化和 Secret Isolation；本地受控 Test Transport 明确不等同官方 Sandbox、真实签名验证、真实 Webhook 或真实资金。2026-08-15 验证通过：`pnpm test`（171 passed / 8 skipped）、`pnpm build`、`pnpm db:check`、`pnpm check:openapi`、`pnpm web:typecheck`、`pnpm format:check`、`pnpm lint`、`git diff --check` 与 VS-02A Playwright 回归。状态为“VS-02C engineering qualification complete / Controlled Integration conditional”；在 `38` 第 8 节证据包完成前，VS-02D 仍被外部资格约束阻塞。 |
+| DEV-009      | VS-02D / `39_VS02D_Controlled_Real_Money_Integration.md` | Blocked — No-Go | 2026-08-15 已冻结 VS-02D 的唯一真实交易边界、Live Integration Readiness、Go / No-Go Checklist、Kill Switch 和 Transaction Evidence Package。资格核验显示当前只存在 `.env.example`；没有 Live runtime credential 配置、真实 Provider Account / Creator Account Mapping、Provider 书面业务资格确认、官方 Sandbox / Test 准入或真实 callback 证据。`35A` 仍将 Service Commerce、Creator 主体、Platform Fee、退款/回退、争议、负余额和 Pilot 准入列为阻断性外部事实；`38` 因此保持微信支付候选为 `CONDITIONAL`，明确不得进入 VS-02D。未执行任何 Live Payment、真实 Provider API、真实 Webhook、真实 KYC/KYB、账户进件、真实结算或提现。解除条件仅为 `39` 第 4 节 Live Readiness 与第 6 节 Go / No-Go Checklist 的全部书面证据和独立授权完成；在此之前不得声明 First Real Payment Connectivity Verified。 |
 
 ## 8. Decision Record
 
@@ -1005,7 +1010,7 @@ Deviation / Product Decision
 - `vitest.config.ts` 已将测试文件并行度固定为单 worker，避免 Windows 默认文件并行启动竞争触发 5 秒超时；`pnpm preflight` 已于 2026-08-13 通过：151 tests（143 passed / 8 conditional skipped）、System Edge 16 passed / 0 skipped、Web Production Build 通过；
 - 2026-08-13 使用 Podman 5.7.1 完成 Production Deployment Drill：API / Web 镜像构建、6 个 Migration、Health / Readiness / OpenAPI / Web Smoke、Backup / Restore、SIGTERM 优雅关闭与应用回滚 Smoke 均通过；
 - 2026-08-13 使用缓存的 `postgres:17` 容器完成真实 PostgreSQL 证据：Migration Job 成功，`tests/persistence` 的 5 项测试全部通过；尝试拉取 `postgres:17.6-bookworm` 时受 Docker Hub 网络超时影响，未将该次失败计入产品或代码失败；
-- 2026-08-13 本地未配置 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_TEST_EMAIL`、`SUPABASE_TEST_PASSWORD`，因此真实 Hosted Supabase Provider 测试保持 5 项 conditional skip；该验证只能在受控环境注入凭据后执行，不以本地 Mock 或 Skip 作为通过证据；
+- 2026-08-13 受控 PowerShell 进程已注入 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_TEST_EMAIL`、`SUPABASE_TEST_PASSWORD`；执行 `RUN_REAL_SUPABASE_AUTH_TESTS=1 pnpm test:auth:provider` 通过 5/5 项真实 Hosted Supabase Provider 验证，覆盖真实登录、Token 验证、无效 Token、未映射 / 已映射 Creator、网络失败和敏感信息脱敏；凭据仅存在于该 PowerShell 的 `Process` scope，未写入 User 或 Machine scope；
 - 真实依赖复验入口保持可复现：PostgreSQL 使用 `DATABASE_URL=... pnpm db:migrate && pnpm test:persistence`，Hosted Supabase 使用 `RUN_REAL_SUPABASE_AUTH_TESTS=1 pnpm test:auth:provider`，后者缺少四项凭据时必须停止并报告缺失项；
 - `.github/workflows/ci.yml` 已新增仅允许 `workflow_dispatch` 触发的 `supabase-provider` Job；该 Job 注入受控 GitHub Secrets 后运行 `pnpm test:auth:provider`，用于持续保留真实 Hosted Provider 通过或失败的证据；
 - 2026-08-13 Production-like Compose 复验未形成通过证据：本机 `podman compose` 委托外部 Docker Compose provider 后超时，最终未遗留容器、网络、卷或端口；不将该次环境超时误报为 Compose 通过，需在可用 Compose provider / Registry 环境重跑；
@@ -1022,3 +1027,162 @@ Deviation / Product Decision
 - 不新增产品对象、状态、权限或 Canonical Event；
 - 不引入 Payment、Settlement、Refund、Marketplace、CRM、自动排期或履约工作流；
 - 任何后续产品行为变化仍必须先登记 `DEV-###`。
+
+### DS-01E — Quiet Commerce Desk Web Surface Refactor
+
+**目的**
+
+在已通过 UI/UX 设计审计的 Quiet Commerce Desk 方向下，重构 `apps/web`
+的页面壳层、视觉层级、响应式布局与品牌表现；保持现有 VS-01 功能、路由、
+表单契约和交互行为不变。
+
+**状态**：Complete
+
+**范围**
+
+- 首页、Creator Identity、公开 Offering、Customer Request / Result 页面；
+- Web 页面层级、页面上下文、品牌壳层、暖纸色视觉基底、排版、间距、
+  响应式桌面端与移动端布局；
+- 仅使用现有 Web API Client、组件和产品文案，不新增产品能力。
+
+**完成证据**
+
+- 变更文件限定在 `apps/web` 的页面、组件、布局与样式文件；
+- 未修改 API Contract、领域模型、状态机、Canonical Event、权限、
+  字段 ID、现有 URL 路由或 VS-01 产品范围；
+- `pnpm format:check` 通过；
+- `pnpm lint` 通过；
+- `pnpm typecheck` 通过；
+- `pnpm web:typecheck` 通过；
+- `pnpm build:web` 通过；
+- `pnpm test:acceptance:browser` 通过：16 passed / 0 failed；
+- 浏览器验收覆盖首页、Creator Identity、Offering 草稿与发布、
+  Public Offering、Customer Request、Creator 决策和 Result 路径；
+- 现有浏览器验收依赖的按钮文本、表单 label、字段 ID 和测试选择器保持兼容。
+
+**边界**
+
+- 本变更只调整 `apps/web` 前端表现层；
+- 不新增支付、结算、退款、Marketplace、CRM、自动排期或履约工作流；
+- 不改变任何产品行为；因此不新增 `DEV-###` 偏差；
+- 后续若需要改变产品行为，必须先登记独立的 `DEV-###` 变更。
+
+### Commercialization Cutline — Reference Product → Real Product
+
+**目的**
+
+将下一阶段固定为一个小而硬的产品化执行边界：只处理真实身份、Commerce Identity、
+真实分发、首个 Creator-direct Commerce 的最小承载能力，以及 Repeat Supply 所需
+的最小系统承载；不把商业成功、PMF、复购或收入判断转交给工程团队。
+
+**状态**：Complete
+
+**执行依据**
+
+- `docs/09_Engineering_Governance/31_Commercialization_Readiness_Cutline.md`
+- C1 `Real Identity`
+- C2 `Commerce Identity`
+- C3 `Real Distribution`
+- C4 `First Commerce`
+- C5 `Repeat Supply`
+
+**边界**
+
+- 当前 VS-01 的 `Request → Confirm / Decline` 保持不变；
+- C4 若超出 VS-01，必须先登记独立 `DEV-###` 或产品变更单元；
+- 不启动 M10、M11、M12 等平台扩张阶段；
+- Marketplace、搜索、推荐、CRM、会员、AI Agent、复杂日历、自动排期、
+  多方结算、支付平台、大型运营后台和 Analytics Dashboard 默认 Deferred；
+- 真实 Creator 的选择、运营、使用意愿、复购和收入属于业务决策，不作为工程
+  团队替代判断的验收目标。
+
+**完成证据**
+
+- `CR-01–CR-08` 全部完成；
+- C1 Real Identity、C2 Commerce Identity、C3 Real Distribution 和 C4 First
+  Commerce 的技术承载达到 Ready；
+- C5 为 `System Ready, Business Fact Unverified`，未使用测试伪造 Repeat Supply；
+- `docs/09_Engineering_Governance/31_Commercialization_Readiness_Cutline.md` 已记录
+  阶段完成总结并正式关闭；
+- 最终技术判断为 `Ready under approved local acceptance`，不等同于外部公网生产
+  部署或商业成功。
+
+### Minimum Commercial Loop — Real Product → Commercial Product
+
+**目的**
+
+让一个真实 Creator 通过一个真实 Service Offering，从一个真实 Customer 获得一笔
+真实付款，完成真实履约、Settlement、Creator Wallet 入账和 Withdrawal，并由平台准确
+记录第一笔不可自欺的 Completed Paid Commerce。
+
+**状态**：VS-02 Productization Active; Provider Qualification Parallel; Provider-neutral Build Authorized
+
+**执行依据**
+
+- `docs/09_Engineering_Governance/32_Minimum_Commercial_Loop.md`；
+- `docs/09_Engineering_Governance/33_Money_Flow_Decision.md`；
+- `docs/09_Engineering_Governance/34_Commerce_Pattern_Settlement_and_Wallet_Model.md`；
+- 阶段 North Star：`First Completed Paid Commerce`；
+- 产品增量：`VS-02 — Paid Service + Earnings`，作为 VS-01 的 Commerce Extension。
+
+**当前决策状态**
+
+- `D-MCL-GATE-01` 已批准：D-MCL-01 改为 Provider-specific Adapter / Real-money Pilot
+  的 External Constraint Track，不再阻塞 VS-02 PRD、36 Delta 或 Provider-neutral Build；
+- Gate 0A 已完成公开官方 Provider / Merchant 能力核查，但仍等待 Provider-specific
+  business confirmation；
+- Gate 0B 已完成 CNY 399 provider-neutral 资金流与异常路径模拟，未虚构费率或责任；
+- Gate 0A 已新增 `35_China_Creator_Settlement_Infrastructure_Map.md`，将研究层级从
+  单一支付 Provider 扩展为 Creator Settlement Infrastructure；
+- Gate 0C 已改为 Provider Qualification Gate；微信支付平台收付通是领先资格候选，
+  支付宝必须单独完成同等能力核验；两者均未 Qualified；
+- Provider Qualification 继续并行推进，负责外部 Provider Adapter、真实账户和 Controlled
+  Real-money Pilot 约束；
+- 官方巨量星图资料已验证个体达人直提现与 MCN 机构代结算两种现实路径；抖音生活服务中
+  具体合作支付服务机构、专项服务机构和收款账户结构仍需官方协议或商务确认；
+- 首发市场已冻结为中国大陆，首发币种已冻结为 CNY；
+- 中国首发支付候选已冻结为微信支付和支付宝；
+- Platform Fee 已冻结为必备商业事实，具体费率、支付方和扣取方式待决；
+- Settlement、Creator Wallet / Earnings Ledger 和 Withdrawal 已冻结为终局必备能力；
+- Wallet 是产品账本概念，不自动等于平台自建资金池或无监管储值；
+- 全球化架构约束为 Payment Provider Adapter + Regional Legal / Merchant Model；
+- Stripe、PayPal 和其他区域 Provider 仅为未来候选，不进入中国首版 Scope；
+- Model A Creator-direct、Model B Platform Checkout、Model C Provider-backed Creator Settlement
+  的比较框架已冻结；
+- 当前候选方向是 Creator 作为 Seller / 收款商户、平台提供 Commerce Infrastructure、
+  Payment Orchestration、Settlement 和 Wallet Ledger，Provider 承担合规资金托管、分账
+  和提现能力；该方向是 Model C Provider-backed Creator Settlement 的研究候选，但不是已批准结论；
+- Creator 使用自然人 / 小微主体还是个体工商户、平台法律实体和角色、微信 / 支付宝
+  具体产品、KYC、Refund、Dispute、Chargeback 和负余额责任仍为 Blocking。
+
+**当前执行任务**
+
+- `35_VS02_Paid_Service_PRD.md` 已冻结 VS-02 Paid Service + Earnings 产品合同；
+- `36_Engineering_Governance_Delta.md` 已冻结 Money Domain、Ledger、Adapter、精度、
+  事件真实性、幂等、回放与审计不变量；
+- 创建 VS-02 根 `DEV-###`，完成 Provider-neutral Domain Build 的代码、迁移、API、UI 和测试；
+- 继续按 `35A_Provider_Qualification_Dossier.md` 获取 Provider 外部事实；这些事实仅决定
+  Provider Adapter 和 Controlled Real-money Pilot；
+- 不得让 `Unknown — Blocking` 的 Provider 结论静默改变 Product Domain。
+
+**Provider Adapter / Pilot 门禁**
+
+- Provider Qualification、法律、运营和安全证据满足前，不接入真实 Checkout、Webhook、
+  Payment、Refund、Payout、KYC 或 Connected / Sub-merchant Account；
+- 不将现有 `external_paid_verified` 直接重命名或升级为真实 Payment Success；
+- 不以 Sandbox、测试卡、Mock、Fixture、内部账号自买自卖或人工数据库修改作为
+  First Completed Paid Commerce 证据。
+
+当前明确不做：
+
+- 不评估与首发市场无关的大范围 Provider 清单；
+- 不启动未经资格确认的真实支付、Checkout、Webhook、Refund、Payout 或 KYC；
+
+**冻结范围**
+
+- 只支持 Service Offering，不引入 Ticket、Event、Experience 或 Merchandise；
+- 最小新增对象候选为 Order、Payment、Fulfillment、Settlement、Wallet Ledger 和
+  Withdrawal；
+- Cancellation 和 Refund 只建设完成失败闭环所需的最低责任能力；
+- 不建设自有 Payment Platform、无监管资金池、Wallet Credit / 借贷、Marketplace、
+  多币种、订阅、发票、大型订单系统或与第一笔真实交易无关的 UI / 工程扩张。

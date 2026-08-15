@@ -19,6 +19,7 @@ await assertStatus(webBaseUrl, 200);
 await assertStatus(`${webBaseUrl}/creator`, 200);
 await assertStatus(`${webBaseUrl}/public`, 200);
 await assertStatus(`${webBaseUrl}/customer`, 200);
+await assertStatus(`${webBaseUrl}/operations`, 200);
 
 process.stdout.write('Deployment smoke check passed.');
 

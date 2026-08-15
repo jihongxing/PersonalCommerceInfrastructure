@@ -85,6 +85,44 @@ export const CreatorSubmittedRequestListSchema = Type.Object(
   { additionalProperties: false },
 );
 
+export const CreatorConfirmedRequestSchema = Type.Object(
+  {
+    action: Type.Object(
+      {
+        id: Type.String({ minLength: 1 }),
+        customerId: Type.String({ minLength: 1 }),
+        creatorId: Type.String({ minLength: 1 }),
+        offeringId: Type.String({ minLength: 1 }),
+        requestMessage: Type.String({ minLength: 1 }),
+        resultAccessToken: Type.String({ minLength: 1 }),
+        state: Type.Literal('confirmed'),
+      },
+      { additionalProperties: false },
+    ),
+    customer: Type.Object(
+      {
+        id: Type.String({ minLength: 1 }),
+        contactName: Type.String({ minLength: 1 }),
+        contactMethod: Type.String({ minLength: 1 }),
+      },
+      { additionalProperties: false },
+    ),
+    offering: Type.Object(
+      {
+        id: Type.String({ minLength: 1 }),
+        title: Type.String({ minLength: 1 }),
+      },
+      { additionalProperties: false },
+    ),
+  },
+  { additionalProperties: false },
+);
+
+export const CreatorConfirmedRequestListSchema = Type.Object(
+  { requests: Type.Array(CreatorConfirmedRequestSchema) },
+  { additionalProperties: false },
+);
+
 export const CreatorDecisionResponseSchema = Type.Object(
   {
     actionId: Type.String({ minLength: 1 }),

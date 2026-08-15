@@ -43,6 +43,27 @@
       "when": 1786588000000,
       "tag": "0005_m6_request_result_access",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786690000000,
+      "tag": "0006_cr06_external_fact_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786780800000,
+      "tag": "0007_vs02_canonical_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786867200000,
+      "tag": "0008_vs02_paid_commerce",
+      "breakpoints": true
     }
   ]
 }

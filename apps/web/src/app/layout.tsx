@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Personal Commerce Infrastructure',
-  description: 'Web Reference Client',
+  title: 'Personal Commerce',
+  description: '个人商业服务工作台',
 };
 
 export default function RootLayout({
@@ -14,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <div className="app-root">{children}</div>
+      </body>
     </html>
   );
 }

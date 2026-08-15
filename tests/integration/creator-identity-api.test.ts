@@ -652,4 +652,126 @@ describe('Creator Identity API', () => {
 
     await server.close();
   });
+
+  it('records idempotent external payment and fulfillment facts for a confirmed Request', async () => {
+    const server = await createApiServer();
+    const creatorHeaders = { authorization: 'Bearer test-creator-token' };
+    const operationsHeaders = { authorization: 'Bearer test-operations-token' };
+
+    await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/identity',
+      headers: creatorHeaders,
+      payload: { profile },
+    });
+    const capability = await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/identity/capabilities',
+      headers: creatorHeaders,
+      payload: { name: 'Private Lesson', description: 'One-on-one instruction' },
+    });
+    const capabilityId = responseJson<{ readonly capabilityIds: readonly string[] }>(capability)
+      .capabilityIds[0];
+    const offering = await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/offerings',
+      headers: creatorHeaders,
+      payload: {
+        capabilityIds: [capabilityId],
+        title: 'Private Lesson',
+        description: 'One-on-one instruction',
+        availabilityDescription: 'Weekends',
+        requestInstructions: 'Share preferred time',
+      },
+    });
+    const offeringId = responseJson<{ readonly id: string }>(offering).id;
+    await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/offerings/${offeringId}/publish`,
+      headers: creatorHeaders,
+    });
+    const submitted = await server.inject({
+      method: 'POST',
+      url: `/api/v1/public/offerings/${offeringId}/requests`,
+      payload: {
+        contactName: 'Buyer',
+        contactMethod: 'buyer-cr06@example.test',
+        requestMessage: 'I would like this lesson.',
+      },
+    });
+    const actionId = responseJson<{ readonly actionId: string }>(submitted).actionId;
+
+    const beforeConfirm = await server.inject({
+      method: 'POST',
+      url: `/api/v1/operations/requests/${actionId}/external-payment`,
+      headers: operationsHeaders,
+      payload: {
+        evidenceReference: 'local://payment-before-confirm',
+        occurredAt: '2026-08-14T12:00:00.000Z',
+      },
+    });
+    expect(beforeConfirm.statusCode).toBe(409);
+
+    await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${actionId}/confirm`,
+      headers: creatorHeaders,
+    });
+    const payment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/operations/requests/${actionId}/external-payment`,
+      headers: operationsHeaders,
+      payload: {
+        evidenceReference: 'local://payment-evidence',
+        occurredAt: '2026-08-14T12:00:00.000Z',
+      },
+    });
+    expect(payment.statusCode).toBe(200);
+    expect(payment.json()).toMatchObject({
+      actionId,
+      type: 'external_paid_verified',
+      recordedBy: 'pilot-operator-test-1',
+    });
+
+    const repeatedPayment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/operations/requests/${actionId}/external-payment`,
+      headers: operationsHeaders,
+      payload: {
+        evidenceReference: 'local://different-evidence',
+        occurredAt: '2026-08-14T12:30:00.000Z',
+      },
+    });
+    expect(repeatedPayment.statusCode).toBe(200);
+    expect(repeatedPayment.json()).toEqual(payment.json());
+
+    const fulfillment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/operations/requests/${actionId}/fulfillment`,
+      headers: operationsHeaders,
+      payload: {
+        evidenceReference: 'local://fulfillment-evidence',
+        occurredAt: '2026-08-14T13:00:00.000Z',
+      },
+    });
+    expect(fulfillment.statusCode).toBe(200);
+    expect(fulfillment.json()).toMatchObject({
+      actionId,
+      type: 'fulfillment_observed',
+      recordedBy: 'pilot-operator-test-1',
+    });
+
+    const invalidToken = await server.inject({
+      method: 'POST',
+      url: `/api/v1/operations/requests/${actionId}/fulfillment`,
+      headers: { authorization: 'Bearer wrong-operations-token' },
+      payload: {
+        evidenceReference: 'local://unauthorized',
+        occurredAt: '2026-08-14T13:00:00.000Z',
+      },
+    });
+    expect(invalidToken.statusCode).toBe(401);
+
+    await server.close();
+  });
 });

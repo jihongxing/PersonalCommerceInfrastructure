@@ -39,17 +39,21 @@ describe('PostgreSQL persistence contract', () => {
 
     expect(migrationFiles).toEqual(journalMigrationFiles);
 
-    const migration = await readFile(
-      resolve(migrationsDirectory, journalMigrationFiles[0] as string),
-      'utf8',
+    const migrations = await Promise.all(
+      journalMigrationFiles.map((migrationFile) =>
+        readFile(resolve(migrationsDirectory, migrationFile), 'utf8'),
+      ),
     );
+    const migrationText = migrations.join('\n');
 
     for (const eventName of canonicalEventNames) {
-      expect(migration).toContain(`'${eventName}'`);
+      expect(migrationText).toContain(`'${eventName}'`);
     }
-    expect(migration).toContain('product_events_correlation_event_object_unique');
-    expect(migration).toContain('product_events_object_occurred_at_idx');
-    expect(migration).toContain('product_events_actor_occurred_at_idx');
-    expect(migration).not.toMatch(/\b(payment|settlement|refund|marketplace|customer_crm)\b/iu);
+    expect(migrationText).toContain('product_events_correlation_event_object_unique');
+    expect(migrationText).toContain('product_events_object_occurred_at_idx');
+    expect(migrationText).toContain('product_events_actor_occurred_at_idx');
+    expect(migrationText).not.toMatch(
+      /CREATE TABLE\s+"?(payment|settlement|refund|marketplace|customer_crm)/iu,
+    );
   });
 });

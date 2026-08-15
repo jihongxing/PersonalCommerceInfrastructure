@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { loadWebConfiguration } from '../configuration/bootstrap';
-import { creatorIdentityCopy } from '../content/user-facing-copy';
+import { commonCopy, creatorIdentityCopy } from '../content/user-facing-copy';
 import { createApiClient } from '../lib/api/client';
 import type { operations } from '../lib/api/generated';
 import {
@@ -19,6 +19,7 @@ import { Input } from './ui/input';
 import { StatusMessage } from './ui/status-message';
 import { Surface } from './ui/surface';
 import { Textarea } from './ui/textarea';
+import type { AccessTokenProvider } from '../lib/api/authentication';
 
 type IdentityResponse =
   operations['getCreatorIdentity']['responses'][200]['content']['application/json'];
@@ -33,8 +34,15 @@ const defaultProfile = {
   socialLinks: [],
 };
 
-export function CreatorIdentityWorkspace() {
-  const [token, setToken] = useState('test-creator-token');
+export function CreatorIdentityWorkspace({
+  accessTokenProvider,
+  onSignOut,
+  userEmail,
+}: {
+  readonly accessTokenProvider: AccessTokenProvider;
+  readonly onSignOut: () => void;
+  readonly userEmail: string | null;
+}) {
   const [identity, setIdentity] = useState<IdentityResponse | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
@@ -59,11 +67,9 @@ export function CreatorIdentityWorkspace() {
     () =>
       createApiClient({
         apiBaseUrl: loadWebConfiguration().apiBaseUrl,
-        accessTokenProvider: {
-          getAccessToken: () => Promise.resolve(token),
-        },
+        accessTokenProvider,
       }),
-    [token],
+    [accessTokenProvider],
   );
 
   useEffect(() => {
@@ -78,7 +84,16 @@ export function CreatorIdentityWorkspace() {
 
       if (response.error !== undefined) {
         setIdentity(null);
-        setMessage(creatorIdentityCopy.identityMissing);
+        if (
+          response.error.error.code === 'missing_auth_context' ||
+          response.error.error.code === 'invalid_access_token' ||
+          response.error.error.code === 'creator_actor_not_mapped'
+        ) {
+          onSignOut();
+          setMessage(creatorIdentityCopy.sessionExpired);
+        } else {
+          setMessage(creatorIdentityCopy.identityMissing);
+        }
         return;
       }
 
@@ -346,10 +361,27 @@ export function CreatorIdentityWorkspace() {
   }
 
   return (
-    <main className="ds-page">
+    <main className="ds-workspace-page ds-page">
+      <header className="ds-workspace-header">
+        <div className="ds-workspace-brand">
+          <span className="ds-brand-mark" aria-hidden="true" />
+          <span>{commonCopy.brand}</span>
+        </div>
+        <span className="ds-header-note">{commonCopy.creatorWorkspace}</span>
+      </header>
       <Surface className="ds-page__surface" tone="raised">
-        <p className="ds-eyebrow">{creatorIdentityCopy.eyebrow}</p>
-        <h1 className="ds-heading-page">{creatorIdentityCopy.title}</h1>
+        <div className="ds-workspace-intro">
+          <div>
+            <p className="ds-eyebrow">{creatorIdentityCopy.eyebrow}</p>
+            <h1 className="ds-heading-page">{creatorIdentityCopy.title}</h1>
+          </div>
+          <div className="ds-action-row">
+            <span className="ds-workspace-profile">{userEmail ?? commonCopy.creatorRole}</span>
+            <Button onClick={onSignOut} type="button" variant="outline">
+              {creatorIdentityCopy.signOut}
+            </Button>
+          </div>
+        </div>
         <p className="ds-body-secondary ds-measure">{creatorIdentityCopy.setupDescription}</p>
         <StatusMessage>
           {hydrated
@@ -358,20 +390,6 @@ export function CreatorIdentityWorkspace() {
               : message
             : creatorIdentityCopy.initializing}
         </StatusMessage>
-
-        <div className="ds-section-stack">
-          <FormField
-            helperText={creatorIdentityCopy.developmentCredentialHint}
-            htmlFor="creator-token"
-            label={creatorIdentityCopy.developmentCredentialLabel}
-          >
-            <Input
-              id="creator-token"
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-            />
-          </FormField>
-        </div>
 
         <div className="ds-form-grid">
           <FormField htmlFor="display-name" label={creatorIdentityCopy.displayNameLabel}>

@@ -29,6 +29,14 @@ import { PostgresProductEventStore } from './postgres-product-event-store.js';
 import { CanonicalEventRecorder } from '../../../applications/core/canonical-event-recorder.js';
 import { FixedClock } from '../../in-memory/fixed-clock.js';
 import { StaticPublicOfferingUrlGenerator } from '../../in-memory/public-offering-url-generator.js';
+import { RecordExternalObservationUseCase } from '../../../applications/shadow-commerce/external-observation-use-cases.js';
+import { StaticOperationsAuthContextProvider } from '../../auth/operations/static-operations-auth-context-provider.js';
+import type { OperationsAuthContextProvider } from '../../../applications/core/ports/operations-auth-context-provider.js';
+import {
+  createPaidCommerceService,
+  type PaidCommerceService,
+} from '../../../applications/paid-commerce/paid-commerce-service.js';
+import { PostgresPaidCommerceRepository } from './postgres-paid-commerce-repository.js';
 
 export interface CreatorIdentityDatabaseConfiguration {
   readonly databaseUrl: string;
@@ -40,11 +48,19 @@ export interface CreatorIdentityAuthConfiguration {
   readonly creatorActorMappings: ReadonlyMap<string, string>;
 }
 
+export interface OperationsConfiguration {
+  readonly operationsAccessToken: string;
+  readonly operationsOperatorId: string;
+}
+
 export interface PostgresCreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
+  readonly operationsAuthContextProvider: OperationsAuthContextProvider;
+  readonly recordExternalObservation: RecordExternalObservationUseCase;
+  readonly paidCommerceService: PaidCommerceService;
   readonly database: PostgresDatabaseConnection;
 }
 
@@ -53,6 +69,7 @@ export function createPostgresCreatorIdentityComposition(
   authConfiguration: CreatorIdentityAuthConfiguration,
   publicOrigin: string,
   notificationPort: NotificationPort,
+  operationsConfiguration: OperationsConfiguration,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const identityRepository = new PostgresCommerceIdentityRepository(database.database);
@@ -61,11 +78,13 @@ export function createPostgresCreatorIdentityComposition(
   const distributionAssetRepository = new PostgresDistributionAssetRepository(database.database);
   const customerRepository = new PostgresCustomerRepository(database.database);
   const commerceActionRepository = new PostgresCommerceActionRepository(database.database);
+  const paidCommerceRepository = new PostgresPaidCommerceRepository(database.database);
   const idGenerator = new UuidIdGenerator();
   const unitOfWork = new PostgresUnitOfWork(database.database);
+  const productEventStore = new PostgresProductEventStore(database.database);
   const canonicalEventRecorder = new CanonicalEventRecorder({
     clock: new FixedClock(new Date().toISOString()),
-    eventStore: new PostgresProductEventStore(database.database),
+    eventStore: productEventStore,
     idGenerator: new UuidIdGenerator(),
   });
 
@@ -100,6 +119,24 @@ export function createPostgresCreatorIdentityComposition(
       idGenerator,
       canonicalEventRecorder,
       notificationPort,
+      unitOfWork,
+    }),
+    operationsAuthContextProvider: new StaticOperationsAuthContextProvider({
+      accessToken: operationsConfiguration.operationsAccessToken,
+      operatorId: operationsConfiguration.operationsOperatorId,
+    }),
+    recordExternalObservation: new RecordExternalObservationUseCase({
+      commerceActionRepository,
+      canonicalEventRecorder,
+      productEventStore,
+    }),
+    paidCommerceService: createPaidCommerceService({
+      commerceActionRepository,
+      offeringRepository,
+      paidCommerceRepository,
+      idGenerator,
+      clock: new FixedClock(new Date().toISOString()),
+      canonicalEventRecorder,
       unitOfWork,
     }),
   };

@@ -10,6 +10,7 @@ import {
   PostgresOfferingRepository,
 } from './postgres-creator-identity-repositories.js';
 import { PostgresProductEventStore } from './postgres-product-event-store.js';
+import { PostgresPaidCommerceRepository } from './postgres-paid-commerce-repository.js';
 
 export class PostgresUnitOfWork implements UnitOfWork {
   public constructor(private readonly database: ProductDatabase) {}
@@ -24,6 +25,7 @@ export class PostgresUnitOfWork implements UnitOfWork {
         distributionAssetRepository: new PostgresDistributionAssetRepository(transaction),
         customerRepository: new PostgresCustomerRepository(transaction),
         commerceActionRepository: new PostgresCommerceActionRepository(transaction),
+        paidCommerceRepository: new PostgresPaidCommerceRepository(transaction),
       }),
     );
   }

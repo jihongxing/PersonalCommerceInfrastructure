@@ -63,6 +63,8 @@ try {
     "SUPABASE_URL=https://example.supabase.co"
     "SUPABASE_ANON_KEY=test-key"
     'CREATOR_ACTOR_MAPPINGS={"supabase:test-user":"creator-test"}'
+    "OPERATIONS_ACCESS_TOKEN=production-drill-operations-token"
+    "OPERATIONS_OPERATOR_ID=production-drill-operator"
   ) | Set-Content -LiteralPath $environmentFile -Encoding ascii
 
   Invoke-Container -Arguments @("network", "create", $network) | Out-Null

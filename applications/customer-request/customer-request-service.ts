@@ -15,10 +15,12 @@ import type {
 import {
   DecideCustomerRequestUseCase,
   GetCreatorSubmittedRequestsUseCase,
+  GetCreatorConfirmedRequestsUseCase,
   GetCustomerRequestResultUseCase,
   GetPublicOfferingUseCase,
   SubmitCustomerRequestUseCase,
   type CreatorRequestDetails,
+  type CreatorConfirmedRequestDetails,
   type CustomerResult,
   type PublicOfferingDetails,
   type PublicRequestContext,
@@ -36,6 +38,9 @@ export interface CustomerRequestService {
     context: PublicRequestContext,
   ): Promise<CommerceAction>;
   listCreatorSubmittedRequests(context: ActorContext): Promise<readonly CreatorRequestDetails[]>;
+  listCreatorConfirmedRequests(
+    context: ActorContext,
+  ): Promise<readonly CreatorConfirmedRequestDetails[]>;
   confirm(actionId: string, context: ActorContext): Promise<CommerceAction>;
   decline(actionId: string, context: ActorContext): Promise<CommerceAction>;
   getResult(token: string): Promise<CustomerResult>;
@@ -55,6 +60,7 @@ export function createCustomerRequestService(dependencies: {
   const getPublicOffering = new GetPublicOfferingUseCase(dependencies);
   const submit = new SubmitCustomerRequestUseCase(dependencies);
   const listCreatorSubmittedRequests = new GetCreatorSubmittedRequestsUseCase(dependencies);
+  const listCreatorConfirmedRequests = new GetCreatorConfirmedRequestsUseCase(dependencies);
   const confirm = new DecideCustomerRequestUseCase(dependencies, 'confirm');
   const decline = new DecideCustomerRequestUseCase(dependencies, 'decline');
   const getResult = new GetCustomerRequestResultUseCase(dependencies);
@@ -63,6 +69,7 @@ export function createCustomerRequestService(dependencies: {
     getPublicOffering: (offeringId, context) => getPublicOffering.execute(offeringId, context),
     submit: (command, context) => submit.execute(command, context),
     listCreatorSubmittedRequests: (context) => listCreatorSubmittedRequests.execute(context),
+    listCreatorConfirmedRequests: (context) => listCreatorConfirmedRequests.execute(context),
     confirm: (actionId, context) => confirm.execute(actionId, context),
     decline: (actionId, context) => decline.execute(actionId, context),
     getResult: (token) => getResult.execute(token),

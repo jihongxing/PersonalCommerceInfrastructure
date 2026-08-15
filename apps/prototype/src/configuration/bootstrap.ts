@@ -18,6 +18,11 @@ export interface AuthConfiguration {
   readonly creatorActorMappings: ReadonlyMap<string, string>;
 }
 
+export interface OperationsAuthConfiguration {
+  readonly operationsAccessToken: string;
+  readonly operationsOperatorId: string;
+}
+
 const supportedEnvironments = new Set<AppEnvironment>(['development', 'test', 'production']);
 const supportedLogLevels = new Set<AppConfiguration['logLevel']>([
   'debug',
@@ -108,9 +113,7 @@ export function loadAuthConfiguration(
     throw new Error('SUPABASE_ANON_KEY is required for Supabase Auth operations.');
   }
 
-  const creatorActorMappings = parseCreatorActorMappings(
-    environment.CREATOR_ACTOR_MAPPINGS ?? '{}',
-  );
+  const creatorActorMappings = parseCreatorActorMappings(environment.CREATOR_ACTOR_MAPPINGS);
 
   return {
     supabaseUrl,
@@ -119,7 +122,27 @@ export function loadAuthConfiguration(
   };
 }
 
-function parseCreatorActorMappings(value: string): ReadonlyMap<string, string> {
+export function loadOperationsAuthConfiguration(
+  environment: NodeJS.ProcessEnv = process.env,
+): OperationsAuthConfiguration {
+  const operationsAccessToken = environment.OPERATIONS_ACCESS_TOKEN?.trim();
+  const operationsOperatorId = environment.OPERATIONS_OPERATOR_ID?.trim();
+
+  if (operationsAccessToken === undefined || operationsAccessToken.length < 16) {
+    throw new Error('OPERATIONS_ACCESS_TOKEN must contain at least 16 characters.');
+  }
+  if (operationsOperatorId === undefined || operationsOperatorId.length === 0) {
+    throw new Error('OPERATIONS_OPERATOR_ID is required for Pilot Operations records.');
+  }
+
+  return { operationsAccessToken, operationsOperatorId };
+}
+
+function parseCreatorActorMappings(value: string | undefined): ReadonlyMap<string, string> {
+  if (value === undefined || value.trim().length === 0) {
+    throw new Error('CREATOR_ACTOR_MAPPINGS is required for Supabase Auth operations.');
+  }
+
   try {
     const parsed: unknown = JSON.parse(value);
 
@@ -128,19 +151,31 @@ function parseCreatorActorMappings(value: string): ReadonlyMap<string, string> {
     }
 
     const entries = Object.entries(parsed as Record<string, unknown>);
+    if (entries.length === 0) {
+      throw new Error('Creator actor mappings must contain at least one mapping.');
+    }
+
     if (
       entries.some(
         ([providerIdentity, creatorId]) =>
-          providerIdentity.trim().length === 0 ||
+          !isSupabaseProviderIdentity(providerIdentity) ||
           typeof creatorId !== 'string' ||
           creatorId.trim().length === 0,
       )
     ) {
-      throw new Error('Creator actor mappings must contain non-empty string values.');
+      throw new Error(
+        'Creator actor mappings must use non-empty "supabase:<provider-user-id>" keys and values.',
+      );
     }
 
     return new Map(entries.map(([key, creatorId]) => [key, (creatorId as string).trim()]));
   } catch (cause) {
     throw new Error('CREATOR_ACTOR_MAPPINGS must be a valid JSON object.', { cause });
   }
+}
+
+function isSupabaseProviderIdentity(value: string): boolean {
+  const prefix = 'supabase:';
+
+  return value.startsWith(prefix) && value.slice(prefix.length).trim().length > 0;
 }

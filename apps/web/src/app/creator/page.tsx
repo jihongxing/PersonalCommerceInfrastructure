@@ -1,5 +1,5 @@
-import { CreatorIdentityWorkspace } from '../../components/creator-identity-workspace';
+import { CreatorAuthenticatedDesk } from '../../components/creator-authenticated-desk';
 
 export default function CreatorPage() {
-  return <CreatorIdentityWorkspace />;
+  return <CreatorAuthenticatedDesk />;
 }

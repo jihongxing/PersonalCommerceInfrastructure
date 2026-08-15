@@ -50,16 +50,19 @@ Customer 联系方式是 VS-01 预期涉及的最小敏感数据。
 
 ## 当前 API 配置
 
-| 变量                       | 默认值                  | 用途                                                         | 密钥 |
-| -------------------------- | ----------------------- | ------------------------------------------------------------ | ---- |
-| `APP_ENV`                  | `development`           | 运行环境                                                     | 否   |
-| `LOG_LEVEL`                | `info`                  | 日志级别                                                     | 否   |
-| `API_HOST`                 | `127.0.0.1`             | API 绑定地址                                                 | 否   |
-| `API_PORT`                 | `3000`                  | API 监听端口                                                 | 否   |
-| `DATABASE_URL`             | 无                      | PostgreSQL 连接字符串，仅数据库工具和 Persistence 组合根使用 | 是   |
-| `SUPABASE_URL`             | 无                      | Supabase Auth 项目 URL，仅 Auth 组合根使用                   | 否   |
-| `SUPABASE_ANON_KEY`        | 无                      | Supabase Auth 公共客户端密钥，仅 Auth 组合根使用             | 是   |
-| `NEXT_PUBLIC_API_BASE_URL` | `http://127.0.0.1:3000` | Web Reference Client 的 API Base URL                         | 否   |
+| 变量                            | 默认值                  | 用途                                                         | 密钥 |
+| ------------------------------- | ----------------------- | ------------------------------------------------------------ | ---- |
+| `APP_ENV`                       | `development`           | 运行环境                                                     | 否   |
+| `LOG_LEVEL`                     | `info`                  | 日志级别                                                     | 否   |
+| `API_HOST`                      | `127.0.0.1`             | API 绑定地址                                                 | 否   |
+| `API_PORT`                      | `3000`                  | API 监听端口                                                 | 否   |
+| `DATABASE_URL`                  | 无                      | PostgreSQL 连接字符串，仅数据库工具和 Persistence 组合根使用 | 是   |
+| `SUPABASE_URL`                  | 无                      | Supabase Auth 项目 URL，仅 Auth 组合根使用                   | 否   |
+| `SUPABASE_ANON_KEY`             | 无                      | Supabase Auth 公共客户端密钥，仅 Auth 组合根使用             | 是   |
+| `CREATOR_ACTOR_MAPPINGS`        | 无                      | 显式 `supabase:<subject>` → Creator 映射，仅 Auth 组合根使用 | 是   |
+| `NEXT_PUBLIC_API_BASE_URL`      | `http://127.0.0.1:3000` | Web Reference Client 的 API Base URL                         | 否   |
+| `NEXT_PUBLIC_SUPABASE_URL`      | 无                      | Web Creator Desk 使用的 Supabase Auth 项目 URL               | 否   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 无                      | Web Creator Desk 使用的 Supabase 公共 Auth Key               | 否   |
 
 `API_HOST` 与 `API_PORT` 只能由配置 Bootstrap 读取。默认绑定本地回环地址，
 避免 Prototype 在未明确授权时暴露到外部网络。
@@ -72,7 +75,16 @@ Customer 联系方式是 VS-01 预期涉及的最小敏感数据。
 `SUPABASE_URL` 与 `SUPABASE_ANON_KEY` 不属于普通应用启动的强制配置。只有启用
 Supabase Auth Adapter 的组合根才调用 `loadAuthConfiguration`。认证 Provider 的 User
 只提供凭据，不自动等同于 Creator；Creator 映射必须通过 Application Port 完成。
+启用该组合根时，`CREATOR_ACTOR_MAPPINGS` 必须提供至少一个显式
+`"supabase:<provider-user-id>":"<creator-id>"` 映射。空映射、未知 Provider 前缀、
+空 Subject 和空 Creator ID 都必须在启动前失败；该变量不得进入客户端、日志或
+业务错误响应。
 
 `NEXT_PUBLIC_API_BASE_URL` 只由 `apps/web/src/configuration/bootstrap.ts` 读取。
 它允许 Reference Client 指向不同 API 环境，但不得用于绕过 API Contract、直接访问数据库，
 或把 Web Runtime 变成业务事实源。
+
+`NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 只由 Web Creator
+Desk 的 Session Adapter 读取，用于浏览器端 Supabase Auth 登录、注册、刷新和登出。
+二者必须是可公开使用的项目 URL 与 anon / publishable key，不得替代 Service Role Key，
+也不得把 `SUPABASE_TEST_PASSWORD` 或 `CREATOR_ACTOR_MAPPINGS` 暴露到客户端。

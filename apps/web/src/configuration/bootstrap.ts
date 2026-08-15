@@ -2,10 +2,18 @@ export interface WebConfiguration {
   readonly apiBaseUrl: string;
 }
 
+export interface WebAuthConfiguration {
+  readonly supabaseUrl: string;
+  readonly supabaseAnonKey: string;
+}
+
 export type WebEnvironment = Readonly<Record<string, string | undefined>>;
 
 const defaultApiBaseUrl = 'http://127.0.0.1:3000';
 const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const configuredSupabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const configuredSupabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export function loadWebConfiguration(
   environment: WebEnvironment = {
@@ -23,4 +31,29 @@ export function loadWebConfiguration(
   return {
     apiBaseUrl: apiBaseUrl.replace(/\/$/u, ''),
   };
+}
+
+export function loadWebAuthConfiguration(
+  environment: Readonly<Record<string, string | undefined>> = {
+    SUPABASE_URL: configuredSupabaseUrl,
+    SUPABASE_ANON_KEY: configuredSupabaseAnonKey,
+  },
+): WebAuthConfiguration {
+  const supabaseUrl = environment.SUPABASE_URL?.trim();
+  const supabaseAnonKey = environment.SUPABASE_ANON_KEY?.trim();
+
+  if (supabaseUrl === undefined || supabaseUrl.length === 0) {
+    throw new Error('SUPABASE_URL is required for the Creator Desk.');
+  }
+  if (supabaseAnonKey === undefined || supabaseAnonKey.length === 0) {
+    throw new Error('SUPABASE_ANON_KEY is required for the Creator Desk.');
+  }
+
+  try {
+    new URL(supabaseUrl);
+  } catch (cause) {
+    throw new Error('SUPABASE_URL must be a valid URL.', { cause });
+  }
+
+  return { supabaseUrl, supabaseAnonKey };
 }

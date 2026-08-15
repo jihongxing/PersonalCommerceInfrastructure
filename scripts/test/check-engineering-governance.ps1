@@ -179,7 +179,7 @@ $runtimeCode = Get-ChildItem -LiteralPath (Join-Path $repo "apps"), (Join-Path $
   Where-Object { $_.FullName -notmatch "[\\/](node_modules|dist|coverage|\.next)[\\/]" }
 
 $deferredMatches = $runtimeCode |
-  Select-String -Pattern "\b(payment|settlement|refund|marketplace|customer-crm)\b" -CaseSensitive:$false -ErrorAction SilentlyContinue
+  Select-String -Pattern "\b(checkout|settlement|refund|marketplace|customer-crm|payment[-_ ]?(credential|credentials|card|processing|pending)|fulfilled[-_ ]?state)\b" -CaseSensitive:$false -ErrorAction SilentlyContinue
 
 if ($deferredMatches.Count -gt 0) {
   $locations = $deferredMatches | ForEach-Object { "$($_.Path):$($_.LineNumber)" }

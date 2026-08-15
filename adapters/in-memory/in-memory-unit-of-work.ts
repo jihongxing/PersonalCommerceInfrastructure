@@ -10,6 +10,7 @@ import type {
   CommerceActionRepository,
   CustomerRepository,
 } from '../../applications/customer-request/customer-request-repositories.js';
+import type { PaidCommerceRepository } from '../../applications/paid-commerce/paid-commerce-repositories.js';
 
 import type { TransactionParticipant } from './transaction-participant.js';
 
@@ -26,6 +27,7 @@ export class InMemoryUnitOfWork implements UnitOfWork {
       readonly distributionAssetRepository?: DistributionAssetRepository;
       readonly customerRepository?: CustomerRepository;
       readonly commerceActionRepository?: CommerceActionRepository;
+      readonly paidCommerceRepository?: PaidCommerceRepository;
     } = {},
   ) {}
 

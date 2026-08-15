@@ -49,6 +49,6 @@ test('OpenAPI exposes no deferred commerce operations or states', async ({ reque
   const openApiText = JSON.stringify(await response.json());
 
   expect(openApiText).not.toMatch(
-    /checkout|settlement|refund|marketplace|customer.?crm|gmv|take.?rate|payment.?pending|paid|fulfilled/iu,
+    /checkout|settlement|refund|marketplace|customer.?crm|gmv|take.?rate|payment.?pending|paid.?pending|fulfilled.?state/iu,
   );
 });

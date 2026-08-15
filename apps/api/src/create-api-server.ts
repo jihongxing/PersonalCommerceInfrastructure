@@ -14,12 +14,20 @@ import type { CreatorIdentityService } from '../../../applications/creator-ident
 import type { ServiceOfferingService } from '../../../applications/service-offering/offering-service.js';
 import type { CustomerRequestService } from '../../../applications/customer-request/customer-request-service.js';
 import type { SafeLogger } from '../../../adapters/observability/safe-logger.js';
+import { registerExternalObservationRoutes } from '../../../adapters/transport/http/external-observation-routes.js';
+import type { OperationsAuthContextProvider } from '../../../applications/core/ports/operations-auth-context-provider.js';
+import type { RecordExternalObservationUseCase } from '../../../applications/shadow-commerce/external-observation-use-cases.js';
+import type { PaidCommerceService } from '../../../applications/paid-commerce/paid-commerce-service.js';
+import { registerPaidCommerceRoutes } from '../../../adapters/transport/http/paid-commerce-routes.js';
 
 export interface ApiServerDependencies {
   readonly authContextProvider?: AuthContextProvider;
   readonly creatorIdentityService?: CreatorIdentityService;
   readonly serviceOfferingService?: ServiceOfferingService;
   readonly customerRequestService?: CustomerRequestService;
+  readonly operationsAuthContextProvider?: OperationsAuthContextProvider;
+  readonly recordExternalObservation?: RecordExternalObservationUseCase;
+  readonly paidCommerceService?: PaidCommerceService;
   readonly corsAllowedOrigins?: readonly string[];
   readonly publicOrigin?: string;
   readonly checkReadiness?: () => Promise<void>;
@@ -83,6 +91,8 @@ export async function createApiServer(
         { name: 'creator-identity', description: 'Creator Commerce Identity.' },
         { name: 'service-offering', description: 'Creator Service Offerings.' },
         { name: 'customer-request', description: 'Public Storefront and Customer Requests.' },
+        { name: 'external-observation', description: 'Pilot Operations external facts.' },
+        { name: 'paid-commerce', description: 'VS-02 controlled paid-service earnings flow.' },
       ],
     },
   });
@@ -107,6 +117,18 @@ export async function createApiServer(
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+  });
+  registerExternalObservationRoutes(server, {
+    authContextProvider:
+      dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
+    recordObservation:
+      dependencies.recordExternalObservation ?? composition.recordExternalObservation,
+  });
+  registerPaidCommerceRoutes(server, {
+    service: dependencies.paidCommerceService ?? composition.paidCommerceService,
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    operationsAuthContextProvider:
+      dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
   });
 
   server.get('/openapi.json', async (_request, reply) => {

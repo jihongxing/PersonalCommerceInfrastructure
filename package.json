@@ -35,6 +35,7 @@
     "test:auth:provider": "vitest run tests/integration/supabase-auth-provider.integration.test.ts",
     "test:acceptance": "vitest run tests/acceptance",
     "test:acceptance:browser": "playwright test",
+    "test:cr02:real": "powershell.exe -File scripts/test/test-cr02-real.ps1",
     "check:user-copy": "node scripts/governance/check-user-facing-copy.mjs",
     "check:design-tokens": "node scripts/design/check-token-calibration.mjs",
     "design:generate-web-tokens": "node scripts/design/generate-web-token-adapter.mjs",

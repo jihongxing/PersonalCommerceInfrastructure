@@ -31,6 +31,9 @@ export const productEvents = pgTable(
       table.name,
       table.objectId,
     ),
+    uniqueIndex('product_events_external_fact_unique')
+      .on(table.name, table.objectId)
+      .where(sql`${table.name} in ('external_paid_verified', 'fulfillment_observed')`),
     index('product_events_object_occurred_at_idx').on(table.objectId, table.occurredAt),
     index('product_events_actor_occurred_at_idx').on(table.actorId, table.occurredAt),
   ],

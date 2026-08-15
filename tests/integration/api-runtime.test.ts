@@ -111,7 +111,7 @@ describe('API runtime skeleton', () => {
     await server.close();
   });
 
-  it('generates OpenAPI for system, M2–M6 Creator and public routes', async () => {
+  it('generates OpenAPI for system, Creator, public, and approved Operations routes', async () => {
     const server = await createApiServer();
     await server.ready();
 
@@ -135,13 +135,27 @@ describe('API runtime skeleton', () => {
       '/api/v1/public/offerings/{offeringId}/requests',
       '/api/v1/public/requests/{resultAccessToken}',
       '/api/v1/creator/requests',
+      '/api/v1/creator/confirmed-requests',
       '/api/v1/creator/requests/{actionId}/confirm',
       '/api/v1/creator/requests/{actionId}/decline',
+      '/api/v1/operations/requests/{actionId}/external-payment',
+      '/api/v1/operations/requests/{actionId}/fulfillment',
+      '/api/v1/creator/paid-orders',
+      '/api/v1/public/requests/{resultAccessToken}/paid-service-status',
+      '/api/v1/creator/paid-orders/{orderId}/fulfillment',
+      '/api/v1/creator/wallet',
+      '/api/v1/creator/wallet/withdrawals',
+      '/api/v1/operations/paid-orders/{orderId}/payment-confirmed',
+      '/api/v1/operations/paid-orders/{orderId}/payment-failed',
+      '/api/v1/operations/paid-orders/{orderId}/settlement-released',
+      '/api/v1/operations/withdrawals/{withdrawalId}/completed',
       '/openapi.json',
     ]);
     expect(JSON.stringify(openApi)).toContain('creator-identity');
     expect(JSON.stringify(openApi)).toContain('service-offering');
-    expect(JSON.stringify(openApi)).not.toContain('payment');
+    expect(JSON.stringify(openApi)).not.toContain('paymentCredential');
+    expect(JSON.stringify(openApi)).not.toContain('providerSecret');
+    expect(JSON.stringify(openApi)).not.toContain('providerApiKey');
 
     await server.close();
   });

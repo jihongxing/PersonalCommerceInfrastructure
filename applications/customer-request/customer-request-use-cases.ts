@@ -76,6 +76,19 @@ export interface CreatorRequestDetails {
   };
 }
 
+export interface CreatorConfirmedRequestDetails {
+  readonly action: CommerceAction;
+  readonly customer: {
+    readonly id: string;
+    readonly contactName: string;
+    readonly contactMethod: string;
+  };
+  readonly offering: {
+    readonly id: string;
+    readonly title: string;
+  };
+}
+
 export interface CustomerResult {
   readonly actionId: string;
   readonly state: CommerceAction['state'];
@@ -228,6 +241,55 @@ export class GetCreatorSubmittedRequestsUseCase {
         return {
           action,
           customer,
+          offering: { id: offering.id, title: offering.title },
+        };
+      }),
+    );
+  }
+}
+
+export class GetCreatorConfirmedRequestsUseCase {
+  public constructor(private readonly dependencies: CustomerRequestUseCaseDependencies) {}
+
+  public async execute(context: ActorContext): Promise<readonly CreatorConfirmedRequestDetails[]> {
+    if (context.actor.kind !== 'creator') {
+      throw new ApplicationError({
+        category: 'authorization',
+        code: 'creator_confirmed_requests_requires_creator',
+        message: 'Confirmed Requests are available only to the owning Creator.',
+      });
+    }
+
+    const actions = await this.dependencies.commerceActionRepository.findByOwnerId(
+      context.actor.creatorId,
+    );
+    const confirmedActions = actions.filter((action) => action.state === 'confirmed');
+
+    return Promise.all(
+      confirmedActions.map(async (action) => {
+        const [customer, offering] = await Promise.all([
+          this.dependencies.customerRepository.findById(action.customerId),
+          this.dependencies.offeringRepository.findById(action.offeringId),
+        ]);
+        if (
+          customer === undefined ||
+          offering === undefined ||
+          offering.creatorId !== action.creatorId
+        ) {
+          throw new ApplicationError({
+            category: 'conflict',
+            code: 'confirmed_request_references_unavailable',
+            message: 'Confirmed Request references are unavailable.',
+          });
+        }
+
+        return {
+          action,
+          customer: {
+            id: customer.id,
+            contactName: customer.contactName,
+            contactMethod: customer.contactMethod,
+          },
           offering: { id: offering.id, title: offering.title },
         };
       }),

@@ -5,6 +5,7 @@ import {
   loadAuthConfiguration,
   loadConfiguration,
   loadDatabaseConfiguration,
+  loadOperationsAuthConfiguration,
 } from '../../prototype/src/configuration/bootstrap.js';
 import {
   createPostgresCreatorIdentityComposition,
@@ -27,6 +28,7 @@ export async function startApi(): Promise<ApiRuntime> {
           loadAuthConfiguration() satisfies CreatorIdentityAuthConfiguration,
           configuration.webReferenceClientOrigin,
           new LogNotificationAdapter(logger),
+          loadOperationsAuthConfiguration(),
         );
   const server = await createApiServer(
     composition === undefined
@@ -39,6 +41,9 @@ export async function startApi(): Promise<ApiRuntime> {
           creatorIdentityService: composition.service,
           serviceOfferingService: composition.offeringService,
           customerRequestService: composition.customerRequestService,
+          operationsAuthContextProvider: composition.operationsAuthContextProvider,
+          recordExternalObservation: composition.recordExternalObservation,
+          paidCommerceService: composition.paidCommerceService,
           checkReadiness: () => composition.database.checkReadiness(),
           corsAllowedOrigins: [configuration.webReferenceClientOrigin],
           logger,

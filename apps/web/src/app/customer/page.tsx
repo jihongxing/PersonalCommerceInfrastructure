@@ -3,7 +3,7 @@ import { routeCopy } from '@/content/user-facing-copy';
 
 export default function CustomerPage() {
   return (
-    <main className="ds-page">
+    <main className="ds-customer-placeholder ds-page">
       <Surface className="ds-page__surface">
         <p className="ds-eyebrow">{routeCopy.customer.eyebrow}</p>
         <h1 className="ds-heading-page">{routeCopy.customer.title}</h1>

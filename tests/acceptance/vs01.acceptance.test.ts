@@ -78,7 +78,10 @@ describe('VS-01 acceptance entry points', () => {
   });
   test('AT-012 external payment or fulfillment remains observation-only', () => {
     expect(m7ObservationAcceptance).toContain(
-      'records %s with evidence without changing Commerce Action state',
+      'records external payment then fulfillment without changing Commerce Action state',
+    );
+    expect(m7ObservationAcceptance).toContain(
+      'returns the existing external fact for repeated idempotent calls',
     );
   });
   test('AT-013 explicitly deferred capabilities are absent', () => {

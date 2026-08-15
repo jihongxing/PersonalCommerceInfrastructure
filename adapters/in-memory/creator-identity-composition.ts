@@ -28,12 +28,23 @@ import { FixedClock } from './fixed-clock.js';
 import { InMemoryCustomerRepository } from './in-memory-customer-repository.js';
 import { InMemoryCommerceActionRepository } from './in-memory-commerce-action-repository.js';
 import { InMemoryNotificationAdapter } from '../notifications/in-memory-notification-adapter.js';
+import { RecordExternalObservationUseCase } from '../../applications/shadow-commerce/external-observation-use-cases.js';
+import { StaticOperationsAuthContextProvider } from '../auth/operations/static-operations-auth-context-provider.js';
+import type { OperationsAuthContextProvider } from '../../applications/core/ports/operations-auth-context-provider.js';
+import {
+  createPaidCommerceService,
+  type PaidCommerceService,
+} from '../../applications/paid-commerce/paid-commerce-service.js';
+import { InMemoryPaidCommerceRepository } from './in-memory-paid-commerce-repository.js';
 
 export interface CreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
+  readonly operationsAuthContextProvider: OperationsAuthContextProvider;
+  readonly recordExternalObservation: RecordExternalObservationUseCase;
+  readonly paidCommerceService: PaidCommerceService;
   readonly notificationAdapter: InMemoryNotificationAdapter;
 }
 
@@ -58,6 +69,7 @@ export function createInMemoryCreatorIdentityComposition(
   );
   const customerRepository = new InMemoryCustomerRepository();
   const commerceActionRepository = new InMemoryCommerceActionRepository();
+  const paidCommerceRepository = new InMemoryPaidCommerceRepository();
   const productEventStore = new InMemoryProductEventStore();
   const unitOfWork = new InMemoryUnitOfWork(
     [
@@ -67,6 +79,7 @@ export function createInMemoryCreatorIdentityComposition(
       distributionAssetRepository,
       customerRepository,
       commerceActionRepository,
+      paidCommerceRepository,
       productEventStore,
     ],
     productEventStore,
@@ -77,6 +90,7 @@ export function createInMemoryCreatorIdentityComposition(
       distributionAssetRepository,
       customerRepository,
       commerceActionRepository,
+      paidCommerceRepository,
     },
   );
   const canonicalEventRecorder = new CanonicalEventRecorder({
@@ -121,6 +135,24 @@ export function createInMemoryCreatorIdentityComposition(
       idGenerator,
       canonicalEventRecorder,
       notificationPort: notificationAdapter,
+      unitOfWork,
+    }),
+    operationsAuthContextProvider: new StaticOperationsAuthContextProvider({
+      accessToken: 'test-operations-token',
+      operatorId: 'pilot-operator-test-1',
+    }),
+    recordExternalObservation: new RecordExternalObservationUseCase({
+      commerceActionRepository,
+      canonicalEventRecorder,
+      productEventStore,
+    }),
+    paidCommerceService: createPaidCommerceService({
+      commerceActionRepository,
+      offeringRepository,
+      paidCommerceRepository,
+      idGenerator: new SequentialIdGenerator('paid-commerce'),
+      clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+      canonicalEventRecorder,
       unitOfWork,
     }),
     notificationAdapter,

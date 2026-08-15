@@ -212,6 +212,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/creator/confirmed-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listCreatorConfirmedRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/creator/requests/{actionId}/confirm": {
         parameters: {
             query?: never;
@@ -238,6 +254,182 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["declineCreatorRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/requests/{actionId}/external-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordExternalPaymentFact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/requests/{actionId}/fulfillment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordFulfillmentFact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creator/paid-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listCreatorPaidServiceOrders"];
+        put?: never;
+        post: operations["createPaidServiceOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/requests/{resultAccessToken}/paid-service-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPublicPaidServiceOrderStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creator/paid-orders/{orderId}/fulfillment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordPaidServiceFulfillment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creator/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCreatorEarningsWallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creator/wallet/withdrawals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestCreatorWithdrawal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/paid-orders/{orderId}/payment-confirmed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordControlledPaymentFact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/paid-orders/{orderId}/payment-failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordControlledPaymentFailure"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/paid-orders/{orderId}/settlement-released": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["releaseControlledSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operations/withdrawals/{withdrawalId}/completed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["completeControlledWithdrawal"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1471,6 +1663,80 @@ export interface operations {
             };
         };
     };
+    listCreatorConfirmedRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        requests: {
+                            action: {
+                                id: string;
+                                customerId: string;
+                                creatorId: string;
+                                offeringId: string;
+                                requestMessage: string;
+                                resultAccessToken: string;
+                                /** @enum {unknown} */
+                                state: "confirmed";
+                            };
+                            customer: {
+                                id: string;
+                                contactName: string;
+                                contactMethod: string;
+                            };
+                            offering: {
+                                id: string;
+                                title: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
     confirmCreatorRequest: {
         parameters: {
             query?: never;
@@ -1582,6 +1848,1243 @@ export interface operations {
                         actionId: string;
                         state: "confirmed" | "declined";
                         resultAccessToken: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    recordExternalPaymentFact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                actionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    evidenceReference: string;
+                    /** Format: date-time */
+                    occurredAt: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        actionId: string;
+                        type: "external_paid_verified" | "fulfillment_observed";
+                        evidenceReference: string;
+                        /** Format: date-time */
+                        occurredAt: string;
+                        recordedBy: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    recordFulfillmentFact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                actionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    evidenceReference: string;
+                    /** Format: date-time */
+                    occurredAt: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        actionId: string;
+                        type: "external_paid_verified" | "fulfillment_observed";
+                        evidenceReference: string;
+                        /** Format: date-time */
+                        occurredAt: string;
+                        recordedBy: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    listCreatorPaidServiceOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        orders: {
+                            id: string;
+                            commerceActionId: string;
+                            creatorId: string;
+                            customerId: string;
+                            offeringId: string;
+                            state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                            snapshot: {
+                                offeringTitle: string;
+                                offeringDescription: string;
+                                serviceTerms: string;
+                                /** @enum {unknown} */
+                                currency: "CNY";
+                                grossPriceMinor: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    createPaidServiceOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    commerceActionId: string;
+                    grossPriceMinor: string;
+                    serviceTerms: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        commerceActionId: string;
+                        creatorId: string;
+                        customerId: string;
+                        offeringId: string;
+                        state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        snapshot: {
+                            offeringTitle: string;
+                            offeringDescription: string;
+                            serviceTerms: string;
+                            /** @enum {unknown} */
+                            currency: "CNY";
+                            grossPriceMinor: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getPublicPaidServiceOrderStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resultAccessToken: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        orderState: "not_created" | "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        paymentState: "not_started" | "pending" | "confirmed" | "failed" | "refunded" | "reversed";
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    recordPaidServiceFulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    evidenceReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        commerceActionId: string;
+                        creatorId: string;
+                        customerId: string;
+                        offeringId: string;
+                        state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        snapshot: {
+                            offeringTitle: string;
+                            offeringDescription: string;
+                            serviceTerms: string;
+                            /** @enum {unknown} */
+                            currency: "CNY";
+                            grossPriceMinor: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getCreatorEarningsWallet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {unknown} */
+                        currency: "CNY";
+                        pendingMinor: string;
+                        availableMinor: string;
+                        restrictedMinor: string;
+                        withdrawalInProgressMinor: string;
+                        withdrawnMinor: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    requestCreatorWithdrawal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amountMinor: string;
+                    destinationReference: string;
+                    idempotencyKey: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        creatorId: string;
+                        /** @enum {unknown} */
+                        currency: "CNY";
+                        amountMinor: string;
+                        state: "requested" | "completed" | "failed" | "reversed";
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    recordControlledPaymentFact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    controlledEvidenceReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        commerceActionId: string;
+                        creatorId: string;
+                        customerId: string;
+                        offeringId: string;
+                        state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        snapshot: {
+                            offeringTitle: string;
+                            offeringDescription: string;
+                            serviceTerms: string;
+                            /** @enum {unknown} */
+                            currency: "CNY";
+                            grossPriceMinor: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    recordControlledPaymentFailure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    controlledEvidenceReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        commerceActionId: string;
+                        creatorId: string;
+                        customerId: string;
+                        offeringId: string;
+                        state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        snapshot: {
+                            offeringTitle: string;
+                            offeringDescription: string;
+                            serviceTerms: string;
+                            /** @enum {unknown} */
+                            currency: "CNY";
+                            grossPriceMinor: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    releaseControlledSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    providerFeeMinor: string;
+                    platformFeeMinor: string;
+                    deductionsMinor?: string;
+                    calculationVersion: string;
+                    controlledEvidenceReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        commerceActionId: string;
+                        creatorId: string;
+                        customerId: string;
+                        offeringId: string;
+                        state: "created" | "payment_pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "pending_resolution" | "refunded";
+                        snapshot: {
+                            offeringTitle: string;
+                            offeringDescription: string;
+                            serviceTerms: string;
+                            /** @enum {unknown} */
+                            currency: "CNY";
+                            grossPriceMinor: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    completeControlledWithdrawal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                withdrawalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    controlledEvidenceReference: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        creatorId: string;
+                        /** @enum {unknown} */
+                        currency: "CNY";
+                        amountMinor: string;
+                        state: "requested" | "completed" | "failed" | "reversed";
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
                     };
                 };
             };

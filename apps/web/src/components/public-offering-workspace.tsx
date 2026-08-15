@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { loadWebConfiguration } from '../configuration/bootstrap';
-import { publicOfferingCopy } from '../content/user-facing-copy';
+import { commonCopy, publicOfferingCopy } from '../content/user-facing-copy';
 import { createApiClient } from '../lib/api/client';
 import type { operations } from '../lib/api/generated';
 import { toUserFacingMessage } from '../lib/ui/user-facing-messages';
@@ -80,7 +80,14 @@ export function PublicOfferingWorkspace({ offeringId }: { readonly offeringId: s
   }
 
   return (
-    <main className="ds-page">
+    <main className="ds-public-page ds-page">
+      <header className="ds-workspace-header">
+        <div className="ds-workspace-brand">
+          <span className="ds-brand-mark" aria-hidden="true" />
+          <span>{commonCopy.brand}</span>
+        </div>
+        <span className="ds-header-note">{commonCopy.publicService}</span>
+      </header>
       <Surface className="ds-page__surface">
         <p className="ds-eyebrow">{publicOfferingCopy.eyebrow}</p>
         <StatusMessage>{busy ? publicOfferingCopy.syncing : message}</StatusMessage>

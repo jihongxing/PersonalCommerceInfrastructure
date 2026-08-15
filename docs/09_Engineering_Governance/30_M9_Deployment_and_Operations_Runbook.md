@@ -42,7 +42,8 @@ $env:SMOKE_WEB_BASE_URL = "http://127.0.0.1:3001"
 pnpm smoke:deployment
 ```
 
-Smoke 验证 API Health、依赖 Readiness、OpenAPI 和 Web Reference Client 的关键入口。
+Smoke 验证 API Health、依赖 Readiness、OpenAPI 和 Web Reference Client 的关键入口，
+包括 `/creator`、`/public`、`/customer` 和受控 `/operations` 入口。
 
 完整 Production-like 演练：
 
@@ -51,6 +52,10 @@ pnpm test:deployment
 ```
 
 该命令验证 Migration Job、API/Web 镜像运行、Smoke、Backup/Restore 和 API 优雅关闭。
+
+当产品负责人批准 localhost 作为阶段验收环境时，执行记录必须标注为
+`local deployment acceptance`。本地验收不能改写为外部生产部署证据，也不能证明真实渠道
+可达性、商业成功或 Creator 采用结果。
 
 ## 4. Backup
 
@@ -104,5 +109,7 @@ pnpm test:deployment
 ## 8. Secrets
 
 - `DATABASE_URL`、数据库密码、Supabase Key 和 Actor Mapping 通过环境或 Secret Store 注入；
+- `OPERATIONS_ACCESS_TOKEN` 与 `OPERATIONS_OPERATOR_ID` 只注入 API Runtime；前者至少
+  16 个字符，不得进入客户端构建、日志、截图或 Git；
 - 不写入镜像、Compose 文件、日志、截图或 Git；
 - 日志必须继续遵守 Safe Logger 脱敏规则。

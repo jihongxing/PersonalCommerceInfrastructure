@@ -5,6 +5,7 @@ coverage/
 apps/web/.next/
 output/playwright/
 output/backups/
+tests/acceptance/browser/fixtures/auth-state.json
 .env
 .env.*
 !.env.example

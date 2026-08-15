@@ -9,6 +9,7 @@ import type {
   CommerceActionRepository,
   CustomerRepository,
 } from '../../customer-request/customer-request-repositories.js';
+import type { PaidCommerceRepository } from '../../paid-commerce/paid-commerce-repositories.js';
 
 export interface UnitOfWorkScope {
   readonly productEventStore: ProductEventStore;
@@ -18,6 +19,7 @@ export interface UnitOfWorkScope {
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly customerRepository?: CustomerRepository;
   readonly commerceActionRepository?: CommerceActionRepository;
+  readonly paidCommerceRepository?: PaidCommerceRepository;
 }
 
 export interface UnitOfWork {

@@ -11,6 +11,8 @@ import {
 } from './postgres-creator-identity-repositories.js';
 import { PostgresProductEventStore } from './postgres-product-event-store.js';
 import { PostgresPaidCommerceRepository } from './postgres-paid-commerce-repository.js';
+import { PostgresReservationRepository } from './postgres-reservation-repository.js';
+import { PostgresContractRepository } from './postgres-contract-repository.js';
 
 export class PostgresUnitOfWork implements UnitOfWork {
   public constructor(private readonly database: ProductDatabase) {}
@@ -26,6 +28,10 @@ export class PostgresUnitOfWork implements UnitOfWork {
         customerRepository: new PostgresCustomerRepository(transaction),
         commerceActionRepository: new PostgresCommerceActionRepository(transaction),
         paidCommerceRepository: new PostgresPaidCommerceRepository(transaction),
+        reservationRepository: new PostgresReservationRepository(transaction),
+        contractRepository: new PostgresContractRepository(transaction),
+        contractScopeVersionRepository: new PostgresContractRepository(transaction),
+        contractAcceptanceFactRepository: new PostgresContractRepository(transaction),
       }),
     );
   }

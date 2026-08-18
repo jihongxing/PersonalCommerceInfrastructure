@@ -9,6 +9,7 @@ import type {
   ProviderPort,
 } from '../../../applications/paid-commerce/provider-ports.js';
 import { WeChatPayProviderAdapterError } from './wechat-pay-provider-error.js';
+import { WeChatPayOfficialSandboxUnavailableError } from './wechat-pay-official-sandbox-boundary.js';
 import type {
   WeChatPaySandboxEvent,
   WeChatPaySandboxEventType,
@@ -18,8 +19,11 @@ import type {
 
 export class WeChatPayProviderAdapter implements ProviderPort {
   public readonly providerId = 'wechat_pay_platform_collection_and_disbursement';
+  public readonly providerEnvironment: WeChatPaySandboxTransport['environment'];
 
-  public constructor(private readonly sandboxTransport: WeChatPaySandboxTransport) {}
+  public constructor(private readonly sandboxTransport: WeChatPaySandboxTransport) {
+    this.providerEnvironment = sandboxTransport.environment;
+  }
 
   public async createPaymentIntent(request: ProviderOperationRequest): Promise<ProviderOperation> {
     return this.createOperation('payment', request);
@@ -83,7 +87,10 @@ export class WeChatPayProviderAdapter implements ProviderPort {
         internalReference: response.internalReference,
         status: toProviderOperationStatus(response.status),
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof WeChatPayOfficialSandboxUnavailableError) {
+        throw error;
+      }
       throw new WeChatPayProviderAdapterError(
         'wechat_pay_sandbox_operation_rejected',
         'WeChat Pay test operation could not be created.',
@@ -94,7 +101,10 @@ export class WeChatPayProviderAdapter implements ProviderPort {
   private async getOperationStatus(providerReference: string): Promise<ProviderOperationStatus> {
     try {
       return toProviderOperationStatus(await this.sandboxTransport.getStatus(providerReference));
-    } catch {
+    } catch (error) {
+      if (error instanceof WeChatPayOfficialSandboxUnavailableError) {
+        throw error;
+      }
       throw new WeChatPayProviderAdapterError(
         'wechat_pay_sandbox_operation_rejected',
         'WeChat Pay test operation status could not be retrieved.',
@@ -128,6 +138,9 @@ export class WeChatPayProviderAdapter implements ProviderPort {
       }
       return mapVerifiedEvent(this.providerId, verification.event);
     } catch (error) {
+      if (error instanceof WeChatPayOfficialSandboxUnavailableError) {
+        throw error;
+      }
       if (error instanceof WeChatPayProviderAdapterError) {
         throw error;
       }

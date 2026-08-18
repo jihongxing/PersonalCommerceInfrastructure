@@ -110,8 +110,8 @@ class TestProductEventStore implements ProductEventStore {
     return Promise.resolve();
   }
 
-  public list(): readonly CanonicalEvent[] {
-    return [...this.events];
+  public list(): Promise<readonly CanonicalEvent[]> {
+    return Promise.resolve([...this.events]);
   }
 }
 
@@ -249,7 +249,7 @@ describe('Service Offering application use cases', () => {
     await expect(distributionAssetRepository.findById('offering-1')).resolves.toEqual(
       result.distributionAsset,
     );
-    expect(productEventStore.list()).toEqual([
+    expect(await productEventStore.list()).toEqual([
       expect.objectContaining({
         name: 'creator_published',
         objectId: 'creator-1',
@@ -277,7 +277,7 @@ describe('Service Offering application use cases', () => {
     await expect(service.list(context)).resolves.toEqual([
       expect.objectContaining({ state: 'draft' }),
     ]);
-    expect(productEventStore.list()).toEqual([]);
+    expect(await productEventStore.list()).toEqual([]);
   });
 
   it('records real external distribution only after the Creator explicitly confirms it', async () => {
@@ -295,7 +295,7 @@ describe('Service Offering application use cases', () => {
     const published = await service.publish({ offeringId: 'offering-1' }, context);
 
     expect(published.distributionAsset.state).toBe('generated');
-    expect(productEventStore.list()).toHaveLength(1);
+    expect(await productEventStore.list()).toHaveLength(1);
 
     const distributed = await service.recordExternalDistribution(
       { offeringId: 'offering-1' },
@@ -303,7 +303,7 @@ describe('Service Offering application use cases', () => {
     );
 
     expect(distributed.state).toBe('distributed');
-    expect(productEventStore.list()).toEqual([
+    expect(await productEventStore.list()).toEqual([
       expect.objectContaining({ name: 'creator_published' }),
       expect.objectContaining({
         name: 'creator_distributed',

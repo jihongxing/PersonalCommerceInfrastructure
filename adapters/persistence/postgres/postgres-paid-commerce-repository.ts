@@ -23,6 +23,14 @@ import type { ProductDatabase } from './postgres-database.js';
 export class PostgresPaidCommerceRepository implements PaidCommerceRepository {
   public constructor(private readonly database: ProductDatabase) {}
 
+  public async listOrders(): Promise<readonly PaidServiceOrder[]> {
+    const rows = await this.database
+      .select()
+      .from(paidServiceOrders)
+      .orderBy(paidServiceOrders.createdAt, paidServiceOrders.id);
+    return rows.map(toOrder);
+  }
+
   public async findOrderById(id: string): Promise<PaidServiceOrder | undefined> {
     const rows = await this.database
       .select()
@@ -43,6 +51,26 @@ export class PostgresPaidCommerceRepository implements PaidCommerceRepository {
     return row === undefined ? undefined : toOrder(row);
   }
 
+  public async findOrderByReservationId(
+    reservationId: string,
+  ): Promise<PaidServiceOrder | undefined> {
+    const rows = await this.database
+      .select()
+      .from(paidServiceOrders)
+      .where(eq(paidServiceOrders.reservationId, reservationId));
+    const row = rows[0];
+    return row === undefined ? undefined : toOrder(row);
+  }
+
+  public async findOrderByContractId(contractId: string): Promise<PaidServiceOrder | undefined> {
+    const rows = await this.database
+      .select()
+      .from(paidServiceOrders)
+      .where(eq(paidServiceOrders.contractId, contractId));
+    const row = rows[0];
+    return row === undefined ? undefined : toOrder(row);
+  }
+
   public async findOrdersByCreatorId(creatorId: string): Promise<readonly PaidServiceOrder[]> {
     const rows = await this.database
       .select()
@@ -57,7 +85,9 @@ export class PostgresPaidCommerceRepository implements PaidCommerceRepository {
       .insert(paidServiceOrders)
       .values({
         id: order.id,
-        commerceActionId: order.commerceActionId,
+        commerceActionId: order.commerceActionId ?? null,
+        reservationId: order.reservationId ?? null,
+        contractId: order.contractId ?? null,
         creatorId: order.creatorId,
         customerId: order.customerId,
         offeringId: order.offeringId,
@@ -217,6 +247,22 @@ export class PostgresPaidCommerceRepository implements PaidCommerceRepository {
     return row === undefined ? undefined : toWithdrawal(row);
   }
 
+  public async findWithdrawalsByCreatorId(creatorId: string): Promise<readonly Withdrawal[]> {
+    const rows = await this.database
+      .select()
+      .from(paidCommerceWithdrawals)
+      .where(eq(paidCommerceWithdrawals.creatorId, creatorId));
+    return rows.map(toWithdrawal);
+  }
+
+  public async listWithdrawals(): Promise<readonly Withdrawal[]> {
+    const rows = await this.database
+      .select()
+      .from(paidCommerceWithdrawals)
+      .orderBy(paidCommerceWithdrawals.createdAt, paidCommerceWithdrawals.id);
+    return rows.map(toWithdrawal);
+  }
+
   public async findWithdrawalByCreatorAndIdempotencyKey(
     creatorId: string,
     idempotencyKey: string,
@@ -262,7 +308,9 @@ export class PostgresPaidCommerceRepository implements PaidCommerceRepository {
 function toOrder(row: typeof paidServiceOrders.$inferSelect): PaidServiceOrder {
   return {
     id: row.id,
-    commerceActionId: row.commerceActionId,
+    ...(row.commerceActionId === null ? {} : { commerceActionId: row.commerceActionId }),
+    ...(row.reservationId === null ? {} : { reservationId: row.reservationId }),
+    ...(row.contractId === null ? {} : { contractId: row.contractId }),
     creatorId: row.creatorId,
     customerId: row.customerId,
     offeringId: row.offeringId,

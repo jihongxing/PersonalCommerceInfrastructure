@@ -8,8 +8,11 @@ import type {
 } from '../../modules/paid-commerce/money-domain.js';
 
 export interface PaidCommerceRepository {
+  listOrders(): Promise<readonly PaidServiceOrder[]>;
   findOrderById(id: string): Promise<PaidServiceOrder | undefined>;
   findOrderByCommerceActionId(commerceActionId: string): Promise<PaidServiceOrder | undefined>;
+  findOrderByReservationId(reservationId: string): Promise<PaidServiceOrder | undefined>;
+  findOrderByContractId(contractId: string): Promise<PaidServiceOrder | undefined>;
   findOrdersByCreatorId(creatorId: string): Promise<readonly PaidServiceOrder[]>;
   saveOrder(order: PaidServiceOrder): Promise<void>;
   findPaymentById(id: string): Promise<Payment | undefined>;
@@ -23,6 +26,8 @@ export interface PaidCommerceRepository {
   appendLedgerEntry(entry: LedgerEntry): Promise<void>;
   listLedgerEntriesByCreatorId(creatorId: string): Promise<readonly LedgerEntry[]>;
   findWithdrawalById(id: string): Promise<Withdrawal | undefined>;
+  findWithdrawalsByCreatorId(creatorId: string): Promise<readonly Withdrawal[]>;
+  listWithdrawals(): Promise<readonly Withdrawal[]>;
   findWithdrawalByCreatorAndIdempotencyKey(
     creatorId: string,
     idempotencyKey: string,

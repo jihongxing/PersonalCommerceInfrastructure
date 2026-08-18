@@ -381,7 +381,9 @@ function parseMinor(value: string): bigint {
 
 function serializeOrder(order: {
   readonly id: string;
-  readonly commerceActionId: string;
+  readonly commerceActionId?: string;
+  readonly reservationId?: string;
+  readonly contractId?: string;
   readonly creatorId: string;
   readonly customerId: string;
   readonly offeringId: string;
@@ -395,7 +397,9 @@ function serializeOrder(order: {
 }) {
   return {
     id: order.id,
-    commerceActionId: order.commerceActionId,
+    ...(order.commerceActionId === undefined ? {} : { commerceActionId: order.commerceActionId }),
+    ...(order.reservationId === undefined ? {} : { reservationId: order.reservationId }),
+    ...(order.contractId === undefined ? {} : { contractId: order.contractId }),
     creatorId: order.creatorId,
     customerId: order.customerId,
     offeringId: order.offeringId,
@@ -417,6 +421,7 @@ function serializeWallet(wallet: {
   readonly restricted: bigint;
   readonly withdrawalInProgress: bigint;
   readonly withdrawn: bigint;
+  readonly recoveryOutstanding: bigint;
 }) {
   return {
     currency: wallet.currency,
@@ -425,6 +430,7 @@ function serializeWallet(wallet: {
     restrictedMinor: String(wallet.restricted),
     withdrawalInProgressMinor: String(wallet.withdrawalInProgress),
     withdrawnMinor: String(wallet.withdrawn),
+    recoveryOutstandingMinor: String(wallet.recoveryOutstanding),
   };
 }
 

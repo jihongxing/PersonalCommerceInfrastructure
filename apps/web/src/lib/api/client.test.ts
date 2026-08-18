@@ -16,15 +16,27 @@ describe('Web API client foundation', () => {
     expect(
       loadWebConfiguration({
         NEXT_PUBLIC_API_BASE_URL: 'https://api.example.test/',
+        NEXT_PUBLIC_RUNTIME_ENV: 'controlled',
       }),
     ).toEqual({
       apiBaseUrl: 'https://api.example.test',
+      runtimeEnvironment: 'controlled',
     });
   });
 
   it('uses a safe local API default', () => {
     expect(loadWebConfiguration({})).toEqual({
       apiBaseUrl: 'http://127.0.0.1:3000',
+      runtimeEnvironment: 'local',
     });
+  });
+
+  it('identifies production so local simulation controls can remain absent', () => {
+    expect(
+      loadWebConfiguration({
+        NEXT_PUBLIC_API_BASE_URL: 'https://api.example.test',
+        NEXT_PUBLIC_RUNTIME_ENV: 'production',
+      }),
+    ).toMatchObject({ runtimeEnvironment: 'production' });
   });
 });

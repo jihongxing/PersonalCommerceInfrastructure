@@ -1,0 +1,18 @@
+{
+  "pilotId": "pilot-2026-001",
+  "sessions": [
+    {
+      "creator": "PENDING",
+      "pattern": "Request",
+      "environment": "controlled-pilot",
+      "publish": "PENDING",
+      "distribution": "PENDING",
+      "customerAction": "PENDING",
+      "creatorAction": "PENDING",
+      "result": "PENDING",
+      "friction": "PENDING",
+      "supportIntervention": "PENDING",
+      "evidenceReferences": []
+    }
+  ]
+}

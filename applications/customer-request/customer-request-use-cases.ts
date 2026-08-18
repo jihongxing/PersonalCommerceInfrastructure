@@ -15,11 +15,13 @@ import type { CanonicalEventRecorder } from '../core/canonical-event-recorder.js
 import type { IdGenerator } from '../core/ports/id-generator.js';
 import type { NotificationPort } from '../core/ports/notification-port.js';
 import type { UnitOfWork } from '../core/ports/unit-of-work.js';
+import type { ContractRepository } from '../contract-commerce/contract-repositories.js';
 import type {
   CapabilityRepository,
   CommerceIdentityRepository,
 } from '../creator-identity/creator-identity-repositories.js';
 import type { OfferingRepository } from '../service-offering/offering-repositories.js';
+import type { AppearanceOfferingMetadata } from '../../modules/service-offering/offering.js';
 import { assertCreatorOwnership } from '../../modules/shared/actors.js';
 import { DomainTransitionError } from '../../modules/shared/domain-error.js';
 import type { ActorContext } from '../core/actor-context.js';
@@ -47,6 +49,7 @@ export interface PublicOfferingDetails {
     readonly title: string;
     readonly description: string;
     readonly availabilityDescription: string;
+    readonly appearance?: AppearanceOfferingMetadata;
     readonly requestInstructions: string;
   };
 }
@@ -61,6 +64,7 @@ export interface CustomerRequestUseCaseDependencies {
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
+  readonly contractRepository?: ContractRepository;
 }
 
 export interface CreatorRequestDetails {
@@ -130,6 +134,7 @@ export class GetPublicOfferingUseCase {
         title: offering.title,
         description: offering.description,
         availabilityDescription: offering.availability?.description ?? '',
+        ...(offering.appearance === undefined ? {} : { appearance: offering.appearance }),
         requestInstructions: offering.requestInstructions,
       },
     };
@@ -321,6 +326,17 @@ export class DecideCustomerRequestUseCase {
           category: 'authorization',
           code: 'commerce_action_not_owned',
           message: 'Commerce Action does not belong to the authenticated Creator.',
+        });
+      }
+      const contractRepository = scope.contractRepository ?? this.dependencies.contractRepository;
+      if (
+        contractRepository !== undefined &&
+        (await contractRepository.findByCommerceActionId(action.id)) !== undefined
+      ) {
+        throw new ApplicationError({
+          category: 'conflict',
+          code: 'commerce_action_assigned_to_contract',
+          message: 'This Buyer Request is already governed by Contract Commerce.',
         });
       }
 

@@ -50,22 +50,46 @@ Customer 联系方式是 VS-01 预期涉及的最小敏感数据。
 
 ## 当前 API 配置
 
-| 变量                            | 默认值                  | 用途                                                         | 密钥 |
-| ------------------------------- | ----------------------- | ------------------------------------------------------------ | ---- |
-| `APP_ENV`                       | `development`           | 运行环境                                                     | 否   |
-| `LOG_LEVEL`                     | `info`                  | 日志级别                                                     | 否   |
-| `API_HOST`                      | `127.0.0.1`             | API 绑定地址                                                 | 否   |
-| `API_PORT`                      | `3000`                  | API 监听端口                                                 | 否   |
-| `DATABASE_URL`                  | 无                      | PostgreSQL 连接字符串，仅数据库工具和 Persistence 组合根使用 | 是   |
-| `SUPABASE_URL`                  | 无                      | Supabase Auth 项目 URL，仅 Auth 组合根使用                   | 否   |
-| `SUPABASE_ANON_KEY`             | 无                      | Supabase Auth 公共客户端密钥，仅 Auth 组合根使用             | 是   |
-| `CREATOR_ACTOR_MAPPINGS`        | 无                      | 显式 `supabase:<subject>` → Creator 映射，仅 Auth 组合根使用 | 是   |
-| `NEXT_PUBLIC_API_BASE_URL`      | `http://127.0.0.1:3000` | Web Reference Client 的 API Base URL                         | 否   |
-| `NEXT_PUBLIC_SUPABASE_URL`      | 无                      | Web Creator Desk 使用的 Supabase Auth 项目 URL               | 否   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 无                      | Web Creator Desk 使用的 Supabase 公共 Auth Key               | 否   |
+| 变量                             | 默认值                  | 用途                                                           | 密钥 |
+| -------------------------------- | ----------------------- | -------------------------------------------------------------- | ---- |
+| `APP_ENV`                        | `development`           | 运行环境                                                       | 否   |
+| `RUNTIME_ENV`                    | `local`                 | 真实资金运行边界：`local/test/controlled/production`           | 否   |
+| `REAL_MONEY_ENABLED`             | `false`                 | Founder-approved Live Payment / Settlement / Withdrawal 总开关 | 否   |
+| `LOG_LEVEL`                      | `info`                  | 日志级别                                                       | 否   |
+| `API_HOST`                       | `127.0.0.1`             | API 绑定地址                                                   | 否   |
+| `API_PORT`                       | `3000`                  | API 监听端口                                                   | 否   |
+| `DATABASE_URL`                   | 无                      | PostgreSQL 连接字符串，仅数据库工具和 Persistence 组合根使用   | 是   |
+| `SUPABASE_URL`                   | 无                      | Supabase Auth 项目 URL，仅 Auth 组合根使用                     | 否   |
+| `SUPABASE_ANON_KEY`              | 无                      | Supabase Auth 公共客户端密钥，仅 Auth 组合根使用               | 是   |
+| `CREATOR_ACTOR_MAPPINGS`         | 无                      | 显式 `supabase:<subject>` → Creator 映射，仅 Auth 组合根使用   | 是   |
+| `FOUNDER_ACTIVATION_REFERENCE`   | 无                      | 可审计的 Founder GO reference；单独存在不能启用真实资金        | 否   |
+| `PILOT_ID`                       | 无                      | 受控 Pilot 标识；不得复用 Test / Simulation 标识                | 否   |
+| `PILOT_STATE_FILE`               | 无                      | 服务器端 Pilot Activation 状态文件                             | 否   |
+| `PILOT_AUDIT_FILE`               | 无                      | 服务器端 Activation / Close 审计追加文件                       | 否   |
+| `PILOT_AUDIT_DIR`                | 无                      | Pilot 证据与审计目录                                             | 否   |
+| `PILOT_FOUNDER_ACTIVATION_TOKEN` | 无                      | Founder-only Pilot 启动控制；不得进入前端或日志                | 是   |
+| `PILOT_ACTIVATION_ACTOR`         | 无                      | 服务器端激活 Actor；只允许 `founder`                            | 否   |
+| `LIVE_PROVIDER_ID`               | 无                      | Live Provider 标识                                             | 否   |
+| `LIVE_PROVIDER_URL`              | 无                      | Live Provider API URL                                          | 否   |
+| `LIVE_PROVIDER_MERCHANT_ACCOUNT` | 无                      | Merchant / Account Mapping                                     | 是   |
+| `LIVE_PROVIDER_API_CREDENTIAL`   | 无                      | Live Provider API Credential                                   | 是   |
+| `LIVE_PROVIDER_WEBHOOK_SECRET`   | 无                      | Live Provider Webhook Secret                                   | 是   |
+| `LIVE_PROVIDER_ENVIRONMENT`      | 无                      | Live Provider 环境；真实路径只允许 `production`                | 否   |
+| `LIVE_PROVIDER_CURRENCY`         | 无                      | 当前 Money Domain 只允许 `CNY`                                 | 否   |
+| `LIVE_PROVIDER_REGION`           | 无                      | Provider 账户与合规区域                                        | 否   |
+| `NEXT_PUBLIC_API_BASE_URL`       | `http://127.0.0.1:3000` | Web Reference Client 的 API Base URL                           | 否   |
+| `NEXT_PUBLIC_SUPABASE_URL`       | 无                      | Web Creator Desk 使用的 Supabase Auth 项目 URL                 | 否   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | 无                      | Web Creator Desk 使用的 Supabase 公共 Auth Key                 | 否   |
 
 `API_HOST` 与 `API_PORT` 只能由配置 Bootstrap 读取。默认绑定本地回环地址，
 避免 Prototype 在未明确授权时暴露到外部网络。
+
+`RUNTIME_ENV` 与 `REAL_MONEY_ENABLED` 由 API 组合根启动时读取，前端、Creator 和 Customer
+没有修改入口。`REAL_MONEY_ENABLED` 默认为 `false`；只有 `controlled` 或 `production`、
+完整 Live Provider 配置和非空 `FOUNDER_ACTIVATION_REFERENCE` 同时存在时才允许启动 Live
+路径。配置 Secret 本身不得激活真实资金，部分配置必须启动失败，Live 路径不得 fallback 到
+Reference Provider、Sandbox 或 Controlled Transport。启动审计只能记录开关状态、Provider ID
+和 Activation Reference，不得记录 Merchant Mapping、API Credential 或 Webhook Secret。
 
 `DATABASE_URL` 不属于普通应用启动的强制配置。只有执行 Migration、数据库集成测试，
 或启用 PostgreSQL Persistence Adapter 的组合根才调用

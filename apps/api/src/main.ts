@@ -6,12 +6,14 @@ import {
   loadConfiguration,
   loadDatabaseConfiguration,
   loadOperationsAuthConfiguration,
+  loadRealMoneyRuntimeConfiguration,
 } from '../../prototype/src/configuration/bootstrap.js';
 import {
   createPostgresCreatorIdentityComposition,
   type CreatorIdentityAuthConfiguration,
   type CreatorIdentityDatabaseConfiguration,
 } from '../../../adapters/persistence/postgres/postgres-creator-identity-composition.js';
+import { InMemoryAuthContextProvider } from '../../../adapters/auth/testing/in-memory-auth-context-provider.js';
 import { LogNotificationAdapter } from '../../../adapters/notifications/log-notification-adapter.js';
 import { createSafeLogger } from '../../../adapters/observability/safe-logger.js';
 import { createApiServer } from './create-api-server.js';
@@ -19,9 +21,19 @@ import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js
 
 export async function startApi(): Promise<ApiRuntime> {
   const configuration = loadConfiguration();
+  const usePostgresTestComposition =
+    configuration.environment === 'test' && configuration.usePostgresTestComposition;
+  const realMoneyRuntime = loadRealMoneyRuntimeConfiguration();
   const logger = createSafeLogger(configuration.logLevel);
+  logger.info('real_money_runtime_configured', {
+    runtimeEnvironment: realMoneyRuntime.runtimeEnvironment,
+    realMoneyEnabled: realMoneyRuntime.realMoneyEnabled,
+    founderActivationReference: realMoneyRuntime.founderActivationReference ?? 'none',
+    liveProviderId: realMoneyRuntime.provider?.providerId ?? 'none',
+    liveProviderConfigured: realMoneyRuntime.provider !== undefined,
+  });
   const composition =
-    configuration.environment === 'test'
+    configuration.environment === 'test' && !usePostgresTestComposition
       ? undefined
       : createPostgresCreatorIdentityComposition(
           loadDatabaseConfiguration() satisfies CreatorIdentityDatabaseConfiguration,
@@ -29,6 +41,14 @@ export async function startApi(): Promise<ApiRuntime> {
           configuration.webReferenceClientOrigin,
           new LogNotificationAdapter(logger),
           loadOperationsAuthConfiguration(),
+          {
+            runtimeEnvironment: realMoneyRuntime.runtimeEnvironment,
+            realMoneyEnabled: realMoneyRuntime.realMoneyEnabled,
+            ...(realMoneyRuntime.founderActivationReference === undefined
+              ? {}
+              : { founderActivationReference: realMoneyRuntime.founderActivationReference }),
+            liveProviderConfigured: realMoneyRuntime.provider !== undefined,
+          },
         );
   const server = await createApiServer(
     composition === undefined
@@ -37,13 +57,34 @@ export async function startApi(): Promise<ApiRuntime> {
           publicOrigin: configuration.webReferenceClientOrigin,
         }
       : {
-          authContextProvider: composition.authContextProvider,
+          authContextProvider: usePostgresTestComposition
+            ? new InMemoryAuthContextProvider([
+                {
+                  accessToken: 'test-creator-token',
+                  actor: { kind: 'creator', creatorId: 'creator-test-1' },
+                },
+                {
+                  accessToken: 'test-other-creator-token',
+                  actor: { kind: 'creator', creatorId: 'creator-test-2' },
+                },
+              ])
+            : composition.authContextProvider,
           creatorIdentityService: composition.service,
           serviceOfferingService: composition.offeringService,
           customerRequestService: composition.customerRequestService,
           operationsAuthContextProvider: composition.operationsAuthContextProvider,
           recordExternalObservation: composition.recordExternalObservation,
           paidCommerceService: composition.paidCommerceService,
+          ...(composition.localCommerceSimulationService === undefined
+            ? {}
+            : { localCommerceSimulationService: composition.localCommerceSimulationService }),
+          ...(composition.localPaidCommerceProductService === undefined
+            ? {}
+            : { localPaidCommerceProductService: composition.localPaidCommerceProductService }),
+          providerWebhookRuntime: composition.providerWebhookRuntime,
+          commercialPilotOperationsService: composition.commercialPilotOperationsService,
+          reservationService: composition.reservationService,
+          contractService: composition.contractService,
           checkReadiness: () => composition.database.checkReadiness(),
           corsAllowedOrigins: [configuration.webReferenceClientOrigin],
           logger,

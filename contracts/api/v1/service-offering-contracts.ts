@@ -20,6 +20,32 @@ const DistributionAssetStateSchema = Type.Union([
   Type.Literal('distributed'),
 ]);
 
+const AppearanceOfferingSchema = Type.Object(
+  {
+    appearanceType: Type.Union([
+      Type.Literal('convention'),
+      Type.Literal('guest'),
+      Type.Literal('brand'),
+      Type.Literal('photo'),
+      Type.Literal('signing'),
+    ]),
+    startsOn: Type.String({ format: 'date' }),
+    endsOn: Type.Optional(Type.String({ format: 'date' })),
+    locationDescription: Type.String({ minLength: 1, maxLength: 500 }),
+    buyerType: Type.Union([
+      Type.Literal('organizer'),
+      Type.Literal('brand'),
+      Type.Literal('fan_group'),
+      Type.Literal('approved_external_requester'),
+    ]),
+    pricingRule: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
+    requestCallToAction: Type.String({ minLength: 1, maxLength: 240 }),
+    upcomingTitle: Type.String({ minLength: 1, maxLength: 240 }),
+    externalUrl: Type.Optional(Type.String({ format: 'uri', maxLength: 2_048 })),
+  },
+  { additionalProperties: false },
+);
+
 export const DistributionAssetResponseSchema = Type.Object(
   {
     offeringId: Type.String({ minLength: 1 }),
@@ -52,6 +78,7 @@ export const ServiceOfferingResponseSchema = Type.Object(
     title: Type.String({ maxLength: 160 }),
     description: Type.String({ maxLength: 2_000 }),
     availabilityDescription: Type.Optional(Type.String({ minLength: 1, maxLength: 1_000 })),
+    appearance: Type.Optional(AppearanceOfferingSchema),
     requestInstructions: Type.String({ maxLength: 1_000 }),
     state: OfferingStateSchema,
     missingPublishConditions: Type.Array(MissingPublishConditionSchema),
@@ -72,6 +99,7 @@ export const CreateServiceOfferingRequestSchema = Type.Object(
     title: Type.String({ maxLength: 160 }),
     description: Type.String({ maxLength: 2_000 }),
     availabilityDescription: Type.Optional(Type.String({ minLength: 1, maxLength: 1_000 })),
+    appearance: Type.Optional(AppearanceOfferingSchema),
     requestInstructions: Type.String({ maxLength: 1_000 }),
   },
   { additionalProperties: false },

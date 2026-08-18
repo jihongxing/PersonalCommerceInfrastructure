@@ -32,6 +32,20 @@ export class PostgresProductEventStore implements ProductEventStore {
     await insert;
   }
 
+  public async list(): Promise<readonly CanonicalEvent[]> {
+    const rows = await this.database.select().from(productEvents).orderBy(productEvents.occurredAt);
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name as CanonicalEventName,
+      occurredAt: row.occurredAt,
+      actorId: row.actorId,
+      objectId: row.objectId,
+      correlationId: row.correlationId,
+      source: row.source as CanonicalEvent['source'],
+      payload: row.payload as Readonly<Record<string, unknown>>,
+    }));
+  }
+
   public async findByNameAndObjectId(
     name: CanonicalEventName,
     objectId: string,

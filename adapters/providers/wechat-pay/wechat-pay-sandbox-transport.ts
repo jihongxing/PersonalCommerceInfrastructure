@@ -2,6 +2,8 @@ import type { Currency, MoneyMinor } from '../../../modules/paid-commerce/money-
 
 export type WeChatPaySandboxOperationType = 'payment' | 'settlement' | 'withdrawal';
 
+export type WeChatPayTestEnvironment = 'controlled_test_transport' | 'official_sandbox';
+
 export type WeChatPaySandboxOperationStatus = 'pending' | 'succeeded' | 'failed';
 
 export type WeChatPaySandboxEventType =
@@ -58,6 +60,7 @@ export type WeChatPaySandboxEventVerificationResult =
   WeChatPaySandboxVerifiedEvent | WeChatPaySandboxRejectedEvent;
 
 export interface WeChatPaySandboxTransport {
+  readonly environment: WeChatPayTestEnvironment;
   submit(command: WeChatPaySandboxCommand): Promise<WeChatPaySandboxOperationResponse>;
   getStatus(providerReference: string): Promise<WeChatPaySandboxOperationStatus>;
   verifyEvent(

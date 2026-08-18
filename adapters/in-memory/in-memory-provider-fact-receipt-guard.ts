@@ -1,4 +1,5 @@
 import type {
+  ProviderFactObservation,
   ProviderFactReceiptDecision,
   ProviderFactReceiptGuard,
 } from '../../applications/paid-commerce/provider-fact-receipt-guard.js';
@@ -7,15 +8,19 @@ import type { VerifiedProviderFact } from '../../applications/paid-commerce/prov
 export class InMemoryProviderFactReceiptGuard implements ProviderFactReceiptGuard {
   private readonly eventFacts = new Map<string, VerifiedProviderFact>();
   private readonly resourceFacts = new Map<string, VerifiedProviderFact>();
+  private readonly observations: ProviderFactObservation[] = [];
 
   public inspect(fact: VerifiedProviderFact): Promise<ProviderFactReceiptDecision> {
     const eventKey = `${fact.providerId}:${fact.providerEventId}`;
     const existingEvent = this.eventFacts.get(eventKey);
     if (existingEvent !== undefined) {
       return Promise.resolve(
-        sameFact(existingEvent, fact)
-          ? { status: 'idempotent' }
-          : { status: 'conflict', reason: 'provider_event_id_reused_with_different_fact' },
+        this.observe(
+          fact,
+          sameFact(existingEvent, fact)
+            ? { status: 'idempotent' }
+            : { status: 'conflict', reason: 'provider_event_id_reused_with_different_fact' },
+        ),
       );
     }
 
@@ -23,28 +28,37 @@ export class InMemoryProviderFactReceiptGuard implements ProviderFactReceiptGuar
     const existingResourceFact = this.resourceFacts.get(resourceKey);
     if (existingResourceFact !== undefined) {
       if (fact.sequence < existingResourceFact.sequence) {
-        return Promise.resolve({ status: 'stale', reason: 'provider_fact_sequence_is_older' });
+        return Promise.resolve(
+          this.observe(fact, { status: 'stale', reason: 'provider_fact_sequence_is_older' }),
+        );
       }
       if (
         fact.sequence === existingResourceFact.sequence &&
         !sameTerminalFact(existingResourceFact, fact)
       ) {
-        return Promise.resolve({
-          status: 'conflict',
-          reason: 'provider_fact_sequence_conflicts_with_existing_fact',
-        });
+        return Promise.resolve(
+          this.observe(fact, {
+            status: 'conflict',
+            reason: 'provider_fact_sequence_conflicts_with_existing_fact',
+          }),
+        );
       }
       if (sameTerminalFact(existingResourceFact, fact)) {
         this.eventFacts.set(eventKey, fact);
-        return Promise.resolve({ status: 'idempotent' });
+        return Promise.resolve(this.observe(fact, { status: 'idempotent' }));
       }
-      return Promise.resolve({
-        status: 'conflict',
-        reason: 'provider_fact_conflicts_with_existing_terminal_fact',
-      });
+      if (isAllowedResourceEvolution(existingResourceFact, fact)) {
+        return Promise.resolve(this.observe(fact, { status: 'accepted' }));
+      }
+      return Promise.resolve(
+        this.observe(fact, {
+          status: 'conflict',
+          reason: 'provider_fact_conflicts_with_existing_terminal_fact',
+        }),
+      );
     }
 
-    return Promise.resolve({ status: 'accepted' });
+    return Promise.resolve(this.observe(fact, { status: 'accepted' }));
   }
 
   public recordAccepted(fact: VerifiedProviderFact): Promise<void> {
@@ -54,6 +68,28 @@ export class InMemoryProviderFactReceiptGuard implements ProviderFactReceiptGuar
       fact,
     );
     return Promise.resolve();
+  }
+
+  public listObservations(): Promise<readonly ProviderFactObservation[]> {
+    return Promise.resolve(structuredClone(this.observations));
+  }
+
+  private observe(
+    fact: VerifiedProviderFact,
+    decision: ProviderFactReceiptDecision,
+  ): ProviderFactReceiptDecision {
+    this.observations.push({
+      providerId: fact.providerId,
+      providerEventId: fact.providerEventId,
+      providerReference: fact.providerReference,
+      kind: fact.kind,
+      resourceType: fact.resourceType,
+      internalReference: fact.internalReference,
+      occurredAt: fact.occurredAt,
+      status: decision.status,
+      ...(decision.reason === undefined ? {} : { reason: decision.reason }),
+    });
+    return decision;
   }
 }
 
@@ -73,5 +109,30 @@ function sameTerminalFact(left: VerifiedProviderFact, right: VerifiedProviderFac
     left.amountMinor === right.amountMinor &&
     left.currency === right.currency &&
     left.sequence === right.sequence
+  );
+}
+
+function isAllowedResourceEvolution(
+  existing: VerifiedProviderFact,
+  incoming: VerifiedProviderFact,
+): boolean {
+  if (
+    existing.resourceType !== incoming.resourceType ||
+    incoming.sequence <= existing.sequence ||
+    existing.amountMinor !== incoming.amountMinor ||
+    existing.currency !== incoming.currency
+  ) {
+    return false;
+  }
+  return (
+    (existing.resourceType === 'payment' &&
+      existing.kind === 'PaymentSucceeded' &&
+      incoming.kind === 'RefundSucceeded') ||
+    (existing.resourceType === 'payment' &&
+      existing.kind === 'PaymentFailed' &&
+      incoming.kind === 'PaymentSucceeded') ||
+    (existing.resourceType === 'withdrawal' &&
+      existing.kind === 'WithdrawalFailed' &&
+      incoming.kind === 'WithdrawalSucceeded')
   );
 }

@@ -8,14 +8,25 @@ import {
   createPendingFulfillment,
   createSettlement,
   createWithdrawal,
+  expirePayment,
+  failSettlement,
   fulfillOrder,
   failPayment,
   failWithdrawal,
+  markOrderPendingResolution,
   markOrderPaid,
   money,
   pendingEarningsEntry,
   projectWallet,
   releaseSettlement,
+  refundDebitedEntry,
+  resolveSettlement,
+  settlementReversedEntry,
+  refundOrder,
+  refundPayment,
+  retryPayment,
+  retryWithdrawal,
+  reverseSettlement,
   settlementReleasedEntry,
   withdrawalCompletedEntry,
   withdrawalFailedEntry,
@@ -32,11 +43,11 @@ import type { CanonicalEventRecorder } from '../core/canonical-event-recorder.js
 import type { Clock } from '../core/ports/clock.js';
 import type { IdGenerator } from '../core/ports/id-generator.js';
 import type { UnitOfWork } from '../core/ports/unit-of-work.js';
+import type { ProductEventStore } from '../core/ports/product-event-store.js';
 import type { CommerceActionRepository } from '../customer-request/customer-request-repositories.js';
 import type { OfferingRepository } from '../service-offering/offering-repositories.js';
 import type { PaidCommerceRepository } from './paid-commerce-repositories.js';
-
-const controlledFactSource = 'controlled_test';
+import type { ContractRepository } from '../contract-commerce/contract-repositories.js';
 
 export interface PaidCommerceUseCaseDependencies {
   readonly commerceActionRepository: CommerceActionRepository;
@@ -46,6 +57,7 @@ export interface PaidCommerceUseCaseDependencies {
   readonly clock: Clock;
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly unitOfWork: UnitOfWork;
+  readonly contractRepository?: ContractRepository;
 }
 
 export interface CreatePaidServiceOrderCommand {
@@ -64,6 +76,14 @@ export interface RecordControlledPaymentFailureCommand {
   readonly controlledEvidenceReference: string;
 }
 
+export interface RetryPaymentCommand {
+  readonly orderId: string;
+}
+
+export interface ExpireControlledPaymentCommand {
+  readonly orderId: string;
+}
+
 export interface RecordFulfillmentCommand {
   readonly orderId: string;
   readonly evidenceReference: string;
@@ -78,10 +98,24 @@ export interface ReleaseControlledSettlementCommand {
   readonly controlledEvidenceReference: string;
 }
 
+export type PrepareControlledSettlementCommand = Omit<
+  ReleaseControlledSettlementCommand,
+  'controlledEvidenceReference'
+>;
+
+export interface FailControlledSettlementCommand {
+  readonly orderId: string;
+  readonly controlledEvidenceReference: string;
+}
+
 export interface RequestWithdrawalCommand {
   readonly amountMinor: bigint;
   readonly destinationReference: string;
   readonly idempotencyKey: string;
+}
+
+export interface RetryWithdrawalCommand {
+  readonly withdrawalId: string;
 }
 
 export interface CompleteControlledWithdrawalCommand {
@@ -91,6 +125,11 @@ export interface CompleteControlledWithdrawalCommand {
 
 export interface FailControlledWithdrawalCommand {
   readonly withdrawalId: string;
+  readonly controlledEvidenceReference: string;
+}
+
+export interface RecordControlledRefundCommand {
+  readonly orderId: string;
   readonly controlledEvidenceReference: string;
 }
 
@@ -181,7 +220,7 @@ export class CreatePaidServiceOrderUseCase {
             orderId: payableOrder.id,
             currency: 'CNY',
             amountMinor: String(payment.amount.minor),
-            source: controlledFactSource,
+            source: 'system',
           },
         },
         scope.productEventStore,
@@ -273,7 +312,7 @@ export class RecordControlledPaymentFactUseCase {
           payload: {
             orderId: order.id,
             evidenceReference: command.controlledEvidenceReference,
-            source: controlledFactSource,
+            source: controlledFactSource(command.controlledEvidenceReference),
           },
         },
         scope.productEventStore,
@@ -312,12 +351,74 @@ export class RecordControlledPaymentFailureUseCase {
           payload: {
             orderId: order.id,
             evidenceReference: command.controlledEvidenceReference,
-            source: controlledFactSource,
+            source: controlledFactSource(command.controlledEvidenceReference),
           },
         },
         scope.productEventStore,
       );
       return { order, payment: failedPayment };
+    });
+  }
+}
+
+export class RetryPaymentUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(command: RetryPaymentCommand, context: ActorContext) {
+    return this.dependencies.unitOfWork.execute(async (scope) => {
+      const paidCommerceRepository =
+        scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const order = await requireOrder(paidCommerceRepository, command.orderId);
+      assertCustomerOwnership(context.actor, order.customerId);
+      const payment = await paidCommerceRepository.findPaymentByOrderId(order.id);
+      if (payment === undefined) {
+        throw conflict('payment_attempt_required', 'Payment retry requires an existing attempt.');
+      }
+      if (payment.state === 'pending') {
+        return payment;
+      }
+      const retriedPayment = retryPayment(payment, context.correlationId);
+      await paidCommerceRepository.savePayment(retriedPayment);
+      await this.dependencies.canonicalEventRecorder.record(
+        {
+          actorId: order.customerId,
+          correlationId: context.correlationId,
+          name: 'payment_attempted',
+          objectId: retriedPayment.id,
+          source: 'customer',
+          payload: {
+            orderId: order.id,
+            currency: retriedPayment.amount.currency,
+            amountMinor: String(retriedPayment.amount.minor),
+            retry: true,
+          },
+        },
+        scope.productEventStore,
+      );
+      return retriedPayment;
+    });
+  }
+}
+
+export class ExpireControlledPaymentUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(command: ExpireControlledPaymentCommand, context: ActorContext) {
+    assertControlledOperations(context);
+    return this.dependencies.unitOfWork.execute(async (scope) => {
+      const paidCommerceRepository =
+        scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const order = await requireOrder(paidCommerceRepository, command.orderId);
+      const payment = await paidCommerceRepository.findPaymentByOrderId(order.id);
+      if (payment === undefined) {
+        throw conflict('payment_attempt_required', 'Payment expiry requires an existing attempt.');
+      }
+      if (payment.state === 'expired') {
+        return payment;
+      }
+      const expiredPayment = expirePayment(payment);
+      await paidCommerceRepository.savePayment(expiredPayment);
+      return expiredPayment;
     });
   }
 }
@@ -371,37 +472,32 @@ export class ReleaseControlledSettlementUseCase {
       const paidCommerceRepository =
         scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
       const order = await requireOrder(paidCommerceRepository, command.orderId);
-      if (await paidCommerceRepository.findSettlementByOrderId(order.id)) {
+      let settlement = await paidCommerceRepository.findSettlementByOrderId(order.id);
+      if (settlement?.state === 'released' || settlement?.state === 'resolved') {
+        return { order, settlement };
+      }
+      if (settlement?.state === 'reversed') {
         throw conflict(
-          'settlement_already_recorded',
-          'Settlement has already been recorded for this Order.',
+          'settlement_already_reversed',
+          'A reversed Settlement cannot be released again.',
         );
       }
-      const payment = await paidCommerceRepository.findPaymentByOrderId(order.id);
-      const fulfillment = await paidCommerceRepository.findFulfillmentByOrderId(order.id);
-      if (payment === undefined || fulfillment === undefined) {
-        throw conflict(
-          'settlement_prerequisites_missing',
-          'Settlement requires Payment and Fulfillment.',
+      if (settlement === undefined) {
+        settlement = await createAndPersistPendingSettlement(
+          command,
+          context,
+          order,
+          paidCommerceRepository,
+          this.dependencies,
+          scope.productEventStore,
         );
+      } else {
+        assertSettlementCalculationMatches(settlement, command);
       }
-      const settlement = createSettlement({
-        id: this.dependencies.idGenerator.generate(),
-        order,
-        payment,
-        fulfillment,
-        providerFee: money('CNY', command.providerFeeMinor),
-        platformFee: money('CNY', command.platformFeeMinor),
-        deductions: money('CNY', command.deductionsMinor ?? 0n),
-        calculationVersion: command.calculationVersion,
-      });
-      const releasedSettlement = releaseSettlement(settlement);
-      const pendingEntry = pendingEarningsEntry({
-        id: this.dependencies.idGenerator.generate(),
-        settlement,
-        effectiveAt: this.dependencies.clock.now(),
-        correlationId: context.correlationId,
-      });
+      const releasedSettlement =
+        settlement.state === 'failed'
+          ? resolveSettlement(settlement)
+          : releaseSettlement(settlement);
       const releasedEntry = settlementReleasedEntry({
         id: this.dependencies.idGenerator.generate(),
         settlement: releasedSettlement,
@@ -411,23 +507,7 @@ export class ReleaseControlledSettlementUseCase {
       const completedOrder = completePaidServiceOrder(order, releasedSettlement);
       await paidCommerceRepository.saveSettlement(releasedSettlement);
       await paidCommerceRepository.saveOrder(completedOrder);
-      await paidCommerceRepository.appendLedgerEntry(pendingEntry);
       await paidCommerceRepository.appendLedgerEntry(releasedEntry);
-      await this.dependencies.canonicalEventRecorder.record(
-        {
-          actorId: context.actor.operatorId,
-          correlationId: context.correlationId,
-          name: 'settlement_calculated',
-          objectId: settlement.id,
-          source: 'pilot_operations',
-          payload: {
-            orderId: order.id,
-            creatorNetMinor: String(settlement.creatorNet.minor),
-            source: controlledFactSource,
-          },
-        },
-        scope.productEventStore,
-      );
       await this.dependencies.canonicalEventRecorder.record(
         {
           actorId: context.actor.operatorId,
@@ -438,20 +518,35 @@ export class ReleaseControlledSettlementUseCase {
           payload: {
             orderId: order.id,
             evidenceReference: command.controlledEvidenceReference,
-            source: controlledFactSource,
+            source: controlledFactSource(command.controlledEvidenceReference),
           },
         },
         scope.productEventStore,
       );
-      for (const entry of [pendingEntry, releasedEntry]) {
+      await this.dependencies.canonicalEventRecorder.record(
+        {
+          actorId: context.actor.operatorId,
+          correlationId: context.correlationId,
+          name: 'ledger_entry_appended',
+          objectId: releasedEntry.id,
+          source: 'pilot_operations',
+          payload: { orderId: order.id, entryType: releasedEntry.type },
+        },
+        scope.productEventStore,
+      );
+      if (settlement.state === 'failed') {
         await this.dependencies.canonicalEventRecorder.record(
           {
             actorId: context.actor.operatorId,
             correlationId: context.correlationId,
-            name: 'ledger_entry_appended',
-            objectId: entry.id,
+            name: 'pending_resolution_resolved',
+            objectId: settlement.id,
             source: 'pilot_operations',
-            payload: { orderId: order.id, entryType: entry.type },
+            payload: {
+              orderId: order.id,
+              resolution: 'retry_success',
+              evidenceReference: command.controlledEvidenceReference,
+            },
           },
           scope.productEventStore,
         );
@@ -472,6 +567,92 @@ export class ReleaseControlledSettlementUseCase {
         scope.productEventStore,
       );
       return { order: completedOrder, settlement: releasedSettlement };
+    });
+  }
+}
+
+export class PrepareControlledSettlementUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(command: PrepareControlledSettlementCommand, context: ActorContext) {
+    assertControlledOperations(context);
+    return this.dependencies.unitOfWork.execute(async (scope) => {
+      const paidCommerceRepository =
+        scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const order = await requireOrder(paidCommerceRepository, command.orderId);
+      const existing = await paidCommerceRepository.findSettlementByOrderId(order.id);
+      if (existing !== undefined) {
+        assertSettlementCalculationMatches(existing, command);
+        return existing;
+      }
+      return createAndPersistPendingSettlement(
+        command,
+        context,
+        order,
+        paidCommerceRepository,
+        this.dependencies,
+        scope.productEventStore,
+      );
+    });
+  }
+}
+
+export class FailControlledSettlementUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(command: FailControlledSettlementCommand, context: ActorContext) {
+    assertControlledOperations(context);
+    return this.dependencies.unitOfWork.execute(async (scope) => {
+      const paidCommerceRepository =
+        scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const order = await requireOrder(paidCommerceRepository, command.orderId);
+      const settlement = await paidCommerceRepository.findSettlementByOrderId(order.id);
+      if (settlement === undefined) {
+        throw conflict(
+          'settlement_attempt_required',
+          'Settlement failure requires an existing Settlement attempt.',
+        );
+      }
+      if (settlement.state === 'failed') {
+        return { order, settlement };
+      }
+      if (settlement.state !== 'pending') {
+        throw conflict(
+          'settlement_failure_conflicts_with_terminal_state',
+          'Settlement failure cannot replace an existing terminal Settlement state.',
+        );
+      }
+      const failedSettlement = failSettlement(settlement);
+      const pendingResolutionOrder = markOrderPendingResolution(order);
+      await paidCommerceRepository.saveSettlement(failedSettlement);
+      await paidCommerceRepository.saveOrder(pendingResolutionOrder);
+      await this.dependencies.canonicalEventRecorder.record(
+        {
+          actorId: context.actor.operatorId,
+          correlationId: context.correlationId,
+          name: 'settlement_failed',
+          objectId: failedSettlement.id,
+          source: 'pilot_operations',
+          payload: {
+            orderId: order.id,
+            evidenceReference: command.controlledEvidenceReference,
+            source: controlledFactSource(command.controlledEvidenceReference),
+          },
+        },
+        scope.productEventStore,
+      );
+      await this.dependencies.canonicalEventRecorder.record(
+        {
+          actorId: context.actor.operatorId,
+          correlationId: context.correlationId,
+          name: 'pending_resolution_opened',
+          objectId: failedSettlement.id,
+          source: 'pilot_operations',
+          payload: { orderId: order.id, reason: 'settlement_failed' },
+        },
+        scope.productEventStore,
+      );
+      return { order: pendingResolutionOrder, settlement: failedSettlement };
     });
   }
 }
@@ -518,19 +699,36 @@ export class GetPublicPaidServiceOrderStatusUseCase {
   public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
 
   public async execute(resultAccessToken: string): Promise<PublicPaidServiceOrderStatus> {
+    const contract =
+      await this.dependencies.contractRepository?.findByResultAccessToken(resultAccessToken);
+    if (contract !== undefined) {
+      if (contract.state !== 'contracted') {
+        return { orderState: 'not_created', paymentState: 'not_started' };
+      }
+      const order = await this.dependencies.paidCommerceRepository.findOrderByContractId(
+        contract.id,
+      );
+      if (order === undefined) {
+        return { orderState: 'not_created', paymentState: 'not_started' };
+      }
+      const payment = await this.dependencies.paidCommerceRepository.findPaymentByOrderId(order.id);
+      return {
+        orderState: order.state,
+        paymentState: payment?.state ?? 'not_started',
+      };
+    }
+
     const action =
       await this.dependencies.commerceActionRepository.findByResultAccessToken(resultAccessToken);
     if (action === undefined) {
-      throw notFound('customer_request_not_found', 'Customer Request was not found.');
+      throw notFound('customer_request_not_found', 'Commerce result was not found.');
     }
-
     const order = await this.dependencies.paidCommerceRepository.findOrderByCommerceActionId(
       action.id,
     );
     if (order === undefined) {
       return { orderState: 'not_created', paymentState: 'not_started' };
     }
-
     const payment = await this.dependencies.paidCommerceRepository.findPaymentByOrderId(order.id);
     return {
       orderState: order.state,
@@ -653,12 +851,62 @@ export class CompleteControlledWithdrawalUseCase {
           source: 'pilot_operations',
           payload: {
             evidenceReference: command.controlledEvidenceReference,
-            source: controlledFactSource,
+            source: controlledFactSource(command.controlledEvidenceReference),
           },
         },
         scope.productEventStore,
       );
       return completedWithdrawal;
+    });
+  }
+}
+
+export class RetryWithdrawalUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(command: RetryWithdrawalCommand, context: ActorContext) {
+    if (context.actor.kind !== 'creator') {
+      throw new ApplicationError({
+        category: 'authorization',
+        code: 'withdrawal_retry_requires_creator',
+        message: 'Withdrawal retry requires the owning Creator.',
+      });
+    }
+    const creatorId = context.actor.creatorId;
+    return this.dependencies.unitOfWork.execute(async (scope) => {
+      const repository = scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const withdrawal = await repository.findWithdrawalById(command.withdrawalId);
+      if (withdrawal === undefined) {
+        throw notFound('withdrawal_not_found', 'Withdrawal was not found.');
+      }
+      if (withdrawal.creatorId !== creatorId) {
+        throw new ApplicationError({
+          category: 'authorization',
+          code: 'withdrawal_retry_requires_owner',
+          message: 'Withdrawal retry requires the owning Creator.',
+        });
+      }
+      if (withdrawal.state === 'requested') {
+        return withdrawal;
+      }
+      const retried = retryWithdrawal(withdrawal);
+      const entries = await repository.listLedgerEntriesByCreatorId(creatorId);
+      const wallet = projectWallet(withdrawal.amount.currency, entries);
+      if (withdrawal.amount.minor > wallet.available) {
+        throw conflict(
+          'withdrawal_retry_exceeds_available_earnings',
+          'Withdrawal retry requires sufficient Available Earnings.',
+        );
+      }
+      const reserveEntry = withdrawalReservedEntry({
+        id: this.dependencies.idGenerator.generate(),
+        withdrawal: retried,
+        orderId: associatedOrderId(entries),
+        effectiveAt: this.dependencies.clock.now(),
+      });
+      await repository.saveWithdrawal(retried);
+      await repository.appendLedgerEntry(reserveEntry);
+      return retried;
     });
   }
 }
@@ -700,12 +948,106 @@ export class FailControlledWithdrawalUseCase {
           source: 'pilot_operations',
           payload: {
             evidenceReference: command.controlledEvidenceReference,
-            source: controlledFactSource,
+            source: controlledFactSource(command.controlledEvidenceReference),
           },
         },
         scope.productEventStore,
       );
       return failedWithdrawal;
+    });
+  }
+}
+
+export class RecordControlledRefundUseCase {
+  public constructor(private readonly dependencies: PaidCommerceUseCaseDependencies) {}
+
+  public async execute(
+    command: RecordControlledRefundCommand,
+    context: ActorContext,
+  ): Promise<void> {
+    assertControlledOperations(context);
+    await this.dependencies.unitOfWork.execute(async (scope) => {
+      const paidCommerceRepository =
+        scope.paidCommerceRepository ?? this.dependencies.paidCommerceRepository;
+      const order = await requireOrder(paidCommerceRepository, command.orderId);
+      const payment = await paidCommerceRepository.findPaymentByOrderId(order.id);
+      if (payment === undefined) {
+        throw conflict('refund_requires_payment', 'Refund requires an existing Payment.');
+      }
+      controlledReference(command.controlledEvidenceReference);
+      if (payment.state === 'refunded' && order.state === 'refunded') {
+        return;
+      }
+      const refundedPayment = refundPayment(payment, command.controlledEvidenceReference);
+      const refundedOrder = refundOrder(order, refundedPayment);
+      const settlement = await paidCommerceRepository.findSettlementByOrderId(order.id);
+      await paidCommerceRepository.savePayment(refundedPayment);
+      await paidCommerceRepository.saveOrder(refundedOrder);
+      if (settlement !== undefined && settlement.state !== 'reversed') {
+        const reversedSettlement = reverseSettlement(settlement);
+        const reversalEntry =
+          settlement.state === 'released' || settlement.state === 'resolved'
+            ? refundDebitedEntry({
+                id: this.dependencies.idGenerator.generate(),
+                payment: refundedPayment,
+                creatorId: order.creatorId,
+                effectiveAt: this.dependencies.clock.now(),
+                correlationId: `refund:${refundedPayment.id}`,
+              })
+            : settlementReversedEntry({
+                id: this.dependencies.idGenerator.generate(),
+                settlement: reversedSettlement,
+                effectiveAt: this.dependencies.clock.now(),
+                correlationId: `refund:${refundedPayment.id}`,
+              });
+        await paidCommerceRepository.saveSettlement(reversedSettlement);
+        await paidCommerceRepository.appendLedgerEntry(reversalEntry);
+        await this.dependencies.canonicalEventRecorder.record(
+          {
+            actorId: context.actor.operatorId,
+            correlationId: context.correlationId,
+            name: 'settlement_reversed',
+            objectId: reversedSettlement.id,
+            source: 'pilot_operations',
+            payload: {
+              evidenceReference: command.controlledEvidenceReference,
+              source: controlledFactSource(command.controlledEvidenceReference),
+            },
+          },
+          scope.productEventStore,
+        );
+        if (order.state === 'pending_resolution') {
+          await this.dependencies.canonicalEventRecorder.record(
+            {
+              actorId: context.actor.operatorId,
+              correlationId: context.correlationId,
+              name: 'pending_resolution_resolved',
+              objectId: reversedSettlement.id,
+              source: 'pilot_operations',
+              payload: {
+                orderId: order.id,
+                resolution: 'reversed',
+                evidenceReference: command.controlledEvidenceReference,
+              },
+            },
+            scope.productEventStore,
+          );
+        }
+      }
+      await this.dependencies.canonicalEventRecorder.record(
+        {
+          actorId: context.actor.operatorId,
+          correlationId: context.correlationId,
+          name: 'refund_confirmed',
+          objectId: refundedPayment.id,
+          source: 'pilot_operations',
+          payload: {
+            evidenceReference: command.controlledEvidenceReference,
+            source: controlledFactSource(command.controlledEvidenceReference),
+          },
+        },
+        scope.productEventStore,
+      );
     });
   }
 }
@@ -719,6 +1061,88 @@ async function requireOrder(
     throw notFound('paid_service_order_not_found', 'Paid Service Order was not found.');
   }
   return order;
+}
+
+async function createAndPersistPendingSettlement(
+  command: PrepareControlledSettlementCommand,
+  context: ActorContext & {
+    readonly actor: { readonly kind: 'pilot_operations'; readonly operatorId: string };
+  },
+  order: PaidServiceOrder,
+  paidCommerceRepository: PaidCommerceRepository,
+  dependencies: PaidCommerceUseCaseDependencies,
+  productEventStore: ProductEventStore,
+) {
+  const payment = await paidCommerceRepository.findPaymentByOrderId(order.id);
+  const fulfillment = await paidCommerceRepository.findFulfillmentByOrderId(order.id);
+  if (payment === undefined || fulfillment === undefined) {
+    throw conflict(
+      'settlement_prerequisites_missing',
+      'Settlement requires Payment and Fulfillment.',
+    );
+  }
+  const settlement = createSettlement({
+    id: dependencies.idGenerator.generate(),
+    order,
+    payment,
+    fulfillment,
+    providerFee: money('CNY', command.providerFeeMinor),
+    platformFee: money('CNY', command.platformFeeMinor),
+    deductions: money('CNY', command.deductionsMinor ?? 0n),
+    calculationVersion: command.calculationVersion,
+  });
+  const pendingEntry = pendingEarningsEntry({
+    id: dependencies.idGenerator.generate(),
+    settlement,
+    effectiveAt: dependencies.clock.now(),
+    correlationId: context.correlationId,
+  });
+  await paidCommerceRepository.saveSettlement(settlement);
+  await paidCommerceRepository.appendLedgerEntry(pendingEntry);
+  await dependencies.canonicalEventRecorder.record(
+    {
+      actorId: context.actor.operatorId,
+      correlationId: context.correlationId,
+      name: 'settlement_calculated',
+      objectId: settlement.id,
+      source: 'pilot_operations',
+      payload: {
+        orderId: order.id,
+        creatorNetMinor: String(settlement.creatorNet.minor),
+        source: 'simulation',
+      },
+    },
+    productEventStore,
+  );
+  await dependencies.canonicalEventRecorder.record(
+    {
+      actorId: context.actor.operatorId,
+      correlationId: context.correlationId,
+      name: 'ledger_entry_appended',
+      objectId: pendingEntry.id,
+      source: 'pilot_operations',
+      payload: { orderId: order.id, entryType: pendingEntry.type },
+    },
+    productEventStore,
+  );
+  return settlement;
+}
+
+function assertSettlementCalculationMatches(
+  settlement: NonNullable<Awaited<ReturnType<PaidCommerceRepository['findSettlementByOrderId']>>>,
+  command: PrepareControlledSettlementCommand,
+): void {
+  if (
+    settlement.input.providerFee.minor !== command.providerFeeMinor ||
+    settlement.input.platformFee.minor !== command.platformFeeMinor ||
+    settlement.input.deductions.minor !== (command.deductionsMinor ?? 0n) ||
+    settlement.calculationVersion !== command.calculationVersion
+  ) {
+    throw conflict(
+      'settlement_retry_conflicts_with_frozen_calculation',
+      'Settlement retry must preserve the original frozen calculation.',
+    );
+  }
 }
 
 function associatedOrderId(entries: readonly { readonly orderId: string }[]): string {
@@ -753,7 +1177,11 @@ function controlledReference(evidenceReference: string): string {
       message: 'Controlled Money facts require an evidence reference.',
     });
   }
-  return `${controlledFactSource}:${normalized}`;
+  return normalized.startsWith('simulation:') ? normalized : `controlled_test:${normalized}`;
+}
+
+function controlledFactSource(evidenceReference: string): 'controlled_test' | 'simulation' {
+  return evidenceReference.trim().startsWith('simulation:') ? 'simulation' : 'controlled_test';
 }
 
 function notFound(code: string, message: string): ApplicationError {

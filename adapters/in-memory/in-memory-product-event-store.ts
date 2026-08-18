@@ -22,6 +22,10 @@ export class InMemoryProductEventStore implements ProductEventStore, Transaction
     return Promise.resolve();
   }
 
+  public list(): Promise<readonly CanonicalEvent[]> {
+    return Promise.resolve(structuredClone(this.events));
+  }
+
   public findByNameAndObjectId(
     name: CanonicalEventName,
     objectId: string,
@@ -31,10 +35,6 @@ export class InMemoryProductEventStore implements ProductEventStore, Transaction
         this.events.find((event) => event.name === name && event.objectId === objectId),
       ),
     );
-  }
-
-  public list(): Promise<readonly CanonicalEvent[]> {
-    return Promise.resolve(structuredClone(this.events));
   }
 
   public createSnapshot(): unknown {

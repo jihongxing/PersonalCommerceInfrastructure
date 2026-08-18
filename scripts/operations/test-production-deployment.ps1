@@ -55,6 +55,8 @@ try {
   New-Item -ItemType Directory -Force -Path (Join-Path (Get-Location) "output") | Out-Null
   @(
     "APP_ENV=production"
+    "RUNTIME_ENV=production"
+    "REAL_MONEY_ENABLED=false"
     "API_HOST=0.0.0.0"
     "API_PORT=3000"
     "LOG_LEVEL=info"

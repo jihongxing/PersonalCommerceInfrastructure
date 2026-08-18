@@ -39,6 +39,8 @@ function errorMessage(error: { readonly error?: { readonly code?: string } }): s
 }
 
 export function OperationsExternalFactWorkspace() {
+  const configuration = loadWebConfiguration();
+  const simulationEnabled = configuration.runtimeEnvironment !== 'production';
   const [accessToken, setAccessToken] = useState('');
   const [actionId, setActionId] = useState('');
   const [evidenceReference, setEvidenceReference] = useState('');
@@ -47,6 +49,9 @@ export function OperationsExternalFactWorkspace() {
   const [message, setMessage] = useState('');
   const [messageTone, setMessageTone] = useState<'info' | 'success' | 'error'>('info');
   const [result, setResult] = useState<ExternalObservation | null>(null);
+  const [simulationOrderId, setSimulationOrderId] = useState('');
+  const [simulationWithdrawalId, setSimulationWithdrawalId] = useState('');
+  const [simulationMessage, setSimulationMessage] = useState('');
 
   const canSubmit =
     !busy &&
@@ -60,7 +65,7 @@ export function OperationsExternalFactWorkspace() {
     setMessage('');
     try {
       const client = createApiClient({
-        apiBaseUrl: loadWebConfiguration().apiBaseUrl,
+        apiBaseUrl: configuration.apiBaseUrl,
         accessTokenProvider: {
           getAccessToken: () => Promise.resolve(accessToken.trim()),
         },
@@ -94,6 +99,73 @@ export function OperationsExternalFactWorkspace() {
     }
   }
 
+  async function runSimulation(
+    route:
+      | '/api/v1/operations/simulation/paid-orders/{orderId}/payment'
+      | '/api/v1/operations/simulation/paid-orders/{orderId}/settlement'
+      | '/api/v1/operations/simulation/withdrawals/{withdrawalId}',
+  ): Promise<void> {
+    const targetId =
+      route === '/api/v1/operations/simulation/withdrawals/{withdrawalId}'
+        ? simulationWithdrawalId.trim()
+        : simulationOrderId.trim();
+    if (accessToken.trim().length === 0 || targetId.length === 0) {
+      setSimulationMessage(operationsCopy.simulationFailed);
+      return;
+    }
+
+    setBusy(true);
+    setSimulationMessage('');
+    try {
+      const client = createApiClient({
+        apiBaseUrl: configuration.apiBaseUrl,
+        accessTokenProvider: {
+          getAccessToken: () => Promise.resolve(accessToken.trim()),
+        },
+      });
+      const response =
+        route === '/api/v1/operations/simulation/paid-orders/{orderId}/payment'
+          ? await client.POST(route, {
+              params: { path: { orderId: targetId } },
+              body: {
+                amountMinor: '39900',
+                currency: 'CNY',
+                idempotencyKey: `web-simulation-payment-${targetId}`,
+              },
+            })
+          : route === '/api/v1/operations/simulation/paid-orders/{orderId}/settlement'
+            ? await client.POST(route, {
+                params: { path: { orderId: targetId } },
+                body: {
+                  amountMinor: '35670',
+                  currency: 'CNY',
+                  idempotencyKey: `web-simulation-settlement-${targetId}`,
+                  providerFeeMinor: '240',
+                  platformFeeMinor: '3990',
+                  deductionsMinor: '0',
+                  calculationVersion: 'simulation-cny-v1',
+                },
+              })
+            : await client.POST(route, {
+                params: { path: { withdrawalId: targetId } },
+                body: {
+                  amountMinor: '35670',
+                  currency: 'CNY',
+                  idempotencyKey: `web-simulation-withdrawal-${targetId}`,
+                },
+              });
+      setSimulationMessage(
+        response.error === undefined
+          ? operationsCopy.simulationSuccess
+          : operationsCopy.simulationFailed,
+      );
+    } catch {
+      setSimulationMessage(operationsCopy.simulationFailed);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="ds-workspace-page ds-page">
       <header className="ds-workspace-header">
@@ -107,8 +179,12 @@ export function OperationsExternalFactWorkspace() {
         <p className="ds-eyebrow">{operationsCopy.eyebrow}</p>
         <h1 className="ds-heading-page">{operationsCopy.title}</h1>
         <p className="ds-body-secondary ds-measure">{operationsCopy.description}</p>
-        <StatusMessage>{operationsCopy.boundaryNotice}</StatusMessage>
-        <StatusMessage>{operationsCopy.stateNotice}</StatusMessage>
+        <StatusMessage data-testid="operations-boundary-status">
+          {operationsCopy.boundaryNotice}
+        </StatusMessage>
+        <StatusMessage data-testid="operations-state-status">
+          {operationsCopy.stateNotice}
+        </StatusMessage>
 
         <section className="ds-form-grid" aria-label={operationsCopy.title}>
           <FormField
@@ -173,7 +249,80 @@ export function OperationsExternalFactWorkspace() {
           </div>
         </section>
 
-        {message === '' ? null : <StatusMessage tone={messageTone}>{message}</StatusMessage>}
+        {simulationEnabled ? (
+          <section className="ds-section-stack" data-testid="local-commerce-simulation-control">
+            <h2 className="ds-heading-section">{operationsCopy.simulationTitle}</h2>
+            <StatusMessage data-testid="local-commerce-simulation-notice">
+              {operationsCopy.simulationNotice}
+            </StatusMessage>
+            <div className="ds-form-grid">
+              <FormField
+                htmlFor="simulation-order-id"
+                label={operationsCopy.simulationOrderIdLabel}
+              >
+                <Input
+                  id="simulation-order-id"
+                  value={simulationOrderId}
+                  onChange={(event) => setSimulationOrderId(event.target.value)}
+                />
+              </FormField>
+              <FormField
+                htmlFor="simulation-withdrawal-id"
+                label={operationsCopy.simulationWithdrawalIdLabel}
+              >
+                <Input
+                  id="simulation-withdrawal-id"
+                  value={simulationWithdrawalId}
+                  onChange={(event) => setSimulationWithdrawalId(event.target.value)}
+                />
+              </FormField>
+            </div>
+            <div className="ds-action-row">
+              <Button
+                disabled={busy || simulationOrderId.trim().length === 0}
+                onClick={() =>
+                  void runSimulation('/api/v1/operations/simulation/paid-orders/{orderId}/payment')
+                }
+                type="button"
+              >
+                {operationsCopy.simulationPayment}
+              </Button>
+              <Button
+                disabled={busy || simulationOrderId.trim().length === 0}
+                onClick={() =>
+                  void runSimulation(
+                    '/api/v1/operations/simulation/paid-orders/{orderId}/settlement',
+                  )
+                }
+                type="button"
+                variant="outline"
+              >
+                {operationsCopy.simulationSettlement}
+              </Button>
+              <Button
+                disabled={busy || simulationWithdrawalId.trim().length === 0}
+                onClick={() =>
+                  void runSimulation('/api/v1/operations/simulation/withdrawals/{withdrawalId}')
+                }
+                type="button"
+                variant="outline"
+              >
+                {operationsCopy.simulationWithdrawal}
+              </Button>
+            </div>
+            {simulationMessage === '' ? null : (
+              <StatusMessage data-testid="local-commerce-simulation-status">
+                {simulationMessage}
+              </StatusMessage>
+            )}
+          </section>
+        ) : null}
+
+        {message === '' ? null : (
+          <StatusMessage data-testid="operations-action-status" tone={messageTone}>
+            {message}
+          </StatusMessage>
+        )}
         {result === null ? null : (
           <Surface className="ds-status-card ds-section-stack" tone="subtle">
             <h2 className="ds-heading-section">{operationsCopy.resultTitle}</h2>

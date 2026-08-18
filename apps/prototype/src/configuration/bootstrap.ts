@@ -6,6 +6,7 @@ export interface AppConfiguration {
   readonly environment: AppEnvironment;
   readonly logLevel: 'debug' | 'info' | 'warn' | 'error';
   readonly webReferenceClientOrigin: string;
+  readonly usePostgresTestComposition: boolean;
 }
 
 export interface DatabaseConfiguration {
@@ -21,6 +22,26 @@ export interface AuthConfiguration {
 export interface OperationsAuthConfiguration {
   readonly operationsAccessToken: string;
   readonly operationsOperatorId: string;
+}
+
+export type RuntimeEnvironment = 'local' | 'test' | 'controlled' | 'production';
+
+export interface LiveProviderConfiguration {
+  readonly providerId: string;
+  readonly providerUrl: string;
+  readonly merchantAccountMapping: string;
+  readonly apiCredential: string;
+  readonly webhookSecret: string;
+  readonly providerEnvironment: 'production';
+  readonly currency: 'CNY';
+  readonly region: string;
+}
+
+export interface RealMoneyRuntimeConfiguration {
+  readonly runtimeEnvironment: RuntimeEnvironment;
+  readonly realMoneyEnabled: boolean;
+  readonly founderActivationReference?: string;
+  readonly provider?: LiveProviderConfiguration;
 }
 
 const supportedEnvironments = new Set<AppEnvironment>(['development', 'test', 'production']);
@@ -76,6 +97,7 @@ export function loadConfiguration(environment: NodeJS.ProcessEnv = process.env):
     environment: appEnvironment as AppEnvironment,
     logLevel: logLevel as AppConfiguration['logLevel'],
     webReferenceClientOrigin: webReferenceClientOrigin.replace(/\/$/u, ''),
+    usePostgresTestComposition: environment.USE_POSTGRES_TEST_COMPOSITION === '1',
   };
 }
 
@@ -136,6 +158,115 @@ export function loadOperationsAuthConfiguration(
   }
 
   return { operationsAccessToken, operationsOperatorId };
+}
+
+export function loadRealMoneyRuntimeConfiguration(
+  environment: NodeJS.ProcessEnv = process.env,
+): RealMoneyRuntimeConfiguration {
+  const runtimeEnvironment = parseRuntimeEnvironment(environment.RUNTIME_ENV);
+  const realMoneyEnabled = parseBoolean(environment.REAL_MONEY_ENABLED, false);
+  const founderActivationReference = optionalTrimmed(environment.FOUNDER_ACTIVATION_REFERENCE);
+  const provider = parseLiveProviderConfiguration(environment);
+
+  if (
+    realMoneyEnabled &&
+    runtimeEnvironment !== 'controlled' &&
+    runtimeEnvironment !== 'production'
+  ) {
+    throw new Error('REAL_MONEY_ENABLED requires controlled or production runtime.');
+  }
+
+  if (realMoneyEnabled && founderActivationReference === undefined) {
+    throw new Error('FOUNDER_ACTIVATION_REFERENCE is required when real money is enabled.');
+  }
+
+  if (realMoneyEnabled && provider === undefined) {
+    throw new Error('Live Provider configuration is incomplete.');
+  }
+
+  return {
+    runtimeEnvironment,
+    realMoneyEnabled,
+    ...(founderActivationReference === undefined ? {} : { founderActivationReference }),
+    ...(provider === undefined ? {} : { provider }),
+  };
+}
+
+function parseRuntimeEnvironment(value: string | undefined): RuntimeEnvironment {
+  const normalized = value?.trim() ?? 'local';
+  if (
+    normalized !== 'local' &&
+    normalized !== 'test' &&
+    normalized !== 'controlled' &&
+    normalized !== 'production'
+  ) {
+    throw new Error(`Unsupported RUNTIME_ENV: ${normalized}`);
+  }
+  return normalized;
+}
+
+function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === undefined || normalized.length === 0) {
+    return defaultValue;
+  }
+  if (normalized === 'true') {
+    return true;
+  }
+  if (normalized === 'false') {
+    return false;
+  }
+  throw new Error('REAL_MONEY_ENABLED must be true or false.');
+}
+
+function parseLiveProviderConfiguration(
+  environment: NodeJS.ProcessEnv,
+): LiveProviderConfiguration | undefined {
+  const values = {
+    providerId: optionalTrimmed(environment.LIVE_PROVIDER_ID),
+    providerUrl: optionalTrimmed(environment.LIVE_PROVIDER_URL),
+    merchantAccountMapping: optionalTrimmed(environment.LIVE_PROVIDER_MERCHANT_ACCOUNT),
+    apiCredential: optionalTrimmed(environment.LIVE_PROVIDER_API_CREDENTIAL),
+    webhookSecret: optionalTrimmed(environment.LIVE_PROVIDER_WEBHOOK_SECRET),
+    providerEnvironment: optionalTrimmed(environment.LIVE_PROVIDER_ENVIRONMENT),
+    currency: optionalTrimmed(environment.LIVE_PROVIDER_CURRENCY),
+    region: optionalTrimmed(environment.LIVE_PROVIDER_REGION),
+  };
+  const configuredValues = Object.values(values).filter((value) => value !== undefined);
+  if (configuredValues.length === 0) {
+    return undefined;
+  }
+  if (configuredValues.length !== Object.keys(values).length) {
+    throw new Error('Live Provider configuration is incomplete.');
+  }
+
+  try {
+    new URL(values.providerUrl!);
+  } catch (cause) {
+    throw new Error('LIVE_PROVIDER_URL must be a valid URL.', { cause });
+  }
+  if (values.providerEnvironment !== 'production') {
+    throw new Error('LIVE_PROVIDER_ENVIRONMENT must be production for Live Provider use.');
+  }
+  if (values.currency !== 'CNY') {
+    throw new Error('LIVE_PROVIDER_CURRENCY must be CNY for the current Money Domain.');
+  }
+
+  return {
+    providerId: values.providerId!,
+    providerUrl: values.providerUrl!,
+    merchantAccountMapping: values.merchantAccountMapping!,
+    apiCredential: values.apiCredential!,
+    webhookSecret: values.webhookSecret!,
+    providerEnvironment: values.providerEnvironment,
+    currency: values.currency,
+    region: values.region!,
+  };
+}
+
+function optionalTrimmed(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed === undefined || trimmed.length === 0 ? undefined : trimmed;
 }
 
 function parseCreatorActorMappings(value: string | undefined): ReadonlyMap<string, string> {

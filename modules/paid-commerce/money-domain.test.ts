@@ -14,6 +14,8 @@ import {
   money,
   pendingEarningsEntry,
   projectWallet,
+  refundDebitedEntry,
+  refundPayment,
   releaseSettlement,
   settlementReleasedEntry,
   withdrawalCompletedEntry,
@@ -154,6 +156,7 @@ describe('Paid Commerce Money Domain', () => {
       restricted: 0n,
       withdrawalInProgress: 0n,
       withdrawn: 0n,
+      recoveryOutstanding: 0n,
     };
     const withdrawal = createWithdrawal({
       id: 'withdrawal-1',
@@ -245,6 +248,121 @@ describe('Paid Commerce Money Domain', () => {
       available: 25_790n,
       withdrawalInProgress: 0n,
       withdrawn: 10_000n,
+    });
+  });
+
+  it('projects Refund recovery without negative Wallet balances and applies later earnings', () => {
+    const payment = refundPayment(
+      {
+        id: 'payment-refund-1',
+        orderId: 'order-refund-1',
+        amount: money('CNY', 39_900n),
+        state: 'confirmed',
+        correlationId: 'payment-refund-correlation',
+        providerReference: 'simulation-payment-1',
+      },
+      'simulation-refund-1',
+    );
+    const funding = {
+      id: 'ledger-funding-1',
+      creatorId: 'creator-1',
+      currency: 'CNY' as const,
+      minor: 35_670n,
+      type: 'pending_earnings_credited' as const,
+      effectiveAt: timestamp,
+      orderId: 'order-refund-1',
+      correlationId: 'settlement-refund-1',
+    };
+    const released = {
+      ...funding,
+      id: 'ledger-released-1',
+      type: 'settlement_released' as const,
+    };
+    const refund = refundDebitedEntry({
+      id: 'ledger-refund-1',
+      payment,
+      creatorId: 'creator-1',
+      effectiveAt: timestamp,
+      correlationId: 'refund-payment-refund-1',
+    });
+
+    expect(projectWallet('CNY', [funding, released, refund])).toMatchObject({
+      available: 0n,
+      recoveryOutstanding: 4_230n,
+      withdrawn: 0n,
+    });
+
+    const laterFunding = {
+      ...funding,
+      id: 'ledger-funding-2',
+      orderId: 'order-later-1',
+      correlationId: 'settlement-later-1',
+    };
+    const laterReleased = {
+      ...laterFunding,
+      id: 'ledger-released-2',
+      type: 'settlement_released' as const,
+    };
+    expect(
+      projectWallet('CNY', [funding, released, refund, laterFunding, laterReleased]),
+    ).toMatchObject({
+      available: 31_440n,
+      recoveryOutstanding: 0n,
+    });
+  });
+
+  it('does not use another Order pending earnings to absorb a Refund', () => {
+    const refundedPayment = refundPayment(
+      {
+        id: 'payment-refunded-order',
+        orderId: 'order-refunded',
+        amount: money('CNY', 39_900n),
+        state: 'confirmed',
+        correlationId: 'payment-refunded-order-correlation',
+        providerReference: 'simulation-payment-refunded-order',
+      },
+      'simulation-refund-refunded-order',
+    );
+    const refundedOrderFunding = {
+      id: 'ledger-refunded-order-pending',
+      creatorId: 'creator-1',
+      currency: 'CNY' as const,
+      minor: 35_670n,
+      type: 'pending_earnings_credited' as const,
+      effectiveAt: timestamp,
+      orderId: 'order-refunded',
+      correlationId: 'settlement-refunded-order',
+    };
+    const refundedOrderRelease = {
+      ...refundedOrderFunding,
+      id: 'ledger-refunded-order-released',
+      type: 'settlement_released' as const,
+    };
+    const anotherOrderPending = {
+      ...refundedOrderFunding,
+      id: 'ledger-another-order-pending',
+      orderId: 'order-still-pending',
+      correlationId: 'settlement-still-pending',
+    };
+    const refund = refundDebitedEntry({
+      id: 'ledger-refund-refunded-order',
+      payment: refundedPayment,
+      creatorId: 'creator-1',
+      effectiveAt: timestamp,
+      correlationId: 'refund-refunded-order',
+    });
+
+    expect(
+      projectWallet('CNY', [
+        refundedOrderFunding,
+        refundedOrderRelease,
+        anotherOrderPending,
+        refund,
+      ]),
+    ).toMatchObject({
+      pending: 35_670n,
+      available: 0n,
+      recoveryOutstanding: 4_230n,
     });
   });
 });

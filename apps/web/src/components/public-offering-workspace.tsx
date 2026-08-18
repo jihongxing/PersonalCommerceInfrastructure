@@ -13,6 +13,8 @@ import { Input } from './ui/input';
 import { StatusMessage } from './ui/status-message';
 import { Surface } from './ui/surface';
 import { Textarea } from './ui/textarea';
+import { PublicReservationWorkspace } from './public-reservation-workspace';
+import { CustomerCommerceActionRouter } from './customer-commerce-action-router';
 
 type PublicOfferingResponse =
   operations['getPublicServiceOffering']['responses'][200]['content']['application/json'];
@@ -90,7 +92,9 @@ export function PublicOfferingWorkspace({ offeringId }: { readonly offeringId: s
       </header>
       <Surface className="ds-page__surface">
         <p className="ds-eyebrow">{publicOfferingCopy.eyebrow}</p>
-        <StatusMessage>{busy ? publicOfferingCopy.syncing : message}</StatusMessage>
+        <StatusMessage data-testid="public-offering-status">
+          {busy ? publicOfferingCopy.syncing : message}
+        </StatusMessage>
         {resultAccessToken === null ? null : (
           <p>
             <a href={`/public/requests/${resultAccessToken}`}>{publicOfferingCopy.resultLink}</a>
@@ -106,6 +110,42 @@ export function PublicOfferingWorkspace({ offeringId }: { readonly offeringId: s
                 {details.creator.capabilityNames.join('、')}
               </p>
             )}
+            {details.offering.appearance === undefined ? null : (
+              <section
+                className="ds-section-divider ds-section-stack"
+                aria-labelledby="upcoming-title"
+                data-testid="upcoming-projection"
+              >
+                <p className="ds-eyebrow">{publicOfferingCopy.upcomingTitle}</p>
+                <h2 className="ds-heading-section" id="upcoming-title">
+                  {details.offering.appearance.upcomingTitle}
+                </h2>
+                <p className="ds-body-secondary">
+                  {publicOfferingCopy.upcomingDateLabel}
+                  {details.offering.appearance.startsOn}
+                  {details.offering.appearance.endsOn === undefined
+                    ? ''
+                    : ` — ${details.offering.appearance.endsOn}`}
+                </p>
+                <p className="ds-body-secondary">
+                  {publicOfferingCopy.upcomingLocationLabel}
+                  {details.offering.appearance.locationDescription}
+                </p>
+                <p className="ds-body-secondary">
+                  {publicOfferingCopy.upcomingTypeLabel}
+                  {details.offering.appearance.appearanceType}
+                </p>
+                {details.offering.appearance.externalUrl === undefined ? null : (
+                  <a
+                    href={details.offering.appearance.externalUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {publicOfferingCopy.upcomingExternalLink}
+                  </a>
+                )}
+              </section>
+            )}
             <section className="ds-section-divider ds-section-stack">
               <h2 className="ds-heading-section">{details.offering.title}</h2>
               <p className="ds-body-secondary">{details.offering.description}</p>
@@ -117,7 +157,15 @@ export function PublicOfferingWorkspace({ offeringId }: { readonly offeringId: s
                 {publicOfferingCopy.instructionsLabel}
                 {details.offering.requestInstructions}
               </p>
+              {details.offering.appearance?.pricingRule === undefined ? null : (
+                <p className="ds-body-secondary">
+                  {publicOfferingCopy.appearancePricingLabel}
+                  {details.offering.appearance.pricingRule}
+                </p>
+              )}
             </section>
+            <CustomerCommerceActionRouter />
+            <PublicReservationWorkspace offeringId={offeringId} />
             <section
               className="ds-section-divider ds-section-stack"
               aria-labelledby="request-title"
@@ -163,7 +211,7 @@ export function PublicOfferingWorkspace({ offeringId }: { readonly offeringId: s
                 onClick={() => void submitRequest()}
                 type="button"
               >
-                {publicOfferingCopy.submit}
+                {details.offering.appearance?.requestCallToAction ?? publicOfferingCopy.submit}
               </Button>
             </section>
           </>

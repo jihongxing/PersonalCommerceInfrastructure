@@ -5,7 +5,8 @@ const MoneyMinorSchema = Type.String({ pattern: '^[0-9]+$' });
 
 export const CreatePaidServiceOrderSchema = Type.Object(
   {
-    commerceActionId: Type.String({ minLength: 1 }),
+    commerceActionId: Type.Optional(Type.String({ minLength: 1 })),
+    reservationId: Type.Optional(Type.String({ minLength: 1 })),
     grossPriceMinor: MoneyMinorSchema,
     serviceTerms: Type.String({ minLength: 1, maxLength: 2_000 }),
   },
@@ -15,7 +16,9 @@ export const CreatePaidServiceOrderSchema = Type.Object(
 export const PaidServiceOrderSchema = Type.Object(
   {
     id: Type.String({ minLength: 1 }),
-    commerceActionId: Type.String({ minLength: 1 }),
+    commerceActionId: Type.Optional(Type.String({ minLength: 1 })),
+    reservationId: Type.Optional(Type.String({ minLength: 1 })),
+    contractId: Type.Optional(Type.String({ minLength: 1 })),
     creatorId: Type.String({ minLength: 1 }),
     customerId: Type.String({ minLength: 1 }),
     offeringId: Type.String({ minLength: 1 }),
@@ -56,6 +59,7 @@ export const CreatorWalletSchema = Type.Object(
     restrictedMinor: MoneyMinorSchema,
     withdrawalInProgressMinor: MoneyMinorSchema,
     withdrawnMinor: MoneyMinorSchema,
+    recoveryOutstandingMinor: MoneyMinorSchema,
   },
   { additionalProperties: false },
 );
@@ -78,6 +82,7 @@ export const PublicPaidServiceOrderStatusSchema = Type.Object(
       Type.Literal('pending'),
       Type.Literal('confirmed'),
       Type.Literal('failed'),
+      Type.Literal('expired'),
       Type.Literal('refunded'),
       Type.Literal('reversed'),
     ]),

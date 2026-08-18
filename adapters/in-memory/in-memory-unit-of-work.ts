@@ -11,6 +11,12 @@ import type {
   CustomerRepository,
 } from '../../applications/customer-request/customer-request-repositories.js';
 import type { PaidCommerceRepository } from '../../applications/paid-commerce/paid-commerce-repositories.js';
+import type { ReservationRepository } from '../../applications/reservation/reservation-repositories.js';
+import type {
+  ContractAcceptanceFactRepository,
+  ContractRepository,
+  ContractScopeVersionRepository,
+} from '../../applications/contract-commerce/contract-repositories.js';
 
 import type { TransactionParticipant } from './transaction-participant.js';
 
@@ -28,6 +34,10 @@ export class InMemoryUnitOfWork implements UnitOfWork {
       readonly customerRepository?: CustomerRepository;
       readonly commerceActionRepository?: CommerceActionRepository;
       readonly paidCommerceRepository?: PaidCommerceRepository;
+      readonly reservationRepository?: ReservationRepository;
+      readonly contractRepository?: ContractRepository;
+      readonly contractScopeVersionRepository?: ContractScopeVersionRepository;
+      readonly contractAcceptanceFactRepository?: ContractAcceptanceFactRepository;
     } = {},
   ) {}
 

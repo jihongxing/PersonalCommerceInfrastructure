@@ -7,7 +7,6 @@ import { creatorEarningsCopy } from '../content/user-facing-copy';
 import type { AccessTokenProvider } from '../lib/api/authentication';
 import { createApiClient } from '../lib/api/client';
 import type { operations } from '../lib/api/generated';
-import { toUserFacingMessage } from '../lib/ui/user-facing-messages';
 import { Button } from './ui/button';
 import { EmptyState } from './ui/empty-state';
 import { FormField } from './ui/form-field';
@@ -18,18 +17,30 @@ import { Textarea } from './ui/textarea';
 
 type ConfirmedRequest =
   operations['listCreatorConfirmedRequests']['responses'][200]['content']['application/json']['requests'][number];
-type PaidOrder =
-  operations['listCreatorPaidServiceOrders']['responses'][200]['content']['application/json']['orders'][number];
-type Wallet =
-  operations['getCreatorEarningsWallet']['responses'][200]['content']['application/json'];
+type LocalWorkspace =
+  operations['getCreatorLocalCommerceWorkspace']['responses'][200]['content']['application/json'];
+type LocalOrder = LocalWorkspace['orders'][number];
+type SettlementScenario =
+  operations['simulateLocalProductSettlement']['requestBody']['content']['application/json']['scenario'];
+type WithdrawalScenario =
+  operations['simulateLocalProductWithdrawal']['requestBody']['content']['application/json']['scenario'];
+type RefundScenario =
+  operations['simulateLocalProductRefund']['requestBody']['content']['application/json']['scenario'];
 
-const emptyWallet: Wallet = {
-  currency: 'CNY',
-  pendingMinor: '0',
-  availableMinor: '0',
-  restrictedMinor: '0',
-  withdrawalInProgressMinor: '0',
-  withdrawnMinor: '0',
+const emptyWorkspace: LocalWorkspace = {
+  origin: 'simulation',
+  providerId: 'local_commerce_simulator',
+  orders: [],
+  wallet: {
+    currency: 'CNY',
+    pendingMinor: '0',
+    availableMinor: '0',
+    restrictedMinor: '0',
+    withdrawalInProgressMinor: '0',
+    withdrawnMinor: '0',
+    recoveryOutstandingMinor: '0',
+  },
+  withdrawals: [],
 };
 
 export function CreatorEarningsWorkspace({
@@ -37,15 +48,27 @@ export function CreatorEarningsWorkspace({
 }: {
   readonly accessTokenProvider: AccessTokenProvider;
 }) {
+  const simulationEnabled = useMemo(
+    () => loadWebConfiguration().runtimeEnvironment !== 'production',
+    [],
+  );
   const [confirmedRequests, setConfirmedRequests] = useState<readonly ConfirmedRequest[]>([]);
-  const [orders, setOrders] = useState<readonly PaidOrder[]>([]);
-  const [wallet, setWallet] = useState<Wallet>(emptyWallet);
+  const [workspace, setWorkspace] = useState<LocalWorkspace>(emptyWorkspace);
   const [grossPriceMinor, setGrossPriceMinor] = useState('39900');
   const [serviceTerms, setServiceTerms] = useState('一次 60 分钟线下舞蹈私教服务。');
   const [fulfillmentEvidence, setFulfillmentEvidence] = useState('');
   const [withdrawalAmountMinor, setWithdrawalAmountMinor] = useState('');
   const [destinationReference, setDestinationReference] = useState('');
   const [idempotencyKey, setIdempotencyKey] = useState('');
+  const [settlementScenario, setSettlementScenario] = useState<SettlementScenario>('immediate');
+  const [withdrawalScenario, setWithdrawalScenario] = useState<WithdrawalScenario>('success');
+  const [refundScenario, setRefundScenario] = useState<RefundScenario>('after_settlement');
+  const [pendingSettlementReferences, setPendingSettlementReferences] = useState<
+    Readonly<Record<string, string>>
+  >({});
+  const [pendingWithdrawalReferences, setPendingWithdrawalReferences] = useState<
+    Readonly<Record<string, string>>
+  >({});
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -59,28 +82,28 @@ export function CreatorEarningsWorkspace({
   );
 
   useEffect(() => {
-    void refresh();
-  }, []);
+    if (simulationEnabled) {
+      void refresh();
+    }
+  }, [simulationEnabled]);
 
-  async function refresh(): Promise<void> {
+  async function refresh() {
     setBusy(true);
     try {
-      const [confirmedResponse, ordersResponse, walletResponse] = await Promise.all([
-        client.GET('/api/v1/creator/confirmed-requests'),
-        client.GET('/api/v1/creator/paid-orders'),
-        client.GET('/api/v1/creator/wallet'),
-      ]);
+      const confirmedResponse = await client.GET('/api/v1/creator/confirmed-requests');
+      const workspaceResponse = simulationEnabled
+        ? await client.GET('/api/v1/creator/local-commerce/workspace')
+        : undefined;
       if (
         confirmedResponse.error !== undefined ||
-        ordersResponse.error !== undefined ||
-        walletResponse.error !== undefined
+        workspaceResponse === undefined ||
+        workspaceResponse.error !== undefined
       ) {
         setMessage(creatorEarningsCopy.failed);
         return;
       }
       setConfirmedRequests(confirmedResponse.data.requests);
-      setOrders(ordersResponse.data.orders);
-      setWallet(walletResponse.data);
+      setWorkspace(workspaceResponse.data);
     } catch {
       setMessage(creatorEarningsCopy.failed);
     } finally {
@@ -88,38 +111,143 @@ export function CreatorEarningsWorkspace({
     }
   }
 
-  async function createOrder(commerceActionId: string): Promise<void> {
-    setBusy(true);
-    try {
+  async function createOrder(commerceActionId: string) {
+    await runAction(async () => {
       const response = await client.POST('/api/v1/creator/paid-orders', {
         body: { commerceActionId, grossPriceMinor, serviceTerms },
       });
       if (response.error !== undefined) {
-        setMessage(toUserFacingMessage(response.error, creatorEarningsCopy.failed));
-        return;
+        throw new Error(creatorEarningsCopy.failed);
       }
       setMessage(creatorEarningsCopy.orderCreated);
-      await refresh();
-    } catch {
-      setMessage(creatorEarningsCopy.failed);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
-  async function recordFulfillment(orderId: string): Promise<void> {
-    setBusy(true);
-    try {
+  async function recordFulfillment(orderId: string) {
+    await runAction(async () => {
       const response = await client.POST('/api/v1/creator/paid-orders/{orderId}/fulfillment', {
         params: { path: { orderId } },
         body: { evidenceReference: fulfillmentEvidence },
       });
       if (response.error !== undefined) {
-        setMessage(toUserFacingMessage(response.error, creatorEarningsCopy.failed));
-        return;
+        throw new Error(creatorEarningsCopy.failed);
       }
       setFulfillmentEvidence('');
       setMessage(creatorEarningsCopy.fulfillmentRecorded);
+    });
+  }
+
+  async function requestWithdrawal() {
+    await runAction(async () => {
+      const response = await client.POST('/api/v1/creator/wallet/withdrawals', {
+        body: { amountMinor: withdrawalAmountMinor, destinationReference, idempotencyKey },
+      });
+      if (response.error !== undefined) {
+        throw new Error(creatorEarningsCopy.failed);
+      }
+      setMessage(creatorEarningsCopy.withdrawalRequested);
+    });
+  }
+
+  async function simulateSettlement(orderId: string) {
+    await runAction(async () => {
+      const response = await client.POST(
+        '/api/v1/creator/local-commerce/orders/{orderId}/settlement',
+        { params: { path: { orderId } }, body: { scenario: settlementScenario } },
+      );
+      if (response.error !== undefined) throw new Error(creatorEarningsCopy.failed);
+      if (
+        settlementScenario === 'delayed' &&
+        response.data.operationProviderReference !== undefined
+      ) {
+        setPendingSettlementReferences((current) => ({
+          ...current,
+          [orderId]: response.data.operationProviderReference as string,
+        }));
+      }
+      setMessage(
+        settlementScenario === 'delayed'
+          ? '模拟结算正在等待 Provider Fact。'
+          : '模拟结算事实已处理。',
+      );
+    });
+  }
+
+  async function advanceSettlement(orderId: string) {
+    const providerReference = pendingSettlementReferences[orderId];
+    if (providerReference === undefined) return;
+    await runAction(async () => {
+      const response = await client.POST(
+        '/api/v1/creator/local-commerce/orders/{orderId}/settlement/advance',
+        { params: { path: { orderId } }, body: { providerReference } },
+      );
+      if (response.error !== undefined) throw new Error(creatorEarningsCopy.failed);
+      setPendingSettlementReferences((current) => {
+        const next = { ...current };
+        delete next[orderId];
+        return next;
+      });
+      setMessage('延迟的模拟结算事实已处理。');
+    });
+  }
+
+  async function simulateWithdrawal(withdrawalId: string) {
+    await runAction(async () => {
+      const response = await client.POST(
+        '/api/v1/creator/local-commerce/withdrawals/{withdrawalId}/simulate',
+        { params: { path: { withdrawalId } }, body: { scenario: withdrawalScenario } },
+      );
+      if (response.error !== undefined) throw new Error(creatorEarningsCopy.failed);
+      if (
+        withdrawalScenario === 'delayed' &&
+        response.data.operationProviderReference !== undefined
+      ) {
+        setPendingWithdrawalReferences((current) => ({
+          ...current,
+          [withdrawalId]: response.data.operationProviderReference as string,
+        }));
+      }
+      setMessage(
+        withdrawalScenario === 'delayed'
+          ? '模拟提现正在等待 Provider Fact。'
+          : '模拟提现事实已处理。',
+      );
+    });
+  }
+
+  async function advanceWithdrawal(withdrawalId: string) {
+    const providerReference = pendingWithdrawalReferences[withdrawalId];
+    if (providerReference === undefined) return;
+    await runAction(async () => {
+      const response = await client.POST(
+        '/api/v1/creator/local-commerce/withdrawals/{withdrawalId}/advance',
+        { params: { path: { withdrawalId } }, body: { providerReference } },
+      );
+      if (response.error !== undefined) throw new Error(creatorEarningsCopy.failed);
+      setPendingWithdrawalReferences((current) => {
+        const next = { ...current };
+        delete next[withdrawalId];
+        return next;
+      });
+      setMessage('延迟的模拟提现事实已处理。');
+    });
+  }
+
+  async function simulateRefund(orderId: string) {
+    await runAction(async () => {
+      const response = await client.POST('/api/v1/creator/local-commerce/orders/{orderId}/refund', {
+        params: { path: { orderId } },
+        body: { scenario: refundScenario },
+      });
+      if (response.error !== undefined) throw new Error(creatorEarningsCopy.failed);
+      setMessage('模拟退款事实已处理，Ledger 与 Recovery 投影已刷新。');
+    });
+  }
+
+  async function runAction(action: () => unknown) {
+    setBusy(true);
+    try {
+      await action();
       await refresh();
     } catch {
       setMessage(creatorEarningsCopy.failed);
@@ -128,27 +256,8 @@ export function CreatorEarningsWorkspace({
     }
   }
 
-  async function requestWithdrawal(): Promise<void> {
-    setBusy(true);
-    try {
-      const response = await client.POST('/api/v1/creator/wallet/withdrawals', {
-        body: {
-          amountMinor: withdrawalAmountMinor,
-          destinationReference,
-          idempotencyKey,
-        },
-      });
-      if (response.error !== undefined) {
-        setMessage(toUserFacingMessage(response.error, creatorEarningsCopy.failed));
-        return;
-      }
-      setMessage(creatorEarningsCopy.withdrawalRequested);
-      await refresh();
-    } catch {
-      setMessage(creatorEarningsCopy.failed);
-    } finally {
-      setBusy(false);
-    }
+  if (!simulationEnabled) {
+    return null;
   }
 
   return (
@@ -158,6 +267,10 @@ export function CreatorEarningsWorkspace({
         <h2 className="ds-heading-section">{creatorEarningsCopy.title}</h2>
         <p className="ds-body-secondary ds-measure">{creatorEarningsCopy.description}</p>
       </div>
+
+      <StatusMessage data-testid="creator-simulation-boundary">
+        {creatorEarningsCopy.simulationBoundary}
+      </StatusMessage>
 
       <section className="ds-section-stack">
         <div className="ds-action-row">
@@ -205,7 +318,7 @@ export function CreatorEarningsWorkspace({
       </section>
 
       <section className="ds-section-stack">
-        <h3 className="ds-heading-section">{creatorEarningsCopy.ordersTitle}</h3>
+        <h3 className="ds-heading-section">{creatorEarningsCopy.orderWorkspaceTitle}</h3>
         <FormField
           htmlFor="paid-order-fulfillment-evidence"
           label={creatorEarningsCopy.fulfillmentEvidenceLabel}
@@ -216,57 +329,63 @@ export function CreatorEarningsWorkspace({
             onChange={(event) => setFulfillmentEvidence(event.target.value)}
           />
         </FormField>
-        {orders.length === 0 ? (
+        <div className="ds-form-grid">
+          <FormField
+            htmlFor="settlement-scenario"
+            label={creatorEarningsCopy.settlementScenarioLabel}
+          >
+            <select
+              id="settlement-scenario"
+              value={settlementScenario}
+              onChange={(event) => setSettlementScenario(event.target.value as SettlementScenario)}
+            >
+              <option value="immediate">{creatorEarningsCopy.immediateScenario}</option>
+              <option value="delayed">{creatorEarningsCopy.delayedScenario}</option>
+              <option value="failed">{creatorEarningsCopy.failedScenario}</option>
+              <option value="duplicate">{creatorEarningsCopy.duplicateScenario}</option>
+              <option value="conflicting_terminal_event">
+                {creatorEarningsCopy.conflictScenario}
+              </option>
+            </select>
+          </FormField>
+          <FormField htmlFor="refund-scenario" label={creatorEarningsCopy.refundScenarioLabel}>
+            <select
+              id="refund-scenario"
+              value={refundScenario}
+              onChange={(event) => setRefundScenario(event.target.value as RefundScenario)}
+            >
+              <option value="after_settlement">
+                {creatorEarningsCopy.afterSettlementScenario}
+              </option>
+              <option value="before_settlement">
+                {creatorEarningsCopy.beforeSettlementScenario}
+              </option>
+              <option value="failed_refund">{creatorEarningsCopy.failedRefundScenario}</option>
+            </select>
+          </FormField>
+        </div>
+        {workspace.orders.length === 0 ? (
           <EmptyState>{creatorEarningsCopy.ordersEmpty}</EmptyState>
         ) : (
           <div className="ds-section-stack">
-            {orders.map((order) => (
-              <Surface className="ds-list-item" key={order.id} tone="subtle">
-                <p className="ds-list-item__title">{order.snapshot.offeringTitle}</p>
-                <p className="ds-list-item__description">
-                  {creatorEarningsCopy.stateLabel} {order.state}
-                </p>
-                <p className="ds-list-item__description">
-                  {order.snapshot.currency} {order.snapshot.grossPriceMinor}
-                </p>
-                {order.state === 'paid' ? (
-                  <Button
-                    disabled={busy || fulfillmentEvidence.trim().length === 0}
-                    onClick={() => void recordFulfillment(order.id)}
-                    type="button"
-                    variant="outline"
-                  >
-                    {creatorEarningsCopy.fulfill}
-                  </Button>
-                ) : null}
-              </Surface>
+            {workspace.orders.map((item) => (
+              <CreatorOrderCard
+                busy={busy}
+                fulfillmentEvidence={fulfillmentEvidence}
+                item={item}
+                key={item.order.id}
+                pendingSettlementReference={pendingSettlementReferences[item.order.id]}
+                onAdvanceSettlement={(orderId) => void advanceSettlement(orderId)}
+                onFulfill={(orderId) => void recordFulfillment(orderId)}
+                onRefund={(orderId) => void simulateRefund(orderId)}
+                onSettle={(orderId) => void simulateSettlement(orderId)}
+              />
             ))}
           </div>
         )}
       </section>
 
-      <section className="ds-section-stack">
-        <h3 className="ds-heading-section">{creatorEarningsCopy.walletTitle}</h3>
-        <StatusMessage>{creatorEarningsCopy.walletNotice}</StatusMessage>
-        <div className="ds-form-grid">
-          <Surface className="ds-status-card" tone="subtle">
-            <strong>{creatorEarningsCopy.pendingLabel}</strong> {wallet.pendingMinor}
-          </Surface>
-          <Surface className="ds-status-card" tone="subtle">
-            <strong>{creatorEarningsCopy.availableLabel}</strong> {wallet.availableMinor}
-          </Surface>
-          <Surface className="ds-status-card" tone="subtle">
-            <strong>{creatorEarningsCopy.restrictedLabel}</strong> {wallet.restrictedMinor}
-          </Surface>
-          <Surface className="ds-status-card" tone="subtle">
-            <strong>{creatorEarningsCopy.processingLabel}</strong>{' '}
-            {wallet.withdrawalInProgressMinor}
-          </Surface>
-          <Surface className="ds-status-card" tone="subtle">
-            <strong>{creatorEarningsCopy.withdrawnLabel}</strong> {wallet.withdrawnMinor}
-          </Surface>
-        </div>
-      </section>
+      <WalletSection workspace={workspace} />
 
       <section className="ds-section-stack">
         <h3 className="ds-heading-section">{creatorEarningsCopy.withdrawalTitle}</h3>
@@ -302,6 +421,21 @@ export function CreatorEarningsWorkspace({
               onChange={(event) => setIdempotencyKey(event.target.value)}
             />
           </FormField>
+          <FormField
+            htmlFor="withdrawal-scenario"
+            label={creatorEarningsCopy.withdrawalScenarioLabel}
+          >
+            <select
+              id="withdrawal-scenario"
+              value={withdrawalScenario}
+              onChange={(event) => setWithdrawalScenario(event.target.value as WithdrawalScenario)}
+            >
+              <option value="success">{creatorEarningsCopy.successScenario}</option>
+              <option value="failed">{creatorEarningsCopy.failedScenario}</option>
+              <option value="delayed">{creatorEarningsCopy.delayedScenario}</option>
+              <option value="duplicate">{creatorEarningsCopy.duplicateScenario}</option>
+            </select>
+          </FormField>
         </div>
         <Button
           disabled={
@@ -315,9 +449,225 @@ export function CreatorEarningsWorkspace({
         >
           {creatorEarningsCopy.requestWithdrawal}
         </Button>
+        {workspace.withdrawals.map((withdrawal) => (
+          <Surface
+            className="ds-list-item"
+            data-testid={`withdrawal-${withdrawal.id}`}
+            key={withdrawal.id}
+            tone="subtle"
+          >
+            <p className="ds-list-item__title">Withdrawal {formatMoney(withdrawal.amountMinor)}</p>
+            <p
+              className="ds-list-item__description"
+              data-testid={`withdrawal-state-${withdrawal.id}`}
+            >
+              {creatorEarningsCopy.withdrawalStateLabel}
+              {withdrawal.state}
+            </p>
+            {withdrawal.state === 'requested' || withdrawal.state === 'failed' ? (
+              <Button
+                disabled={busy}
+                onClick={() => void simulateWithdrawal(withdrawal.id)}
+                type="button"
+              >
+                {withdrawal.state === 'failed'
+                  ? creatorEarningsCopy.retryWithdrawal
+                  : creatorEarningsCopy.runWithdrawal}
+              </Button>
+            ) : null}
+            {pendingWithdrawalReferences[withdrawal.id] === undefined ? null : (
+              <Button
+                disabled={busy}
+                onClick={() => void advanceWithdrawal(withdrawal.id)}
+                type="button"
+                variant="outline"
+              >
+                {creatorEarningsCopy.advanceWithdrawal}
+              </Button>
+            )}
+          </Surface>
+        ))}
       </section>
 
-      {message.length === 0 ? null : <StatusMessage>{message}</StatusMessage>}
+      {message.length === 0 ? null : (
+        <StatusMessage data-testid="creator-earnings-action-status">{message}</StatusMessage>
+      )}
     </Surface>
   );
+}
+
+function CreatorOrderCard({
+  busy,
+  fulfillmentEvidence,
+  item,
+  pendingSettlementReference,
+  onAdvanceSettlement,
+  onFulfill,
+  onRefund,
+  onSettle,
+}: {
+  readonly busy: boolean;
+  readonly fulfillmentEvidence: string;
+  readonly item: LocalOrder;
+  readonly pendingSettlementReference?: string;
+  readonly onAdvanceSettlement: (orderId: string) => void;
+  readonly onFulfill: (orderId: string) => void;
+  readonly onRefund: (orderId: string) => void;
+  readonly onSettle: (orderId: string) => void;
+}) {
+  return (
+    <Surface className="ds-list-item" data-testid={`creator-order-${item.order.id}`} tone="subtle">
+      <p className="ds-list-item__title">{item.order.snapshot.offeringTitle}</p>
+      <p className="ds-list-item__description">
+        {creatorEarningsCopy.customerLabel}
+        {item.customerName}
+      </p>
+      <p className="ds-list-item__description">
+        {creatorEarningsCopy.grossLabel}
+        {formatMoney(item.order.snapshot.grossPriceMinor)}
+      </p>
+      <p className="ds-list-item__description" data-testid={`order-state-${item.order.id}`}>
+        {creatorEarningsCopy.orderLabel}
+        {item.order.state}
+      </p>
+      <p
+        className="ds-list-item__description"
+        data-testid={`creator-payment-state-${item.order.id}`}
+      >
+        {creatorEarningsCopy.paymentLabel}
+        {item.payment?.state ?? 'not_started'}
+      </p>
+      <p className="ds-list-item__description" data-testid={`fulfillment-state-${item.order.id}`}>
+        {creatorEarningsCopy.fulfillmentLabel}
+        {item.fulfillmentState}
+      </p>
+      <p className="ds-list-item__description" data-testid={`settlement-state-${item.order.id}`}>
+        {creatorEarningsCopy.settlementLabel}
+        {item.settlement?.state ?? 'not_started'}
+      </p>
+      <p className="ds-list-item__description" data-testid={`earnings-state-${item.order.id}`}>
+        {creatorEarningsCopy.earningsLabel}
+        {item.earningsState}
+      </p>
+      {item.settlement === undefined ? null : (
+        <Surface
+          className="ds-status-card"
+          data-testid={`fee-trace-${item.order.id}`}
+          tone="subtle"
+        >
+          <strong>{creatorEarningsCopy.feeTraceLabel}</strong> {creatorEarningsCopy.grossLabel}{' '}
+          {formatMoney(item.settlement.grossMinor)} ·{' '}
+          {creatorEarningsCopy.simulatedProviderFeeLabel}{' '}
+          {formatMoney(item.settlement.providerFeeMinor)} ·{' '}
+          {creatorEarningsCopy.simulatedPlatformFeeLabel}{' '}
+          {formatMoney(item.settlement.platformFeeMinor)} ·{' '}
+          {creatorEarningsCopy.simulatedAdjustmentLabel}{' '}
+          {formatMoney(item.settlement.adjustmentMinor)} · {creatorEarningsCopy.creatorNetLabel}{' '}
+          {formatMoney(item.settlement.creatorNetMinor)}
+        </Surface>
+      )}
+      {item.order.state === 'paid' ? (
+        <Button
+          disabled={busy || fulfillmentEvidence.trim().length === 0}
+          onClick={() => void onFulfill(item.order.id)}
+          type="button"
+          variant="outline"
+        >
+          {creatorEarningsCopy.fulfill}
+        </Button>
+      ) : null}
+      {(item.order.state === 'fulfilled' || item.order.state === 'pending_resolution') &&
+      item.payment?.state === 'confirmed' ? (
+        <Button disabled={busy} onClick={() => void onSettle(item.order.id)} type="button">
+          {item.order.state === 'pending_resolution'
+            ? creatorEarningsCopy.retrySettlement
+            : creatorEarningsCopy.runSettlement}
+        </Button>
+      ) : null}
+      {pendingSettlementReference === undefined ? null : (
+        <Button
+          disabled={busy}
+          onClick={() => void onAdvanceSettlement(item.order.id)}
+          type="button"
+          variant="outline"
+        >
+          {creatorEarningsCopy.advanceSettlement}
+        </Button>
+      )}
+      {item.payment?.state === 'confirmed' ? (
+        <Button
+          disabled={busy}
+          onClick={() => void onRefund(item.order.id)}
+          type="button"
+          variant="outline"
+        >
+          {creatorEarningsCopy.runRefund}
+        </Button>
+      ) : null}
+    </Surface>
+  );
+}
+
+function WalletSection({ workspace }: { readonly workspace: LocalWorkspace }) {
+  const wallet = workspace.wallet;
+  return (
+    <section className="ds-section-stack">
+      <h3 className="ds-heading-section">{creatorEarningsCopy.walletTitle}</h3>
+      <StatusMessage data-testid="creator-wallet-notice">
+        {creatorEarningsCopy.walletNotice}
+      </StatusMessage>
+      <div className="ds-form-grid" data-testid="creator-wallet-projection">
+        <WalletValue
+          label={creatorEarningsCopy.pendingLabel}
+          testId="wallet-pending"
+          value={wallet.pendingMinor}
+        />
+        <WalletValue
+          label={creatorEarningsCopy.availableLabel}
+          testId="wallet-available"
+          value={wallet.availableMinor}
+        />
+        <WalletValue
+          label={creatorEarningsCopy.restrictedLabel}
+          testId="wallet-restricted"
+          value={wallet.restrictedMinor}
+        />
+        <WalletValue
+          label={creatorEarningsCopy.processingLabel}
+          testId="wallet-processing"
+          value={wallet.withdrawalInProgressMinor}
+        />
+        <WalletValue
+          label={creatorEarningsCopy.withdrawnLabel}
+          testId="wallet-withdrawn"
+          value={wallet.withdrawnMinor}
+        />
+        <WalletValue
+          label={creatorEarningsCopy.recoveryOutstandingLabel}
+          testId="wallet-recovery"
+          value={wallet.recoveryOutstandingMinor}
+        />
+      </div>
+    </section>
+  );
+}
+
+function WalletValue({
+  label,
+  testId,
+  value,
+}: {
+  readonly label: string;
+  readonly testId: string;
+  readonly value: string;
+}) {
+  return (
+    <Surface className="ds-status-card" data-testid={testId} tone="subtle">
+      <strong>{label}</strong> {value}
+    </Surface>
+  );
+}
+
+function formatMoney(minor: string): string {
+  return `CNY ¥${(Number(minor) / 100).toFixed(2)}`;
 }

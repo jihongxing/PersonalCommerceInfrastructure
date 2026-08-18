@@ -3,6 +3,7 @@ import { Type } from 'typebox';
 import { describe, expect, it } from 'vitest';
 
 import { ApplicationError } from '../../applications/core/application-error.js';
+import { createInMemoryCreatorIdentityComposition } from '../../adapters/in-memory/creator-identity-composition.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 import { createSafeLogger } from '../../adapters/observability/safe-logger.js';
 import { registerApiErrorHandling } from '../../adapters/transport/http/api-error-handler.js';
@@ -149,13 +150,108 @@ describe('API runtime skeleton', () => {
       '/api/v1/operations/paid-orders/{orderId}/payment-failed',
       '/api/v1/operations/paid-orders/{orderId}/settlement-released',
       '/api/v1/operations/withdrawals/{withdrawalId}/completed',
+      '/api/v1/public/offerings/{offeringId}/availability-slots',
+      '/api/v1/creator/offerings/{offeringId}/availability-slots',
+      '/api/v1/public/offerings/{offeringId}/reservation-holds',
+      '/api/v1/public/reservations/{resultAccessToken}',
+      '/api/v1/public/reservations/{resultAccessToken}/cancel',
+      '/api/v1/creator/reservations',
+      '/api/v1/creator/reservations/{reservationId}/confirm',
+      '/api/v1/creator/reservations/{reservationId}/cancel',
+      '/api/v1/creator/reservations/{reservationId}/reschedule',
+      '/api/v1/creator/reservations/{reservationId}/no-show',
+      '/api/v1/creator/contracts/proposals',
+      '/api/v1/creator/contracts',
+      '/api/v1/creator/contracts/{contractId}',
+      '/api/v1/public/contracts/{resultAccessToken}',
+      '/api/v1/public/contracts/{resultAccessToken}/scope',
+      '/api/v1/public/contracts/{resultAccessToken}/order',
+      '/api/v1/public/contracts/{resultAccessToken}/accept',
+      '/api/v1/public/contracts/{resultAccessToken}/reject',
+      '/api/v1/creator/contracts/{contractId}/expire',
+      '/api/v1/creator/contracts/{contractId}/cancel',
+      '/api/v1/public/contracts/{resultAccessToken}/cancel',
+      '/api/v1/operations/simulation/scenario',
+      '/api/v1/operations/simulation/paid-orders/{orderId}/payment',
+      '/api/v1/operations/simulation/paid-orders/{orderId}/settlement',
+      '/api/v1/operations/simulation/withdrawals/{withdrawalId}',
+      '/api/v1/operations/simulation/advance',
+      '/api/v1/operations/simulation/paid-orders/{orderId}/refund',
+      '/api/v1/local-commerce/requests/{resultAccessToken}/checkout',
+      '/api/v1/local-commerce/requests/{resultAccessToken}/payment',
+      '/api/v1/local-commerce/requests/{resultAccessToken}/payment/advance',
+      '/api/v1/creator/local-commerce/workspace',
+      '/api/v1/creator/local-commerce/orders/{orderId}/settlement',
+      '/api/v1/creator/local-commerce/orders/{orderId}/settlement/advance',
+      '/api/v1/creator/local-commerce/withdrawals/{withdrawalId}/simulate',
+      '/api/v1/creator/local-commerce/withdrawals/{withdrawalId}/advance',
+      '/api/v1/creator/local-commerce/orders/{orderId}/refund',
+      '/api/v1/providers/{providerId}/webhooks/{providerEventId}',
+      '/api/v1/operations/commercial-pilot/workspace',
+      '/api/v1/operations/commercial-pilot/orders/{orderId}/evidence',
+      '/api/v1/operations/commercial-pilot/orders/{orderId}/retry-settlement',
+      '/api/v1/operations/commercial-pilot/withdrawals/{withdrawalId}/retry',
+      '/api/v1/operations/commercial-pilot/resolutions',
       '/openapi.json',
     ]);
     expect(JSON.stringify(openApi)).toContain('creator-identity');
     expect(JSON.stringify(openApi)).toContain('service-offering');
+    expect(JSON.stringify(openApi)).toContain('contract-commerce');
     expect(JSON.stringify(openApi)).not.toContain('paymentCredential');
     expect(JSON.stringify(openApi)).not.toContain('providerSecret');
     expect(JSON.stringify(openApi)).not.toContain('providerApiKey');
+
+    await server.close();
+  });
+
+  it('does not expose Local Commerce Simulation routes when an external composition is supplied', async () => {
+    const composition = createInMemoryCreatorIdentityComposition();
+    const server = await createApiServer({
+      authContextProvider: composition.authContextProvider,
+      creatorIdentityService: composition.service,
+      serviceOfferingService: composition.offeringService,
+      customerRequestService: composition.customerRequestService,
+      operationsAuthContextProvider: composition.operationsAuthContextProvider,
+      recordExternalObservation: composition.recordExternalObservation,
+      paidCommerceService: composition.paidCommerceService,
+      providerWebhookRuntime: composition.providerWebhookRuntime,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/operations/simulation/scenario',
+      headers: { authorization: 'Bearer test-operations-token' },
+      payload: { payment: 'success' },
+    });
+
+    expect(response.statusCode).toBe(404);
+    const productResponse = await server.inject({
+      method: 'GET',
+      url: '/api/v1/local-commerce/requests/result-token/checkout',
+    });
+    expect(productResponse.statusCode).toBe(404);
+    await server.close();
+  });
+
+  it('rejects Provider webhooks when signature verification is not configured', async () => {
+    const server = await createApiServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/providers/future-provider/webhooks/event-1',
+      headers: {
+        'content-type': 'application/provider-webhook+json',
+      },
+      payload: Buffer.from('{"provider":"payload"}'),
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toMatchObject({
+      error: {
+        category: 'authentication',
+        code: 'provider_webhook_signature_rejected',
+      },
+    });
 
     await server.close();
   });

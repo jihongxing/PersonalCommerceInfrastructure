@@ -88,7 +88,9 @@ test('CR-04 local deployment acceptance covers mobile public access, refresh, me
   await page.getByLabel('联系方式').fill(`cr04-${suffix}@example.test`);
   await page.getByLabel('你的请求说明').fill('来自本地移动视口的受控请求。');
   await page.getByRole('button', { name: '提交请求' }).click();
-  await expect(page.getByRole('status')).toHaveText('请求已提交，正在等待创作者处理。');
+  await expect(page.getByTestId('public-offering-status')).toHaveText(
+    '请求已提交，正在等待创作者处理。',
+  );
   const resultUrl = await page.getByRole('link', { name: '查看请求处理结果' }).getAttribute('href');
   expect(resultUrl).toBeTruthy();
 
@@ -99,7 +101,7 @@ test('CR-04 local deployment acceptance covers mobile public access, refresh, me
   expect(unpublishResponse.ok()).toBe(true);
 
   await page.goto(publicUrl);
-  await expect(page.getByRole('status')).toHaveText('这项服务当前不可请求。');
+  await expect(page.getByTestId('public-offering-status')).toHaveText('这项服务当前不可请求。');
   await expect(page.getByRole('button', { name: '提交请求' })).toHaveCount(0);
   await expect(page).toHaveTitle('公开服务 | Personal Commerce');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/u);

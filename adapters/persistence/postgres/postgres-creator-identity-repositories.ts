@@ -64,6 +64,7 @@ function toOffering(row: typeof serviceOfferings.$inferSelect): Offering {
     ...(row.availabilityDescription === null
       ? {}
       : { availability: { description: row.availabilityDescription } }),
+    ...(row.appearance === null ? {} : { appearance: row.appearance }),
     requestInstructions: row.requestInstructions,
     state: row.state as Offering['state'],
   };
@@ -172,6 +173,7 @@ export class PostgresOfferingRepository implements OfferingRepository {
         title: entity.title,
         description: entity.description,
         availabilityDescription: entity.availability?.description ?? null,
+        appearance: entity.appearance ?? null,
         requestInstructions: entity.requestInstructions,
         state: entity.state,
       })
@@ -182,6 +184,7 @@ export class PostgresOfferingRepository implements OfferingRepository {
           title: entity.title,
           description: entity.description,
           availabilityDescription: entity.availability?.description ?? null,
+          appearance: entity.appearance ?? null,
           requestInstructions: entity.requestInstructions,
           state: entity.state,
           updatedAt: new Date().toISOString(),

@@ -84,22 +84,24 @@ test('CR-06 records approved external facts without changing the confirmed Reque
     page.getByText('这些观察事实不会把 Request 状态改为已付款或已履约；Request 保持已确认。'),
   ).toBeVisible();
 
-  await page.getByLabel('Operations 访问令牌').fill('wrong-operations-token');
+  await page.getByLabel('Operations 访问令牌', { exact: true }).fill('wrong-operations-token');
   await page.getByLabel('Request Action ID').fill(submittedRequest.actionId);
   await page.getByLabel('证据引用').fill('local://cr06/fulfillment-before-payment');
   await page.getByRole('button', { name: '记录履约已观察' }).click();
-  await expect(page.getByRole('status').last()).toHaveText('Operations 访问令牌无效或缺失。');
+  await expect(page.getByTestId('operations-action-status')).toHaveText(
+    'Operations 访问令牌无效或缺失。',
+  );
 
-  await page.getByLabel('Operations 访问令牌').fill('test-operations-token');
+  await page.getByLabel('Operations 访问令牌', { exact: true }).fill('test-operations-token');
   await page.getByRole('button', { name: '记录履约已观察' }).click();
-  await expect(page.getByRole('status').last()).toHaveText(
+  await expect(page.getByTestId('operations-action-status')).toHaveText(
     '记录履约观察前，必须先记录外部付款核验事实。',
   );
 
   const paymentEvidence = `local://cr06/payment/${suffix}`;
   await page.getByLabel('证据引用').fill(paymentEvidence);
   await page.getByRole('button', { name: '记录外部付款已核验' }).click();
-  await expect(page.getByRole('status').last()).toHaveText(
+  await expect(page.getByTestId('operations-action-status')).toHaveText(
     '已记录外部付款核验事实。重复提交会返回原记录。',
   );
   await expect(page.getByText(`证据引用： ${paymentEvidence}`)).toBeVisible();
@@ -111,13 +113,15 @@ test('CR-06 records approved external facts without changing the confirmed Reque
   const fulfillmentEvidence = `local://cr06/fulfillment/${suffix}`;
   await page.getByLabel('证据引用').fill(fulfillmentEvidence);
   await page.getByRole('button', { name: '记录履约已观察' }).click();
-  await expect(page.getByRole('status').last()).toHaveText('已记录履约观察事实。');
+  await expect(page.getByTestId('operations-action-status')).toHaveText('已记录履约观察事实。');
   await expect(page.getByText('事实类型： fulfillment_observed')).toBeVisible();
   await expect(page.getByText(`证据引用： ${fulfillmentEvidence}`)).toBeVisible();
 
   await page.goto(`/public/requests/${submittedRequest.resultAccessToken}`);
   await expect(page.getByRole('heading', { name: '创作者已确认' })).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('此状态不代表付款、预约完成或服务履行结果。');
+  await expect(page.getByTestId('customer-result-boundary-status')).toHaveText(
+    '此状态不代表付款、预约完成或服务履行结果。',
+  );
 
   await testInfo.attach('cr06-local-browser-acceptance.json', {
     body: Buffer.from(

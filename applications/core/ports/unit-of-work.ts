@@ -10,6 +10,12 @@ import type {
   CustomerRepository,
 } from '../../customer-request/customer-request-repositories.js';
 import type { PaidCommerceRepository } from '../../paid-commerce/paid-commerce-repositories.js';
+import type { ReservationRepository } from '../../reservation/reservation-repositories.js';
+import type {
+  ContractAcceptanceFactRepository,
+  ContractRepository,
+  ContractScopeVersionRepository,
+} from '../../contract-commerce/contract-repositories.js';
 
 export interface UnitOfWorkScope {
   readonly productEventStore: ProductEventStore;
@@ -20,6 +26,10 @@ export interface UnitOfWorkScope {
   readonly customerRepository?: CustomerRepository;
   readonly commerceActionRepository?: CommerceActionRepository;
   readonly paidCommerceRepository?: PaidCommerceRepository;
+  readonly reservationRepository?: ReservationRepository;
+  readonly contractRepository?: ContractRepository;
+  readonly contractScopeVersionRepository?: ContractScopeVersionRepository;
+  readonly contractAcceptanceFactRepository?: ContractAcceptanceFactRepository;
 }
 
 export interface UnitOfWork {

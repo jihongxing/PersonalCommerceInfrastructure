@@ -27,6 +27,7 @@ import {
   type SubmitCustomerRequestCommand,
 } from './customer-request-use-cases.js';
 import type { ActorContext } from '../core/actor-context.js';
+import type { ContractRepository } from '../contract-commerce/contract-repositories.js';
 
 export interface CustomerRequestService {
   getPublicOffering(
@@ -56,6 +57,7 @@ export function createCustomerRequestService(dependencies: {
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
+  readonly contractRepository?: ContractRepository;
 }): CustomerRequestService {
   const getPublicOffering = new GetPublicOfferingUseCase(dependencies);
   const submit = new SubmitCustomerRequestUseCase(dependencies);

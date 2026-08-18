@@ -84,12 +84,20 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
       '这是 VS-02A 的受控商业链。支付、结算和提现完成事实仍由 Pilot Operations 记录。',
     ),
   ).toBeVisible();
-  await expect(page.getByText(`VS-02A offering ${suffix}`).last()).toBeVisible();
+  const confirmedRequestsSection = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: '已确认请求' }) });
+  const confirmedRequestCard = confirmedRequestsSection
+    .locator('.ds-list-item')
+    .filter({ hasText: `VS-02A offering ${suffix}` });
+  await expect(confirmedRequestCard).toBeVisible();
 
   await page.getByLabel('订单金额（分）').fill('39900');
   await page.getByLabel('服务履约条件').fill('一次 60 分钟线下舞蹈私教服务。');
-  await page.getByRole('button', { name: '创建待支付订单' }).click();
-  await expect(page.getByRole('status').last()).toHaveText('订单已创建，正在等待受控支付事实。');
+  await confirmedRequestCard.getByRole('button', { name: '创建待支付订单' }).click();
+  await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
+    '订单已创建，正在等待受控支付事实。',
+  );
 
   const pendingCustomerPage = await page.context().newPage();
   await pendingCustomerPage.goto(`/public/requests/${submittedRequest.resultAccessToken}`);
@@ -123,7 +131,9 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
   await page.getByRole('button', { name: '刷新订单与收益' }).click();
   await page.getByLabel('履约证据引用').fill(`local://vs02a/fulfillment/${suffix}`);
   await page.getByRole('button', { name: '记录服务已履约' }).click();
-  await expect(page.getByRole('status').last()).toHaveText('已记录服务履约，等待受控结算。');
+  await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
+    '已记录服务履约，等待受控结算。',
+  );
 
   const settlementResponse = await page.request.post(
     `${apiBaseUrl}/api/v1/operations/paid-orders/${orderId}/settlement-released`,
@@ -154,7 +164,9 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
   );
   await page.getByRole('button', { name: '提交提现意图' }).click();
   const withdrawalPayload = (await (await withdrawalResponse).json()) as { readonly id: string };
-  await expect(page.getByRole('status').last()).toHaveText('提现意图已创建，等待受控完成事实。');
+  await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
+    '提现意图已创建，等待受控完成事实。',
+  );
 
   const completedResponse = await page.request.post(
     `${apiBaseUrl}/api/v1/operations/withdrawals/${withdrawalPayload.id}/completed`,

@@ -38,16 +38,6 @@ export class ProviderFactApplicationPolicy {
     assertPilotOperations(context);
     assertProviderFactSafe(command.fact);
 
-    if (command.fact.kind === 'RefundSucceeded') {
-      return {
-        receipt: {
-          status: 'conflict',
-          reason: 'refund_fact_requires_a_separately_approved_refund_or_reversal_flow',
-        },
-        transitioned: false,
-      };
-    }
-
     const receipt = await this.dependencies.receiptGuard.inspect(command.fact);
     if (receipt.status !== 'accepted') {
       return { receipt, transitioned: false };
@@ -69,6 +59,17 @@ export class ProviderFactApplicationPolicy {
       case 'PaymentFailed':
         await this.assertOrderAmount(command.fact);
         await this.dependencies.paidCommerceService.recordControlledPaymentFailure(
+          {
+            orderId: command.fact.internalReference,
+            controlledEvidenceReference: evidenceReference,
+          },
+          context,
+        );
+        await this.dependencies.receiptGuard.recordAccepted(command.fact);
+        return { receipt, transitioned: true };
+      case 'RefundSucceeded':
+        await this.assertOrderAmount(command.fact);
+        await this.dependencies.paidCommerceService.recordControlledRefund(
           {
             orderId: command.fact.internalReference,
             controlledEvidenceReference: evidenceReference,
@@ -181,6 +182,9 @@ export class ProviderFactApplicationPolicy {
 }
 
 function toEvidenceReference(fact: VerifiedProviderFact): string {
+  if (fact.providerId === 'local_commerce_simulator') {
+    return `simulation:${fact.providerId}:event:${fact.providerEventId}`;
+  }
   return `provider:${fact.providerId}:event:${fact.providerEventId}`;
 }
 

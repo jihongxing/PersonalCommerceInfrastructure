@@ -18,11 +18,11 @@ export type OrderState =
   | 'pending_resolution'
   | 'refunded';
 
-export type PaymentState = 'pending' | 'confirmed' | 'failed' | 'refunded' | 'reversed';
+export type PaymentState = 'pending' | 'confirmed' | 'failed' | 'expired' | 'refunded' | 'reversed';
 
 export type FulfillmentState = 'pending' | 'fulfilled' | 'disputed';
 
-export type SettlementState = 'pending' | 'released' | 'reversed';
+export type SettlementState = 'pending' | 'released' | 'failed' | 'resolved' | 'reversed';
 
 export type WithdrawalState = 'requested' | 'completed' | 'failed' | 'reversed';
 
@@ -46,7 +46,9 @@ export interface OrderSnapshot {
 
 export interface PaidServiceOrder {
   readonly id: string;
-  readonly commerceActionId: string;
+  readonly commerceActionId?: string;
+  readonly reservationId?: string;
+  readonly contractId?: string;
   readonly creatorId: string;
   readonly customerId: string;
   readonly offeringId: string;
@@ -112,6 +114,7 @@ export interface WalletProjection {
   readonly restricted: MoneyMinor;
   readonly withdrawalInProgress: MoneyMinor;
   readonly withdrawn: MoneyMinor;
+  readonly recoveryOutstanding: MoneyMinor;
 }
 
 export interface Withdrawal {
@@ -135,14 +138,30 @@ export function money(currency: Currency, minor: MoneyMinor): Money {
 
 export function createPaidServiceOrder(input: {
   readonly id: string;
-  readonly commerceActionId: string;
+  readonly commerceActionId?: string;
+  readonly reservationId?: string;
+  readonly contractId?: string;
   readonly creatorId: string;
   readonly customerId: string;
   readonly offeringId: string;
   readonly snapshot: OrderSnapshot;
 }): PaidServiceOrder {
   requireText(input.id, 'Order id');
-  requireText(input.commerceActionId, 'Commerce Action id');
+  const sourceCount = [input.commerceActionId, input.reservationId, input.contractId].filter(
+    (source) => source !== undefined,
+  ).length;
+  if (sourceCount !== 1) {
+    throw new Error('Order requires exactly one Commerce Action, Reservation or Contract source.');
+  }
+  if (input.commerceActionId !== undefined) {
+    requireText(input.commerceActionId, 'Commerce Action id');
+  }
+  if (input.reservationId !== undefined) {
+    requireText(input.reservationId, 'Reservation id');
+  }
+  if (input.contractId !== undefined) {
+    requireText(input.contractId, 'Contract id');
+  }
   requireText(input.creatorId, 'Creator id');
   requireText(input.customerId, 'Customer id');
   requireText(input.offeringId, 'Offering id');
@@ -216,6 +235,42 @@ export function failPayment(payment: Payment): Payment {
   return Object.freeze({ ...payment, state: 'failed' });
 }
 
+export function expirePayment(payment: Payment): Payment {
+  if (payment.state !== 'failed') {
+    throw new DomainTransitionError('Payment', payment.state, 'expire');
+  }
+
+  return Object.freeze({ ...payment, state: 'expired' });
+}
+
+export function retryPayment(payment: Payment, correlationId: string): Payment {
+  if (payment.state !== 'failed' && payment.state !== 'expired') {
+    throw new DomainTransitionError('Payment', payment.state, 'retry');
+  }
+  requireText(correlationId, 'Payment retry correlation id');
+
+  return Object.freeze({
+    id: payment.id,
+    orderId: payment.orderId,
+    amount: payment.amount,
+    state: 'pending',
+    correlationId: correlationId.trim(),
+  });
+}
+
+export function refundPayment(payment: Payment, providerReference: string): Payment {
+  if (payment.state !== 'confirmed') {
+    throw new DomainTransitionError('Payment', payment.state, 'refund');
+  }
+  requireText(providerReference, 'Refund provider reference');
+
+  return Object.freeze({
+    ...payment,
+    state: 'refunded',
+    providerReference: providerReference.trim(),
+  });
+}
+
 export function markOrderPaid(order: PaidServiceOrder, payment: Payment): PaidServiceOrder {
   if (order.state !== 'payment_pending') {
     throw new DomainTransitionError('Order', order.state, 'mark paid');
@@ -280,14 +335,41 @@ export function completePaidServiceOrder(
   order: PaidServiceOrder,
   settlement: Settlement,
 ): PaidServiceOrder {
-  if (order.state !== 'fulfilled') {
+  if (order.state !== 'fulfilled' && order.state !== 'pending_resolution') {
     throw new DomainTransitionError('Order', order.state, 'complete');
   }
-  if (settlement.orderId !== order.id || settlement.state !== 'released') {
-    throw new Error('Order requires a released Settlement before completion.');
+  if (
+    settlement.orderId !== order.id ||
+    (settlement.state !== 'released' && settlement.state !== 'resolved')
+  ) {
+    throw new Error('Order requires a released or resolved Settlement before completion.');
   }
 
   return Object.freeze({ ...order, state: 'completed' });
+}
+
+export function markOrderPendingResolution(order: PaidServiceOrder): PaidServiceOrder {
+  if (order.state !== 'fulfilled') {
+    throw new DomainTransitionError('Order', order.state, 'open pending resolution');
+  }
+
+  return Object.freeze({ ...order, state: 'pending_resolution' });
+}
+
+export function refundOrder(order: PaidServiceOrder, payment: Payment): PaidServiceOrder {
+  if (payment.orderId !== order.id || payment.state !== 'refunded') {
+    throw new Error('Order refund requires the refunded Payment for the same Order.');
+  }
+  if (
+    order.state !== 'paid' &&
+    order.state !== 'fulfilled' &&
+    order.state !== 'completed' &&
+    order.state !== 'pending_resolution'
+  ) {
+    throw new DomainTransitionError('Order', order.state, 'refund');
+  }
+
+  return Object.freeze({ ...order, state: 'refunded' });
 }
 
 export function createSettlement(input: {
@@ -350,8 +432,29 @@ export function releaseSettlement(settlement: Settlement): Settlement {
   return Object.freeze({ ...settlement, state: 'released' });
 }
 
+export function failSettlement(settlement: Settlement): Settlement {
+  if (settlement.state !== 'pending') {
+    throw new DomainTransitionError('Settlement', settlement.state, 'fail');
+  }
+
+  return Object.freeze({ ...settlement, state: 'failed' });
+}
+
+export function resolveSettlement(settlement: Settlement): Settlement {
+  if (settlement.state !== 'failed') {
+    throw new DomainTransitionError('Settlement', settlement.state, 'resolve');
+  }
+
+  return Object.freeze({ ...settlement, state: 'resolved' });
+}
+
 export function reverseSettlement(settlement: Settlement): Settlement {
-  if (settlement.state !== 'released') {
+  if (
+    settlement.state !== 'pending' &&
+    settlement.state !== 'failed' &&
+    settlement.state !== 'released' &&
+    settlement.state !== 'resolved'
+  ) {
     throw new DomainTransitionError('Settlement', settlement.state, 'reverse');
   }
 
@@ -384,7 +487,7 @@ export function settlementReleasedEntry(input: {
   readonly effectiveAt: string;
   readonly correlationId: string;
 }): LedgerEntry {
-  if (input.settlement.state !== 'released') {
+  if (input.settlement.state !== 'released' && input.settlement.state !== 'resolved') {
     throw new DomainTransitionError('Settlement', input.settlement.state, 'create release entry');
   }
 
@@ -398,6 +501,54 @@ export function settlementReleasedEntry(input: {
     orderId: input.settlement.orderId,
     paymentId: input.settlement.paymentId,
     settlementId: input.settlement.id,
+    correlationId: input.correlationId,
+  });
+}
+
+export function settlementReversedEntry(input: {
+  readonly id: string;
+  readonly settlement: Settlement;
+  readonly effectiveAt: string;
+  readonly correlationId: string;
+}): LedgerEntry {
+  if (input.settlement.state !== 'reversed') {
+    throw new DomainTransitionError('Settlement', input.settlement.state, 'create reversal entry');
+  }
+
+  return createLedgerEntry({
+    id: input.id,
+    creatorId: input.settlement.creatorId,
+    currency: input.settlement.creatorNet.currency,
+    minor: input.settlement.creatorNet.minor,
+    type: 'settlement_reversed',
+    effectiveAt: input.effectiveAt,
+    orderId: input.settlement.orderId,
+    paymentId: input.settlement.paymentId,
+    settlementId: input.settlement.id,
+    correlationId: input.correlationId,
+  });
+}
+
+export function refundDebitedEntry(input: {
+  readonly id: string;
+  readonly payment: Payment;
+  readonly creatorId: string;
+  readonly effectiveAt: string;
+  readonly correlationId: string;
+}): LedgerEntry {
+  if (input.payment.state !== 'refunded') {
+    throw new DomainTransitionError('Payment', input.payment.state, 'create refund debit entry');
+  }
+
+  return createLedgerEntry({
+    id: input.id,
+    creatorId: input.creatorId,
+    currency: input.payment.amount.currency,
+    minor: input.payment.amount.minor,
+    type: 'refund_debited',
+    effectiveAt: input.effectiveAt,
+    orderId: input.payment.orderId,
+    paymentId: input.payment.id,
     correlationId: input.correlationId,
   });
 }
@@ -452,6 +603,22 @@ export function failWithdrawal(withdrawal: Withdrawal): Withdrawal {
   }
 
   return Object.freeze({ ...withdrawal, state: 'failed' });
+}
+
+export function retryWithdrawal(withdrawal: Withdrawal): Withdrawal {
+  if (withdrawal.state !== 'failed') {
+    throw new DomainTransitionError('Withdrawal', withdrawal.state, 'retry');
+  }
+
+  return Object.freeze({
+    id: withdrawal.id,
+    creatorId: withdrawal.creatorId,
+    amount: withdrawal.amount,
+    destinationReference: withdrawal.destinationReference,
+    idempotencyKey: withdrawal.idempotencyKey,
+    state: 'requested',
+    correlationId: withdrawal.correlationId,
+  });
 }
 
 export function withdrawalReservedEntry(input: {
@@ -532,6 +699,8 @@ export function projectWallet(
   let restricted = 0n;
   let withdrawalInProgress = 0n;
   let withdrawn = 0n;
+  let recoveryOutstanding = 0n;
+  const pendingByOrder = new Map<string, MoneyMinor>();
 
   for (const entry of entries) {
     if (entry.currency !== currency) {
@@ -541,10 +710,15 @@ export function projectWallet(
     switch (entry.type) {
       case 'pending_earnings_credited':
         pending += entry.minor;
+        pendingByOrder.set(entry.orderId, (pendingByOrder.get(entry.orderId) ?? 0n) + entry.minor);
         break;
       case 'settlement_released':
-        pending -= entry.minor;
-        available += entry.minor;
+        pending -= debitPendingForOrder(pendingByOrder, entry.orderId, entry.minor);
+        {
+          const recovered = recoveryOutstanding < entry.minor ? recoveryOutstanding : entry.minor;
+          recoveryOutstanding -= recovered;
+          available += entry.minor - recovered;
+        }
         break;
       case 'earnings_restricted':
         available -= entry.minor;
@@ -555,8 +729,24 @@ export function projectWallet(
         available += entry.minor;
         break;
       case 'refund_debited':
+        {
+          const pendingDebit = debitPendingForOrder(pendingByOrder, entry.orderId, entry.minor);
+          pending -= pendingDebit;
+          const remainingDebit = entry.minor - pendingDebit;
+          const availableDebit = available < remainingDebit ? available : remainingDebit;
+          available -= availableDebit;
+          recoveryOutstanding += remainingDebit - availableDebit;
+        }
+        break;
       case 'settlement_reversed':
-        available -= entry.minor;
+        {
+          const pendingDebit = debitPendingForOrder(pendingByOrder, entry.orderId, entry.minor);
+          pending -= pendingDebit;
+          const remainingDebit = entry.minor - pendingDebit;
+          const availableDebit = available < remainingDebit ? available : remainingDebit;
+          available -= availableDebit;
+          recoveryOutstanding += remainingDebit - availableDebit;
+        }
         break;
       case 'withdrawal_reserved':
         available -= entry.minor;
@@ -578,7 +768,8 @@ export function projectWallet(
     available < 0n ||
     restricted < 0n ||
     withdrawalInProgress < 0n ||
-    withdrawn < 0n
+    withdrawn < 0n ||
+    recoveryOutstanding < 0n
   ) {
     throw new Error('Ledger entries produce an invalid negative Wallet Projection.');
   }
@@ -590,7 +781,24 @@ export function projectWallet(
     restricted,
     withdrawalInProgress,
     withdrawn,
+    recoveryOutstanding,
   });
+}
+
+function debitPendingForOrder(
+  pendingByOrder: Map<string, MoneyMinor>,
+  orderId: string,
+  requested: MoneyMinor,
+): MoneyMinor {
+  const orderPending = pendingByOrder.get(orderId) ?? 0n;
+  const debited = orderPending < requested ? orderPending : requested;
+  const remaining = orderPending - debited;
+  if (remaining === 0n) {
+    pendingByOrder.delete(orderId);
+  } else {
+    pendingByOrder.set(orderId, remaining);
+  }
+  return debited;
 }
 
 function createLedgerEntry(entry: LedgerEntry): LedgerEntry {

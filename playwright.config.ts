@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 const apiPort = 45100;
 const webPort = 45101;
 const realCr02BrowserTests = process.env.RUN_REAL_CR02_BROWSER_TESTS === '1';
+const postgresSimulationBrowserTests = process.env.RUN_VS02E_POSTGRES_BROWSER_TESTS === '1';
 const controlledEnvironment = Object.fromEntries(
   Object.entries({
     DATABASE_URL: process.env.DATABASE_URL,
@@ -55,6 +56,7 @@ export default defineConfig({
         API_HOST: '127.0.0.1',
         API_PORT: String(apiPort),
         APP_ENV: realCr02BrowserTests ? 'development' : 'test',
+        ...(postgresSimulationBrowserTests ? { USE_POSTGRES_TEST_COMPOSITION: '1' } : {}),
         LOG_LEVEL: 'error',
         WEB_REFERENCE_CLIENT_ORIGIN: `http://127.0.0.1:${webPort}`,
         ...(realCr02BrowserTests ? controlledEnvironment : {}),
@@ -67,6 +69,7 @@ export default defineConfig({
       command: `pnpm --filter @personal-commerce/web build && pnpm --filter @personal-commerce/web exec next start -H 127.0.0.1 -p ${webPort}`,
       env: {
         NEXT_PUBLIC_API_BASE_URL: `http://127.0.0.1:${apiPort}`,
+        NEXT_PUBLIC_RUNTIME_ENV: realCr02BrowserTests ? 'controlled' : 'test',
         ...(realCr02BrowserTests
           ? controlledWebEnvironment
           : {

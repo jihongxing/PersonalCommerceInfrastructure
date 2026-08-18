@@ -1,5 +1,31 @@
 import { Type } from 'typebox';
 
+const PublicAppearanceOfferingSchema = Type.Object(
+  {
+    appearanceType: Type.Union([
+      Type.Literal('convention'),
+      Type.Literal('guest'),
+      Type.Literal('brand'),
+      Type.Literal('photo'),
+      Type.Literal('signing'),
+    ]),
+    startsOn: Type.String({ format: 'date' }),
+    endsOn: Type.Optional(Type.String({ format: 'date' })),
+    locationDescription: Type.String({ minLength: 1, maxLength: 500 }),
+    buyerType: Type.Union([
+      Type.Literal('organizer'),
+      Type.Literal('brand'),
+      Type.Literal('fan_group'),
+      Type.Literal('approved_external_requester'),
+    ]),
+    pricingRule: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
+    requestCallToAction: Type.String({ minLength: 1, maxLength: 240 }),
+    upcomingTitle: Type.String({ minLength: 1, maxLength: 240 }),
+    externalUrl: Type.Optional(Type.String({ format: 'uri', maxLength: 2_048 })),
+  },
+  { additionalProperties: false },
+);
+
 export const PublicOfferingResponseSchema = Type.Object(
   {
     creator: Type.Object(
@@ -16,6 +42,7 @@ export const PublicOfferingResponseSchema = Type.Object(
         title: Type.String({ minLength: 1, maxLength: 160 }),
         description: Type.String({ minLength: 1, maxLength: 2_000 }),
         availabilityDescription: Type.String({ minLength: 1, maxLength: 1_000 }),
+        appearance: Type.Optional(PublicAppearanceOfferingSchema),
         requestInstructions: Type.String({ minLength: 1, maxLength: 1_000 }),
       },
       { additionalProperties: false },

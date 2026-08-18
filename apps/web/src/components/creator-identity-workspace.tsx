@@ -59,6 +59,20 @@ export function CreatorIdentityWorkspace({
   const [availabilityDescription, setAvailabilityDescription] = useState('');
   const [requestInstructions, setRequestInstructions] = useState('');
   const [selectedCapabilityId, setSelectedCapabilityId] = useState('');
+  const [offeringKind, setOfferingKind] = useState<'service' | 'appearance'>('service');
+  const [appearanceType, setAppearanceType] = useState<
+    'convention' | 'guest' | 'brand' | 'photo' | 'signing'
+  >('convention');
+  const [appearanceStartsOn, setAppearanceStartsOn] = useState('');
+  const [appearanceEndsOn, setAppearanceEndsOn] = useState('');
+  const [appearanceLocation, setAppearanceLocation] = useState('');
+  const [appearanceBuyerType, setAppearanceBuyerType] = useState<
+    'organizer' | 'brand' | 'fan_group' | 'approved_external_requester'
+  >('organizer');
+  const [appearancePricingRule, setAppearancePricingRule] = useState('');
+  const [appearanceRequestCallToAction, setAppearanceRequestCallToAction] = useState('');
+  const [appearanceUpcomingTitle, setAppearanceUpcomingTitle] = useState('');
+  const [appearanceExternalUrl, setAppearanceExternalUrl] = useState('');
   const [message, setMessage] = useState<string>(creatorIdentityCopy.loading);
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -236,6 +250,16 @@ export function CreatorIdentityWorkspace({
     setAvailabilityDescription('');
     setRequestInstructions('');
     setSelectedCapabilityId('');
+    setOfferingKind('service');
+    setAppearanceType('convention');
+    setAppearanceStartsOn('');
+    setAppearanceEndsOn('');
+    setAppearanceLocation('');
+    setAppearanceBuyerType('organizer');
+    setAppearancePricingRule('');
+    setAppearanceRequestCallToAction('');
+    setAppearanceUpcomingTitle('');
+    setAppearanceExternalUrl('');
   }
 
   function editOffering(offering: OfferingResponse): void {
@@ -245,6 +269,16 @@ export function CreatorIdentityWorkspace({
     setAvailabilityDescription(offering.availabilityDescription ?? '');
     setRequestInstructions(offering.requestInstructions);
     setSelectedCapabilityId(offering.capabilityIds[0] ?? '');
+    setOfferingKind(offering.appearance === undefined ? 'service' : 'appearance');
+    setAppearanceType(offering.appearance?.appearanceType ?? 'convention');
+    setAppearanceStartsOn(offering.appearance?.startsOn ?? '');
+    setAppearanceEndsOn(offering.appearance?.endsOn ?? '');
+    setAppearanceLocation(offering.appearance?.locationDescription ?? '');
+    setAppearanceBuyerType(offering.appearance?.buyerType ?? 'organizer');
+    setAppearancePricingRule(offering.appearance?.pricingRule ?? '');
+    setAppearanceRequestCallToAction(offering.appearance?.requestCallToAction ?? '');
+    setAppearanceUpcomingTitle(offering.appearance?.upcomingTitle ?? '');
+    setAppearanceExternalUrl(offering.appearance?.externalUrl ?? '');
   }
 
   async function saveOffering(): Promise<void> {
@@ -254,6 +288,25 @@ export function CreatorIdentityWorkspace({
       title: offeringTitle,
       description: offeringDescription,
       ...(availabilityDescription.trim().length === 0 ? {} : { availabilityDescription }),
+      ...(offeringKind === 'service'
+        ? {}
+        : {
+            appearance: {
+              appearanceType,
+              startsOn: appearanceStartsOn,
+              ...(appearanceEndsOn.trim().length === 0 ? {} : { endsOn: appearanceEndsOn }),
+              locationDescription: appearanceLocation,
+              buyerType: appearanceBuyerType,
+              ...(appearancePricingRule.trim().length === 0
+                ? {}
+                : { pricingRule: appearancePricingRule }),
+              requestCallToAction: appearanceRequestCallToAction,
+              upcomingTitle: appearanceUpcomingTitle,
+              ...(appearanceExternalUrl.trim().length === 0
+                ? {}
+                : { externalUrl: appearanceExternalUrl }),
+            },
+          }),
       requestInstructions,
     };
 
@@ -383,7 +436,7 @@ export function CreatorIdentityWorkspace({
           </div>
         </div>
         <p className="ds-body-secondary ds-measure">{creatorIdentityCopy.setupDescription}</p>
-        <StatusMessage>
+        <StatusMessage data-testid="creator-workspace-status">
           {hydrated
             ? busy
               ? creatorIdentityCopy.syncing
@@ -545,6 +598,15 @@ export function CreatorIdentityWorkspace({
                   {creatorIdentityCopy.offeringStateLabel}
                   {offeringStateLabel(offering.state)}
                 </p>
+                {offering.appearance === undefined ? null : (
+                  <p
+                    className="ds-list-item__description"
+                    data-testid={`appearance-${offering.id}`}
+                  >
+                    {offering.appearance.upcomingTitle} · {offering.appearance.startsOn} ·{' '}
+                    {offering.appearance.locationDescription}
+                  </p>
+                )}
                 {offering.missingPublishConditions.length > 0 ? (
                   <p className="ds-list-item__description">
                     {creatorIdentityCopy.offeringMissingConditions}
@@ -624,6 +686,19 @@ export function CreatorIdentityWorkspace({
           </div>
 
           <div className="ds-form-grid ds-section-stack">
+            <FormField htmlFor="offering-kind" label={creatorIdentityCopy.offeringKindLabel}>
+              <select
+                className="ds-input"
+                id="offering-kind"
+                value={offeringKind}
+                onChange={(event) =>
+                  setOfferingKind(event.target.value as 'service' | 'appearance')
+                }
+              >
+                <option value="service">{creatorIdentityCopy.offeringKindService}</option>
+                <option value="appearance">{creatorIdentityCopy.offeringKindAppearance}</option>
+              </select>
+            </FormField>
             <FormField htmlFor="offering-title" label={creatorIdentityCopy.offeringTitleLabel}>
               <Input
                 id="offering-title"
@@ -651,6 +726,139 @@ export function CreatorIdentityWorkspace({
               </select>
             </FormField>
           </div>
+          {offeringKind === 'appearance' ? (
+            <div className="ds-section-stack" data-testid="appearance-offering-fields">
+              <div className="ds-form-grid">
+                <FormField
+                  htmlFor="appearance-type"
+                  label={creatorIdentityCopy.appearanceTypeLabel}
+                >
+                  <select
+                    className="ds-input"
+                    id="appearance-type"
+                    value={appearanceType}
+                    onChange={(event) =>
+                      setAppearanceType(
+                        event.target.value as
+                          'convention' | 'guest' | 'brand' | 'photo' | 'signing',
+                      )
+                    }
+                  >
+                    <option value="convention">
+                      {creatorIdentityCopy.appearanceTypeConvention}
+                    </option>
+                    <option value="guest">{creatorIdentityCopy.appearanceTypeGuest}</option>
+                    <option value="brand">{creatorIdentityCopy.appearanceTypeBrand}</option>
+                    <option value="photo">{creatorIdentityCopy.appearanceTypePhoto}</option>
+                    <option value="signing">{creatorIdentityCopy.appearanceTypeSigning}</option>
+                  </select>
+                </FormField>
+                <FormField
+                  htmlFor="appearance-buyer-type"
+                  label={creatorIdentityCopy.appearanceBuyerTypeLabel}
+                >
+                  <select
+                    className="ds-input"
+                    id="appearance-buyer-type"
+                    value={appearanceBuyerType}
+                    onChange={(event) =>
+                      setAppearanceBuyerType(
+                        event.target.value as
+                          'organizer' | 'brand' | 'fan_group' | 'approved_external_requester',
+                      )
+                    }
+                  >
+                    <option value="organizer">
+                      {creatorIdentityCopy.appearanceBuyerOrganizer}
+                    </option>
+                    <option value="brand">{creatorIdentityCopy.appearanceBuyerBrand}</option>
+                    <option value="fan_group">{creatorIdentityCopy.appearanceBuyerFanGroup}</option>
+                    <option value="approved_external_requester">
+                      {creatorIdentityCopy.appearanceBuyerExternal}
+                    </option>
+                  </select>
+                </FormField>
+              </div>
+              <div className="ds-form-grid">
+                <FormField
+                  htmlFor="appearance-start"
+                  label={creatorIdentityCopy.appearanceStartLabel}
+                >
+                  <Input
+                    id="appearance-start"
+                    type="date"
+                    value={appearanceStartsOn}
+                    onChange={(event) => setAppearanceStartsOn(event.target.value)}
+                  />
+                </FormField>
+                <FormField htmlFor="appearance-end" label={creatorIdentityCopy.appearanceEndLabel}>
+                  <Input
+                    id="appearance-end"
+                    type="date"
+                    value={appearanceEndsOn}
+                    onChange={(event) => setAppearanceEndsOn(event.target.value)}
+                  />
+                </FormField>
+              </div>
+              <FormField
+                htmlFor="appearance-location"
+                label={creatorIdentityCopy.appearanceLocationLabel}
+              >
+                <Input
+                  id="appearance-location"
+                  placeholder={creatorIdentityCopy.appearanceLocationPlaceholder}
+                  value={appearanceLocation}
+                  onChange={(event) => setAppearanceLocation(event.target.value)}
+                />
+              </FormField>
+              <FormField
+                htmlFor="appearance-upcoming-title"
+                label={creatorIdentityCopy.appearanceUpcomingTitleLabel}
+              >
+                <Input
+                  id="appearance-upcoming-title"
+                  placeholder={creatorIdentityCopy.appearanceUpcomingTitlePlaceholder}
+                  value={appearanceUpcomingTitle}
+                  onChange={(event) => setAppearanceUpcomingTitle(event.target.value)}
+                />
+              </FormField>
+              <div className="ds-form-grid">
+                <FormField
+                  htmlFor="appearance-pricing-rule"
+                  label={creatorIdentityCopy.appearancePricingRuleLabel}
+                >
+                  <Input
+                    id="appearance-pricing-rule"
+                    placeholder={creatorIdentityCopy.appearancePricingRulePlaceholder}
+                    value={appearancePricingRule}
+                    onChange={(event) => setAppearancePricingRule(event.target.value)}
+                  />
+                </FormField>
+                <FormField
+                  htmlFor="appearance-request-cta"
+                  label={creatorIdentityCopy.appearanceRequestCtaLabel}
+                >
+                  <Input
+                    id="appearance-request-cta"
+                    placeholder={creatorIdentityCopy.appearanceRequestCtaPlaceholder}
+                    value={appearanceRequestCallToAction}
+                    onChange={(event) => setAppearanceRequestCallToAction(event.target.value)}
+                  />
+                </FormField>
+              </div>
+              <FormField
+                htmlFor="appearance-external-url"
+                label={creatorIdentityCopy.appearanceExternalUrlLabel}
+              >
+                <Input
+                  id="appearance-external-url"
+                  placeholder={creatorIdentityCopy.appearanceExternalUrlPlaceholder}
+                  value={appearanceExternalUrl}
+                  onChange={(event) => setAppearanceExternalUrl(event.target.value)}
+                />
+              </FormField>
+            </div>
+          ) : null}
           <div className="ds-section-stack">
             <FormField
               htmlFor="offering-description"

@@ -234,4 +234,91 @@ describe('Paid Commerce application use cases', () => {
       category: 'authorization',
     });
   });
+
+  it('does not expose Available Earnings before a trusted Settlement Fact', async () => {
+    const fixture = await createFixture();
+    const creatorContext = {
+      actor: { kind: 'creator' as const, creatorId: 'creator-1' },
+      correlationId: 'creator-order-no-settlement',
+    };
+    const operationsContext = {
+      actor: { kind: 'pilot_operations' as const, operatorId: 'operator-1' },
+      correlationId: 'operations-payment-only',
+    };
+    const order = await fixture.createOrder.execute(
+      {
+        commerceActionId: 'action-1',
+        grossPriceMinor: 39_900n,
+        serviceTerms: 'One controlled lesson.',
+      },
+      creatorContext,
+    );
+
+    await fixture.confirmPayment.execute(
+      { orderId: order.id, controlledEvidenceReference: 'payment-only-evidence' },
+      operationsContext,
+    );
+    await fixture.recordFulfillment.execute(
+      { orderId: order.id, evidenceReference: 'fulfillment-only-evidence' },
+      creatorContext,
+    );
+
+    await expect(fixture.getWallet.execute(creatorContext)).resolves.toMatchObject({
+      pending: 0n,
+      available: 0n,
+      withdrawn: 0n,
+    });
+  });
+
+  it('does not project Withdrawn before a trusted Withdrawal completion Fact', async () => {
+    const fixture = await createFixture();
+    const creatorContext = {
+      actor: { kind: 'creator' as const, creatorId: 'creator-1' },
+      correlationId: 'creator-withdrawal-pending',
+    };
+    const operationsContext = {
+      actor: { kind: 'pilot_operations' as const, operatorId: 'operator-1' },
+      correlationId: 'operations-settlement-ready',
+    };
+    const order = await fixture.createOrder.execute(
+      {
+        commerceActionId: 'action-1',
+        grossPriceMinor: 39_900n,
+        serviceTerms: 'One controlled lesson.',
+      },
+      creatorContext,
+    );
+    await fixture.confirmPayment.execute(
+      { orderId: order.id, controlledEvidenceReference: 'payment-evidence' },
+      operationsContext,
+    );
+    await fixture.recordFulfillment.execute(
+      { orderId: order.id, evidenceReference: 'fulfillment-evidence' },
+      creatorContext,
+    );
+    await fixture.releaseSettlement.execute(
+      {
+        orderId: order.id,
+        providerFeeMinor: 240n,
+        platformFeeMinor: 3_990n,
+        calculationVersion: 'vs02-cny-v1',
+        controlledEvidenceReference: 'settlement-evidence',
+      },
+      operationsContext,
+    );
+    await fixture.requestWithdrawal.execute(
+      {
+        amountMinor: 35_670n,
+        destinationReference: 'destination-redacted-1',
+        idempotencyKey: 'withdrawal-pending-1',
+      },
+      creatorContext,
+    );
+
+    await expect(fixture.getWallet.execute(creatorContext)).resolves.toMatchObject({
+      available: 0n,
+      withdrawalInProgress: 35_670n,
+      withdrawn: 0n,
+    });
+  });
 });

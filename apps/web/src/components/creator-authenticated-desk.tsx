@@ -16,6 +16,9 @@ import { StatusMessage } from './ui/status-message';
 import { Surface } from './ui/surface';
 import { CreatorIdentityWorkspace } from './creator-identity-workspace';
 import { CreatorEarningsWorkspace } from './creator-earnings-workspace';
+import { CreatorReservationWorkspace } from './creator-reservation-workspace';
+import { CreatorContractWorkspace } from './creator-contract-workspace';
+import { PatternNavigation } from './pattern-navigation';
 
 export function CreatorAuthenticatedDesk() {
   const [sessionProvider, setSessionProvider] = useState<AuthSessionProvider | null>(null);
@@ -124,12 +127,15 @@ export function CreatorAuthenticatedDesk() {
 
   return (
     <div className="ds-workspace-page ds-page">
+      <PatternNavigation audience="creator" />
       <CreatorIdentityWorkspace
         accessTokenProvider={sessionProvider}
         userEmail={session.userEmail}
         onSignOut={() => void sessionProvider.signOut()}
       />
       <CreatorEarningsWorkspace accessTokenProvider={sessionProvider} />
+      <CreatorReservationWorkspace accessTokenProvider={sessionProvider} />
+      <CreatorContractWorkspace accessTokenProvider={sessionProvider} />
     </div>
   );
 }

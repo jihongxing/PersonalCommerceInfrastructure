@@ -37,6 +37,37 @@ import {
   type PaidCommerceService,
 } from '../../../applications/paid-commerce/paid-commerce-service.js';
 import { PostgresPaidCommerceRepository } from './postgres-paid-commerce-repository.js';
+import { PostgresProviderFactReceiptGuard } from './postgres-provider-fact-receipt-guard.js';
+import { PostgresProviderWebhookReceiptStore } from './postgres-provider-webhook-receipt-store.js';
+import { ProviderFactApplicationPolicy } from '../../../applications/paid-commerce/provider-fact-application-policy.js';
+import {
+  createLocalCommerceSimulationService,
+  type LocalCommerceSimulationService,
+} from '../../../applications/paid-commerce/local-commerce-simulation-service.js';
+import { LocalCommerceSimulator } from '../../providers/local-commerce-simulator/local-commerce-simulator.js';
+import {
+  createLocalPaidCommerceProductService,
+  type LocalPaidCommerceProductService,
+} from '../../../applications/paid-commerce/local-paid-commerce-product-service.js';
+import {
+  ProviderWebhookRuntime,
+  RejectingProviderEventNormalizer,
+  RejectingProviderWebhookSignatureVerifier,
+} from '../../../applications/paid-commerce/provider-webhook-runtime.js';
+import { RealMoneyActivationGuard } from '../../../applications/paid-commerce/real-money-activation-guard.js';
+import { CommercialPilotOperationsService } from '../../../applications/paid-commerce/commercial-pilot-operations.js';
+import { PostgresOperationsActionAuditStore } from './postgres-operations-action-audit-store.js';
+import { LocalCommercialPilotOperationsActionExecutor } from '../../../applications/paid-commerce/local-commercial-pilot-operations-action-executor.js';
+import {
+  createReservationService,
+  type ReservationService,
+} from '../../../applications/reservation/reservation-service.js';
+import { PostgresReservationRepository } from './postgres-reservation-repository.js';
+import { PostgresContractRepository } from './postgres-contract-repository.js';
+import {
+  createContractService,
+  type ContractService,
+} from '../../../applications/contract-commerce/contract-service.js';
 
 export interface CreatorIdentityDatabaseConfiguration {
   readonly databaseUrl: string;
@@ -53,6 +84,13 @@ export interface OperationsConfiguration {
   readonly operationsOperatorId: string;
 }
 
+export interface RealMoneyRuntimeCompositionConfiguration {
+  readonly runtimeEnvironment: 'local' | 'test' | 'controlled' | 'production';
+  readonly realMoneyEnabled: boolean;
+  readonly founderActivationReference?: string;
+  readonly liveProviderConfigured: boolean;
+}
+
 export interface PostgresCreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
   readonly service: CreatorIdentityService;
@@ -61,6 +99,12 @@ export interface PostgresCreatorIdentityComposition {
   readonly operationsAuthContextProvider: OperationsAuthContextProvider;
   readonly recordExternalObservation: RecordExternalObservationUseCase;
   readonly paidCommerceService: PaidCommerceService;
+  readonly localCommerceSimulationService?: LocalCommerceSimulationService;
+  readonly localPaidCommerceProductService?: LocalPaidCommerceProductService;
+  readonly commercialPilotOperationsService: CommercialPilotOperationsService;
+  readonly reservationService: ReservationService;
+  readonly contractService: ContractService;
+  readonly providerWebhookRuntime: ProviderWebhookRuntime;
   readonly database: PostgresDatabaseConnection;
 }
 
@@ -70,6 +114,11 @@ export function createPostgresCreatorIdentityComposition(
   publicOrigin: string,
   notificationPort: NotificationPort,
   operationsConfiguration: OperationsConfiguration,
+  realMoneyRuntimeConfiguration: RealMoneyRuntimeCompositionConfiguration = {
+    runtimeEnvironment: 'local',
+    realMoneyEnabled: false,
+    liveProviderConfigured: false,
+  },
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const identityRepository = new PostgresCommerceIdentityRepository(database.database);
@@ -79,6 +128,8 @@ export function createPostgresCreatorIdentityComposition(
   const customerRepository = new PostgresCustomerRepository(database.database);
   const commerceActionRepository = new PostgresCommerceActionRepository(database.database);
   const paidCommerceRepository = new PostgresPaidCommerceRepository(database.database);
+  const reservationRepository = new PostgresReservationRepository(database.database);
+  const contractRepository = new PostgresContractRepository(database.database);
   const idGenerator = new UuidIdGenerator();
   const unitOfWork = new PostgresUnitOfWork(database.database);
   const productEventStore = new PostgresProductEventStore(database.database);
@@ -86,6 +137,89 @@ export function createPostgresCreatorIdentityComposition(
     clock: new FixedClock(new Date().toISOString()),
     eventStore: productEventStore,
     idGenerator: new UuidIdGenerator(),
+  });
+  const paidCommerceService = createPaidCommerceService({
+    commerceActionRepository,
+    offeringRepository,
+    paidCommerceRepository,
+    idGenerator,
+    clock: new FixedClock(new Date().toISOString()),
+    canonicalEventRecorder,
+    unitOfWork,
+    contractRepository,
+  });
+  const providerFactReceiptGuard = new PostgresProviderFactReceiptGuard(database.database);
+  const providerFactApplicationPolicy = new ProviderFactApplicationPolicy({
+    paidCommerceService,
+    paidCommerceRepository,
+    receiptGuard: providerFactReceiptGuard,
+  });
+  const localCommerceSimulationService =
+    realMoneyRuntimeConfiguration.runtimeEnvironment === 'production'
+      ? undefined
+      : createLocalCommerceSimulationService({
+          simulator: new LocalCommerceSimulator(
+            realMoneyRuntimeConfiguration.runtimeEnvironment === 'test'
+              ? 'test'
+              : realMoneyRuntimeConfiguration.runtimeEnvironment,
+          ),
+          applicationPolicy: providerFactApplicationPolicy,
+          paidCommerceService,
+        });
+  const localPaidCommerceProductService =
+    localCommerceSimulationService === undefined
+      ? undefined
+      : createLocalPaidCommerceProductService({
+          commerceIdentityRepository: identityRepository,
+          commerceActionRepository,
+          customerRepository,
+          paidCommerceRepository,
+          paidCommerceService,
+          simulationService: localCommerceSimulationService,
+          reservationRepository,
+          contractRepository,
+        });
+  const reservationService = createReservationService({
+    offeringRepository,
+    customerRepository,
+    reservationRepository,
+    paidCommerceRepository,
+    idGenerator,
+    clock: new FixedClock(new Date().toISOString()),
+    holdTtlMilliseconds: 15 * 60 * 1_000,
+    canonicalEventRecorder,
+    unitOfWork,
+  });
+  const contractService = createContractService({
+    contractRepository,
+    scopeVersionRepository: contractRepository,
+    acceptanceFactRepository: contractRepository,
+    commerceActionRepository,
+    offeringRepository,
+    paidCommerceRepository,
+    idGenerator,
+    clock: new FixedClock(new Date().toISOString()),
+    canonicalEventRecorder,
+    unitOfWork,
+  });
+  const commercialPilotOperationsService = new CommercialPilotOperationsService({
+    repository: paidCommerceRepository,
+    evidenceSources: {
+      listCanonicalEvents: () => productEventStore.list(),
+      listProviderFacts: () => providerFactReceiptGuard.listObservations(),
+    },
+    auditStore: new PostgresOperationsActionAuditStore(database.database),
+    ...(localCommerceSimulationService === undefined
+      ? {}
+      : {
+          actionExecutor: new LocalCommercialPilotOperationsActionExecutor({
+            repository: paidCommerceRepository,
+            paidCommerceService,
+            simulationService: localCommerceSimulationService,
+          }),
+        }),
+    now: () => new Date().toISOString(),
+    generateId: () => new UuidIdGenerator().generate(),
   });
 
   return {
@@ -120,6 +254,7 @@ export function createPostgresCreatorIdentityComposition(
       canonicalEventRecorder,
       notificationPort,
       unitOfWork,
+      contractRepository,
     }),
     operationsAuthContextProvider: new StaticOperationsAuthContextProvider({
       accessToken: operationsConfiguration.operationsAccessToken,
@@ -130,14 +265,18 @@ export function createPostgresCreatorIdentityComposition(
       canonicalEventRecorder,
       productEventStore,
     }),
-    paidCommerceService: createPaidCommerceService({
-      commerceActionRepository,
-      offeringRepository,
-      paidCommerceRepository,
-      idGenerator,
-      clock: new FixedClock(new Date().toISOString()),
-      canonicalEventRecorder,
-      unitOfWork,
+    paidCommerceService,
+    ...(localCommerceSimulationService === undefined ? {} : { localCommerceSimulationService }),
+    ...(localPaidCommerceProductService === undefined ? {} : { localPaidCommerceProductService }),
+    commercialPilotOperationsService,
+    reservationService,
+    contractService,
+    providerWebhookRuntime: new ProviderWebhookRuntime({
+      signatureVerifier: new RejectingProviderWebhookSignatureVerifier(),
+      normalizer: new RejectingProviderEventNormalizer(),
+      receiptStore: new PostgresProviderWebhookReceiptStore(database.database),
+      applicationPolicy: providerFactApplicationPolicy,
+      activationGuard: new RealMoneyActivationGuard(realMoneyRuntimeConfiguration),
     }),
   };
 }

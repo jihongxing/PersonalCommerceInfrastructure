@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import type { FastifyInstance } from 'fastify';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { InMemoryAuthContextProvider } from '../../adapters/auth/testing/in-memory-auth-context-provider.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
@@ -9,13 +10,29 @@ const profile = {
   socialLinks: [],
 };
 
+const activeServers = new Set<FastifyInstance>();
+
+async function createTestApiServer(
+  dependencies?: Parameters<typeof createApiServer>[0],
+): Promise<FastifyInstance> {
+  const server = await createApiServer(dependencies);
+  activeServers.add(server);
+  return server;
+}
+
+afterEach(async () => {
+  const servers = [...activeServers];
+  activeServers.clear();
+  await Promise.all(servers.map(async (server) => server.close()));
+});
+
 function responseJson<T>(response: { readonly body: string }): T {
   return JSON.parse(response.body) as T;
 }
 
 describe('Creator Identity API', () => {
   it('creates, reads, edits and adds a Capability for the authenticated Creator', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const headers = {
       authorization: 'Bearer test-creator-token',
     };
@@ -91,12 +108,10 @@ describe('Creator Identity API', () => {
       capabilityIds: ['capability-1'],
       state: 'draft',
     });
-
-    await server.close();
   });
 
   it('creates, lists and updates a Creator-owned Service Offering draft', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const headers = {
       authorization: 'Bearer test-creator-token',
     };
@@ -177,12 +192,10 @@ describe('Creator Identity API', () => {
       state: 'draft',
       availabilityDescription: 'Weekday evenings by request.',
     });
-
-    await server.close();
   });
 
   it('allows an incomplete Draft Offering but rejects an unknown Capability', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const headers = {
       authorization: 'Bearer test-creator-token',
     };
@@ -237,12 +250,90 @@ describe('Creator Identity API', () => {
         code: 'service_offering_capability_invalid',
       },
     });
+  });
 
-    await server.close();
+  it('persists Appearance metadata on the existing Offering and exposes it as public Upcoming data', async () => {
+    const server = await createTestApiServer();
+    const headers = { authorization: 'Bearer test-creator-token' };
+
+    await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/identity',
+      headers,
+      payload: { profile },
+    });
+    const capability = await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/identity/capabilities',
+      headers,
+      payload: {
+        name: 'Convention Appearance',
+        description: 'Guest appearances for conventions and brands.',
+      },
+    });
+    const capabilityId = responseJson<{ readonly capabilityIds: readonly string[] }>(capability)
+      .capabilityIds[0];
+
+    const created = await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/offerings',
+      headers,
+      payload: {
+        capabilityIds: [capabilityId],
+        title: 'Shanghai Convention Guest Appearance',
+        description: 'Convention guest and brand appearance.',
+        availabilityDescription: 'Date and scope require Creator confirmation.',
+        requestInstructions: 'Provide organizer, venue, date, and scope.',
+        appearance: {
+          appearanceType: 'convention',
+          startsOn: '2026-08-20',
+          locationDescription: 'Shanghai New International Expo Centre',
+          buyerType: 'organizer',
+          pricingRule: 'Quoted by duration and scope.',
+          requestCallToAction: 'Submit appearance request',
+          upcomingTitle: 'Shanghai Convention guest appearance',
+        },
+      },
+    });
+    expect(created.statusCode).toBe(201);
+    expect(created.json()).toMatchObject({
+      appearance: {
+        appearanceType: 'convention',
+        startsOn: '2026-08-20',
+        buyerType: 'organizer',
+      },
+    });
+
+    const offeringId = responseJson<{ readonly id: string }>(created).id;
+    expect(
+      (
+        await server.inject({
+          method: 'POST',
+          url: `/api/v1/creator/offerings/${offeringId}/publish`,
+          headers,
+        })
+      ).statusCode,
+    ).toBe(200);
+
+    const publicOffering = await server.inject({
+      method: 'GET',
+      url: `/api/v1/public/offerings/${offeringId}`,
+    });
+    expect(publicOffering.statusCode).toBe(200);
+    expect(publicOffering.json()).toMatchObject({
+      offering: {
+        id: offeringId,
+        title: 'Shanghai Convention Guest Appearance',
+        appearance: {
+          upcomingTitle: 'Shanghai Convention guest appearance',
+          locationDescription: 'Shanghai New International Expo Centre',
+        },
+      },
+    });
   });
 
   it('publishes an eligible Offering and distinguishes generated from distributed Asset', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const headers = {
       authorization: 'Bearer test-creator-token',
     };
@@ -313,12 +404,10 @@ describe('Creator Identity API', () => {
       id: offeringId,
       state: 'unpublished',
     });
-
-    await server.close();
   });
 
   it('serves a public Offering, accepts an anonymous Customer Request, and blocks new Requests after Unpublish', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const headers = {
       authorization: 'Bearer test-creator-token',
     };
@@ -419,12 +508,10 @@ describe('Creator Identity API', () => {
     expect(unavailable.json()).toMatchObject({
       error: { code: 'service_offering_unavailable' },
     });
-
-    await server.close();
   });
 
   it('lists and decides owned Submitted Requests, including after Unpublish, with protected terminal outcomes', async () => {
-    const server = await createApiServer({
+    const server = await createTestApiServer({
       authContextProvider: new InMemoryAuthContextProvider([
         {
           accessToken: 'test-creator-token',
@@ -611,12 +698,10 @@ describe('Creator Identity API', () => {
       actionId: secondAction.actionId,
       state: 'declined',
     });
-
-    await server.close();
   });
 
   it('rejects missing authentication and invalid identity input', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
 
     const missingAuth = await server.inject({
       method: 'GET',
@@ -649,12 +734,10 @@ describe('Creator Identity API', () => {
         code: 'request_validation_failed',
       },
     });
-
-    await server.close();
   });
 
   it('records idempotent external payment and fulfillment facts for a confirmed Request', async () => {
-    const server = await createApiServer();
+    const server = await createTestApiServer();
     const creatorHeaders = { authorization: 'Bearer test-creator-token' };
     const operationsHeaders = { authorization: 'Bearer test-operations-token' };
 
@@ -771,7 +854,5 @@ describe('Creator Identity API', () => {
       },
     });
     expect(invalidToken.statusCode).toBe(401);
-
-    await server.close();
   });
 });

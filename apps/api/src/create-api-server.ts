@@ -19,6 +19,18 @@ import type { OperationsAuthContextProvider } from '../../../applications/core/p
 import type { RecordExternalObservationUseCase } from '../../../applications/shadow-commerce/external-observation-use-cases.js';
 import type { PaidCommerceService } from '../../../applications/paid-commerce/paid-commerce-service.js';
 import { registerPaidCommerceRoutes } from '../../../adapters/transport/http/paid-commerce-routes.js';
+import { registerLocalCommerceSimulationRoutes } from '../../../adapters/transport/http/local-commerce-simulation-routes.js';
+import { registerLocalPaidCommerceProductRoutes } from '../../../adapters/transport/http/local-paid-commerce-product-routes.js';
+import type { LocalCommerceSimulationService } from '../../../applications/paid-commerce/local-commerce-simulation-service.js';
+import type { LocalPaidCommerceProductService } from '../../../applications/paid-commerce/local-paid-commerce-product-service.js';
+import { registerProviderWebhookRoutes } from '../../../adapters/transport/http/provider-webhook-routes.js';
+import type { ProviderWebhookRuntime } from '../../../applications/paid-commerce/provider-webhook-runtime.js';
+import { registerCommercialPilotOperationsRoutes } from '../../../adapters/transport/http/commercial-pilot-operations-routes.js';
+import type { CommercialPilotOperationsService } from '../../../applications/paid-commerce/commercial-pilot-operations.js';
+import type { ReservationService } from '../../../applications/reservation/reservation-service.js';
+import { registerReservationRoutes } from '../../../adapters/transport/http/reservation-routes.js';
+import type { ContractService } from '../../../applications/contract-commerce/contract-service.js';
+import { registerContractRoutes } from '../../../adapters/transport/http/contract-routes.js';
 
 export interface ApiServerDependencies {
   readonly authContextProvider?: AuthContextProvider;
@@ -28,6 +40,12 @@ export interface ApiServerDependencies {
   readonly operationsAuthContextProvider?: OperationsAuthContextProvider;
   readonly recordExternalObservation?: RecordExternalObservationUseCase;
   readonly paidCommerceService?: PaidCommerceService;
+  readonly localCommerceSimulationService?: LocalCommerceSimulationService;
+  readonly localPaidCommerceProductService?: LocalPaidCommerceProductService;
+  readonly providerWebhookRuntime?: ProviderWebhookRuntime;
+  readonly commercialPilotOperationsService?: CommercialPilotOperationsService;
+  readonly reservationService?: ReservationService;
+  readonly contractService?: ContractService;
   readonly corsAllowedOrigins?: readonly string[];
   readonly publicOrigin?: string;
   readonly checkReadiness?: () => Promise<void>;
@@ -42,6 +60,19 @@ export async function createApiServer(
     requestIdHeader: 'x-correlation-id',
   });
   const composition = createInMemoryCreatorIdentityComposition(dependencies.publicOrigin);
+  const hasExternalComposition =
+    dependencies.authContextProvider !== undefined ||
+    dependencies.creatorIdentityService !== undefined ||
+    dependencies.serviceOfferingService !== undefined ||
+    dependencies.customerRequestService !== undefined ||
+    dependencies.operationsAuthContextProvider !== undefined ||
+    dependencies.recordExternalObservation !== undefined ||
+    dependencies.paidCommerceService !== undefined ||
+    dependencies.localPaidCommerceProductService !== undefined ||
+    dependencies.commercialPilotOperationsService !== undefined ||
+    dependencies.reservationService !== undefined ||
+    dependencies.contractService !== undefined ||
+    dependencies.providerWebhookRuntime !== undefined;
 
   if (dependencies.logger !== undefined) {
     server.addHook('onRequest', (request, _reply, done) => {
@@ -93,6 +124,11 @@ export async function createApiServer(
         { name: 'customer-request', description: 'Public Storefront and Customer Requests.' },
         { name: 'external-observation', description: 'Pilot Operations external facts.' },
         { name: 'paid-commerce', description: 'VS-02 controlled paid-service earnings flow.' },
+        { name: 'contract-commerce', description: 'Provider-neutral Quote then Accept contracts.' },
+        {
+          name: 'provider-webhook',
+          description: 'Provider-neutral signed event receipt boundary.',
+        },
       ],
     },
   });
@@ -129,6 +165,43 @@ export async function createApiServer(
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     operationsAuthContextProvider:
       dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
+  });
+  registerReservationRoutes(server, {
+    service: dependencies.reservationService ?? composition.reservationService,
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+  });
+  registerContractRoutes(server, {
+    service: dependencies.contractService ?? composition.contractService,
+    paidCommerceService: dependencies.paidCommerceService ?? composition.paidCommerceService,
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+  });
+  const localCommerceSimulationService =
+    dependencies.localCommerceSimulationService ??
+    (hasExternalComposition ? undefined : composition.localCommerceSimulationService);
+  if (localCommerceSimulationService !== undefined) {
+    registerLocalCommerceSimulationRoutes(server, {
+      service: localCommerceSimulationService,
+      operationsAuthContextProvider:
+        dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
+    });
+  }
+  const localPaidCommerceProductService =
+    dependencies.localPaidCommerceProductService ??
+    (hasExternalComposition ? undefined : composition.localPaidCommerceProductService);
+  if (localPaidCommerceProductService !== undefined) {
+    registerLocalPaidCommerceProductRoutes(server, {
+      service: localPaidCommerceProductService,
+      authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    });
+  }
+  registerProviderWebhookRoutes(server, {
+    runtime: dependencies.providerWebhookRuntime ?? composition.providerWebhookRuntime,
+  });
+  registerCommercialPilotOperationsRoutes(server, {
+    authContextProvider:
+      dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
+    service:
+      dependencies.commercialPilotOperationsService ?? composition.commercialPilotOperationsService,
   });
 
   server.get('/openapi.json', async (_request, reply) => {

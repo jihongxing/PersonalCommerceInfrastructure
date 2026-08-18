@@ -1,0 +1,12 @@
+{
+  "pilotId": "pilot-2026-001",
+  "status": "PROVISIONED",
+  "allowedPatterns": [
+    "Request",
+    "Reservation",
+    "Contract"
+  ],
+  "cohortLimit": 5,
+  "founderActivationRequired": true,
+  "realMoneyEnabled": false
+}

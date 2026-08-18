@@ -291,6 +291,8 @@ function serialize(value: unknown): string {
 }
 
 class FailingWeChatPaySandboxTransport implements WeChatPaySandboxTransport {
+  public readonly environment = 'controlled_test_transport' as const;
+
   public submit(): Promise<never> {
     return Promise.reject(new Error('api_key=must-not-leak'));
   }

@@ -6,6 +6,23 @@ export interface RequestableAvailability {
   readonly description: string;
 }
 
+export type AppearanceType = 'convention' | 'guest' | 'brand' | 'photo' | 'signing';
+
+export type AppearanceBuyerType =
+  'organizer' | 'brand' | 'fan_group' | 'approved_external_requester';
+
+export interface AppearanceOfferingMetadata {
+  readonly appearanceType: AppearanceType;
+  readonly startsOn: string;
+  readonly endsOn?: string;
+  readonly locationDescription: string;
+  readonly buyerType: AppearanceBuyerType;
+  readonly pricingRule?: string;
+  readonly requestCallToAction: string;
+  readonly upcomingTitle: string;
+  readonly externalUrl?: string;
+}
+
 export interface Offering {
   readonly id: string;
   readonly creatorId: string;
@@ -13,6 +30,7 @@ export interface Offering {
   readonly title: string;
   readonly description: string;
   readonly availability?: RequestableAvailability;
+  readonly appearance?: AppearanceOfferingMetadata;
   readonly requestInstructions: string;
   readonly state: OfferingState;
 }
@@ -22,6 +40,7 @@ export interface OfferingDraftInput {
   readonly title: string;
   readonly description: string;
   readonly availabilityDescription?: string;
+  readonly appearance?: AppearanceOfferingMetadata;
   readonly requestInstructions: string;
 }
 
@@ -43,6 +62,7 @@ export function createDraftOffering(
     input.availabilityDescription.trim().length === 0
       ? {}
       : { availability: { description: input.availabilityDescription.trim() } }),
+    ...appearanceMetadata(input.appearance),
     requestInstructions: input.requestInstructions.trim(),
     state: 'draft',
   };
@@ -54,12 +74,15 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
   }
 
   const availabilityDescription = input.availabilityDescription?.trim();
+  const appearance = appearanceMetadata(input.appearance);
   const updatedOffering = {
-    ...offering,
+    id: offering.id,
+    creatorId: offering.creatorId,
     capabilityIds: uniqueNonEmptyValues(input.capabilityIds),
     title: input.title.trim(),
     description: input.description.trim(),
     requestInstructions: input.requestInstructions.trim(),
+    state: offering.state,
   };
 
   if (availabilityDescription === undefined || availabilityDescription.length === 0) {
@@ -69,6 +92,7 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
       capabilityIds: updatedOffering.capabilityIds,
       title: updatedOffering.title,
       description: updatedOffering.description,
+      ...appearance,
       requestInstructions: updatedOffering.requestInstructions,
       state: updatedOffering.state,
     };
@@ -77,7 +101,80 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
   return {
     ...updatedOffering,
     availability: { description: availabilityDescription },
+    ...appearance,
   };
+}
+
+function appearanceMetadata(appearance: AppearanceOfferingMetadata | undefined): {
+  readonly appearance?: AppearanceOfferingMetadata;
+} {
+  if (appearance === undefined) {
+    return {};
+  }
+
+  const startsOn = requiredDate(appearance.startsOn, 'Appearance start date');
+  const endsOn =
+    appearance.endsOn === undefined
+      ? undefined
+      : requiredDate(appearance.endsOn, 'Appearance end date');
+  if (endsOn !== undefined && endsOn < startsOn) {
+    throw new Error('Appearance end date cannot be before its start date.');
+  }
+
+  const externalUrl = optionalUrl(appearance.externalUrl);
+  const pricingRule = optionalText(appearance.pricingRule);
+  return {
+    appearance: {
+      appearanceType: appearance.appearanceType,
+      startsOn,
+      ...(endsOn === undefined ? {} : { endsOn }),
+      locationDescription: requiredText(appearance.locationDescription, 'Appearance location'),
+      buyerType: appearance.buyerType,
+      ...(pricingRule === undefined ? {} : { pricingRule }),
+      requestCallToAction: requiredText(
+        appearance.requestCallToAction,
+        'Appearance request call to action',
+      ),
+      upcomingTitle: requiredText(appearance.upcomingTitle, 'Upcoming title'),
+      ...(externalUrl === undefined ? {} : { externalUrl }),
+    },
+  };
+}
+
+function requiredText(value: string, label: string): string {
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    throw new Error(`${label} is required.`);
+  }
+  return normalized;
+}
+
+function optionalText(value: string | undefined): string | undefined {
+  const normalized = value?.trim();
+  return normalized === undefined || normalized.length === 0 ? undefined : normalized;
+}
+
+function requiredDate(value: string, label: string): string {
+  const normalized = value.trim();
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/u.test(normalized) ||
+    Number.isNaN(Date.parse(`${normalized}T00:00:00Z`))
+  ) {
+    throw new Error(`${label} must use YYYY-MM-DD.`);
+  }
+  return normalized;
+}
+
+function optionalUrl(value: string | undefined): string | undefined {
+  const normalized = value?.trim();
+  if (normalized === undefined || normalized.length === 0) {
+    return undefined;
+  }
+  try {
+    return new URL(normalized).toString();
+  } catch (cause) {
+    throw new Error('Appearance external URL must be valid.', { cause });
+  }
 }
 
 export function missingPublishConditions(offering: Offering): readonly MissingPublishCondition[] {

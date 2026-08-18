@@ -1,8 +1,35 @@
 # Personal Commerce Infrastructure 文档索引
 
-> 状态：Execution Phase  
-> 冻结日期：2026-08-11  
+> **CURRENT PROJECT STATUS**：SUSPENDED — DEVELOPMENT PAUSED
+> **CURRENT BASELINE**：CLIENT-002 — Commerce Golden Path Closure = COMPLETE
+> **RESTART SSOT**：[`docs/08_Execution/22_Project_Handoff.md`](./08_Execution/22_Project_Handoff.md)
+> **NEXT TASK**：RESUME-001 — Project Re-entry Audit & Reopening Decision
+> 最近执行更新：2026-08-18
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
+
+```text
+PROJECT_STATUS = SUSPENDED
+CLIENT-002 = COMPLETE
+REAL_MONEY_ENABLED = false
+apps/app = DEFERRED
+NEXT TASK = RESUME-001
+```
+
+当前阶段索引：
+
+```text
+CLIENT-001 Web Client Convergence   Complete
+CLIENT-002 Golden Path Closure      Complete
+Project Development                Suspended
+Real Money                         Disabled
+Native App                         Deferred
+```
+
+`VS-01 Regression` 的当前解释是 `VS-01 Semantics Remain Stable`，不是 `VS-01 Isolation`。
+合法 VS-02 Contract 可以新增，但不得覆盖 VS-01 route、改变 VS-01 request/response semantics、
+污染 VS-01 canonical events 或破坏 VS-01 permission boundary。
+
+**No Real Money Evidence.** Provider Qualification 尚未完成。
 
 ## 1. 文档目的
 
@@ -108,6 +135,12 @@
 21. [21 — Prototype Execution](./08_Execution/21_Prototype_Execution.md)  
     维护 VS-01 的构建状态、M1–M8 里程碑、`FR-001–FR-053` 可追溯矩阵、偏差协议、Blocker、验收测试和 Prototype 交接。
 
+22. [22 — Commercialization Readiness Execution](./08_Execution/22_Commercialization_Readiness_Execution.md)
+    记录 Reference Product → Real Product Foundation 的本地技术 Cutline 与 CR-01–CR-08 历史执行证据。
+
+23. [23 — 2026-08-15 Handoff](./08_Execution/23_2026-08-15_Handoff.md)
+    记录 VS-02A–VS-02D 交接，并由 2026-08-16 `EXEC-002` 更新补充当前验证基线。
+
 ### 工程治理
 
 22. [22 — 工程治理](./09_Engineering_Governance/22_Engineering_Governance.md)  
@@ -130,6 +163,62 @@
 
 28. [28 — DS-01C Token Value 与 Accessibility Calibration](./09_Engineering_Governance/28_DS01C_Token_Value_and_Accessibility_Calibration.md)  
     冻结 Primitive Values、Semantic Values、可访问性基线和可机器读取的 Token Source of Truth，不进入客户端实现。
+
+29. [31 — Commercialization Readiness Cutline](./09_Engineering_Governance/31_Commercialization_Readiness_Cutline.md)
+    冻结 Reference Product → Real Product Foundation 的技术 Cutline。
+
+30. [32 — Minimum Commercial Loop](./09_Engineering_Governance/32_Minimum_Commercial_Loop.md)
+    冻结 First Completed Paid Commerce 的真实资金完成门槛；当前尚未完成。
+
+31. [35 — VS-02 Paid Service PRD](./09_Engineering_Governance/35_VS02_Paid_Service_PRD.md)
+    冻结 VS-02 Paid Service、Money、Earnings 与 Withdrawal 产品合同。
+
+35A. [35A — Provider Qualification Dossier](./09_Engineering_Governance/35A_Provider_Qualification_Dossier.md)
+维护 Provider 外部资格事实；微信支付候选仍为 `CONDITIONAL`。
+
+36. [36 — Engineering Governance Delta](./09_Engineering_Governance/36_Engineering_Governance_Delta.md)
+    冻结 VS-01 → VS-02 的工程治理增量与 Provider-neutral 边界。
+
+37. [37 — VS-02B Provider Integration Readiness](./09_Engineering_Governance/37_VS02B_Provider_Integration_Readiness.md)
+    冻结 Payment / Settlement / Withdrawal Port、Verified Provider Fact 与 Contract Harness。
+
+38. [38 — VS-02C Provider Adapter Qualification](./09_Engineering_Governance/38_VS02C_Provider_Adapter_Qualification.md)
+    记录微信支付 Adapter 的本地工程资格化；外部受控集成仍为 Conditional。
+
+39. [39 — VS-02D Controlled Real Money Integration](./09_Engineering_Governance/39_VS02D_Controlled_Real_Money_Integration.md)
+    冻结 Live Readiness 与 Go / No-Go；当前状态为 `Blocked / No-Go`。
+
+39A. [39A — VS-02D Controlled Real-Money Activation Readiness](./09_Engineering_Governance/39A_VS02D_Controlled_Real_Money_Activation_Readiness.md)
+冻结内部 Engineering Readiness、默认关闭的 Live Runtime Guard、Webhook 接收结构、Founder Activation Checklist 与 First Transaction Runbook；不授权真实资金。
+
+43. [43 — VS-02G Official Provider Sandbox Integration](./09_Engineering_Governance/43_VS02G_Official_Provider_Sandbox_Integration.md)
+44. [44 — VS-02H Commercial Pilot Operations Readiness](./09_Engineering_Governance/44_VS02H_Commercial_Pilot_Operations_Readiness.md)
+45. [45 — VS-02I First Commerce Pilot Preparation](./09_Engineering_Governance/45_VS02I_First_Commerce_Pilot_Preparation.md)
+46. [46 — VS-02J Founder Real-Money Activation Review](./09_Engineering_Governance/46_VS02J_Founder_Real_Money_Activation_Review.md)
+47. [47 — VS-02K Real Creator Pilot / Non-Money](./09_Engineering_Governance/47_VS02K_Real_Creator_Pilot_Non_Money.md)
+48. [48 — VS-02K-EXT-READY Controlled External Pilot Environment](./09_Engineering_Governance/48_VS02K_EXT_READY_Controlled_External_Pilot_Environment.md)
+49. [49 — VS-02K-EXT-02 External Pilot Deployment Package](./09_Engineering_Governance/49_VS02K_EXT02_External_Pilot_Deployment_Package.md)
+50. [50 — Creator Commerce Vertical Expansion Strategy](./02_Market/50_Creator_Commerce_Vertical_Expansion_Strategy.md)
+    基于当前 Request Commerce 实现与冻结架构，重排下一阶段跨垂直切片；仅提供
+    Founder 决策准备，不授权新 Pattern 或实际 Vertical Build。
+51. [51 — VS-02L01 Cosplayer Convention Appearance Request](./09_Engineering_Governance/51_VS02L01_Cosplayer_Convention_Appearance_Request.md)
+    使用既有 Request Commerce 验证 Convention Appearance 的跨垂直复用，不引入 Calendar、Ticketing 或垂直资金模型。
+52. [52 — VS-02L02 Photographer Session Reservation Design](./09_Engineering_Governance/52_VS02L02_Photographer_Session_Reservation_Design.md)
+    已由 `DEV-024` 的通用 Reservation Commerce 实现闭环替代；保留为决策与实施记录。
+53. [53 — VS-02L03 Commercial Appearance Contract Design](./09_Engineering_Governance/53_VS02L03_Commercial_Appearance_Contract_Design.md)
+    已由 `DEV-026` 的通用 Contract Commerce 实现闭环；Quote then Accept 复用既有 Money 和 Operations Core。
+54. [54 — Commerce Infrastructure Convergence Review](./09_Engineering_Governance/54_Commerce_Infrastructure_Convergence_Review.md)
+    收敛评审 Request、Reservation 与 Contract 三种 Pattern 的 Core / Money / Operations 复用；当前为 `Controller Review`。
+55. [55 — Phase 5 Real Creator Pilot Execution](./09_Engineering_Governance/55_Phase5_Real_Creator_Pilot_Execution.md)
+    冻结非真钱真实 Creator Pilot 的执行准备、数据隔离、证据、观察与支持边界；真实外部执行仍由 Founder 组织。
+56. [56 — Phase 5 External Pilot Activation Gate](./09_Engineering_Governance/56_Phase5_External_Pilot_Activation_Gate.md)
+    建立一次性、Founder-only、服务器端可审计的外部 Pilot 启动 Gate；不改变真钱开关，不自动启动 Pilot。
+57. [57 — Client Surface Strategy](./09_Engineering_Governance/57_Client_Surface_Strategy.md)
+    将 Web 收敛为 Pattern-first Commerce Client，并定义 Mobile Web 与未来 `apps/app` 边界；`apps/app` 按决策延期。
+58. [58 — CLIENT-002 Commerce Golden Path Closure](./09_Engineering_Governance/58_CLIENT002_Commerce_Golden_Path_Closure.md)
+    审计并验证 Request、Reservation、Contract 从 Customer Action 经 Creator Execution、Completion 到共享 Earnings / Wallet Projection 的 Web 闭环。
+59. [22 — Project Handoff / Suspend Baseline](./08_Execution/22_Project_Handoff.md)
+    当前唯一 Project Restart SSOT；记录 `SUSPENDED` 状态、CLIENT-002 基线、明确边界、Resume Gate 与 `RESUME-001`。
 
 配套治理文档：
 
@@ -193,6 +282,8 @@ Execution Phase 的顺序为：
 8. 运行 Cohort 0，并以真实行为做 Product Usability / Behavior Feedback
 
 在 `15 MVP Build Readiness` 的 Real-money Controlled Pilot Ready 条件满足前，不应进入 Real-money Public Launch 或大规模系统开发。
+
 ## 工程治理
 
 - `docs/09_Engineering_Governance/29_DS01D_Web_Reference_Design_System_Implementation.md` — DS-01D Web Reference Design System Implementation
+- `docs/09_Engineering_Governance/40_VS02E_Local_Commercial_Simulation.md` — VS-02E Provider-neutral Local Commercial Simulation boundary, scenario vocabulary, simulation evidence and real-metrics isolation

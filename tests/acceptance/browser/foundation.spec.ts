@@ -35,20 +35,56 @@ test('Reference Client route skeletons are reachable without product behaviour',
   await driver.openRoute('/customer', '寻找服务');
 });
 
-test('Reference Client exposes no deferred commerce surfaces', async ({ page }) => {
+test('Reference Client exposes no unapproved product expansion surfaces', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByText(/Payment|Checkout|Settlement|Refund|Marketplace|CRM/iu)).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByText(/Marketplace|Customer CRM|Subscription|Multi-currency/iu),
+  ).toHaveCount(0);
 });
 
-test('OpenAPI exposes no deferred commerce operations or states', async ({ request }) => {
+test('OpenAPI preserves the VS-01 contract while allowing governed VS-02 operations', async ({
+  request,
+}) => {
   const response = await request.get('http://127.0.0.1:45100/openapi.json');
   expect(response.ok()).toBe(true);
-  const openApiText = JSON.stringify(await response.json());
-
-  expect(openApiText).not.toMatch(
-    /checkout|settlement|refund|marketplace|customer.?crm|gmv|take.?rate|payment.?pending|paid.?pending|fulfilled.?state/iu,
+  const openApi = (await response.json()) as {
+    readonly paths: Readonly<
+      Record<string, Readonly<Record<string, { readonly operationId?: string }>>>
+    >;
+  };
+  const operations = new Map(
+    Object.entries(openApi.paths).flatMap(([path, pathItem]) =>
+      Object.entries(pathItem).map(([method, operation]) => [
+        `${method.toUpperCase()} ${path}`,
+        operation.operationId,
+      ]),
+    ),
   );
+  const vs01Operations = {
+    'GET /api/v1/creator/confirmed-requests': 'listCreatorConfirmedRequests',
+    'GET /api/v1/creator/identity': 'getCreatorIdentity',
+    'GET /api/v1/creator/offerings': 'listCreatorServiceOfferings',
+    'GET /api/v1/creator/requests': 'listCreatorSubmittedRequests',
+    'GET /api/v1/public/offerings/{offeringId}': 'getPublicServiceOffering',
+    'GET /api/v1/public/requests/{resultAccessToken}': 'getCustomerRequestResult',
+    'PATCH /api/v1/creator/identity': 'updateCreatorIdentity',
+    'PATCH /api/v1/creator/offerings/{offeringId}': 'updateCreatorServiceOffering',
+    'POST /api/v1/creator/identity': 'createCreatorIdentity',
+    'POST /api/v1/creator/identity/capabilities': 'addCreatorCapability',
+    'POST /api/v1/creator/offerings': 'createCreatorServiceOffering',
+    'POST /api/v1/creator/offerings/{offeringId}/distribution': 'recordCreatorExternalDistribution',
+    'POST /api/v1/creator/offerings/{offeringId}/publish': 'publishCreatorServiceOffering',
+    'POST /api/v1/creator/offerings/{offeringId}/unpublish': 'unpublishCreatorServiceOffering',
+    'POST /api/v1/creator/requests/{actionId}/confirm': 'confirmCreatorRequest',
+    'POST /api/v1/creator/requests/{actionId}/decline': 'declineCreatorRequest',
+    'POST /api/v1/public/offerings/{offeringId}/requests': 'submitCustomerRequest',
+  } as const;
+
+  for (const [route, operationId] of Object.entries(vs01Operations)) {
+    expect(operations.get(route), route).toBe(operationId);
+  }
+
+  expect(operations.get('GET /api/v1/creator/wallet')).toBe('getCreatorEarningsWallet');
+  expect(operations.get('POST /api/v1/creator/paid-orders')).toBe('createPaidServiceOrder');
 });

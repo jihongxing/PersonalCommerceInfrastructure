@@ -84,12 +84,12 @@ describe('VS-01 acceptance entry points', () => {
       'returns the existing external fact for repeated idempotent calls',
     );
   });
-  test('AT-013 explicitly deferred capabilities are absent', () => {
+  test('AT-013 VS-01 semantics remain stable without unapproved product expansion', () => {
     expect(foundationBrowserAcceptance).toContain(
-      'Reference Client exposes no deferred commerce surfaces',
+      'Reference Client exposes no unapproved product expansion surfaces',
     );
     expect(foundationBrowserAcceptance).toContain(
-      'OpenAPI exposes no deferred commerce operations or states',
+      'OpenAPI preserves the VS-01 contract while allowing governed VS-02 operations',
     );
   });
 });

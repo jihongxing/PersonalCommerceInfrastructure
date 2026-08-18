@@ -37,6 +37,17 @@ export const serviceOfferings = pgTable(
     title: varchar('title', { length: 160 }).notNull(),
     description: varchar('description', { length: 2_000 }).notNull(),
     availabilityDescription: varchar('availability_description', { length: 1_000 }),
+    appearance: jsonb('appearance').$type<{
+      appearanceType: 'convention' | 'guest' | 'brand' | 'photo' | 'signing';
+      startsOn: string;
+      endsOn?: string;
+      locationDescription: string;
+      buyerType: 'organizer' | 'brand' | 'fan_group' | 'approved_external_requester';
+      pricingRule?: string;
+      requestCallToAction: string;
+      upcomingTitle: string;
+      externalUrl?: string;
+    }>(),
     requestInstructions: varchar('request_instructions', { length: 1_000 }).notNull(),
     state: varchar('state', { length: 32 }).notNull().default('draft'),
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true })

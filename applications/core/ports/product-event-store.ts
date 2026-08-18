@@ -2,4 +2,5 @@ import type { CanonicalEvent } from '../../../modules/product-facts/canonical-ev
 
 export interface ProductEventStore {
   append(event: CanonicalEvent): Promise<void>;
+  list(): Promise<readonly CanonicalEvent[]>;
 }

@@ -4,6 +4,7 @@ import {
   loadAuthConfiguration,
   loadConfiguration,
   loadDatabaseConfiguration,
+  loadRealMoneyRuntimeConfiguration,
   loadOperationsAuthConfiguration,
 } from '../../apps/prototype/src/configuration/bootstrap.js';
 
@@ -21,6 +22,7 @@ describe('configuration bootstrap', () => {
       apiPort: 4100,
       environment: 'test',
       logLevel: 'debug',
+      usePostgresTestComposition: false,
       webReferenceClientOrigin: 'http://127.0.0.1:43125',
     });
   });
@@ -186,5 +188,84 @@ describe('operations auth configuration bootstrap', () => {
         OPERATIONS_ACCESS_TOKEN: 'controlled-operations-token',
       }),
     ).toThrow('OPERATIONS_OPERATOR_ID is required for Pilot Operations records.');
+  });
+});
+
+describe('real-money runtime configuration bootstrap', () => {
+  it('defaults to a disabled local runtime without a live Provider', () => {
+    expect(loadRealMoneyRuntimeConfiguration({})).toEqual({
+      runtimeEnvironment: 'local',
+      realMoneyEnabled: false,
+      founderActivationReference: undefined,
+      provider: undefined,
+    });
+  });
+
+  it('loads a complete founder-approved controlled Provider configuration', () => {
+    expect(
+      loadRealMoneyRuntimeConfiguration({
+        RUNTIME_ENV: 'controlled',
+        REAL_MONEY_ENABLED: 'true',
+        FOUNDER_ACTIVATION_REFERENCE: 'founder-go-2026-001',
+        LIVE_PROVIDER_ID: 'future-provider',
+        LIVE_PROVIDER_URL: 'https://provider.example.test',
+        LIVE_PROVIDER_MERCHANT_ACCOUNT: 'merchant-redacted',
+        LIVE_PROVIDER_API_CREDENTIAL: 'credential-loaded-at-runtime',
+        LIVE_PROVIDER_WEBHOOK_SECRET: 'webhook-secret-loaded-at-runtime',
+        LIVE_PROVIDER_ENVIRONMENT: 'production',
+        LIVE_PROVIDER_CURRENCY: 'CNY',
+        LIVE_PROVIDER_REGION: 'CN',
+      }),
+    ).toEqual({
+      runtimeEnvironment: 'controlled',
+      realMoneyEnabled: true,
+      founderActivationReference: 'founder-go-2026-001',
+      provider: {
+        providerId: 'future-provider',
+        providerUrl: 'https://provider.example.test',
+        merchantAccountMapping: 'merchant-redacted',
+        apiCredential: 'credential-loaded-at-runtime',
+        webhookSecret: 'webhook-secret-loaded-at-runtime',
+        providerEnvironment: 'production',
+        currency: 'CNY',
+        region: 'CN',
+      },
+    });
+  });
+
+  it('rejects activation outside controlled or production runtime', () => {
+    expect(() =>
+      loadRealMoneyRuntimeConfiguration({
+        RUNTIME_ENV: 'local',
+        REAL_MONEY_ENABLED: 'true',
+        FOUNDER_ACTIVATION_REFERENCE: 'founder-go-2026-001',
+      }),
+    ).toThrow('REAL_MONEY_ENABLED requires controlled or production runtime.');
+  });
+
+  it('rejects activation without founder approval and complete Provider configuration', () => {
+    expect(() =>
+      loadRealMoneyRuntimeConfiguration({
+        RUNTIME_ENV: 'controlled',
+        REAL_MONEY_ENABLED: 'true',
+      }),
+    ).toThrow('FOUNDER_ACTIVATION_REFERENCE is required');
+
+    expect(() =>
+      loadRealMoneyRuntimeConfiguration({
+        RUNTIME_ENV: 'controlled',
+        REAL_MONEY_ENABLED: 'true',
+        FOUNDER_ACTIVATION_REFERENCE: 'founder-go-2026-001',
+      }),
+    ).toThrow('Live Provider configuration is incomplete');
+  });
+
+  it('rejects partial Provider configuration instead of falling back to test transport', () => {
+    expect(() =>
+      loadRealMoneyRuntimeConfiguration({
+        RUNTIME_ENV: 'controlled',
+        LIVE_PROVIDER_ID: 'future-provider',
+      }),
+    ).toThrow('Live Provider configuration is incomplete');
   });
 });

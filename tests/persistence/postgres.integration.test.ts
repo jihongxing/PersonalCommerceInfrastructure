@@ -14,6 +14,8 @@ import {
 import { PostgresUnitOfWork } from '../../adapters/persistence/postgres/postgres-unit-of-work.js';
 import { FixedClock } from '../../adapters/in-memory/fixed-clock.js';
 import { SequentialIdGenerator } from '../../adapters/in-memory/sequential-id-generator.js';
+import { PostgresProviderWebhookReceiptStore } from '../../adapters/persistence/postgres/postgres-provider-webhook-receipt-store.js';
+import { PostgresProviderFactReceiptGuard } from '../../adapters/persistence/postgres/postgres-provider-fact-receipt-guard.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeWithDatabase = databaseUrl === undefined ? describe.skip : describe;
@@ -30,7 +32,7 @@ describeWithDatabase('PostgreSQL persistence integration', () => {
 
   beforeEach(async () => {
     await connection.database.execute(
-      sql`truncate table product_events, creator_capabilities, commerce_identities`,
+      sql`truncate table provider_fact_receipts, provider_webhook_receipts, product_events, creator_capabilities, commerce_identities`,
     );
   });
 
@@ -47,6 +49,7 @@ describeWithDatabase('PostgreSQL persistence integration', () => {
             new Error('Default store must not be used inside the transaction.'),
           );
         },
+        list: () => Promise.resolve([]),
       },
       idGenerator: new SequentialIdGenerator('event'),
     });
@@ -80,6 +83,7 @@ describeWithDatabase('PostgreSQL persistence integration', () => {
             new Error('Default store must not be used inside the transaction.'),
           );
         },
+        list: () => Promise.resolve([]),
       },
       idGenerator: new SequentialIdGenerator('event'),
     });
@@ -151,5 +155,69 @@ describeWithDatabase('PostgreSQL persistence integration', () => {
         },
       ],
     });
+  });
+
+  it('persists Provider webhook replay and payload conflicts across store instances', async () => {
+    const receipt = {
+      providerId: 'future-provider',
+      providerEventId: 'event-1',
+      payloadSha256: 'a'.repeat(64),
+      receivedAt: '2026-08-16T10:00:00.000Z',
+    };
+    const firstStore = new PostgresProviderWebhookReceiptStore(connection.database);
+
+    await expect(firstStore.begin(receipt)).resolves.toEqual({ status: 'accepted' });
+    await expect(firstStore.begin(receipt)).resolves.toEqual({ status: 'retry' });
+    await firstStore.markProcessed(receipt.providerId, receipt.providerEventId);
+
+    const restartedStore = new PostgresProviderWebhookReceiptStore(connection.database);
+    await expect(restartedStore.begin(receipt)).resolves.toEqual({ status: 'idempotent' });
+    await expect(
+      restartedStore.begin({ ...receipt, payloadSha256: 'b'.repeat(64) }),
+    ).resolves.toMatchObject({ status: 'conflict' });
+  });
+
+  it('persists verified Provider Fact replay, stale, and conflict decisions', async () => {
+    const fact = {
+      verification: 'verified' as const,
+      providerId: 'future-provider',
+      providerEventId: 'event-1',
+      providerReference: 'provider-payment-1',
+      kind: 'PaymentSucceeded' as const,
+      resourceType: 'payment' as const,
+      internalReference: 'order-1',
+      amountMinor: 39_900n,
+      currency: 'CNY' as const,
+      sequence: 2,
+      occurredAt: '2026-08-16T10:00:00.000Z',
+    };
+    const firstGuard = new PostgresProviderFactReceiptGuard(connection.database);
+
+    await expect(firstGuard.inspect(fact)).resolves.toEqual({ status: 'accepted' });
+    await firstGuard.recordAccepted(fact);
+
+    const restartedGuard = new PostgresProviderFactReceiptGuard(connection.database);
+    await expect(restartedGuard.inspect(fact)).resolves.toEqual({ status: 'idempotent' });
+    await expect(
+      restartedGuard.inspect({ ...fact, providerEventId: 'event-stale', sequence: 1 }),
+    ).resolves.toMatchObject({ status: 'stale' });
+    await expect(
+      restartedGuard.inspect({
+        ...fact,
+        providerEventId: 'event-conflict',
+        kind: 'PaymentFailed',
+      }),
+    ).resolves.toMatchObject({ status: 'conflict' });
+    const refund = {
+      ...fact,
+      providerEventId: 'event-refund',
+      providerReference: 'provider-refund-1',
+      kind: 'RefundSucceeded' as const,
+      sequence: 3,
+      occurredAt: '2026-08-16T10:01:00.000Z',
+    };
+    await expect(restartedGuard.inspect(refund)).resolves.toEqual({ status: 'accepted' });
+    await restartedGuard.recordAccepted(refund);
+    await expect(restartedGuard.inspect(refund)).resolves.toEqual({ status: 'idempotent' });
   });
 });

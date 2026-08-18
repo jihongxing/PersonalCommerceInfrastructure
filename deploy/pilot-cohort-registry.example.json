@@ -1,0 +1,16 @@
+{
+  "pilotId": "pilot-2026-001",
+  "cohortLimit": 5,
+  "entries": [
+    {
+      "creator": "PENDING",
+      "pattern": "Request",
+      "account": "PENDING",
+      "publicUrl": "PENDING",
+      "startDate": "PENDING",
+      "status": "PLANNED",
+      "operator": "PENDING",
+      "evidenceLocation": "PENDING"
+    }
+  ]
+}

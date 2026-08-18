@@ -52,6 +52,7 @@ function offeringResponse(offering: Offering) {
     ...(offering.availability === undefined
       ? {}
       : { availabilityDescription: offering.availability.description }),
+    ...(offering.appearance === undefined ? {} : { appearance: offering.appearance }),
     requestInstructions: offering.requestInstructions,
     state: offering.state,
     missingPublishConditions: missingPublishConditions(offering),

@@ -12,6 +12,7 @@ $requiredFiles = @(
   "docs\09_Engineering_Governance\code-style-and-naming.md",
   "docs\09_Engineering_Governance\configuration-and-secrets.md",
   "docs\09_Engineering_Governance\external-dependencies.md",
+  "docs\09_Engineering_Governance\39A_VS02D_Controlled_Real_Money_Activation_Readiness.md",
   "docs\08_Execution\21_Prototype_Execution.md",
   "docs\07_Product_Architecture\20_MVP_PRD_VS01.md"
 )
@@ -32,10 +33,23 @@ foreach ($relativePath in @(
   "code-style-and-naming.md",
   "configuration-and-secrets.md",
   "external-dependencies.md",
+  "39A_VS02D_Controlled_Real_Money_Activation_Readiness.md",
   "21_Prototype_Execution.md"
 )) {
   if ($index -notmatch [regex]::Escape($relativePath)) {
     throw "docs/README.md does not index: $relativePath"
+  }
+}
+
+$activationReadiness = Get-Content -LiteralPath (Join-Path $repo "docs\09_Engineering_Governance\39A_VS02D_Controlled_Real_Money_Activation_Readiness.md") -Raw
+foreach ($requiredConclusion in @(
+  "VS-02D Engineering Readiness = READY",
+  "Real Money Activation = MANUAL FOUNDER GO REQUIRED",
+  "Provider Qualification = External Parallel Track",
+  "No Real Money Evidence"
+)) {
+  if ($activationReadiness -notmatch [regex]::Escape($requiredConclusion)) {
+    throw "VS-02D readiness governance is missing conclusion: $requiredConclusion"
   }
 }
 
@@ -174,16 +188,64 @@ foreach ($relativePath in $requiredImplementationPaths) {
   }
 }
 
-$runtimeCode = Get-ChildItem -LiteralPath (Join-Path $repo "apps"), (Join-Path $repo "applications"), (Join-Path $repo "contracts"), (Join-Path $repo "modules"), (Join-Path $repo "adapters"), (Join-Path $repo "database") -Recurse -File -Include *.ts,*.tsx,*.js,*.jsx -ErrorAction SilentlyContinue |
-  Where-Object { $_.Name -notmatch "\.test\." } |
-  Where-Object { $_.FullName -notmatch "[\\/](node_modules|dist|coverage|\.next)[\\/]" }
+$openApiManifest = Get-Content -LiteralPath (Join-Path $repo "contracts\api\v1\openapi-compatibility.json") -Raw | ConvertFrom-Json
+$requiredVs01Operations = [ordered]@{
+  "GET /api/v1/creator/confirmed-requests" = "listCreatorConfirmedRequests"
+  "GET /api/v1/creator/identity" = "getCreatorIdentity"
+  "GET /api/v1/creator/offerings" = "listCreatorServiceOfferings"
+  "GET /api/v1/creator/requests" = "listCreatorSubmittedRequests"
+  "GET /api/v1/public/offerings/{offeringId}" = "getPublicServiceOffering"
+  "GET /api/v1/public/requests/{resultAccessToken}" = "getCustomerRequestResult"
+  "PATCH /api/v1/creator/identity" = "updateCreatorIdentity"
+  "PATCH /api/v1/creator/offerings/{offeringId}" = "updateCreatorServiceOffering"
+  "POST /api/v1/creator/identity" = "createCreatorIdentity"
+  "POST /api/v1/creator/identity/capabilities" = "addCreatorCapability"
+  "POST /api/v1/creator/offerings" = "createCreatorServiceOffering"
+  "POST /api/v1/creator/offerings/{offeringId}/distribution" = "recordCreatorExternalDistribution"
+  "POST /api/v1/creator/offerings/{offeringId}/publish" = "publishCreatorServiceOffering"
+  "POST /api/v1/creator/offerings/{offeringId}/unpublish" = "unpublishCreatorServiceOffering"
+  "POST /api/v1/creator/requests/{actionId}/confirm" = "confirmCreatorRequest"
+  "POST /api/v1/creator/requests/{actionId}/decline" = "declineCreatorRequest"
+  "POST /api/v1/public/offerings/{offeringId}/requests" = "submitCustomerRequest"
+}
 
-$deferredMatches = $runtimeCode |
-  Select-String -Pattern "\b(checkout|settlement|refund|marketplace|customer-crm|payment[-_ ]?(credential|credentials|card|processing|pending)|fulfilled[-_ ]?state)\b" -CaseSensitive:$false -ErrorAction SilentlyContinue
+foreach ($operation in $requiredVs01Operations.GetEnumerator()) {
+  $manifestOperation = $openApiManifest.PSObject.Properties[$operation.Key]
+  if ($null -eq $manifestOperation) {
+    throw "VS-01 regression route is missing from OpenAPI compatibility manifest: $($operation.Key)"
+  }
+  if ($manifestOperation.Value -ne $operation.Value) {
+    throw "VS-01 regression operation changed: $($operation.Key) expected $($operation.Value), actual $($manifestOperation.Value)"
+  }
+}
 
-if ($deferredMatches.Count -gt 0) {
-  $locations = $deferredMatches | ForEach-Object { "$($_.Path):$($_.LineNumber)" }
-  throw "Deferred capability names must not enter runtime code: $($locations -join ', ')"
+$canonicalEvents = Get-Content -LiteralPath (Join-Path $repo "modules\product-facts\canonical-events.ts") -Raw
+foreach ($eventName in @(
+  "creator_registered",
+  "creator_qualified",
+  "creator_activated",
+  "creator_published",
+  "creator_distributed",
+  "storefront_viewed",
+  "commerce_action_submitted",
+  "commerce_confirmed",
+  "commerce_declined"
+)) {
+  if ($canonicalEvents -notmatch "'$([regex]::Escape($eventName))'") {
+    throw "VS-01 canonical event is missing: $eventName"
+  }
+}
+
+$vs01PermissionRegression = Get-Content -LiteralPath (Join-Path $repo "tests\integration\creator-identity-api.test.ts") -Raw
+foreach ($permissionEvidence in @(
+  "rejects missing authentication",
+  "protected terminal outcomes",
+  "expect(unauthorized.statusCode).toBe(403)",
+  "expect(repeated.statusCode).toBe(409)"
+)) {
+  if ($vs01PermissionRegression -notmatch [regex]::Escape($permissionEvidence)) {
+    throw "VS-01 permission regression evidence is missing: $permissionEvidence"
+  }
 }
 
 Write-Host "Engineering governance check passed."

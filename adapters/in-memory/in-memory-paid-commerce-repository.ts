@@ -24,6 +24,10 @@ export class InMemoryPaidCommerceRepository
     return Promise.resolve(cloneOrUndefined(this.orders.get(id)));
   }
 
+  public listOrders(): Promise<readonly PaidServiceOrder[]> {
+    return Promise.resolve(structuredClone([...this.orders.values()]));
+  }
+
   public findOrderByCommerceActionId(
     commerceActionId: string,
   ): Promise<PaidServiceOrder | undefined> {
@@ -31,6 +35,20 @@ export class InMemoryPaidCommerceRepository
       cloneOrUndefined(
         [...this.orders.values()].find((order) => order.commerceActionId === commerceActionId),
       ),
+    );
+  }
+
+  public findOrderByReservationId(reservationId: string): Promise<PaidServiceOrder | undefined> {
+    return Promise.resolve(
+      cloneOrUndefined(
+        [...this.orders.values()].find((order) => order.reservationId === reservationId),
+      ),
+    );
+  }
+
+  public findOrderByContractId(contractId: string): Promise<PaidServiceOrder | undefined> {
+    return Promise.resolve(
+      cloneOrUndefined([...this.orders.values()].find((order) => order.contractId === contractId)),
     );
   }
 
@@ -112,6 +130,18 @@ export class InMemoryPaidCommerceRepository
 
   public findWithdrawalById(id: string): Promise<Withdrawal | undefined> {
     return Promise.resolve(cloneOrUndefined(this.withdrawals.get(id)));
+  }
+
+  public findWithdrawalsByCreatorId(creatorId: string): Promise<readonly Withdrawal[]> {
+    return Promise.resolve(
+      structuredClone(
+        [...this.withdrawals.values()].filter((withdrawal) => withdrawal.creatorId === creatorId),
+      ),
+    );
+  }
+
+  public listWithdrawals(): Promise<readonly Withdrawal[]> {
+    return Promise.resolve(structuredClone([...this.withdrawals.values()]));
   }
 
   public findWithdrawalByCreatorAndIdempotencyKey(

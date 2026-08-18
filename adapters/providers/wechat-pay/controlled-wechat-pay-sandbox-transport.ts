@@ -9,12 +9,14 @@ import type {
 } from './wechat-pay-sandbox-transport.js';
 
 export class ControlledWeChatPaySandboxTransport implements WeChatPaySandboxTransport {
+  public readonly environment = 'controlled_test_transport' as const;
+
   private readonly operations = new Map<string, WeChatPaySandboxOperationResponse>();
   private readonly events = new Map<string, WeChatPaySandboxEvent>();
 
   public submit(command: WeChatPaySandboxCommand): Promise<WeChatPaySandboxOperationResponse> {
     assertCommand(command);
-    const providerReference = `wechat-pay-sandbox:${command.operationType}:${command.idempotencyKey}`;
+    const providerReference = `wechat-pay-controlled-test:${command.operationType}:${command.idempotencyKey}`;
     const existing = this.operations.get(providerReference);
     if (existing !== undefined) {
       return Promise.resolve(existing);

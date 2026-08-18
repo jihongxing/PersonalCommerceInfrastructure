@@ -2759,7 +2759,7 @@ No new product capability is authorized at the Suspend Point.
 PROJECT_STATUS = SUSPENDED
 REAL_MONEY_ENABLED = false
 apps/app = DEFERRED
-NEXT TASK = RESUME-001 — Project Re-entry Audit & Reopening Decision
+NEXT TASK = RESUME-001 — Identity & External Platform Binding Foundation
 ```
 
 The handoff SSOT records the current product definition, completed CLIENT-001 / CLIENT-002 stages,
@@ -2771,6 +2771,48 @@ new Project Restart SSOT.
 PROJECT-SUSPEND-001 = COMPLETE
 PROJECT STATUS = SUSPENDED
 SUSPEND BASELINE = CLIENT-002 — Commerce Golden Path Closure
+```
+
+## 37. PROJECT-SUSPEND-002 — Identity Anchor / Commerce ID Handoff Integration
+
+> **Status**: COMPLETE — Documentation / Architecture Direction Only
+> **Project Status**: SUSPENDED — DEVELOPMENT PAUSED
+> **Restart SSOT**: `docs/08_Execution/22_Project_Handoff.md`
+> **Governance Record**: `docs/09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md`
+> **Business Code Change**: None
+
+The final suspension review identified a long-term architecture gap: PCI must provide a stable,
+platform-neutral Commerce Identity Anchor for traffic originating on third-party content and
+distribution platforms. Third-party platforms remain responsible for discovery and audience; PCI is
+responsible for the commercial handoff.
+
+```text
+CLIENT-001 = COMPLETE
+CLIENT-002 = COMPLETE
+PROJECT STATUS = SUSPENDED
+
+ARCHITECTURAL DISCOVERY:
+Identity → Commerce Profile → Commerce ID → External Platform Identity → Commerce Objects
+
+1 Identity : N Commerce Profiles
+1 Commerce Profile : 1 stable Commerce ID
+1 Commerce Profile : N External Platform Identities
+
+Commerce ID = C-XXXXXXXX
+REAL_MONEY_ENABLED = false
+apps/app = DEFERRED
+```
+
+No Identity API, Commerce ID generation, database migration, OAuth, platform binding, login, UI,
+Payment, Money or Commerce Pattern implementation was added. The next restart direction is updated
+but remains gated by the re-entry audit and explicit Founder implementation authorization.
+
+```text
+NEXT RESUME TASK:
+RESUME-001 — Identity & External Platform Binding Foundation
+
+PROJECT-SUSPEND-002 = COMPLETE
+PROJECT STATUS = SUSPENDED
 ```
 
 ## 28. VERTICAL-02L-02-DESIGN — Photographer Session Reservation (Superseded)

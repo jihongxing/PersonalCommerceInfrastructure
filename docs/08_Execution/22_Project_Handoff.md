@@ -2,20 +2,22 @@
 
 > **Project Restart SSOT**: This document is the authoritative re-entry and suspension baseline.
 > **Effective date**: 2026-08-18
+> **Architecture update**: `PROJECT-SUSPEND-002` — Identity Anchor / Commerce ID / External Platform Binding
 
 ## 1. Project Identity
 
-| Field            | Value                                                        |
-| ---------------- | ------------------------------------------------------------ |
-| Project          | `PersonalCommerceInfrastructure`                             |
-| Current Status   | **SUSPENDED — DEVELOPMENT PAUSED**                           |
-| Reason           | Founder temporarily reallocating attention to other projects |
-| Project Decision | **NOT CANCELLED**                                            |
-| Current Baseline | `CLIENT-002 — Commerce Golden Path Closure = COMPLETE`       |
-| Next Task        | `RESUME-001 — Project Re-entry Audit & Reopening Decision`   |
+| Field            | Value                                                          |
+| ---------------- | -------------------------------------------------------------- |
+| Project          | `PersonalCommerceInfrastructure`                               |
+| Current Status   | **SUSPENDED — DEVELOPMENT PAUSED**                             |
+| Reason           | Founder temporarily reallocating attention to other projects   |
+| Project Decision | **NOT CANCELLED**                                              |
+| Current Baseline | `CLIENT-002 — Commerce Golden Path Closure = COMPLETE`         |
+| Next Task        | `RESUME-001 — Identity & External Platform Binding Foundation` |
 
 This is a clean project pause, not a product or repository termination. No new business capability
-is authorized by this handoff.
+is authorized by this handoff. The identity architecture below is a documented discovery and
+restart direction only; it is not implementation authorization.
 
 ## 2. Suspend Point
 
@@ -52,8 +54,48 @@ explicitly approves a new implementation change.
 
 PersonalCommerceInfrastructure is a provider-neutral Web commerce infrastructure for creators and
 other individuals who want to publish a Commerce Identity and turn creator-owned distribution into
-structured commercial actions. It is not a marketplace, calendar product, CRM, ticketing platform or
-real-money payment network.
+structured commercial actions. It is not a content distribution platform or a new social network:
+third-party platforms such as Xiaohongshu, Douyin, WeChat Channels, X, YouTube and Instagram provide
+discovery, traffic and audience; PCI provides the platform-neutral commercial handoff. It is also
+not a marketplace, calendar product, CRM, ticketing platform or real-money payment network.
+
+```text
+Third-party Content / Distribution Platforms
+    ↓
+Discovery / Traffic / Audience
+    ↓
+PersonalCommerceInfrastructure
+    ↓
+Identity → Commerce Profile → Commerce ID
+    ↓
+Commerce Objects
+    ↓
+Request / Reservation / Contract / future approved Objects
+    ↓
+Execution / Completion
+    ↓
+Earnings / Wallet Projection
+```
+
+The product therefore has two explicit infrastructure layers:
+
+```text
+PersonalCommerceInfrastructure
+│
+├── Identity Infrastructure
+│   ├── Identity
+│   ├── Commerce Profile
+│   ├── Commerce ID / C号
+│   └── External Platform Identity
+│
+└── Commerce Infrastructure
+    ├── Request
+    ├── Reservation
+    ├── Contract
+    ├── Completion
+    ├── Earnings
+    └── Wallet
+```
 
 The current product relationship is:
 
@@ -76,6 +118,73 @@ Earnings Ledger projection → Wallet projection
 `Request`, `Reservation` and `Contract` retain separate Pattern lifecycles. They converge only on
 the approved shared commercial and Money infrastructure. `Earnings` and `Wallet` are projections
 driven by domain facts; they are not manually editable or a second accounting state machine.
+
+### Identity anchor model
+
+```text
+Identity
+    ↓
+Commerce Profile
+    ↓
+Commerce ID / C号
+    ↓
+External Platform Identities
+    ↓
+Commerce Objects
+```
+
+`Identity ID` is the internal permanent identity root. It is private, non-enumerable and stable
+across nickname, brand, platform handle and profile changes. It is not a public business number,
+authentication credential or container for PII. UUIDv7 or an equivalent non-guessable, time-ordered
+identifier is the recommended direction; no implementation is included in the suspended baseline.
+
+`Commerce Profile` is the commercial identity represented to customers. It is not forced to equal a
+natural person: one internal Identity may own multiple Profiles, such as a Personal Creator, Dance
+Group / Studio and Brand / Business identity.
+
+```text
+1 Identity : N Commerce Profiles
+1 Commerce Profile : 1 stable Commerce ID
+1 Commerce Profile : N External Platform Identities
+```
+
+Each `External Platform Identity` is a separate relationship object, not a single Profile field.
+Its future conceptual facts are `platform`, `platform_account_id`, `platform_handle`, `profile_url`,
+`verification_status`, `bound_at` and `unbound_at`. Binding and unbinding must never change the
+Commerce ID.
+
+### Commerce ID / C号
+
+`Commerce ID / C号` is a platform-neutral public identifier for a Commerce Profile and a stable
+commercial entry anchor. It is not a password, API key, session token, OAuth credential, payment
+credential or authorization credential.
+
+Recommended display format:
+
+```text
+C-XXXXXXXX
+```
+
+The suffix uses an 8-character Crockford Base32-style alphabet with confusing presentation
+characters removed (`O / 0 / I / 1 / L`). It is uppercase, fixed-length, URL-safe, easy to speak,
+QR/OCR-friendly and carries no region, year, tier, platform, gender or Creator-type meaning.
+
+```text
+C-7K4M2Q9R
+```
+
+`32^8 = 1,099,511,627,776`, approximately **1.10 trillion** theoretical combinations. This is a
+capacity estimate, not a security guarantee. Allocation must use random generation, database
+uniqueness enforcement and collision retry; it must not use `next_user_number++`.
+
+Once assigned, a C号 is immutable and non-reusable. Profile edits, renamed brands, platform binding
+changes, unbinding, suspension, closure or deletion do not change it, and it is never reassigned
+because historical Commerce Objects, Orders, Contracts, Events, Earnings and Wallet facts may refer
+to it. `Identity ID ≠ Commerce ID ≠ Commerce Object ID`.
+
+The future public entry concept is `/c/{commerce_id}`, for example `/c/C-7K4M2Q9R`. It resolves to a
+Commerce Profile, not a social-profile mirror or content publishing surface. The format of specific
+Commerce Object IDs is not frozen by this handoff.
 
 ## 4. Completed Stages
 
@@ -235,22 +344,44 @@ is created by this suspension task.
 
 ## 9. Resume Task
 
-### RESUME-001 — Project Re-entry Audit & Reopening Decision
+### RESUME-001 — Identity & External Platform Binding Foundation
 
-`RESUME-001` is not an implementation task. It restores context and reopens the product decision
-gate:
+`RESUME-001` starts with a re-entry audit and then defines the first Founder-authorized direction for
+the identity gap. It does not grant automatic implementation permission.
 
-1. Read this Handoff SSOT;
-2. Check the current Git commit and Suspend Baseline tag;
+### Stage 1 — Re-entry Audit
+
+1. Read this Handoff SSOT and `59_Identity_Anchor_and_Commerce_ID.md`;
+2. Check the current Git commit and `suspend/client-002-complete-identity-reentry` tag;
 3. Run the complete engineering preflight;
 4. Verify CLIENT-001 and CLIENT-002 regressions remain PASS;
-5. Check for code, dependency and documentation drift;
-6. Reconfirm the current commercial objective;
-7. Produce candidate next tasks;
-8. Wait for Founder Decision before starting implementation.
+5. Check code, dependency and documentation drift;
+6. Reconfirm the current commercial objective.
 
-Do not interpret `RESUME-001` as authorization to start Payment, App, Provider, a new Pattern or a
-new Vertical.
+### Stage 2 — Identity Model Finalization
+
+Finalize `Identity`, `Commerce Profile`, `Commerce ID` and `External Platform Identity`, preserving
+`1 Identity : N Commerce Profiles` and `1 Profile : N Platform Identities`.
+
+### Stage 3 — Commerce ID Foundation
+
+Design and, only after explicit authorization, implement generation, uniqueness, collision retry,
+immutability, non-reuse, lookup and public resolution for `C-XXXXXXXX`.
+
+### Stage 4 — External Platform Binding
+
+Establish a platform-neutral binding abstraction first. Add individual platform integrations only as
+separately approved bounded work; do not begin with all-platform OAuth or a social platform.
+
+### Stage 5 — Public Commerce Entry
+
+Establish `/c/{commerce_id}` only after the preceding identity boundaries are approved.
+
+Finally, produce candidate implementation units and wait for Founder Decision before writing code.
+
+Do not interpret `RESUME-001` as authorization to start Payment, App, Provider, a new Pattern, a
+new Vertical, Social Graph, content publishing, content recommendation or multi-platform content
+synchronization.
 
 ## 10. Resume Gate
 
@@ -276,29 +407,30 @@ PROJECT_STATUS = SUSPENDED
 
 ## 11. Current Status Overview
 
-| Area                     | Status     | Notes                         |
-| ------------------------ | ---------- | ----------------------------- |
-| Pattern-first Web Client | COMPLETE   | CLIENT-001                    |
-| Request Commerce         | COMPLETE   | Golden Path PASS              |
-| Reservation Commerce     | COMPLETE   | Golden Path PASS              |
-| Contract Commerce        | COMPLETE   | Golden Path PASS              |
-| Creator Commerce Desk    | COMPLETE   | Shared execution surface      |
-| Customer Action Router   | COMPLETE   | Routing only                  |
-| Completion               | COMPLETE   | Domain-driven                 |
-| Earnings Projection      | COMPLETE   | Completion-driven             |
-| Wallet Projection        | COMPLETE   | Completion-driven             |
-| Idempotency              | COMPLETE   | Duplicate completion rejected |
-| Real Money               | DISABLED   | `REAL_MONEY_ENABLED=false`    |
-| Payment Provider         | DEFERRED   | None connected                |
-| Native App               | DEFERRED   | `apps/app` not implemented    |
-| Current Development      | SUSPENDED  | Founder temporary pause       |
-| Next Task                | RESUME-001 | Re-entry audit                |
+| Area                     | Status     | Notes                                           |
+| ------------------------ | ---------- | ----------------------------------------------- |
+| Pattern-first Web Client | COMPLETE   | CLIENT-001                                      |
+| Request Commerce         | COMPLETE   | Golden Path PASS                                |
+| Reservation Commerce     | COMPLETE   | Golden Path PASS                                |
+| Contract Commerce        | COMPLETE   | Golden Path PASS                                |
+| Creator Commerce Desk    | COMPLETE   | Shared execution surface                        |
+| Customer Action Router   | COMPLETE   | Routing only                                    |
+| Completion               | COMPLETE   | Domain-driven                                   |
+| Earnings Projection      | COMPLETE   | Completion-driven                               |
+| Wallet Projection        | COMPLETE   | Completion-driven                               |
+| Idempotency              | COMPLETE   | Duplicate completion rejected                   |
+| Real Money               | DISABLED   | `REAL_MONEY_ENABLED=false`                      |
+| Payment Provider         | DEFERRED   | None connected                                  |
+| Native App               | DEFERRED   | `apps/app` not implemented                      |
+| Current Development      | SUSPENDED  | Founder temporary pause                         |
+| Next Task                | RESUME-001 | Identity & External Platform Binding Foundation |
 
 ## 12. Handoff Authority
 
 This document is the unique Project Restart SSOT. Historical handoff and commercialization records
 remain useful evidence, but they do not supersede this file for current project status, restart
-sequence or suspension boundaries.
+sequence or suspension boundaries. `59_Identity_Anchor_and_Commerce_ID.md` is the linked governance
+record for the identity architecture direction; it is not a second Restart SSOT.
 
 ```text
 PERSONALCOMMERCEINFRASTRUCTURE
@@ -310,5 +442,5 @@ BASELINE: Pattern-first Web Commerce + Request + Reservation + Contract + Creato
 REAL_MONEY_ENABLED: false
 NATIVE APP: DEFERRED
 REAL PAYMENT: NOT IMPLEMENTED
-NEXT TASK: RESUME-001 — Project Re-entry Audit & Reopening Decision
+NEXT TASK: RESUME-001 — Identity & External Platform Binding Foundation
 ```

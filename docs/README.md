@@ -3,7 +3,8 @@
 > **CURRENT PROJECT STATUS**：SUSPENDED — DEVELOPMENT PAUSED
 > **CURRENT BASELINE**：CLIENT-002 — Commerce Golden Path Closure = COMPLETE
 > **RESTART SSOT**：[`docs/08_Execution/22_Project_Handoff.md`](./08_Execution/22_Project_Handoff.md)
-> **NEXT TASK**：RESUME-001 — Project Re-entry Audit & Reopening Decision
+> **ARCHITECTURAL DISCOVERY BEFORE SUSPENSION**：Identity Infrastructure is required
+> **NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
 > 最近执行更新：2026-08-18
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
@@ -12,7 +13,8 @@ PROJECT_STATUS = SUSPENDED
 CLIENT-002 = COMPLETE
 REAL_MONEY_ENABLED = false
 apps/app = DEFERRED
-NEXT TASK = RESUME-001
+IDENTITY DIRECTION = Identity → Commerce Profile → Commerce ID → External Platform Identity
+NEXT TASK = RESUME-001 — Identity & External Platform Binding Foundation
 ```
 
 当前阶段索引：
@@ -23,7 +25,22 @@ CLIENT-002 Golden Path Closure      Complete
 Project Development                Suspended
 Real Money                         Disabled
 Native App                         Deferred
+Identity Infrastructure           Architecture direction frozen; not implemented
 ```
+
+当前产品状态：
+
+```text
+Pattern-first Commerce Web
++ Request / Reservation / Contract Golden Paths
++ Creator Commerce Desk
++ Completion
++ Earnings / Wallet Projection
+```
+
+挂起前新增的架构发现是：PCI 不替代第三方内容与宣发平台，而是承接其产生的商业流量。
+下一次恢复时，应优先建立平台无关的 Identity、Commerce Profile、Commerce ID / C号 与
+External Platform Identity 边界；当前不实现 Identity API、OAuth 或平台绑定。
 
 `VS-01 Regression` 的当前解释是 `VS-01 Semantics Remain Stable`，不是 `VS-01 Isolation`。
 合法 VS-02 Contract 可以新增，但不得覆盖 VS-01 route、改变 VS-01 request/response semantics、
@@ -218,7 +235,9 @@ Native App                         Deferred
 58. [58 — CLIENT-002 Commerce Golden Path Closure](./09_Engineering_Governance/58_CLIENT002_Commerce_Golden_Path_Closure.md)
     审计并验证 Request、Reservation、Contract 从 Customer Action 经 Creator Execution、Completion 到共享 Earnings / Wallet Projection 的 Web 闭环。
 59. [22 — Project Handoff / Suspend Baseline](./08_Execution/22_Project_Handoff.md)
-    当前唯一 Project Restart SSOT；记录 `SUSPENDED` 状态、CLIENT-002 基线、明确边界、Resume Gate 与 `RESUME-001`。
+    当前唯一 Project Restart SSOT；记录 `SUSPENDED` 状态、CLIENT-002 基线、Identity Anchor 架构、Resume Gate 与新的 `RESUME-001`。
+60. [59 — Identity Anchor and Commerce ID](./09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md)
+    冻结 `Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Identity`、C号容量与不可变/不可复用边界；不授权实现。
 
 配套治理文档：
 

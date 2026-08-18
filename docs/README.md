@@ -13,7 +13,7 @@ PROJECT_STATUS = SUSPENDED
 CLIENT-002 = COMPLETE
 REAL_MONEY_ENABLED = false
 apps/app = DEFERRED
-IDENTITY DIRECTION = Identity → Commerce Profile → Commerce ID → External Platform Identity
+IDENTITY DIRECTION = Identity → Commerce Profile → Commerce ID → External Platform Account → Commerce Relationship
 NEXT TASK = RESUME-001 — Identity & External Platform Binding Foundation
 ```
 
@@ -40,7 +40,7 @@ Pattern-first Commerce Web
 
 挂起前新增的架构发现是：PCI 不替代第三方内容与宣发平台，而是承接其产生的商业流量。
 下一次恢复时，应优先建立平台无关的 Identity、Commerce Profile、Commerce ID / C号 与
-External Platform Identity 边界；当前不实现 Identity API、OAuth 或平台绑定。
+External Platform Account / Commerce Relationship 边界；当前不实现 Identity API、OAuth 或平台绑定。
 
 `VS-01 Regression` 的当前解释是 `VS-01 Semantics Remain Stable`，不是 `VS-01 Isolation`。
 合法 VS-02 Contract 可以新增，但不得覆盖 VS-01 route、改变 VS-01 request/response semantics、
@@ -237,7 +237,7 @@ External Platform Identity 边界；当前不实现 Identity API、OAuth 或平�
 59. [22 — Project Handoff / Suspend Baseline](./08_Execution/22_Project_Handoff.md)
     当前唯一 Project Restart SSOT；记录 `SUSPENDED` 状态、CLIENT-002 基线、Identity Anchor 架构、Resume Gate 与新的 `RESUME-001`。
 60. [59 — Identity Anchor and Commerce ID](./09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md)
-    冻结 `Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Identity`、C号容量与不可变/不可复用边界；不授权实现。
+    冻结 `Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Account`、多平台多账号、账号关系与 C号不可变/不可复用边界；不授权实现。
 
 配套治理文档：
 

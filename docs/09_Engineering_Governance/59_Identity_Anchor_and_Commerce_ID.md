@@ -46,7 +46,7 @@ PersonalCommerceInfrastructure
 │   ├── Identity
 │   ├── Commerce Profile
 │   ├── Commerce ID / C号
-│   └── External Platform Identity
+│   └── External Platform Account + Commerce Relationship
 │
 └── Commerce Infrastructure
     ├── Request
@@ -77,10 +77,13 @@ natural person. The architecture must preserve:
 Examples include a Personal Creator Profile, Dance Group / Studio Profile and Brand / Business
 Profile owned by one internal Identity.
 
-### External Platform Identity
+### External Platform Account and Commerce Relationship
 
-Each third-party account is an independent relationship object. The minimum future conceptual facts
-are:
+Each third-party account is an independent `External Platform Account` object. A platform is a
+namespace, not an identity and not a one-account slot. One Commerce Profile may bind N accounts on
+the same platform and N accounts across different platforms.
+
+The minimum future account facts are:
 
 ```text
 platform
@@ -90,16 +93,46 @@ profile_url
 verification_status
 bound_at
 unbound_at
+status
+role: primary | secondary
 ```
 
 The architecture must preserve:
 
 ```text
-1 Commerce Profile : N External Platform Identities
+1 Commerce Profile : N External Platform Accounts
+1 Platform : N External Platform Accounts per Commerce Profile
 ```
+
+An account's association to a Commerce Profile is a separate future `Commerce Relationship`, which
+is the boundary for ownership, management, verification and role:
+
+```text
+External Platform Account
+        ↓
+Commerce Relationship
+        ↓
+Commerce Profile
+```
+
+By default, an external account has one active verified owner / manager relationship. This prevents
+two unrelated Profiles from simultaneously claiming the same account. Shared or managed team
+accounts may eventually require multiple Profiles or internal Identities, but that is a deferred
+capability requiring a separate architecture decision.
 
 Binding and unbinding are mutable relationships. A platform account may be verified, bound, unbound
 and later re-reviewed without changing the Commerce ID.
+
+Example:
+
+```text
+Commerce Profile: Alice Dance Studio
+├── Douyin @alice_dance        (primary / verified)
+├── Douyin @alice_live         (secondary / verified)
+├── Douyin @alice_shop         (secondary / verified)
+├── Xiaohongshu @alice_dance   (primary / verified)
+└── YouTube Alice Dance Studio (secondary / verified)
+```
 
 ## 4. Commerce ID / C号 Contract
 
@@ -183,9 +216,10 @@ Expected sequence:
 
 1. Re-entry audit of Git baseline, documents, CLIENT-001, CLIENT-002, browser tests, environment
    flags and dependency drift;
-2. Finalize Identity / Commerce Profile / Commerce ID / External Platform Identity boundaries;
+2. Finalize Identity / Commerce Profile / Commerce ID / External Platform Account / Commerce
+   Relationship boundaries, including multiple accounts per platform;
 3. Design the `C-XXXXXXXX` generation, lookup, uniqueness, immutability and non-reuse foundation;
-4. Define a platform-neutral External Platform Identity binding abstraction;
+4. Define a platform-neutral External Platform Account and Commerce Relationship abstraction;
 5. Define the public `/c/{commerce_id}` resolution boundary.
 
 Each implementation unit requires explicit Founder authorization after the re-entry audit.
@@ -207,11 +241,13 @@ PCI承接第三方平台产生的商业流量，不替代第三方平台本身�
 ## 8. Final Boundary
 
 ```text
-Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Identity ≠ Commerce Object ID
+Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Account ≠ Commerce Object ID
 
 1 Identity : N Commerce Profiles
 1 Commerce Profile : 1 stable Commerce ID
-1 Commerce Profile : N External Platform Identities
+1 Commerce Profile : N External Platform Accounts
+1 Platform : N External Platform Accounts per Commerce Profile
+1 External Platform Account : 1 active verified owner / manager relationship by default
 
 NO BUSINESS CODE CHANGES
 REAL_MONEY_ENABLED = false

@@ -2792,11 +2792,14 @@ CLIENT-002 = COMPLETE
 PROJECT STATUS = SUSPENDED
 
 ARCHITECTURAL DISCOVERY:
-Identity → Commerce Profile → Commerce ID → External Platform Identity → Commerce Objects
+Identity → Commerce Profile → Commerce ID → External Platform Account
+             → Commerce Relationship → Commerce Objects
 
 1 Identity : N Commerce Profiles
 1 Commerce Profile : 1 stable Commerce ID
-1 Commerce Profile : N External Platform Identities
+1 Commerce Profile : N External Platform Accounts
+1 Platform : N External Platform Accounts per Commerce Profile
+1 External Platform Account : 1 active verified owner / manager relationship by default
 
 Commerce ID = C-XXXXXXXX
 REAL_MONEY_ENABLED = false
@@ -2804,8 +2807,10 @@ apps/app = DEFERRED
 ```
 
 No Identity API, Commerce ID generation, database migration, OAuth, platform binding, login, UI,
-Payment, Money or Commerce Pattern implementation was added. The next restart direction is updated
-but remains gated by the re-entry audit and explicit Founder implementation authorization.
+Payment, Money or Commerce Pattern implementation was added. The next restart direction now includes
+multi-platform / multi-account binding, account ownership / management, primary / secondary roles
+and shared-account conflict rules, but remains gated by the re-entry audit and explicit Founder
+implementation authorization.
 
 ```text
 NEXT RESUME TASK:

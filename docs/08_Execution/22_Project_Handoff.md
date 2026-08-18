@@ -86,7 +86,7 @@ PersonalCommerceInfrastructure
 │   ├── Identity
 │   ├── Commerce Profile
 │   ├── Commerce ID / C号
-│   └── External Platform Identity
+│   └── External Platform Account + Commerce Relationship
 │
 └── Commerce Infrastructure
     ├── Request
@@ -128,7 +128,7 @@ Commerce Profile
     ↓
 Commerce ID / C号
     ↓
-External Platform Identities
+External Platform Accounts + Commerce Relationships
     ↓
 Commerce Objects
 ```
@@ -145,13 +145,43 @@ Group / Studio and Brand / Business identity.
 ```text
 1 Identity : N Commerce Profiles
 1 Commerce Profile : 1 stable Commerce ID
-1 Commerce Profile : N External Platform Identities
+1 Commerce Profile : N External Platform Accounts
+1 Platform : N External Platform Accounts per Commerce Profile
+1 External Platform Account : 1 active verified owner / manager relationship by default
 ```
 
-Each `External Platform Identity` is a separate relationship object, not a single Profile field.
+Each `External Platform Account` is a separate account object, not a single Profile field and not a
+single account slot per platform. One Commerce Profile may bind multiple accounts on the same
+platform, for example multiple Douyin accounts, and multiple accounts across different platforms.
 Its future conceptual facts are `platform`, `platform_account_id`, `platform_handle`, `profile_url`,
-`verification_status`, `bound_at` and `unbound_at`. Binding and unbinding must never change the
-Commerce ID.
+`verification_status`, `bound_at`, `unbound_at`, `status` and a role such as `primary` or `secondary`.
+
+The account relationship remains explicit rather than assuming that an external account directly
+equals a Commerce Profile:
+
+```text
+External Platform Account
+        ↓
+Commerce Relationship
+        ↓
+Commerce Profile
+```
+
+The relationship is the future boundary for ownership, management, verification and role. By
+default, one external account has one active verified owner / manager relationship to prevent
+conflicting commercial claims. Shared or managed team accounts may eventually require multiple
+Profiles or internal Identities, but that is a separately approved capability and is not opened by
+this handoff. Binding and unbinding never change the Commerce ID.
+
+Example:
+
+```text
+Commerce Profile: Alice Dance Studio
+├── Douyin @alice_dance       (primary / verified)
+├── Douyin @alice_live        (secondary / verified)
+├── Xiaohongshu @alice_dance  (primary / verified)
+└── YouTube Alice Dance Studio (secondary / verified)
+```
 
 ### Commerce ID / C号
 
@@ -360,8 +390,8 @@ the identity gap. It does not grant automatic implementation permission.
 
 ### Stage 2 — Identity Model Finalization
 
-Finalize `Identity`, `Commerce Profile`, `Commerce ID` and `External Platform Identity`, preserving
-`1 Identity : N Commerce Profiles` and `1 Profile : N Platform Identities`.
+Finalize `Identity`, `Commerce Profile`, `Commerce ID`, `External Platform Account` and `Commerce
+Relationship`, preserving multiple accounts per platform and explicit ownership / management rules.
 
 ### Stage 3 — Commerce ID Foundation
 

@@ -25,6 +25,7 @@ describe('Supabase Auth adapter', () => {
         correlationId: 'correlation-1',
       }),
     ).resolves.toEqual({
+      accountId: 'supabase:supabase-user-1',
       actor: {
         kind: 'creator',
         creatorId: 'creator-for-supabase-user-1',

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const apiBaseUrl = 'http://127.0.0.1:45100';
+const apiBaseUrl = 'http://127.0.0.1:41000';
 
 function offeringCard(page: Page, title: string) {
   return page

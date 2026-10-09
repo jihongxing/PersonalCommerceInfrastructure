@@ -68,6 +68,214 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/private/onboarding/initialize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["initializePrivateIdentityOnboarding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCurrentPrivateIdentity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyCommerceProfiles"];
+        put?: never;
+        post: operations["createMyCommerceProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/profiles/{profileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyCommerceProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateMyCommerceProfile"];
+        trace?: never;
+    };
+    "/api/v1/private/profiles/{profileId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["suspendMyCommerceProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/profiles/{profileId}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveMyCommerceProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/profiles/{profileId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reactivateMyCommerceProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/profiles/{profileId}/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyCommerceReference"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/external-platform-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyExternalPlatformAccounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/external-platform-accounts/{externalPlatformAccountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyExternalPlatformAccount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/commerce-relationships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyCommerceRelationships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/commerce-relationships/{relationshipId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyCommerceRelationship"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/private/external-platform-relationships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createMySelfDeclaredExternalRelationship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/creator/offerings": {
         parameters: {
             query?: never;
@@ -1556,6 +1764,1332 @@ export interface operations {
             };
             /** @description Default Response */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    initializePrivateIdentityOnboarding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        identityId: string;
+                        status: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getCurrentPrivateIdentity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        identityId: string;
+                        status: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    listMyCommerceProfiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        profiles: {
+                            commerceProfileId: string;
+                            displayName: string;
+                            lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                            createdAt: string;
+                            updatedAt: string;
+                            commerceReference?: string;
+                            commerceReferenceDisplayValue?: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    createMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    displayName: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    updateMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    displayName: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    suspendMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    archiveMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    reactivateMyCommerceProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commerceProfileId: string;
+                        displayName: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
+                        createdAt: string;
+                        updatedAt: string;
+                        commerceReference?: string;
+                        commerceReferenceDisplayValue?: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getMyCommerceReference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {unknown} */
+                        assignmentStatus: "ASSIGNED";
+                        commerceReference: string;
+                        displayValue: string;
+                    } | {
+                        /** @enum {unknown} */
+                        assignmentStatus: "NOT_ASSIGNED";
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    listMyExternalPlatformAccounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accounts: {
+                            externalPlatformAccountId: string;
+                            platform: string;
+                            platformAccountId: string;
+                            lifecycle: "ACTIVE" | "SUSPENDED" | "REVOKED";
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getMyExternalPlatformAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                externalPlatformAccountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        externalPlatformAccountId: string;
+                        platform: string;
+                        platformAccountId: string;
+                        lifecycle: "ACTIVE" | "SUSPENDED" | "REVOKED";
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    listMyCommerceRelationships: {
+        parameters: {
+            query?: {
+                commerceProfileId?: string;
+                externalPlatformAccountId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        relationships: {
+                            relationshipId: string;
+                            profile: {
+                                commerceProfileId: string;
+                                displayName: string;
+                            };
+                            externalPlatformAccount: {
+                                platform: string;
+                                platformAccountId: string;
+                                lifecycle: "ACTIVE" | "SUSPENDED" | "REVOKED";
+                            };
+                            role: "OWNER" | "MANAGER" | "DELEGATED_MANAGER";
+                            provenance: "SELF_DECLARED" | "PLATFORM_VERIFIED" | "UNKNOWN";
+                            lifecycle: "PROPOSED" | "VERIFIED" | "ACTIVE" | "SUSPENDED" | "REVOKED" | "HISTORICAL";
+                            effectiveAt: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getMyCommerceRelationship: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                relationshipId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        relationshipId: string;
+                        profile: {
+                            commerceProfileId: string;
+                            displayName: string;
+                        };
+                        externalPlatformAccount: {
+                            platform: string;
+                            platformAccountId: string;
+                            lifecycle: "ACTIVE" | "SUSPENDED" | "REVOKED";
+                        };
+                        role: "OWNER" | "MANAGER" | "DELEGATED_MANAGER";
+                        provenance: "SELF_DECLARED" | "PLATFORM_VERIFIED" | "UNKNOWN";
+                        lifecycle: "PROPOSED" | "VERIFIED" | "ACTIVE" | "SUSPENDED" | "REVOKED" | "HISTORICAL";
+                        effectiveAt: string;
+                        createdAt: string;
+                        updatedAt: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    createMySelfDeclaredExternalRelationship: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    platform: string;
+                    platformAccountId: string;
+                    commerceProfileId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        externalPlatformAccount: {
+                            platform: string;
+                            platformAccountId: string;
+                            lifecycle: "ACTIVE" | "SUSPENDED" | "REVOKED";
+                        };
+                        commerceRelationship: {
+                            relationshipId: string;
+                            /** @enum {unknown} */
+                            role: "OWNER";
+                            /** @enum {unknown} */
+                            lifecycle: "PROPOSED";
+                            /** @enum {unknown} */
+                            provenance: "SELF_DECLARED";
+                            effectiveAt: string;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

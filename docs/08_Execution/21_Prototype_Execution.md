@@ -2820,6 +2820,90 @@ PROJECT-SUSPEND-002 = COMPLETE
 PROJECT STATUS = SUSPENDED
 ```
 
+## 39. PCI-RESEARCH-001 — 跨平台 Commerce Reference 研究
+
+> **状态**：COMPLETE — Proposed Research / Product Design Only
+> **日期**：2026-08-26
+> **研究交付物**：`docs/01_Strategy/06_Commerce_Reference_Research.md`
+> **业务代码变更**：None
+> **实现授权**：None
+
+Founder 要求对一个可脱离 HTTP URL、域名、平台命名空间和第三方平台 handle 独立传播的、
+平台中立的公共 Commerce Reference 进行正式研究。本研究审计了历史未实现的
+`C-XXXXXXXX` 方向是否满足跨平台/线下传播需求；在可获取范围内使用第一方资料审阅
+TikTok、Bilibili、X、YouTube、Instagram 和 Facebook 的 identifier 边界；分析了
+Decimal、Hexadecimal、human-oriented Base32、Base58、UUID-like 与 Snowflake-like
+编码家族；并计算了 8–20 位长度在 1B、10B、100B 和 1T Profile 规模下的容量与
+birthday-collision 结果。
+
+```text
+研究结论：
+Historical C-XXXXXXXX format = REPLACE（运行时尚未实现；不需要迁移）
+Recommended candidate = 18-character restricted uppercase Base32（仅研究建议）
+Commerce Reference owner = Commerce Profile
+Public Identifier ≠ Secret ≠ Credential ≠ Authentication Factor
+Enumeration controls 仍属必需；随机空间不能替代滥用控制
+
+IMPLEMENTATION CHANGES = NONE
+STAGE_3 = NOT AUTHORIZED
+PROJECT STATUS = SUSPENDED
+REAL_MONEY_ENABLED = false
+```
+
+该文件仅为 Founder 决策准备材料；不改变冻结的 Product Direction、任何 ADR、VS-01 合同、
+产品行为、持久化、API、状态转换、Canonical Event、认证、授权或公开表面。
+
+## 40. PCI-RESEARCH-002 — Commerce Reference 平台过滤兼容性研究
+
+> **状态**：COMPLETE — Proposed Research / Product Design Only
+> **日期**：2026-08-26
+> **研究交付物**：`docs/01_Strategy/06_Commerce_Reference_Platform_Compatibility_Research.md`
+> **业务代码变更**：None
+> **实现授权**：None
+
+Founder 已批准 18 位 uppercase human-oriented Base32、canonical uppercase alphanumeric、
+URL-independent、Public、Immutable、Non-reusable 与默认 Non-transferable 方向，并新增 P0
+要求：降低第三方分发平台对 Commerce Reference 的自动风控误判风险。本研究使用可获取的
+TikTok、Bilibili、X、YouTube、Instagram 与 Facebook 官方政策/帮助资料，区分了
+string-level filtering、context-level filtering、account reputation、behavior detection
+与 link reputation，并记录了官方页面访问受限导致的 `UNKNOWN` / `EVIDENCE NOT ESTABLISHED`
+边界。
+
+研究结论：
+
+```text
+18-character uppercase restricted Base32 = 继续成立
+固定语义 Prefix = 不建议
+canonical punctuation = 继续禁止
+大规模 semantic substring blacklist = 不建议
+Check Digit = 不为平台过滤风险增加
+平台安全呈现规范 = 必须作为 P0 候选要求
+传播行为风险 > 单个随机字符串已证实的字符串级风险
+
+Controlled Test Evidence = NONE
+IMPLEMENTATION CHANGES = NONE
+STAGE_3 = NOT AUTHORIZED
+PROJECT STATUS = SUSPENDED
+REAL_MONEY_ENABLED = false
+```
+
+### 41.3 Validation Evidence
+
+| Command                                                                                                                           | Result                                                                                      | Scope                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm vitest run modules/identity-infrastructure/identity-contract.test.ts`                                                       | Passed — 26 tests                                                                           | Internal Identity, Commerce Profile, ownership, cardinality, lifecycle and nominal ID isolation |
+| `pnpm test:domain`                                                                                                                | Passed — 15 files, 85 tests                                                                 | Domain-module regression suite                                                                  |
+| `pnpm exec eslint modules/identity-infrastructure/identity-contract.ts modules/identity-infrastructure/identity-contract.test.ts` | Passed                                                                                      | New pure-domain module and its tests                                                            |
+| `pnpm lint`                                                                                                                       | Passed                                                                                      | Repository lint                                                                                 |
+| `pnpm typecheck`                                                                                                                  | Passed                                                                                      | Workspace TypeScript validation including nominal type assertions                               |
+| `git diff --check`                                                                                                                | Existing unrelated whitespace findings recorded separately; scoped Identity-001 diff passes | No unrelated whitespace cleanup performed                                                       |
+
+本研究不声称任何平台一定接受该字符串，也不提供检测绕过方案。研究只提出风险降低方向：
+`CSPRNG + restricted alphabet`、无固定语义 Prefix、canonical 无标点、自然语言标签、
+禁止批量重复传播、禁止自动化和欺骗性站外导流。该研究不修改上一轮
+`06_Commerce_Reference_Research.md`、冻结 Product Direction、任何 ADR、VS-01 合同、
+产品行为、持久化、API、状态转换、Canonical Event、认证、授权或公开表面。
+
 ## 28. VERTICAL-02L-02-DESIGN — Photographer Session Reservation (Superseded)
 
 > **Status**: Superseded by Section 29 Build Closure
@@ -2879,4 +2963,3725 @@ DEV-024 = Closed — Founder Approved Build Applied
 BUILD AUTHORIZATION = GRANTED
 REAL_MONEY_ENABLED = false
 No Real Money Evidence
+```
+
+## 38. DEV-027 — Product Direction SSOT Registration
+
+> **Status**：Closed — Documentation / Product Governance
+> **Change Unit**：`DEV-027`
+> **Date**：2026-08-23
+
+### 38.1 Decision
+
+原始未归档 PRD 已迁移并重命名为
+`docs/01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md`，正式纳入
+`01_Strategy` 产品方向层，作为 Personal Commerce Infrastructure 的产品方向 SSOT。
+
+该文档定义长期产品命题、领域词汇、通用 Offer 类型和 Commerce 闭环；它不替代
+`20_MVP_PRD_VS01.md` 的实现合同，不改变 VS-01 的产品行为，也不自动授权 VS-02 或恢复暂停中的开发。
+
+### 38.2 Authority and Traceability
+
+| 文档层       | 权威文档                                                                    | 本次关系                        |
+| ------------ | --------------------------------------------------------------------------- | ------------------------------- |
+| 产品方向     | `docs/01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md` | 定义长期方向与领域模型          |
+| MVP 实现合同 | `docs/07_Product_Architecture/20_MVP_PRD_VS01.md`                           | 继续作为 VS-01 的唯一实现合同   |
+| 执行与验收   | `docs/08_Execution/21_Prototype_Execution.md`                               | 继续记录 FR、AT、DEV 和验证证据 |
+| 项目重启     | `docs/08_Execution/22_Project_Handoff.md`                                   | 继续作为暂停状态和恢复入口 SSOT |
+
+### 38.3 Scope Guard
+
+- 本次仅变更文档归属、命名、索引和权威关系。
+- 未新增产品对象、状态转换、Canonical Event、权限、API Contract 或验收标准。
+- `Identity` 表示 PCI 内部永久身份根；`Commerce Profile` 表示面向客户的商业身份，
+  并保留 `1 Identity : N Commerce Profiles`。
+- 产品范围内由商业互动形成的广义 `Relationship`，与平台账号绑定专用的
+  `Commerce Relationship` 明确区分；后者仅表示
+  `External Platform Account → Commerce Relationship → Commerce Profile` 的所有权、
+  管理、验证和角色边界。
+- `Goods`、`Program`、`Membership`、`Project`、`Right`、真实支付、结算、履约和 Reputation 仍需独立的阶段性产品合同与治理批准。
+- `PROJECT_STATUS` 继续为 `SUSPENDED`，`REAL_MONEY_ENABLED` 继续为 `false`。
+
+```text
+DEV-027 = Closed
+PRODUCT_DIRECTION_SSOT = REGISTERED
+VS-01_SEMANTICS = UNCHANGED
+PROJECT_STATUS = SUSPENDED
+REAL_MONEY_ENABLED = false
+```
+
+## 41. DEV-028 / IDENTITY-001 — Internal Identity and Commerce Profile Domain Contract
+
+> **Status**：Closed — Founder Authorized Stage 2 Domain Foundation
+> **Change Unit**：`DEV-028` / `IDENTITY-001`
+> **Date**：2026-08-26
+
+### 41.1 Founder Authorization and Scope
+
+Founder approved `STAGE2-DECISION-001` through `STAGE2-DECISION-009`. This authorizes the
+following narrow Stage 2 change unit only:
+
+```text
+Internal Identity + Commerce Profile pure domain contract
+```
+
+The implementation establishes independent nominal ID types, the
+`1 Internal Identity : N Commerce Profiles` ownership invariant, and separate
+`ACTIVE` / `SUSPENDED` / `ARCHIVED` lifecycles. A Commerce Profile has exactly one
+`owningIdentityId`; ownership reassignment, delegation, persistence, API, UI, and migration are
+not part of this change unit.
+
+### 41.2 Compatibility and Scope Guard
+
+- VS-01 `creatorId` and `CommerceIdentity` remain unchanged; no direct ID reuse or migration is
+  implemented.
+- Commerce Reference / C号 generation, persistence, resolver, public lookup, QR runtime and
+  enumeration controls remain unimplemented.
+- External Platform Account, Commerce Relationship, OAuth, platform binding, Payment, Settlement,
+  Refund, Marketplace, CRM and real-money changes are not included.
+- Existing worktree application, adapter, database and migration drafts are not evidence of this
+  change unit and are not modified by it.
+
+```text
+STAGE_2 = AUTHORIZED (IDENTITY-001 scope only)
+STAGE_3 = NOT AUTHORIZED
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+COMMERCE_REFERENCE_RUNTIME = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_BINDING = NOT IMPLEMENTED
+COMMERCE_RELATIONSHIP_RUNTIME = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+QR_RUNTIME = NOT IMPLEMENTED
+PUBLIC_RESOLVER = NOT IMPLEMENTED
+REAL_MONEY_ENABLED = false
+```
+
+## 42. DEV-029 / IDENTITY-002 — External Platform Account & Commerce Relationship Domain Contract
+
+> **Status**：Closed — Founder Authorized Stage 2 Domain Foundation
+> **Change Unit**：`DEV-029` / `IDENTITY-002`
+> **Date**：2026-08-26
+
+### 42.1 Founder Authorization and Scope
+
+Founder approved `STAGE2-DECISION-005` and `STAGE2-DECISION-006`. This narrow Stage 2 change
+unit establishes only the pure domain contract for:
+
+```text
+External Platform
+External Platform Account
+Commerce Relationship
+```
+
+`External Platform` is a platform namespace. `External Platform Account` remains independent from
+PCI Authentication Account, Internal Identity, Commerce Profile and Commerce Relationship. The
+contract reuses the canonical `CommerceProfileId` nominal type from `IDENTITY-001`; it does not
+create a second Identity or Commerce Profile identifier definition.
+
+### 42.2 Domain Invariants and Lifecycle
+
+- Multiple accounts for the same platform and Commerce Profile are valid.
+- `Commerce Relationship` is the External Platform Account ↔ Commerce Profile binding-history
+  record, rather than a `platformAccounts[]` field on Commerce Profile.
+- Relationship verification and activation are separate states:
+  `PROPOSED → VERIFIED → ACTIVE`.
+- An External Platform Account can have at most one `ACTIVE` Commerce Relationship at a time.
+- Account migration preserves history: the prior relationship reaches `HISTORICAL`, then a new
+  relationship can be created for the next Commerce Profile. Ordinary mutation does not rewrite a
+  historical relationship's Profile, role, effective time or verification history.
+- Relationship roles remain distinct: `OWNER`, `MANAGER`, and `DELEGATED_MANAGER`.
+- External Platform Account lifecycle (`ACTIVE`, `SUSPENDED`, `REVOKED`) is separate from
+  Commerce Relationship lifecycle (`PROPOSED`, `VERIFIED`, `ACTIVE`, `SUSPENDED`, `REVOKED`,
+  `HISTORICAL`).
+
+### 42.3 Compatibility and Scope Guard
+
+- `IDENTITY-001` nominal IDs, ownership invariant, lifecycle separation and
+  `1 Internal Identity : N Commerce Profiles` remain intact.
+- VS-01 `creatorId` and `CommerceIdentity` remain unchanged. No migration or legacy ID reuse is
+  implemented.
+- No OAuth, External Platform API, account-verification provider, binding runtime, persistence,
+  database schema, migration, API, OpenAPI, UI, Commerce Reference generation or persistence,
+  QR runtime, resolver, payment or real-money capability is included.
+- Existing worktree application, adapter, database and migration drafts remain outside this change
+  unit and are not evidence of this implementation.
+
+```text
+STAGE_2 = AUTHORIZED (IDENTITY-001 and IDENTITY-002 scopes only)
+STAGE_3 = NOT AUTHORIZED
+
+IDENTITY-001_REGRESSION = PASS
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_API = NOT IMPLEMENTED
+VERIFICATION_RUNTIME = NOT IMPLEMENTED
+COMMERCE_REFERENCE_RUNTIME = NOT IMPLEMENTED
+QR_RUNTIME = NOT IMPLEMENTED
+PUBLIC_RESOLVER = NOT IMPLEMENTED
+REAL_MONEY_ENABLED = false
+```
+
+### 42.4 Validation Evidence
+
+| Check                                                        | Result                     |
+| ------------------------------------------------------------ | -------------------------- |
+| `pnpm vitest run modules/identity-infrastructure/`           | PASS — 2 files, 67 tests   |
+| `pnpm test:domain`                                           | PASS — 16 files, 126 tests |
+| Scoped ESLint for the new contract and tests                 | PASS                       |
+| `pnpm lint`                                                  | PASS                       |
+| `pnpm typecheck`                                             | PASS                       |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts` | PASS — 1 file, 6 tests     |
+| Scoped trailing-whitespace audit for this change unit        | PASS                       |
+
+`git diff --check` was also run. It continues to report pre-existing trailing whitespace in
+unrelated working-tree changes: `04_North_Star_End_State.md`,
+`20_MVP_PRD_VS01.md`, historical `DEV-027` lines in this execution record, and
+`22_Engineering_Governance.md`. No unrelated whitespace was changed by this change unit.
+
+## 43. DEV-030 / IDENTITY-003 — Commerce Reference Domain Contract
+
+> **Status**：Closed — Founder Authorized Stage 2 Domain Foundation
+> **Change Unit**：`DEV-030` / `IDENTITY-003`
+> **Date**：2026-08-26
+
+### 43.1 Founder Authorization and Scope
+
+Founder approved the Stage 2 decision package and authorized this narrow pure-domain change unit:
+
+```text
+Commerce Reference strict canonical value
+Commerce Reference ↔ Commerce Profile immutable association
+```
+
+The contract adopts the frozen C号 semantics: exactly 18 uppercase ASCII characters from
+`3479ACDEFHJKMNPQRTVWXY`, with no punctuation or semantic prefix. `6-6-6` grouping is
+display-only and never changes the canonical stored value.
+
+### 43.2 Domain Invariants and Lifecycle
+
+- `CommerceReference` is an independent nominal type, distinct from Authentication Account,
+  Internal Identity, Commerce Profile, External Platform Account and Commerce Relationship IDs.
+- A Commerce Reference identifies exactly one Commerce Profile; a Commerce Profile has at most one
+  assigned Commerce Reference.
+- Reference value and target Profile are immutable after explicit assignment. The contract does not
+  provide an ordinary reassignment or mutation operation.
+- The only lifecycle transition is `ASSIGNED → PERMANENTLY_RESERVED`. A permanently reserved
+  reference is never released or reused, including after Profile archival or closure.
+- Canonical validation is strict: it does not trim whitespace, remove separators, fold case,
+  substitute confusable characters, or calculate a check digit. Input normalization remains
+  unfrozen and unimplemented.
+
+### 43.3 Compatibility and Scope Guard
+
+- `IDENTITY-001` and `IDENTITY-002` nominal types remain canonical and are reused for type
+  isolation and Commerce Profile association.
+- C号 remains a public identifier, not a credential, authentication factor, authorization proof,
+  URL, resolver, public page or QR object.
+- QR remains the machine-readable representation of C号 only; it is not implemented here.
+- No generator, allocator, CSPRNG, collision retry, persistence, database schema, migration,
+  resolver, public route, rate limiting, enumeration protection, OAuth, platform binding,
+  verification runtime, API, UI, payment or real-money capability is included.
+
+```text
+STAGE_2 = AUTHORIZED (IDENTITY-001, IDENTITY-002, and IDENTITY-003 scopes only)
+STAGE_3 = NOT AUTHORIZED
+
+IDENTITY-001_REGRESSION = PASS
+IDENTITY-002_REGRESSION = PASS
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+COMMERCE_REFERENCE_GENERATION = NOT IMPLEMENTED
+COMMERCE_REFERENCE_ALLOCATION = NOT IMPLEMENTED
+COMMERCE_REFERENCE_PERSISTENCE = NOT IMPLEMENTED
+PUBLIC_RESOLVER = NOT IMPLEMENTED
+ENUMERATION_MITIGATION_RUNTIME = NOT IMPLEMENTED
+QR_RUNTIME = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_BINDING_RUNTIME = NOT IMPLEMENTED
+REAL_MONEY_ENABLED = false
+```
+
+### 43.4 Validation Evidence
+
+| Check                                                                                 | Result                     |
+| ------------------------------------------------------------------------------------- | -------------------------- |
+| `pnpm vitest run modules/identity-infrastructure/commerce-reference-contract.test.ts` | PASS — 1 file, 16 tests    |
+| `pnpm vitest run modules/identity-infrastructure/`                                    | PASS — 3 files, 83 tests   |
+| `pnpm test:domain`                                                                    | PASS — 17 files, 142 tests |
+| Scoped ESLint for the Commerce Reference contract, tests and compatibility export     | PASS                       |
+| `pnpm lint`                                                                           | PASS                       |
+| `pnpm typecheck`                                                                      | PASS                       |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`                          | PASS — 1 file, 6 tests     |
+
+The task-specific scoped whitespace and diff checks are recorded after the final documentation
+update. Workspace-wide `git diff --check` remains expected to include pre-existing unrelated
+working-tree whitespace findings; this change unit does not modify those files or lines.
+
+## 44. DEV-031 / PCI-STAGE2-CLOSURE-001 — Identity Foundation Integration & Stage 2 Closure Audit
+
+> **Status**：Closed — Stage 2 Identity Foundation Consistency Audit
+> **Change Unit**：`DEV-031` / `PCI-STAGE2-CLOSURE-001`
+> **Date**：2026-08-26
+
+### 44.1 Integrated Canonical Domain Graph
+
+```text
+Authentication Account
+        ≠
+Internal Identity
+        │ owns 1:N
+        ▼
+Commerce Profile
+        ├── 0..1 Commerce Reference
+        └── N External Platform Accounts through Commerce Relationships
+                     │
+                     └── 0..N historical Commerce Relationships
+                            └── max 1 ACTIVE per External Platform Account
+```
+
+The three Stage 2 contracts are internally consistent:
+
+- `InternalIdentityId` owns one or more Commerce Profiles through each Profile's exactly-one
+  immutable `owningIdentityId`.
+- A Commerce Profile has zero or one Commerce Reference; each assigned Commerce Reference has one
+  immutable Commerce Profile target and becomes permanently reserved rather than released or reused.
+- An External Platform Account remains a separate platform namespace object. It can have historical
+  Commerce Relationships and at most one simultaneous `ACTIVE` relationship.
+- `CommerceRelationship` roles (`OWNER`, `MANAGER`, `DELEGATED_MANAGER`) describe platform-account
+  binding facts only. They do not replace or derive `CommerceProfile.owningIdentityId`.
+
+### 44.2 Lifecycle, Namespace, and Boundary Audit
+
+| Entity                    | Lifecycle / State                                                      | Cross-entity behavior                                       |
+| ------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Internal Identity         | `ACTIVE`, `SUSPENDED`, `ARCHIVED`                                      | No Profile deletion or cascade is inferred.                 |
+| Commerce Profile          | `ACTIVE`, `SUSPENDED`, `ARCHIVED`                                      | Exactly one owner; archival does not release C号.           |
+| External Platform Account | `ACTIVE`, `SUSPENDED`, `REVOKED`                                       | Does not suspend Profile or Internal Identity.              |
+| Commerce Relationship     | `PROPOSED`, `VERIFIED`, `ACTIVE`, `SUSPENDED`, `REVOKED`, `HISTORICAL` | Historical binding remains separate from Account lifecycle. |
+| Commerce Reference        | `ASSIGNED` → `PERMANENTLY_RESERVED`                                    | Never released, reassigned, or reused.                      |
+
+- Nominal namespace audit passed for `AuthenticationAccountId`, `InternalIdentityId`,
+  `CommerceProfileId`, `CommerceReference`, `ExternalPlatformAccountId`, and
+  `CommerceRelationshipId`. Production contracts contain no `as unknown as`, shared generic ID,
+  implicit ID-accepting API, or legacy `creatorId` / `CommerceIdentity` canonicalization.
+- `CommerceObjectId` is not implemented in `identity-infrastructure`; no new Commerce Object
+  namespace is introduced by this Stage 2 scope.
+- `Relationship` remains a future broad commerce-relationship concept.
+  `CommerceRelationship` remains exclusively the External Platform Account ↔ Commerce Profile
+  binding-history type; no customer, client, member, partner, or follower relationship type exists
+  in this module.
+- Import direction is acyclic: `external-platform-contract` and
+  `commerce-reference-contract` type-import canonical Profile / Reference types from
+  `identity-contract`; no contract imports either dependent contract back into the identity contract.
+
+### 44.3 Closure Decision and Remaining Boundaries
+
+```text
+IDENTITY-001_INTEGRATION = PASS
+IDENTITY-002_INTEGRATION = PASS
+IDENTITY-003_INTEGRATION = PASS
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+COMMERCE_REFERENCE = FROZEN
+COMMERCE_REFERENCE_RUNTIME = NOT IMPLEMENTED
+COMMERCE_REFERENCE_GENERATION = NOT IMPLEMENTED
+COMMERCE_REFERENCE_ALLOCATION = NOT IMPLEMENTED
+PUBLIC_RESOLVER = NOT IMPLEMENTED
+QR_RUNTIME = NOT IMPLEMENTED
+
+OAUTH = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_API = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_BINDING_RUNTIME = NOT IMPLEMENTED
+VERIFICATION_RUNTIME = NOT IMPLEMENTED
+ENUMERATION_MITIGATION_RUNTIME = NOT IMPLEMENTED
+PERSISTENCE = NOT IMPLEMENTED
+API_UI = NOT IMPLEMENTED
+REAL_MONEY_ENABLED = false
+
+STAGE_2_CLOSURE = READY
+STAGE_3 = NOT AUTHORIZED
+```
+
+`STAGE_2_CLOSURE = READY` means only that the approved Identity Foundation domain scope is
+internally consistent and needs no additional identity primitive. It does not authorize runtime
+integration, persistence, OAuth, platform binding, resolver, QR, or public surfaces.
+
+No remaining issue is classified as an Existing Contract Bug or Cross-Contract Integration Gap.
+Resolver exposure, enumeration controls, public disclosure, OAuth, verification, persistence and
+external binding remain Stage 3 / future runtime concerns. No new Founder Decision is required for
+the completed Stage 2 domain-foundation scope.
+
+### 44.4 Validation Evidence
+
+| Check                                                                                          | Result                     |
+| ---------------------------------------------------------------------------------------------- | -------------------------- |
+| Stage 2 in-memory domain graph test                                                            | PASS — 1 file, 2 tests     |
+| `pnpm vitest run modules/identity-infrastructure/`                                             | PASS — 4 files, 85 tests   |
+| `pnpm test:domain`                                                                             | PASS — 18 files, 144 tests |
+| `pnpm lint`                                                                                    | PASS                       |
+| `pnpm typecheck`                                                                               | PASS                       |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`                                   | PASS — 1 file, 6 tests     |
+| Production ID escape-hatch, forbidden-runtime, terminology, lifecycle, and import-graph audits | PASS                       |
+
+The final task-specific scoped diff and whitespace checks are recorded after this documentation
+update. Workspace-wide `git diff --check` continues to include unrelated existing whitespace
+findings, which are intentionally outside this change unit.
+
+## 45. DEV-032 / PCI-STAGE2-RUNTIME-ENTRY-001 — Identity Foundation Runtime Transition Decision Package
+
+> **Status**：Closed — Ready for Founder Decision; no Runtime implementation authorized
+> **Change Unit**：`DEV-032` / `PCI-STAGE2-RUNTIME-ENTRY-001`
+> **Date**：2026-08-26
+
+### 45.1 Scope and Result
+
+This documentation-only architecture change unit audits the completed Stage 2 Identity Foundation
+for a possible transition from pure domain contracts to Durable Runtime. It creates no schema,
+migration, repository, application service, API, OAuth, resolver, QR, or public-runtime
+implementation.
+
+```text
+PCI-STAGE2-RUNTIME-ENTRY-001 = COMPLETE
+STAGE2_RUNTIME_ENTRY = READY_FOR_FOUNDER_DECISION
+
+IDENTITY-001 = COMPLETE
+IDENTITY-002 = COMPLETE
+IDENTITY-003 = COMPLETE
+PCI-STAGE2-CLOSURE-001 = COMPLETE
+STAGE_2_CLOSURE = READY
+```
+
+The Founder package is recorded in:
+
+```text
+docs/07_Product_Architecture/23_Stage_2_Runtime_Entry_Decision_Package.md
+```
+
+It separates Domain Contract, Persistence, Application Runtime, Private/Internal API, Public
+Exposure, and External Integration. It recommends durable constraints, transaction boundaries,
+ID-generation responsibility, a phased Runtime sequence, and `RUNTIME-DECISION-001` through
+`RUNTIME-DECISION-014`.
+
+### 45.2 Boundary Evidence
+
+- All five canonical Identity Foundation objects remain unchanged; no new primitive or domain
+  semantic is added.
+- Durable enforcement is recommended for Profile ownership, C号 uniqueness / immutable association
+  / non-reuse, namespace-scoped external account identity, retained relationship history, and
+  max-one-active relationship. This is a decision recommendation only.
+- Profile creation remains separate from Reference assignment; later Reference assignment must be
+  atomic. Account registration can remain separate from proposed relationship creation; activation
+  must be atomic with a durable active-relationship constraint.
+- Existing uncommitted runtime, adapter, schema, and migration drafts are outside this change unit;
+  they are neither reviewed as approved implementation nor evidence of Founder authorization.
+
+```text
+MIGRATION = NOT IMPLEMENTED
+DATABASE_SCHEMA_CHANGE = NOT IMPLEMENTED
+REPOSITORY_IMPLEMENTATION = NOT IMPLEMENTED
+APPLICATION_RUNTIME = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+OAUTH = NOT AUTHORIZED
+EXTERNAL_PLATFORM_BINDING_RUNTIME = NOT AUTHORIZED
+COMMERCE_REFERENCE_GENERATOR = NOT AUTHORIZED
+COMMERCE_REFERENCE_ALLOCATION = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR_RUNTIME = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+COMMITTED = NO
+```
+
+---
+
+## 51. DEV-038 / RUNTIME-006 — Private Identity Foundation Application Runtime
+
+> **Status**：Closed — Founder Authorized Stage 2 Runtime Change Unit
+> **Change Unit**：`DEV-038` / `RUNTIME-006`
+> **Date**：2026-08-26
+
+### 51.1 Scope and Result
+
+```text
+RUNTIME-006 = COMPLETE
+
+Private Application Runtime = IMPLEMENTED
+Public API = NOT IMPLEMENTED
+Public Resolver = NOT IMPLEMENTED
+QR Runtime = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+External Platform API = NOT IMPLEMENTED
+External Platform Verification Runtime = NOT IMPLEMENTED
+External Platform Runtime Binding = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+```
+
+This change composes the five existing durable facts only through explicit private application
+services and repository ports:
+
+```text
+Internal Identity
+        ↓
+Commerce Profile
+        ↓
+Commerce Reference
+
+External Platform Account
+        ↓
+Commerce Relationship
+        ↓
+Commerce Profile
+```
+
+No HTTP route, public contract, resolver, QR runtime, OAuth flow, platform client, verification
+mechanism, event transport, VS-01 migration, legacy backfill, or Commerce Pattern behavior was
+introduced.
+
+### 51.2 Private Use Cases and Boundaries
+
+The existing small services remain the private entry points for:
+
+```text
+Internal Identity:
+  CreateInternalIdentity
+  GetInternalIdentity
+  ChangeInternalIdentityLifecycle
+
+Commerce Profile:
+  CreateCommerceProfile
+  GetCommerceProfile
+  ListProfilesOwnedByIdentity
+  ChangeCommerceProfileLifecycle
+
+External Platform Account:
+  RegisterExternalPlatformAccount
+  GetExternalPlatformAccount
+  ChangeExternalPlatformAccountLifecycle
+```
+
+New private services provide:
+
+```text
+Commerce Reference:
+  AssignCommerceReference (caller-supplied canonical reference only)
+
+Commerce Relationship:
+  CreateCommerceRelationship
+  GetCommerceRelationship
+  ListRelationshipsForAccount
+  ListRelationshipsForProfile
+  GetActiveRelationshipForAccount
+  ChangeCommerceRelationshipLifecycle
+  ReplaceSuspendedRelationshipWithVerifiedRelationship
+```
+
+Application code depends only on domain contracts, repository ports, clocks, ID-generator ports,
+and the narrow `IdentityFoundationTransaction` port. It imports neither PostgreSQL, Drizzle, SQL,
+database schema, adapters, nor public application surfaces. Domain contracts retain ownership of
+identity validation, immutable facts, lifecycle transitions, and active-relationship semantics.
+
+There is no new authentication system. The services are private, dependency-injected composition
+points; future authorization remains an explicit application-boundary concern. Missing dependency,
+invalid state, duplicate fact, and concurrent-update paths fail closed.
+
+### 51.3 Transaction and Error Semantics
+
+`AssignCommerceReference` executes:
+
+```text
+BEGIN
+  verify Profile exists
+  validate caller-supplied canonical Commerce Reference
+  assign one durable Reference
+COMMIT
+```
+
+An insertion failure rolls back the assignment; no partial durable Reference remains. The
+PostgreSQL transaction adapter creates transactional Profile, Reference, and Relationship
+repositories within one database transaction. The in-memory adapter snapshots only the relevant
+repositories for application tests and restores them on failure.
+
+Relationship replacement is intentionally narrow and historical:
+
+```text
+same External Platform Account
+old SUSPENDED Relationship → HISTORICAL
+new VERIFIED Relationship → ACTIVE
+```
+
+Both conditional lifecycle writes run in one transaction. Old account target, Profile target,
+role, effective time, creation time, and relationship ID remain unchanged. The partial unique
+index remains the final durable protection for max-one `ACTIVE` Relationship per External Platform
+Account.
+
+Repository and domain errors are mapped to explicit private application categories:
+
+```text
+not_found
+conflict
+validation
+unavailable
+```
+
+`not_found` covers missing durable dependencies; `conflict` covers duplicates and conditional
+lifecycle conflicts; `validation` covers canonical input and invalid domain transitions; and
+unexpected persistence failures map to `unavailable`.
+
+### 51.4 Compatibility and Stable Commerce Boundaries
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+REQUEST = UNCHANGED
+RESERVATION = UNCHANGED
+CONTRACT = UNCHANGED
+
+Commerce Reference Generation = NOT IMPLEMENTED
+Commerce Reference Allocation = NOT IMPLEMENTED
+```
+
+The private runtime does not transfer Profile ownership, mutate or release a Commerce Reference,
+mutate External Platform Account identity, mutate Commerce Relationship target account/Profile or
+role, rewrite relationship history, or infer external platform verification.
+
+### 51.5 Validation Evidence
+
+| Validation                                                                           | Result                                                                                                        |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `pnpm vitest run tests/application/private-identity-foundation-runtime.test.ts`      | PASS — 1 file, 7 tests; use cases, fail-closed mapping, and in-memory rollback coverage                       |
+| Private application PostgreSQL integration                                           | SKIPPED — `DATABASE_URL` was absent; test is gated by the repository-standard database integration convention |
+| `pnpm vitest run modules/identity-infrastructure/ ... RUNTIME-006 persistence scope` | PASS — 8 files, 138 tests; 1 PostgreSQL file skipped, 2 tests skipped                                         |
+| `pnpm test:domain`                                                                   | PASS — 18 files, 144 tests                                                                                    |
+| `pnpm typecheck`                                                                     | PASS                                                                                                          |
+| `pnpm lint`                                                                          | PASS                                                                                                          |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`                         | PASS — 1 file, 6 tests                                                                                        |
+| `pnpm db:check`                                                                      | PASS — build plus migration ordering/integrity through `0022_stage2_commerce_relationship_core.sql`           |
+| `pnpm vitest run tests/persistence/migration-contract.test.ts`                       | PASS — 1 file, 2 tests                                                                                        |
+
+```text
+RUNTIME-001 = PASS
+RUNTIME-002 = PASS
+RUNTIME-003 = PASS
+RUNTIME-004 = PASS
+RUNTIME-005 = PASS
+
+IDENTITY-001 = PASS
+IDENTITY-002 = PASS
+IDENTITY-003 = PASS
+
+COMMITTED = NO
+```
+
+---
+
+## 52. DEV-039 / RUNTIME-007 — Private Runtime Durable Integration Verification
+
+> **Status**：Blocked — Environment Evidence Only
+> **Change Unit**：`DEV-039` / `RUNTIME-007`
+> **Date**：2026-08-26
+
+### 52.1 Result
+
+```text
+RUNTIME-007 = BLOCKED_BY_ENVIRONMENT
+
+DATABASE_URL = ABSENT
+POSTGRES_APPLICATION_INTEGRATION = NOT_VERIFIED
+```
+
+The required real PostgreSQL integration environment is unavailable in the execution environment.
+The production-path test
+`tests/persistence/private-identity-foundation-postgres.integration.test.ts` was executed and
+correctly skipped under the repository-standard `DATABASE_URL` gate:
+
+```text
+Test Files  1 skipped
+Tests       2 skipped
+```
+
+No database URL was invented, no database was mocked or substituted, no environment file or CI
+secret was modified, and no test behavior was changed to bypass the missing real PostgreSQL
+environment.
+
+### 52.2 Verification Status
+
+```text
+Identity persistence = NOT VERIFIED
+Profile persistence = NOT VERIFIED
+Reference persistence = NOT VERIFIED
+External Account persistence = NOT VERIFIED
+Relationship persistence = NOT VERIFIED
+
+Profile + Reference atomicity = NOT VERIFIED
+Relationship replacement atomicity = NOT VERIFIED
+Rollback = NOT VERIFIED
+Conditional writes = NOT VERIFIED
+FK / UNIQUE / CHECK / partial UNIQUE ACTIVE = NOT VERIFIED
+Real PostgreSQL rehydration = NOT VERIFIED
+```
+
+The existing test continues to define the intended production path:
+
+```text
+Private Application Service
+        ↓
+Repository Port
+        ↓
+PostgreSQL Adapter
+        ↓
+PostgreSQL transaction and canonical rehydration
+```
+
+It must be re-run against an available, isolated PostgreSQL integration database before any of
+the above items can be promoted to `PASS`.
+
+### 52.3 Boundaries and Compatibility
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+Public API = NOT IMPLEMENTED
+Public Resolver = NOT IMPLEMENTED
+QR Runtime = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+External Platform API = NOT IMPLEMENTED
+External Platform Verification Runtime = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+
+COMMITTED = NO
+```
+
+No domain primitive, aggregate, database table, business capability, Commerce Pattern, public
+surface, OAuth capability, external platform integration, or legacy migration was added by this
+verification task.
+
+---
+
+## 50. DEV-037 / RUNTIME-005 — Commerce Relationship Durable Persistence
+
+### 50.1 Scope and Result
+
+```text
+RUNTIME-005 = COMPLETE
+```
+
+`CommerceRelationship` is now a canonical durable historical fact between an independent
+`ExternalPlatformAccount` and a `CommerceProfile`:
+
+```text
+External Platform Account
+        ↓
+Commerce Relationship
+        ↓
+Commerce Profile
+```
+
+The implementation does not make an External Platform Account directly owned by an Internal
+Identity, Commerce Profile, or Commerce Reference. A relationship may exist at any approved
+lifecycle state and a platform account may legally have no relationship.
+
+### 50.2 Durable Schema and Cardinality
+
+Migration `0022_stage2_commerce_relationship_core.sql` creates:
+
+```text
+commerce_relationships
+-----------------------------------------------
+commerce_relationship_id       PRIMARY KEY
+external_platform_account_id   NOT NULL, restrictive FK
+commerce_profile_id            NOT NULL, restrictive FK
+role                           NOT NULL, CHECK
+lifecycle                      NOT NULL, CHECK
+effective_at                   NOT NULL
+created_at                     NOT NULL
+updated_at                     NOT NULL
+```
+
+Foreign keys are restrictive:
+
+```text
+external_platform_account_id
+  → external_platform_accounts.external_platform_account_id
+
+commerce_profile_id
+  → commerce_profiles.commerce_profile_id
+```
+
+PostgreSQL enforces the active-binding invariant with:
+
+```text
+UNIQUE INDEX commerce_relationships_one_active_account_unique
+ON commerce_relationships(external_platform_account_id)
+WHERE lifecycle = 'ACTIVE'
+```
+
+The resulting cardinality is:
+
+```text
+1 External Platform Account
+  → 0..N Commerce Relationship history records
+  → max 1 ACTIVE relationship
+
+1 Commerce Profile
+  → 0..N Commerce Relationships
+```
+
+There is intentionally no `UNIQUE(commerce_profile_id, platform)` constraint: a Profile may have
+multiple External Platform Accounts in the same platform namespace. No direct Account → Profile
+foreign key exists outside `commerce_relationships`; no Account → Internal Identity or Account →
+Commerce Reference foreign key exists.
+
+### 50.3 Canonical Facts, Roles, and Lifecycle
+
+`CommerceRelationshipId` remains a distinct canonical nominal type and is not interchangeable
+with External Platform Account, Commerce Profile, Internal Identity, Authentication Account, or
+Commerce Reference identifiers.
+
+Roles are relationship facts only:
+
+```text
+OWNER
+MANAGER
+DELEGATED_MANAGER
+```
+
+They do not mutate or replace `CommerceProfile.ownerIdentityId`.
+
+The persisted lifecycle follows the domain contract:
+
+```text
+PROPOSED → VERIFIED → ACTIVE
+ACTIVE → SUSPENDED | REVOKED
+SUSPENDED → ACTIVE | REVOKED | HISTORICAL
+REVOKED → HISTORICAL
+```
+
+Invalid terminal reactivation and verification transitions are rejected by the domain contract.
+The current canonical contract contains neither a separate verification-status fact nor `endedAt`;
+this migration intentionally does not invent either field. Account lifecycle and Profile lifecycle
+remain independent from Relationship lifecycle; no database cascade or runtime orchestration
+changes any related aggregate.
+
+### 50.4 Immutability, History, Repository, and Concurrency
+
+Relationship identity and historical binding facts are immutable through ordinary repository
+operations:
+
+```text
+commerceRelationshipId
+externalPlatformAccountId
+commerceProfileId
+role
+effectiveAt
+createdAt
+```
+
+The repository exposes only:
+
+```text
+create
+getById
+listByExternalPlatformAccount
+listByCommerceProfile
+getActiveByExternalPlatformAccount
+updateLifecycle
+```
+
+It provides no delete, purge, account/profile reassignment, role update, or target update.
+Historical account migration is preserved as an explicit sequence: historicalize/revoke the old
+relationship and create a new relationship. The old durable row remains queryable and is never
+rewritten to point at the new Profile.
+
+Creation validates the referenced Account and Profile and then uses one atomic PostgreSQL insert;
+the foreign keys and partial unique index are the final durable guards. Duplicate active bindings
+map to `ActiveCommerceRelationshipConflictError`; unknown references map to explicit Account or
+Profile not-found errors. Lifecycle mutation uses:
+
+```text
+WHERE commerce_relationship_id = ?
+  AND lifecycle = expected_lifecycle
+```
+
+so concurrent status transitions have one winner and one lifecycle conflict. The partial unique
+index similarly guarantees that concurrent attempts to create two `ACTIVE` relationships for one
+account yield at most one success. `updatedAt` changes only on a successful lifecycle write;
+`createdAt` remains immutable. Rehydration validates every persisted identifier, role, lifecycle,
+effective timestamp, and audit timestamp before returning the canonical domain object.
+
+### 50.5 Boundaries and Compatibility
+
+```text
+Commerce Relationship persistence = IMPLEMENTED
+External Platform binding runtime = NOT IMPLEMENTED
+
+OAuth = NOT IMPLEMENTED
+External Platform API = NOT IMPLEMENTED
+Verification Runtime = NOT IMPLEMENTED
+Public API = NOT IMPLEMENTED
+Resolver = NOT IMPLEMENTED
+QR = NOT IMPLEMENTED
+Commerce Reference Generation = NOT IMPLEMENTED
+Commerce Reference Allocation = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+```
+
+No OAuth credential, platform API client, webhook, automatic verification, public endpoint,
+resolver, QR runtime, Commerce Reference field, event/outbox component, payment capability, or
+VS-01 identity migration was introduced.
+
+### 50.6 Validation Evidence
+
+| Validation                                                     | Result                                                                                                                     |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Commerce Relationship persistence tests                        | PASS — roles, FK validation, history, partial active uniqueness, lifecycle conflicts, timestamps, and concurrency evidence |
+| `pnpm vitest run modules/identity-infrastructure/`             | PASS                                                                                                                       |
+| `pnpm test:domain`                                             | PASS                                                                                                                       |
+| `pnpm typecheck`                                               | PASS                                                                                                                       |
+| `pnpm lint`                                                    | PASS                                                                                                                       |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`   | PASS                                                                                                                       |
+| `pnpm db:check`                                                | PASS                                                                                                                       |
+| `pnpm vitest run tests/persistence/migration-contract.test.ts` | PASS                                                                                                                       |
+| Commerce Relationship forbidden-scope audit                    | PASS                                                                                                                       |
+| Scoped `git diff --check`                                      | PASS                                                                                                                       |
+
+```text
+RUNTIME-001 regression = PASS
+RUNTIME-002 regression = PASS
+RUNTIME-003 regression = PASS
+RUNTIME-004 regression = PASS
+
+IDENTITY-001 regression = PASS
+IDENTITY-002 regression = PASS
+IDENTITY-003 regression = PASS
+
+COMMITTED = NO
+```
+
+## 49. DEV-036 / RUNTIME-004 — External Platform Account Durable Persistence
+
+> **Status**：Closed — Founder Authorized Stage 2 Runtime Change Unit
+> **Change Unit**：`DEV-036` / `RUNTIME-004`
+> **Date**：2026-08-26
+
+### 49.1 Scope and Durable Fact
+
+This change unit implements only canonical `ExternalPlatformAccount` durable persistence on the
+existing PostgreSQL / Drizzle architecture. The forward-only
+`0021_stage2_external_platform_account_core.sql` migration creates
+`external_platform_accounts` with:
+
+```text
+external_platform_account_id
+platform
+platform_account_id
+lifecycle
+created_at
+updated_at
+```
+
+`external_platform_account_id` is the independent PCI primary key. `platform` is the canonical
+External Platform namespace and, with `platform_account_id`, is uniquely constrained:
+
+```text
+UNIQUE(platform, platform_account_id)
+```
+
+This permits `instagram / A`, `instagram / B`, and `youtube / A`, while rejecting a second
+`instagram / A`. The table has no foreign key and no `commerce_profile_id`,
+`internal_identity_id`, `commerce_reference`, or relationship field; an account therefore exists
+legitimately without a Commerce Relationship or active Profile binding.
+
+### 49.2 Repository, Lifecycle, Concurrency, and Rehydration
+
+`ExternalPlatformAccountRepository` provides only:
+
+```text
+create
+getById
+getByPlatformAccount
+exists
+updateLifecycle
+```
+
+The minimal private `ExternalPlatformAccountService` accepts explicit platform/account input,
+generates a distinct canonical `ExternalPlatformAccountId`, applies the existing namespace
+validation, and maps unknown ID or namespace lookups to
+`ExternalPlatformAccountNotFoundError`. `ExternalPlatformAccountAlreadyExistsError` represents a
+duplicate namespace fact. There is no upsert, delete, account-ID replacement, platform mutation,
+platform-account-ID mutation, binding, unbinding, transfer, or relationship operation.
+
+Database rows are rehydrated through `rehydrateExternalPlatformAccount`, which validates the
+branded account ID, normalized platform namespace, branded platform account identifier,
+lifecycle, and timestamps before returning a domain object. `createdAt` is never updated.
+
+Lifecycle remains the existing independent Account state machine:
+
+```text
+ACTIVE → SUSPENDED
+ACTIVE → REVOKED
+SUSPENDED → ACTIVE
+SUSPENDED → REVOKED
+```
+
+`REVOKED` is retained history, not deletion. `updateLifecycle` validates the domain transition and
+uses a conditional write:
+
+```text
+WHERE external_platform_account_id = ?
+  AND lifecycle = expected_lifecycle
+```
+
+Only one concurrent state change can succeed; the loser receives
+`ExternalPlatformAccountLifecycleConflictError`, and its attempted timestamp does not mutate the
+stored account. Account lifecycle does not orchestrate Commerce Relationship lifecycle.
+
+### 49.3 Compatibility and Boundaries
+
+```text
+RUNTIME-004 = COMPLETE
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+CommerceRelationship persistence = NOT IMPLEMENTED
+External binding runtime = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+Verification Runtime = NOT IMPLEMENTED
+Platform API = NOT IMPLEMENTED
+Commerce Reference integration = NOT IMPLEMENTED
+Resolver = NOT IMPLEMENTED
+QR runtime = NOT IMPLEMENTED
+Public API = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+```
+
+No VS-01 Creator record, legacy identity, Commerce Profile, Commerce Reference, or historical
+migration is rewritten, linked, deleted, or migrated. The next authorized persistence aggregate
+remains Commerce Relationship; it is not implemented by this change unit.
+
+### 49.4 Validation Evidence
+
+| Validation                                                     | Result                                                                                                                                                          |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| External Platform Account persistence tests                    | PASS — rehydration, namespace uniqueness, independent existence, lifecycle, timestamps, immutable identity API boundary, and concurrent create/status conflicts |
+| `pnpm vitest run modules/identity-infrastructure/`             | PASS — 4 files, 85 tests                                                                                                                                        |
+| `pnpm test:domain`                                             | PASS — 18 files, 144 tests                                                                                                                                      |
+| `pnpm typecheck`                                               | PASS                                                                                                                                                            |
+| `pnpm lint`                                                    | PASS                                                                                                                                                            |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`   | PASS — 1 file, 6 tests                                                                                                                                          |
+| `pnpm db:check` migration integrity                            | PASS                                                                                                                                                            |
+| `pnpm vitest run tests/persistence/migration-contract.test.ts` | PASS — 1 file, 2 tests                                                                                                                                          |
+| External Platform Account forbidden-scope audit                | PASS                                                                                                                                                            |
+| Scoped `git diff --check`                                      | PASS — RUNTIME-004 files; historical DEV-027 whitespace remains pre-existing                                                                                    |
+
+```text
+RUNTIME-001 regression = PASS
+RUNTIME-002 regression = PASS
+RUNTIME-003 regression = PASS
+IDENTITY-001 regression = PASS
+IDENTITY-002 regression = PASS
+IDENTITY-003 regression = PASS
+
+COMMITTED = NO
+```
+
+### 45.3 Validation Evidence
+
+| Check                                                                                                                                | Result                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Document consistency audit against Stage 2 SSOT, decision package, handoff, governance anchor, and all Identity Foundation contracts | PASS                                                                                                   |
+| `pnpm vitest run modules/identity-infrastructure/`                                                                                   | PASS — 4 files, 85 tests                                                                               |
+| `pnpm test:domain`                                                                                                                   | PASS — 18 files, 144 tests                                                                             |
+| `pnpm typecheck`                                                                                                                     | PASS                                                                                                   |
+| `pnpm lint`                                                                                                                          | PASS                                                                                                   |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`                                                                         | PASS — 1 file, 6 tests                                                                                 |
+| Runtime-boundary, ID escape-hatch, and relationship-terminology audits                                                               | PASS                                                                                                   |
+| Task-added decision package and `DEV-032` whitespace audit                                                                           | PASS                                                                                                   |
+| `git diff --check` for touched execution log file                                                                                    | PRE-EXISTING FINDINGS ONLY — `DEV-027` trailing whitespace at lines 2970–2971; no finding in `DEV-032` |
+
+Workspace-wide whitespace findings in unrelated existing files remain outside this change unit and
+are not modified. Historic full-suite timeout / browser-acceptance instability remains a separate
+pre-existing engineering stability issue, not a Runtime Entry authorization signal.
+
+## 46. DEV-033 / RUNTIME-001 — Internal Identity Durable Persistence
+
+> **Status**：Closed — Founder Authorized Stage 2 Runtime Change Unit
+> **Change Unit**：`DEV-033` / `RUNTIME-001`
+> **Date**：2026-08-26
+
+### 46.1 Scope and Durable Fact
+
+This change unit implements only the durable persistence boundary for canonical `InternalIdentity`.
+The PostgreSQL / Drizzle persistence representation is the new `identities` table with only:
+
+```text
+identity_id
+lifecycle
+created_at
+updated_at
+```
+
+`identity_id` is the database primary key. `lifecycle`, `created_at`, and `updated_at` are
+non-null, and the migration restricts lifecycle values to `ACTIVE`, `SUSPENDED`, and `ARCHIVED`.
+No PII, authentication account, profile, reference, external platform, or relationship field is
+stored in this table.
+
+### 46.2 Repository and Transaction Semantics
+
+`InternalIdentityRepository` is a minimal canonical repository port:
+
+```text
+create
+getById
+exists
+updateLifecycle
+```
+
+The PostgreSQL adapter reconstructs `InternalIdentity` through the canonical
+`rehydrateInternalIdentity` contract. It maps duplicate primary-key writes to
+`InternalIdentityAlreadyExistsError`, missing updates to `InternalIdentityNotFoundError`, and
+conditional lifecycle write conflicts to `InternalIdentityConcurrentUpdateError`.
+
+Create uses a generated `InternalIdentityId` followed by one database insert. A successful
+generation does not claim durable creation; only the insert succeeds or fails. The identity-specific
+UUID generator produces `identity_<uuid>` values and never derives an identity ID from an
+`AuthenticationAccountId`, `CommerceProfileId`, email, platform handle, or Commerce Reference.
+
+Lifecycle persistence is conditional on the expected current state, so two concurrent writers cannot
+silently overwrite one another. Domain transition validation occurs before persistence; the database
+constraint independently rejects non-canonical lifecycle values. `createdAt` is never updated and
+`updatedAt` changes only on a successful lifecycle state change.
+
+### 46.3 Boundaries and Compatibility
+
+```text
+RUNTIME-001 = COMPLETE
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+Commerce Profile Persistence = NOT IMPLEMENTED
+Commerce Reference Persistence = NOT IMPLEMENTED
+External Platform Account Persistence = NOT IMPLEMENTED
+Commerce Relationship Persistence = NOT IMPLEMENTED
+
+OAuth = NOT IMPLEMENTED
+External Platform Binding = NOT IMPLEMENTED
+Public Resolver = NOT IMPLEMENTED
+QR Runtime = NOT IMPLEMENTED
+Public API = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+Event/Outbox = NOT IMPLEMENTED
+```
+
+No existing Creator / Commerce data is backfilled, rewritten, deleted, or mapped. The existing
+`0016_stage2_identity_core.sql` migration is forward-only and creates only the Internal Identity
+schema.
+
+### 46.4 Validation Evidence
+
+| Validation                                                   | Result                                                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Canonical Internal Identity persistence tests                | PASS                                                                                             |
+| `pnpm vitest run modules/identity-infrastructure/`           | PASS                                                                                             |
+| `pnpm test:domain`                                           | PASS                                                                                             |
+| `pnpm typecheck`                                             | PASS                                                                                             |
+| `pnpm lint`                                                  | PASS                                                                                             |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts` | PASS                                                                                             |
+| `pnpm db:check` migration integrity                          | PASS                                                                                             |
+| Scoped architecture and lifecycle tests                      | PASS                                                                                             |
+| Scoped `git diff --check`                                    | PASS — RUNTIME-003 files and DEV-035 section; historical DEV-027 whitespace remains pre-existing |
+
+```text
+IDENTITY-001 regression = PASS
+IDENTITY-002 regression = PASS
+IDENTITY-003 regression = PASS
+
+COMMITTED = NO
+```
+
+## 47. DEV-034 / RUNTIME-002 — Commerce Profile Durable Persistence
+
+> **Status**：Closed — Founder Authorized Stage 2 Runtime Change Unit
+> **Change Unit**：`DEV-034` / `RUNTIME-002`
+> **Date**：2026-08-26
+
+### 47.1 Scope and Durable Fact
+
+This change unit implements only canonical `CommerceProfile` durable persistence on the existing
+PostgreSQL / Drizzle architecture. The forward-only `0018_stage2_commerce_profile_core.sql`
+migration creates `commerce_profiles` with:
+
+```text
+commerce_profile_id
+owning_identity_id
+lifecycle
+display_name
+created_at
+updated_at
+```
+
+`commerce_profile_id` is the primary key. `owning_identity_id` is non-null and has a restrictive
+foreign key to `identities.identity_id`, making each Profile owned by exactly one durable Internal
+Identity while naturally allowing one Identity to own many Profiles. The schema has no cascade
+delete, no ownership-update path, no Commerce Reference, external account, relationship, OAuth,
+or account binding field.
+
+`display_name` is retained because it is the only canonical Profile presentation fact already
+defined by `identity-contract.ts`; bio, avatar, location, social links, platform handles, and other
+future/profile-adjacent data are not persisted by the canonical runtime adapter.
+
+### 47.2 Repository, Lifecycle, and Rehydration
+
+`CommerceProfileRepository` provides only:
+
+```text
+create
+getById
+exists
+listOwnedByIdentity
+updateLifecycle
+```
+
+The canonical PostgreSQL adapter maps duplicate IDs to `CommerceProfileAlreadyExistsError`,
+unknown FK owners to `CommerceProfileOwnerNotFoundError`, missing updates to
+`CommerceProfileNotFoundError`, and conditional-write losers to
+`CommerceProfileLifecycleConflictError`. `create` writes one independently generated canonical
+`CommerceProfileId` and one Profile fact; it never creates an Identity, Reference, account, or
+relationship.
+
+Rows are reconstructed through `rehydrateCommerceProfile`, validating the branded Profile ID,
+branded owning Internal Identity ID, lifecycle, presentation, and timestamps. Lifecycle transitions
+use canonical domain validation and a conditional database write:
+
+```text
+WHERE commerce_profile_id = ?
+  AND lifecycle = expected_lifecycle
+```
+
+Therefore concurrent lifecycle updates cannot silently overwrite each other. `createdAt` is never
+changed; `updatedAt` changes only after a successful durable lifecycle change. Identity and Profile
+lifecycle remain independent; no cross-aggregate state cascade exists.
+
+### 47.3 Compatibility and Boundaries
+
+```text
+RUNTIME-002 = COMPLETE
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+PROFILE_OWNERSHIP_TRANSFER = NOT IMPLEMENTED
+
+Commerce Reference Persistence = NOT IMPLEMENTED
+Commerce Reference Generation = NOT IMPLEMENTED
+External Platform Account Persistence = NOT IMPLEMENTED
+Commerce Relationship Persistence = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+External Binding = NOT IMPLEMENTED
+Public API = NOT IMPLEMENTED
+Resolver = NOT IMPLEMENTED
+QR = NOT IMPLEMENTED
+Event/Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+```
+
+No VS-01 Creator record is backfilled, rewritten, deleted, or mapped to a canonical Commerce
+Profile. The pre-existing legacy Profile PostgreSQL adapter cannot perform reads or writes; the
+canonical repository is the only Profile persistence adapter permitted for RUNTIME-002.
+
+### 47.4 Validation Evidence
+
+| Validation                                                   | Result                                                                                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Canonical Commerce Profile persistence tests                 | PASS — owner FK semantics, 1:N list isolation, rehydration, ID uniqueness, lifecycle, timestamp, conflict coverage |
+| Internal Identity persistence regression                     | PASS                                                                                                               |
+| `pnpm vitest run modules/identity-infrastructure/`           | PASS — 4 files, 85 tests                                                                                           |
+| `pnpm test:domain`                                           | PASS — 18 files, 144 tests                                                                                         |
+| `pnpm typecheck`                                             | PASS                                                                                                               |
+| `pnpm lint`                                                  | PASS                                                                                                               |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts` | PASS — 1 file, 6 tests                                                                                             |
+| `pnpm db:check` migration integrity                          | PASS                                                                                                               |
+| Canonical Profile forbidden-scope audit                      | PASS                                                                                                               |
+| Scoped `git diff --check`                                    | PASS                                                                                                               |
+
+```text
+RUNTIME-001 regression = PASS
+IDENTITY-001 regression = PASS
+IDENTITY-002 regression = PASS
+IDENTITY-003 regression = PASS
+
+COMMITTED = NO
+```
+
+## 48. DEV-035 / RUNTIME-003 — Commerce Reference Durable Persistence
+
+> **Status**：Closed — Founder Authorized Stage 2 Runtime Change Unit
+> **Change Unit**：`DEV-035` / `RUNTIME-003`
+> **Date**：2026-08-26
+
+### 48.1 Scope and Durable Fact
+
+This change unit implements only canonical `CommerceReference` / C号 durable persistence on the
+existing PostgreSQL / Drizzle architecture. The forward-only
+`0020_stage2_commerce_reference_core.sql` migration creates `commerce_references` with:
+
+```text
+commerce_reference
+commerce_profile_id
+lifecycle
+assigned_at
+created_at
+updated_at
+```
+
+`commerce_reference` is the global primary key. `commerce_profile_id` is non-null, uniquely
+constrained, and has a restrictive foreign key to `commerce_profiles.commerce_profile_id`.
+Together, the primary key and unique Profile constraint express:
+
+```text
+1 Commerce Profile → 0..1 Commerce Reference
+1 Commerce Reference → exactly 1 Commerce Profile
+```
+
+The migration persists only the canonical 18-character C号 and its durable assignment facts. It
+does not create a resolver, URL, QR payload, identity/account field, external account,
+relationship, OAuth, event, outbox, payment, or other deferred-runtime table.
+
+### 48.2 Repository, Lifecycle, and Rehydration
+
+`CommerceReferenceRepository` provides only:
+
+```text
+assign
+getByReference
+getByProfileId
+exists
+reserve
+```
+
+It deliberately provides no delete, release, reassign, reference-value update, or target-Profile
+update operation. Assignment accepts a caller-supplied, already canonical
+`CommerceReference`; generation, allocation, CSPRNG, and collision retry are not implemented.
+The single durable insert is the assignment transaction boundary: the Profile FK and both unique
+constraints either accept the association together or reject it without a partial durable fact.
+
+Duplicate C号 values map to `CommerceReferenceAlreadyExistsError`; a second reference for the
+same Profile maps to `CommerceProfileAlreadyHasReferenceError`; an unknown Profile FK maps to
+`CommerceProfileNotFoundForReferenceError`. Rehydration calls `createCommerceReference` and
+`rehydrateAssignedCommerceReference`, so canonical value, branded Profile ID, lifecycle, and
+timestamps are validated before returning the domain aggregate.
+
+Lifecycle is limited to:
+
+```text
+ASSIGNED → PERMANENTLY_RESERVED
+```
+
+`reserve` uses a conditional write:
+
+```text
+WHERE commerce_reference = ?
+  AND lifecycle = 'ASSIGNED'
+```
+
+Only one concurrent reserve can win; the loser receives
+`CommerceReferenceLifecycleConflictError`, and `updatedAt` changes only for the successful
+transition. There is no inverse transition. A Profile lifecycle change neither deletes nor changes
+its Reference, so an archived Profile's already reserved C号 remains durably occupied and cannot
+be assigned to another Profile.
+
+### 48.3 Compatibility and Boundaries
+
+```text
+RUNTIME-003 = COMPLETE
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+generation = NOT IMPLEMENTED
+allocation = NOT IMPLEMENTED
+resolver = NOT IMPLEMENTED
+QR runtime = NOT IMPLEMENTED
+enumeration mitigation = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+external binding = NOT IMPLEMENTED
+External Platform Account persistence = NOT IMPLEMENTED
+Commerce Relationship persistence = NOT IMPLEMENTED
+public API = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+```
+
+No VS-01 Creator record or old Commerce ID is backfilled, rewritten, deleted, or mapped to a
+canonical C号. The new schema does not alter the historical identity or Profile migrations.
+
+### 48.4 Validation Evidence
+
+| Validation                                                   | Result                                                                                                                        |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Canonical Commerce Reference persistence tests               | PASS — canonical rehydration, one-to-one assignment, FK failure, lifecycle conflict, no reuse, Profile lifecycle independence |
+| `pnpm vitest run modules/identity-infrastructure/`           | PASS                                                                                                                          |
+| `pnpm test:domain`                                           | PASS                                                                                                                          |
+| `pnpm typecheck`                                             | PASS                                                                                                                          |
+| `pnpm lint`                                                  | PASS                                                                                                                          |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts` | PASS                                                                                                                          |
+| `pnpm db:check` migration integrity                          | PASS                                                                                                                          |
+| Commerce Reference forbidden-scope audit                     | PASS                                                                                                                          |
+| Scoped `git diff --check`                                    | PASS                                                                                                                          |
+
+```text
+RUNTIME-001 regression = PASS
+RUNTIME-002 regression = PASS
+IDENTITY-001 regression = PASS
+IDENTITY-002 regression = PASS
+IDENTITY-003 regression = PASS
+
+COMMITTED = NO
+```
+
+---
+
+## 53. DEV-040 / PCI-PROVISION-001 — PostgreSQL Integration Environment Readiness
+
+> **Status**：Complete — Provisioning Contract and Safe Preflight
+> **Change Unit**：`DEV-040` / `PCI-PROVISION-001`
+> **Date**：2026-08-26
+
+### 53.1 Result
+
+```text
+PCI-PROVISION-001 = COMPLETE
+
+PRODUCTION_DATABASE = NOT REQUIRED
+INTEGRATION_DATABASE = REQUIRED
+INTEGRATION_DATABASE = NOT_YET_PROVISIONED
+DATABASE_URL = ABSENT
+
+RUNTIME-007 = BLOCKED_BY_ENVIRONMENT
+POSTGRES_APPLICATION_INTEGRATION = NOT_VERIFIED
+```
+
+This change establishes an executable, fail-closed provisioning gate for the real PostgreSQL
+verification environment. It does not provision a database, manufacture a connection URL, alter
+environment files or secrets, start Podman, or re-run `RUNTIME-007`.
+
+### 53.2 Provisioning Contract
+
+`docs/Provisioning/PostgreSQL_Integration_Environment.md` records the required non-production
+database boundary, canonical `DATABASE_URL` input, explicit
+`PCI_INTEGRATION_DATABASE=1` marker, secret-handling rules, migration bootstrap, validation
+checklist, and `RUNTIME-007` re-entry criteria. Production databases are explicitly forbidden.
+
+The repository has no explicit minimum PostgreSQL version:
+
+```text
+MIN_POSTGRES_VERSION = VERSION_REQUIREMENT_NOT_YET_EXPLICIT
+TESTED_POSTGRES_VERSION = PostgreSQL 17 (historical Podman evidence)
+```
+
+The migration journal remains the ordering source of truth. Its current sequence is `0000` through
+`0022`, including the ordered Stage 2 Identity Foundation migrations `0016`, `0017`, `0018`,
+`0019`, `0020`, `0021`, and `0022`.
+
+### 53.3 Safe Preflight
+
+`pnpm db:integration:check` first executes the existing migration-integrity check and then
+requires a PostgreSQL `DATABASE_URL`, `PCI_INTEGRATION_DATABASE=1`, and an integration-designated
+database name. It uses the existing PostgreSQL adapter and verifies readiness, server version,
+Drizzle migration count, the five durable tables, named PK/FK/UNIQUE/CHECK constraints, and the
+unique partial active Commerce Relationship index.
+
+With `DATABASE_URL` absent, the command exits non-zero with generic guidance; it does not report a
+false pass, log a connection URL, or treat a connection failure as an unavailable-test skip. The
+existing PostgreSQL integration test keeps its separate canonical gate: absent `DATABASE_URL`
+skips, while an available but failing database must fail.
+
+On 2026-08-26, a temporary, isolated local Podman PostgreSQL 17 container was bound only to the
+loopback interface. `pnpm db:migrate` and then `pnpm db:integration:check` both passed against it;
+the temporary container was removed immediately afterward. The evidence records no host, port,
+container identifier, `DATABASE_URL`, username, or password. This validates the provisioning
+preflight, but does not provision a persistent integration environment and does not reclassify
+`RUNTIME-007`.
+
+Real validation also showed PostgreSQL truncates generated identifiers longer than 63 bytes. The
+preflight was corrected to verify PK/FK/UNIQUE/CHECK constraints through PostgreSQL catalog
+semantics—source table, type, definition, and FK target—rather than relying on generated FK names.
+
+### 53.4 Runtime and Product Boundary
+
+```text
+RUNTIME-007 = BLOCKED_BY_ENVIRONMENT
+POSTGRES_APPLICATION_INTEGRATION = NOT_VERIFIED
+
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+Public API = NOT IMPLEMENTED
+Resolver = NOT IMPLEMENTED
+QR = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+External Platform Runtime Binding = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+```
+
+### 53.5 Validation Evidence
+
+| Validation                        | Result                                                                                                                                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provisioning documentation audit  | PASS — requirements, boundaries, security, bootstrap, and re-entry criteria are explicit                                                                                                                       |
+| `DATABASE_URL` gate test          | PASS — absence fails closed without false success                                                                                                                                                              |
+| Secret leakage audit              | PASS — no provisioned secret recorded, printed, or logged                                                                                                                                                      |
+| Migration ordering audit          | PASS — current journal sequence confirmed through `0022`                                                                                                                                                       |
+| Schema prerequisite audit         | PASS — current PostgreSQL/Drizzle migration metadata and required constraint checks identified                                                                                                                 |
+| Local Podman PostgreSQL preflight | PASS — temporary PostgreSQL 17; `pnpm db:migrate` then `pnpm db:integration:check`; container removed                                                                                                          |
+| Scoped `git diff --check`         | PRE-EXISTING FINDINGS ONLY — unrelated historical whitespace in `04_North_Star_End_State.md`, `20_MVP_PRD_VS01.md`, `DEV-027`, and `22_Engineering_Governance.md`; no finding in `DEV-040` or task-owned files |
+
+```text
+COMMITTED = NO
+```
+
+## 66. DEV-053 / SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-DECISION-001 — Composite Command Architecture Decision
+
+> **Status**: Complete — Founder architecture decision; implementation not started
+> **Change Unit**: `DEV-053` / `SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-DECISION-001`
+> **Date**: 2026-08-27
+
+### 66.1 Result
+
+```text
+SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-DECISION-001 = COMPLETE
+FOUNDER_DECISION = OPTION_A_APPROVED
+SELF_SERVICE_EXTERNAL_RELATIONSHIP_MODEL = COMPOSITE_COMMAND
+COMPOSITE_COMMAND_IMPLEMENTATION = NOT STARTED
+```
+
+The previous implementation task was blocked because an External Platform Account has no
+independent owner or scope field, while Relationship creation requires an authorized account.
+Founder resolved that boundary by approving one explicit composite user command rather than
+introducing a new ownership relation.
+
+### 66.2 Canonical Composite Command
+
+```text
+Authenticated Account
+        ↓
+ACTIVE AccountIdentityBinding
+        ↓
+Current Internal Identity
+        ↓
+Owned Commerce Profile
+        ↓
+CreateMySelfDeclaredExternalRelationship
+        ├── create or reuse External Platform Account
+        └── create Commerce Relationship
+```
+
+The future command input is limited to:
+
+```text
+platform
+platformAccountId
+commerceProfileId
+```
+
+The server derives the current Account, active binding, and Internal Identity, then verifies
+Profile ownership and non-archived status. The command fixes:
+
+```text
+role = OWNER
+provenance = SELF_DECLARED
+lifecycle = PROPOSED
+```
+
+Client-provided `identityId`, `ownerIdentityId`, `accountId`, `role`, `lifecycle`, `provenance`,
+and `verified` values are not authority fields.
+
+### 66.3 Persistence and Privacy Decision
+
+External Platform Account and Commerce Relationship remain separate durable facts, created or
+reused in one PostgreSQL transaction. A newly created External Account rolls back if Relationship
+creation fails; an existing External Account is never deleted by a failed relationship attempt.
+
+```text
+EXTERNAL_PLATFORM_ACCOUNT_OWNERSHIP_FIELD = NOT INTRODUCED
+INTERNAL_IDENTITY_TO_EXTERNAL_ACCOUNT_RELATION = NOT INTRODUCED
+EXTERNAL_ACCOUNT_SCOPE_TABLE = NOT INTRODUCED
+MIGRATION = NOT IMPLEMENTED BY THIS DECISION
+```
+
+The existing `(platform, platformAccountId)` uniqueness and active-Relationship invariant remain
+database authorities. Same-user duplicate composite requests are idempotent. Existing foreign or
+unknown External Accounts use generic non-disclosing conflict behavior and never reveal owner,
+Profile, or Relationship information. Historical Relationships are retained; historical state does
+not become verified by inference.
+
+### 66.4 Implementation Authorization and Boundaries
+
+```text
+COMPOSITE_COMMAND = APPROVED_FOR_NEXT_IMPLEMENTATION
+PROVENANCE_MODEL = SELF_DECLARED_NOW; PLATFORM_VERIFIED_FUTURE_ONLY
+RELATIONSHIP_MUTATION = NOT AUTHORIZED
+MANAGER = NOT IMPLEMENTED
+DELEGATED_MANAGER = NOT IMPLEMENTED
+```
+
+This decision authorizes only the next implementation task for the composite create command,
+minimal immutable Relationship provenance persistence if required, private API/UI integration,
+and real PostgreSQL verification. It does not authorize OAuth, Platform API, verification runtime,
+external ownership proof, credentials, public surfaces, Resolver, QR, events/outbox, or real money.
+
+### 66.5 Validation
+
+```text
+SSOT consistency = PASS
+identity / Profile ownership boundary = PASS
+no direct Identity → External Account ownership relation = PASS
+provenance semantics = PASS
+public/private boundary = PASS
+implementation changes = NONE
+COMMITTED = NO
+```
+
+### 66.6 Hard Stop
+
+```text
+SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-IMPLEMENTATION-002 = NOT STARTED
+OAUTH = NOT AUTHORIZED
+PLATFORM_API = NOT AUTHORIZED
+VERIFICATION_RUNTIME = NOT AUTHORIZED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+```
+
+## 65. DEV-052 / COMMERCE-REFERENCE-GENERATION-IMPLEMENTATION-001 — Self-Service Profile + Commerce Reference Atomic Creation
+
+> **Status**: Implementation complete — real PostgreSQL evidence pending environment activation
+> **Change Unit**: `DEV-052` / `COMMERCE-REFERENCE-GENERATION-IMPLEMENTATION-001`
+> **Date**: 2026-08-27
+
+### 65.1 Result
+
+```text
+COMMERCE-REFERENCE-GENERATION-IMPLEMENTATION-001 = COMPLETE
+PROFILE_TO_REFERENCE = IMPLEMENTED
+```
+
+New private Profile creation resolves the current Internal Identity from the authenticated
+server-side Account context. It creates the Profile and its server-generated Commerce Reference
+inside one UnitOfWork transaction; no Profile can commit without its Reference.
+
+### 65.2 Generator and Assignment Policy
+
+```text
+CSPRNG = Node crypto.randomInt
+ALPHABET = 3479ACDEFHJKMNPQRTVWXY
+LENGTH = 18
+CANONICAL_VALIDATION = createCommerceReference()
+MAX_REFERENCE_GENERATION_ATTEMPTS = 8
+REFERENCE_LIFECYCLE_ON_CREATE = ASSIGNED
+REFERENCE_DISPLAY = XXXXXX-XXXXXX-XXXXXX
+```
+
+The generator has no Profile, Identity, Account, or user-input authority. Database uniqueness is
+the final collision guard; a unique conflict rolls back the transaction and retries with a new
+candidate within the bounded budget. Exhaustion returns a generic retryable error.
+
+### 65.3 Verified Behavior
+
+```text
+authenticated Account → current Identity → Profile + C号
+repeat Profile creation → distinct Profile and distinct C号
+collision → retry candidate without leaking the conflicting value
+Reference failure → Profile rollback
+archive → Reference retained
+client ownerIdentityId / identityId / accountId / commerceReference → rejected
+no regenerate / reassign / release / manual assignment path
+```
+
+### 65.4 Surfaces and Boundaries
+
+```text
+POST /api/v1/private/profiles = PRESERVED AND RETURNS PROFILE + C号
+OpenAPI / generated client compatibility = PASS
+private UI = CREATES PROFILE AND DISPLAYS CANONICAL C号 WITH COPY
+REAL_POSTGRESQL_SELF_SERVICE_PROFILE_REFERENCE = NOT_VERIFIED (DATABASE_URL unavailable in this run)
+REAL_BROWSER_SELF_SERVICE_PROFILE_REFERENCE = NOT_VERIFIED
+```
+
+No migration was added; existing `commerce_references` primary/unique and Profile foreign-key
+constraints remain authoritative. External accounts, relationships, verification, and public
+surfaces remain outside this change unit.
+
+### 65.5 Validation
+
+```text
+generator tests = PASS
+application tests = PASS
+security / injection tests = PASS
+API integration = PASS
+UI typecheck = PASS (existing focused UI test suite retained)
+PostgreSQL integration = NOT VERIFIED — skipped because DATABASE_URL was unset
+typecheck = PASS
+OpenAPI = PASS
+```
+
+### 65.6 Preserved Boundaries
+
+```text
+External Account creation = NOT IMPLEMENTED
+Relationship creation = NOT IMPLEMENTED
+OAuth = NOT AUTHORIZED
+Verification = NOT AUTHORIZED
+Platform API = NOT AUTHORIZED
+Public API = NOT AUTHORIZED
+Resolver = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+Event / Outbox = NOT AUTHORIZED
+Real Money = NOT AUTHORIZED
+COMMITTED = NO
+```
+
+## 64. DEV-051 / SELF-SERVICE-ONBOARDING-IMPLEMENTATION-001 — Automatic Identity Initialization
+
+> **Status**: Complete — Account-to-Identity onboarding implementation
+> **Change Unit**: `DEV-051` / `SELF-SERVICE-ONBOARDING-IMPLEMENTATION-001`
+> **Date**: 2026-08-27
+
+### 64.1 Result
+
+```text
+SELF-SERVICE-ONBOARDING-IMPLEMENTATION-001 = COMPLETE
+SELF-SERVICE-ONBOARDING = IMPLEMENTED
+```
+
+An authenticated Account with no active binding now initializes one independent ACTIVE Internal
+Identity and one ACTIVE OWNER AccountIdentityMembership. The authentication Account ID comes only
+from the server-side authentication context; client-provided `accountId`, `identityId`, and
+`ownerIdentityId` are not onboarding authorities.
+
+### 64.2 Verified Behavior
+
+```text
+first login → Identity initialization → ACTIVE OWNER binding
+repeat initialization → same Identity and same active binding
+concurrent first login → one Identity and one active binding
+Identity + binding → one durable PostgreSQL transaction
+binding failure → Identity rollback
+existing ACTIVE binding → current Identity
+SUSPENDED / REVOKED / HISTORICAL binding → fail closed
+Profile count after onboarding → 0
+```
+
+The existing `account_identity_memberships_active_owner_account_unique` partial unique index remains
+the final database concurrency guard. No new migration was required for onboarding behavior.
+
+### 64.3 Surfaces and Boundaries
+
+```text
+POST /api/v1/private/onboarding/initialize = IMPLEMENTED
+GET /api/v1/private/identity = PRESERVED
+private onboarding UI = IMPLEMENTED IN PRIVATE IDENTITY WORKSPACE
+OpenAPI / generated client compatibility = PASS
+REAL_POSTGRESQL_SELF_SERVICE_ONBOARDING = VERIFIED
+REAL_BROWSER_SELF_SERVICE_ONBOARDING = NOT_VERIFIED
+```
+
+The first-login UI reports “Welcome”, “Your PCI Identity is ready.” and “Next: Create your first
+Commerce Profile”. It does not claim Profile, Commerce Reference, external-account, relationship,
+or verification readiness.
+
+### 64.4 Validation
+
+```text
+application = PASS
+security / IDOR / injection = PASS
+API integration = PASS
+PostgreSQL first / repeat / concurrent / rollback / status = PASS
+typecheck = PASS
+lint = PASS
+web:typecheck = PASS
+db:check = PASS
+migration-contract = PASS
+import-boundary = PASS
+OpenAPI = PASS
+git diff --check = PASS (scoped task diff; unrelated pre-existing findings remain)
+```
+
+### 64.5 Preserved Boundaries
+
+```text
+Profile automatic creation = NOT IMPLEMENTED
+Commerce Reference generation = NOT IMPLEMENTED
+External Account creation = NOT IMPLEMENTED
+Relationship creation = NOT IMPLEMENTED
+OAuth = NOT AUTHORIZED
+Platform API = NOT AUTHORIZED
+Verification = NOT AUTHORIZED
+Public API = NOT AUTHORIZED
+Resolver = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+Event / Outbox = NOT AUTHORIZED
+Real Money = NOT AUTHORIZED
+COMMITTED = NO
+```
+
+## 63. DEV-050 / PRIVATE-MVP-SELF-SERVICE-001 — Private Self-Service MVP Architecture Decision Package
+
+> **Status**: Complete — Architecture / Founder Decision Preparation Only
+> **Change Unit**: `DEV-050` / `PRIVATE-MVP-SELF-SERVICE-001`
+> **Date**: 2026-08-27
+
+### 63.1 Result
+
+```text
+PRIVATE-MVP-SELF-SERVICE-001 = COMPLETE
+PRIVATE_PRODUCT_MVP = SELF_SERVICE_COMPLETE_CLOSURE
+CURRENT_IMPLEMENTATION = READ_ONLY_AND_PARTIAL_SELF_SERVICE_FOUNDATION
+SELF_SERVICE_PILOT_READY = NOT YET VERIFIED
+```
+
+The decision package defines the required self-service closure for a new, non-preseeded
+authenticated user:
+
+```text
+Account
+        ↓
+automatic idempotent Identity + ACTIVE OWNER binding initialization
+        ↓
+Commerce Profile creation
+        ↓
+atomic server-generated Commerce Reference assignment
+        ↓
+self-declared External Platform Account
+        ↓
+self-declared OWNER Commerce Relationship
+```
+
+It explicitly separates user claim, PCI internal durable fact, external platform evidence, and a
+verified relationship. User-entered platform account data is not platform ownership proof, and
+`SELF_DECLARED` is never rendered or persisted as `VERIFIED`.
+
+### 63.2 Founder Direction Prepared
+
+```text
+COMMERCE_REFERENCE_SELF_SERVICE = server-generated only
+REFERENCE_USER_SELECTION = NOT AUTHORIZED
+REFERENCE_REGENERATION_REASSIGNMENT_RELEASE_DELETE = NOT AUTHORIZED
+
+EXTERNAL_ACCOUNT_SELF_DECLARATION = candidate for separately authorized implementation
+RELATIONSHIP_SELF_DECLARATION = candidate for separately authorized implementation
+INITIAL_RELATIONSHIP_ROLE = OWNER only
+PLATFORM_VERIFICATION = future separate decision
+OAUTH = NOT AUTHORIZED
+```
+
+The recommended first self-service MVP does not depend on OAuth or a platform API. It creates
+truthful internal self-declared facts and leaves the Relationship `PROPOSED` until an independently
+approved verification runtime can supply and evaluate external evidence.
+
+### 63.3 Required Implementation Gates
+
+Any later implementation must separately authorize and verify:
+
+- transactionally atomic and idempotent Account → Identity initialization;
+- CSPRNG candidate generation, canonical validation, database uniqueness, bounded collision retry,
+  and a single Profile + C号 transaction;
+- an immutable relationship provenance fact rather than using lifecycle as a provenance proxy;
+- non-disclosing duplicate External Account and active-Relationship conflict behavior;
+- real PostgreSQL write-flow integration, IDOR/concurrency tests, and authenticated browser
+  end-to-end validation before self-service pilot declaration.
+
+### 63.4 Preserved Boundaries
+
+```text
+SURFACE-001 THROUGH SURFACE-005 = PRESERVED
+RUNTIME-001 THROUGH RUNTIME-007 = PRESERVED
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+SURFACE-006 = NOT STARTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+OAUTH = NOT AUTHORIZED
+EXTERNAL_PLATFORM_BINDING = NOT AUTHORIZED
+EXTERNAL_PLATFORM_VERIFICATION = NOT AUTHORIZED
+PLATFORM_API = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+COMMITTED = NO
+```
+
+## 62. DEV-049 / SURFACE-005 — Private Commerce Relationship Read-Only Surface
+
+> **Status**: Complete
+> **Change Unit**: `DEV-049` / `SURFACE-005`
+> **Date**: 2026-08-27
+
+### 62.1 Result
+
+```text
+SURFACE-005 = COMPLETE
+REAL_POSTGRESQL_SURFACE_005_INTEGRATION = VERIFIED
+REAL_POSTGRESQL_SURFACE_005_UI_INTEGRATION = NOT VERIFIED
+```
+
+The private read-only authorization chain is:
+
+```text
+Authenticated Account
+        ↓
+ACTIVE AccountIdentityBinding
+        ↓
+Internal Identity
+        ↓
+Owned Commerce Profiles
+        ↓
+Commerce Relationships
+        ↓
+External Platform Accounts
+```
+
+Relationship visibility is derived from the server-side owned Profile scope. Client-supplied
+`identityId`, `profileId`, `relationshipId`, and `externalPlatformAccountId` values cannot become
+authorization subjects. Foreign Relationship detail returns the existing non-disclosing private
+not-found response.
+
+### 62.2 Relationship Surface
+
+```text
+LIST = IMPLEMENTED
+DETAIL = IMPLEMENTED
+HISTORY = IMPLEMENTED
+PROFILE_GROUPING = IMPLEMENTED
+ACCOUNT_SUMMARY = IMPLEMENTED
+READ_ONLY = PRESERVED
+```
+
+The API and Web workspace present Profile summaries, External Platform Account summaries,
+Relationship role, lifecycle, effective time, and durable timestamps. Historical and active
+Relationships are both retained and visible, including historical and active records for the same
+External Platform Account. Relationship role is presented as Relationship role, not Profile
+ownership, and `VERIFIED` is presented neutrally without a platform-ownership claim.
+
+No create, bind, unbind, rebind, transfer, role mutation, lifecycle mutation, delete, purge, OAuth,
+verification, or Platform API control is exposed.
+
+### 62.3 API
+
+```text
+GET /api/v1/private/commerce-relationships
+GET /api/v1/private/commerce-relationships/:relationshipId
+```
+
+The private DTO exposes only the approved Relationship, Profile summary, and External Platform
+Account summary fields. Internal Identity IDs, Authentication Account IDs, database identifiers,
+Relationship internals, credentials, tokens, references, and mutation capabilities are excluded.
+Profile and External Platform Account query values are filters over the already-authorized scope;
+unsupported Identity and Relationship injection is rejected.
+
+### 62.4 Real PostgreSQL Evidence
+
+An isolated local PostgreSQL 17.10 instance ran in a temporary Podman container. Migration,
+integration preflight, and the dedicated API-to-application-to-PostgreSQL suite passed. The suite
+verified owned Relationship history, same-account historical plus active records, multiple owned
+Profiles, foreign Relationship denial, authorized filters, and an authenticated empty scope. The
+temporary container was removed after verification. No connection URL, secret, credential, host,
+port, username, or container identifier is recorded.
+
+```text
+POSTGRESQL_VERSION = 17.10
+POSTGRESQL_INTEGRATION_PREFLIGHT = PASS
+POSTGRESQL_MIGRATION = PASS
+TEMPORARY_POSTGRESQL_CLEANUP = PASS
+```
+
+### 62.5 Validation Evidence
+
+```text
+PRIVATE_RELATIONSHIP_APPLICATION_AND_API_TESTS = PASS
+PRIVATE_RELATIONSHIP_SECURITY_AND_IDOR_TESTS = PASS
+PRIVATE_RELATIONSHIP_UI_TESTS = PASS
+PRIVATE_RELATIONSHIP_POSTGRESQL_INTEGRATION = PASS
+IDENTITY_INFRASTRUCTURE_TESTS = PASS (86 tests)
+DOMAIN_TESTS = PASS (145 tests)
+TYPECHECK = PASS
+WEB_TYPECHECK = PASS
+LINT = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS (2 tests)
+IMPORT_BOUNDARY_TEST = PASS (6 tests)
+OPENAPI_COMPATIBILITY = PASS
+GENERATED_WEB_CLIENT = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+### 62.6 Preserved Boundaries
+
+```text
+SURFACE-001 = PASS
+SURFACE-001-VERIFY = PASS
+SURFACE-002 = PASS
+SURFACE-003 = PASS
+SURFACE-004 = PASS
+RUNTIME-001 THROUGH RUNTIME-007 = PASS (existing evidence preserved)
+IDENTITY-001 THROUGH IDENTITY-003 = PASS (existing evidence preserved)
+
+COMMERCE_RELATIONSHIP_MUTATION = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_BINDING = NOT IMPLEMENTED
+EXTERNAL_VERIFICATION = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+PLATFORM_API = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+SURFACE-006 = NOT STARTED
+COMMITTED = NO
+```
+
+Browser-to-temporary-PostgreSQL verification was not established because no stable authenticated
+browser fixture is available for this temporary database:
+
+```text
+REAL_POSTGRESQL_SURFACE_005_UI_INTEGRATION = NOT VERIFIED
+```
+
+## 60. DEV-047 / SURFACE-003 — Private Commerce Reference View / Copy
+
+> **Status**: Complete
+> **Change Unit**: `DEV-047` / `SURFACE-003`
+> **Date**: 2026-08-27
+
+### 60.1 Result
+
+```text
+SURFACE-003 = COMPLETE
+REAL_POSTGRESQL_SURFACE_003_INTEGRATION = VERIFIED
+REAL_POSTGRESQL_SURFACE_003_UI_INTEGRATION = NOT VERIFIED
+```
+
+The read-only authorization chain is:
+
+```text
+Authenticated Account
+        ↓
+ACTIVE AccountIdentityBinding
+        ↓
+Internal Identity
+        ↓
+CommerceProfile.owningIdentityId
+        ↓
+Commerce Reference
+```
+
+`GET /api/v1/private/profiles/:profileId/reference` uses the Profile ID only as a resource
+identifier. It resolves authorization solely from the authenticated Account's active binding and
+the Profile's server-side owner. An owned assigned Reference returns its canonical value and
+approved grouped display value. A Profile without a Reference returns `NOT_ASSIGNED`; it never
+creates, assigns, allocates, or generates one. Foreign Profile access returns the existing
+non-disclosing private not-found response, and an arbitrary `identityId` query value has no
+authorization effect.
+
+### 60.2 View / Copy Surface
+
+```text
+VIEW = IMPLEMENTED
+GROUPED_DISPLAY = IMPLEMENTED
+COPY_CANONICAL_VALUE = IMPLEMENTED
+NO_REFERENCE_EMPTY_STATE = IMPLEMENTED
+```
+
+The authenticated Web workspace displays the C号 per Commerce Profile, not per Internal Identity.
+It renders the grouped presentation (`3C7M4Q-9RDFHJ-KNTWVY`) and copies the canonical stored
+value (`3C7M4Q9RDFHJKNTWVY`). Clipboard copying is browser-only and has no transaction, durable
+mutation, event, outbox, tracking, or analytics behavior. Focused presentation logic tests prove
+the copied value is canonical. Browser-to-temporary-PostgreSQL integration was not established, so
+it is explicitly `NOT VERIFIED`.
+
+### 60.3 Real PostgreSQL Evidence
+
+An isolated local PostgreSQL 17.10 instance ran in a temporary Podman container. Migrations,
+integration preflight, and migration idempotence passed before the dedicated suite executed. The
+suite verified:
+
+- authenticated Account → active binding → Internal Identity → owned Profile → Reference API;
+- owned assigned C号 read with unchanged canonical and grouped display values;
+- owned Profile without Reference returns `NOT_ASSIGNED` without persistence side effects;
+- cross-account Profile Reference IDOR denial;
+- arbitrary Identity query input has no authorization effect.
+
+The temporary PostgreSQL container was removed after the suite. No connection URL, secret,
+credential, host, port, username, or container identifier is recorded.
+
+```text
+POSTGRESQL_VERSION = 17.10
+POSTGRESQL_INTEGRATION_PREFLIGHT = PASS
+POSTGRESQL_MIGRATION = PASS
+TEMPORARY_POSTGRESQL_CLEANUP = PASS
+```
+
+### 60.4 Validation Evidence
+
+```text
+PRIVATE_REFERENCE_APPLICATION_TESTS = PASS
+PRIVATE_REFERENCE_API_AND_IDOR_TESTS = PASS
+PRIVATE_REFERENCE_COPY_PRESENTATION_TEST = PASS
+PRIVATE_REFERENCE_POSTGRESQL_INTEGRATION = PASS
+OPENAPI_COMPATIBILITY = PASS
+GENERATED_WEB_CLIENT = PASS
+WEB_TYPECHECK = PASS
+TYPECHECK = PASS
+LINT = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS
+IMPORT_BOUNDARY_TEST = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+### 60.5 Preserved Boundaries
+
+```text
+SURFACE-001 = PASS
+SURFACE-001-VERIFY = PASS
+SURFACE-002 = PASS
+RUNTIME-001 THROUGH RUNTIME-007 = PASS (existing evidence preserved)
+IDENTITY-001 THROUGH IDENTITY-003 = PASS (existing evidence preserved)
+
+SURFACE-004 = NOT STARTED
+REFERENCE_GENERATION = NOT IMPLEMENTED
+REFERENCE_ALLOCATION = NOT IMPLEMENTED
+REFERENCE_MUTATION = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+OAUTH = NOT AUTHORIZED
+EXTERNAL_PLATFORM_BINDING = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+COMMITTED = NO
+```
+
+## 61. DEV-048 / SURFACE-004 — Private External Platform Account View
+
+> **Status**: Complete
+> **Change Unit**: `DEV-048` / `SURFACE-004`
+> **Date**: 2026-08-27
+
+### 61.1 Result
+
+```text
+SURFACE-004 = COMPLETE
+REAL_POSTGRESQL_SURFACE_004_INTEGRATION = VERIFIED
+REAL_POSTGRESQL_SURFACE_004_UI_INTEGRATION = NOT VERIFIED
+```
+
+The read-only authorization chain is:
+
+```text
+Authenticated Account
+        ↓
+ACTIVE AccountIdentityBinding
+        ↓
+Internal Identity
+        ↓
+Owned Commerce Profiles
+        ↓
+Commerce Relationships
+        ↓
+External Platform Accounts
+```
+
+Visibility is derived server-side from the current Account's active binding, the current Identity's
+owned Profiles, and the durable Commerce Relationships for those Profiles. No Account-to-External-
+Platform-Account ownership relation was introduced. `externalPlatformAccountId` is only a resource
+selector: a foreign account produces the existing non-disclosing private not-found response.
+Arbitrary `identityId`, `profileId`, and `relationshipId` query values have no authorization effect.
+
+### 61.2 External Account View
+
+```text
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_LIST = IMPLEMENTED
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_DETAIL = IMPLEMENTED
+READ_ONLY = IMPLEMENTED
+```
+
+The private API returns only `externalPlatformAccountId`, `platform`, `platformAccountId`, and
+`lifecycle`. The authenticated Web workspace shows platform, external account identifier, and
+lifecycle; it supports multiple Accounts on the same Platform and an explicit `No external platform
+accounts.` empty state. It contains no connect, authorize, verify, bind, unbind, create, transfer,
+or lifecycle-mutation control. No credential, OAuth value, platform secret, database row ID,
+Profile ID, Identity ID, or Relationship ID is exposed.
+
+### 61.3 Real PostgreSQL Evidence
+
+An isolated local PostgreSQL 17.10 instance ran in a temporary Podman container. Migrations,
+integration preflight, and migration idempotence passed before the dedicated suite executed. The
+suite verified:
+
+- authenticated Account → active binding → Identity → owned Profile → Relationship → External
+  Platform Account private API resolution;
+- authorized own-account list and detail reads;
+- cross-account detail IDOR denial;
+- multiple authorized Accounts, including multiple Accounts on one Platform;
+- an empty authorized scope.
+
+The temporary PostgreSQL container was removed after the suite. No connection URL, secret,
+credential, host, port, username, or container identifier is recorded. A stable authenticated
+browser fixture for the temporary database is not established, so browser UI to real PostgreSQL is
+explicitly `NOT VERIFIED`; the API → application → PostgreSQL chain is verified.
+
+```text
+POSTGRESQL_VERSION = 17.10
+POSTGRESQL_INTEGRATION_PREFLIGHT = PASS
+POSTGRESQL_MIGRATION = PASS
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_POSTGRESQL_INTEGRATION = PASS
+TEMPORARY_POSTGRESQL_CLEANUP = PASS
+```
+
+### 61.4 Validation Evidence
+
+```text
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_APPLICATION_TESTS = PASS
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_API_AND_IDOR_TESTS = PASS
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_UI_TESTS = PASS
+PRIVATE_EXTERNAL_PLATFORM_ACCOUNT_POSTGRESQL_INTEGRATION = PASS
+OPENAPI_COMPATIBILITY = PASS
+GENERATED_WEB_CLIENT = PASS
+WEB_TYPECHECK = PASS
+TYPECHECK = PASS
+LINT = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS
+IMPORT_BOUNDARY_TEST = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+### 61.5 Preserved Boundaries
+
+```text
+SURFACE-001 = PASS
+SURFACE-001-VERIFY = PASS
+SURFACE-002 = PASS
+SURFACE-003 = PASS
+RUNTIME-001 THROUGH RUNTIME-007 = PASS (existing evidence preserved)
+IDENTITY-001 THROUGH IDENTITY-003 = PASS (existing evidence preserved)
+
+SURFACE-005 = NOT STARTED
+COMMERCE_RELATIONSHIP_MUTATION = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+VERIFICATION_RUNTIME = NOT IMPLEMENTED
+PLATFORM_API = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+COMMITTED = NO
+```
+
+## 58. DEV-045 / SURFACE-001-VERIFY — Real PostgreSQL Integration Verification
+
+> **Status**: Complete
+> **Change Unit**: `DEV-045` / `SURFACE-001-VERIFY`
+> **Date**: 2026-08-27
+
+### 58.1 Result
+
+```text
+SURFACE-001-VERIFY = COMPLETE
+REAL_POSTGRESQL_SURFACE_001_INTEGRATION = VERIFIED
+SURFACE-001 = FULLY_VERIFIED
+```
+
+### 58.2 Isolated PostgreSQL Evidence
+
+An isolated, non-production PostgreSQL 17.10 database ran in a temporary local Podman container.
+`PCI_INTEGRATION_DATABASE=1` was set only for the command environment, the database name met the
+integration-environment guard, and all migrations were applied before verification. Connection
+secrets, host, port, credentials, and container identifiers are intentionally absent from this log.
+
+```text
+PNPM_DB_INTEGRATION_CHECK = PASS
+PNPM_DB_MIGRATE = PASS
+POSTGRESQL_VERSION = 17.10
+TEMPORARY_POSTGRESQL_CLEANUP = PASS
+```
+
+### 58.3 Real SURFACE-001 Verification
+
+The dedicated PostgreSQL suite passed six real-database tests:
+
+- initial onboarding writes and rehydrates an Internal Identity plus active OWNER binding;
+- forced active-binding persistence failure rolls back the preceding Identity insert;
+- two concurrent onboarding requests converge on one canonical Identity and one active binding;
+- PostgreSQL partial active-account uniqueness rejects a second active binding for the same Account;
+- valid binding lifecycle changes persist and canonical transitions reject `REVOKED → ACTIVE` and
+  `HISTORICAL → ACTIVE`;
+- authenticated private API resolves Account → active binding → Identity, returns only the current
+  Account's Identity, ignores an arbitrary foreign `identityId` parameter, and returns
+  `403 active_identity_binding_not_found` for an Account with no binding.
+
+The verification additionally confirmed PK/FK/NOT NULL/OWNER CHECK/lifecycle CHECK/partial UNIQUE
+enforcement through the migrated PostgreSQL schema and canonical row rehydration into
+`AccountIdentityMembership`, `Identity`, and `PrivateIdentityView`.
+
+```text
+SURFACE_001_POSTGRESQL_INTEGRATION_SUITE = PASS (6 tests)
+SAME_ACCOUNT_ACCESS = PASS
+FOREIGN_IDENTITY_ACCESS = FAIL CLOSED
+ARBITRARY_IDENTITY_PARAMETER = FAIL CLOSED
+MISSING_BINDING = FAIL CLOSED
+UI_REAL_DB_INTEGRATION = NOT VERIFIED
+```
+
+No authenticated browser fixture was established for the temporary database, so browser UI to
+real-PostgreSQL verification is explicitly not claimed. The private API → application →
+PostgreSQL chain is verified.
+
+### 58.4 Regression and Boundaries
+
+```text
+IDENTITY_INFRASTRUCTURE_TESTS = PASS (85 tests)
+DOMAIN_TESTS = PASS (144 tests)
+SURFACE_001_FOCUSED_TESTS = PASS (18 tests)
+LINT = PASS
+TYPECHECK = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS (2 tests)
+IMPORT_BOUNDARY_TEST = PASS (6 tests)
+SCOPED_GIT_DIFF_CHECK = PASS
+
+RUNTIME-001 THROUGH RUNTIME-007 = PASS (existing evidence preserved)
+IDENTITY-001 THROUGH IDENTITY-003 = PASS (existing evidence preserved)
+
+SURFACE-002 = NOT STARTED
+PROFILE_MANAGEMENT = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+OAUTH = NOT AUTHORIZED
+EXTERNAL_PLATFORM_BINDING = NOT AUTHORIZED
+RECOVERY = NOT IMPLEMENTED
+ACCOUNT_MERGE = NOT IMPLEMENTED
+IDENTITY_MERGE_SPLIT = NOT IMPLEMENTED
+REAL_MONEY = NOT AUTHORIZED
+
+COMMITTED = NO
+```
+
+---
+
+## 54. DEV-041 / RUNTIME-007 — Private Runtime Durable PostgreSQL Integration Verification
+
+> **Status**：Complete — Real PostgreSQL Application Integration Verified
+> **Change Unit**：`DEV-041` / `RUNTIME-007`
+> **Date**：2026-08-27
+
+### 54.1 Result
+
+```text
+RUNTIME-007 = COMPLETE
+POSTGRES_APPLICATION_INTEGRATION = VERIFIED
+
+PostgreSQL = 17.10
+INTEGRATION_DATABASE = temporary, isolated, non-production
+DATABASE_URL = supplied only to the verification process and not recorded
+```
+
+The verification used the real private runtime path:
+
+```text
+Application
+    ↓
+Repository Port
+    ↓
+PostgreSQL Adapter
+    ↓
+Real PostgreSQL
+```
+
+`pnpm db:migrate` and `pnpm db:integration:check` both passed before the PostgreSQL integration
+suite ran. The temporary database was bound only for the local verification, did not access
+production data, and was removed after all evidence was collected.
+
+### 54.2 Durable Facts, Rehydration, and Constraints
+
+The real PostgreSQL application integration suite passed seven cases covering all five canonical
+durable facts:
+
+```text
+Internal Identity = PASS
+Commerce Profile = PASS
+Commerce Reference = PASS
+External Platform Account = PASS
+Commerce Relationship = PASS
+```
+
+Each fact was created through its private application service, persisted by its PostgreSQL
+repository adapter, read back through the repository port, and rehydrated by the canonical domain
+constructor/rehydrator. The suite verifies:
+
+```text
+Identity → Profile → supplied Commerce Reference
+External Platform Account → Commerce Relationship → Commerce Profile
+```
+
+PostgreSQL enforcement was evidenced for:
+
+```text
+PK = PASS
+FK = PASS
+UNIQUE(commerce_profile_id) = PASS
+UNIQUE(commerce_reference) = PASS
+UNIQUE(platform, platform_account_id) = PASS
+CHECK lifecycle / relationship role = PASS
+partial UNIQUE ACTIVE relationship = PASS
+```
+
+Unknown Profile ownership, Reference-to-unknown-Profile, and
+Relationship-to-unknown-Account/Profile all fail closed, with database foreign-key violations
+verified directly where required. `instagram/A`, `instagram/B`, and `youtube/A` remain distinct;
+a duplicate `instagram/A` is rejected by PostgreSQL.
+
+### 54.3 Transaction, History, and Conditional Write Evidence
+
+```text
+Profile + supplied Reference assignment = atomic
+Reference failure = rollback; no durable partial assignment
+
+Suspended Relationship → HISTORICAL
+Verified replacement → ACTIVE
+= same PostgreSQL transaction
+
+Replacement failure = rollback
+old Relationship remains SUSPENDED and readable
+```
+
+The historical relationship preserves its immutable identifier, account target, profile target,
+role, effective time, and creation time. It remains readable after historicalization. The suite
+also confirms an archived Profile does not release its Commerce Reference: the Reference remains
+durably `PERMANENTLY_RESERVED` and cannot be reassigned.
+
+Conditional lifecycle writes were exercised through real PostgreSQL repositories for Internal
+Identity, Commerce Profile, External Platform Account, and Commerce Relationship. Two writers
+with the same expected lifecycle yield exactly one success and one lifecycle conflict, preventing
+lost updates.
+
+### 54.4 Boundaries and Compatibility
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+Public API = NOT IMPLEMENTED
+Resolver = NOT IMPLEMENTED
+QR = NOT IMPLEMENTED
+OAuth = NOT IMPLEMENTED
+External Platform Verification = NOT IMPLEMENTED
+External Platform Runtime Binding = NOT IMPLEMENTED
+Event / Outbox = NOT IMPLEMENTED
+Real Money = NOT AUTHORIZED
+
+REQUEST = UNCHANGED
+RESERVATION = UNCHANGED
+CONTRACT = UNCHANGED
+```
+
+No product surface, OAuth, resolver, QR, external platform runtime, event/outbox, real-money
+capability, VS-01 backfill, or Commerce Pattern change was introduced.
+
+### 54.5 Validation Evidence
+
+| Validation                                                                                   | Result           |
+| -------------------------------------------------------------------------------------------- | ---------------- |
+| `pnpm db:migrate`                                                                            | PASS             |
+| `pnpm db:integration:check`                                                                  | PASS             |
+| `pnpm vitest run tests/persistence/private-identity-foundation-postgres.integration.test.ts` | PASS — 7 tests   |
+| `pnpm vitest run modules/identity-infrastructure/`                                           | PASS — 85 tests  |
+| `pnpm test:domain`                                                                           | PASS — 144 tests |
+| `pnpm typecheck`                                                                             | PASS             |
+| `pnpm lint`                                                                                  | PASS             |
+| `pnpm vitest run tests/governance/import-boundaries.test.ts`                                 | PASS — 6 tests   |
+| `pnpm db:check`                                                                              | PASS             |
+| `pnpm vitest run tests/persistence/migration-contract.test.ts`                               | PASS — 2 tests   |
+| Temporary PostgreSQL container cleanup                                                       | PASS             |
+
+```text
+RUNTIME-001 = PASS
+RUNTIME-002 = PASS
+RUNTIME-003 = PASS
+RUNTIME-004 = PASS
+RUNTIME-005 = PASS
+RUNTIME-006 = PASS
+
+COMMITTED = NO
+```
+
+## 55. DEV-042 / PCI-STAGE2-RUNTIME-CLOSURE-001 — Runtime Foundation Closure and Next-Surface Decision Package
+
+> **Status**：Complete — Stage 2 Runtime Foundation Closed; no Product Surface authorized
+> **Change Unit**：`DEV-042` / `PCI-STAGE2-RUNTIME-CLOSURE-001`
+> **Date**：2026-08-27
+
+### 55.1 Closure Result
+
+```text
+PCI-STAGE2-RUNTIME-CLOSURE-001 = COMPLETE
+STAGE_2_RUNTIME_FOUNDATION = COMPLETE
+
+RUNTIME-007 = COMPLETE
+POSTGRES_APPLICATION_INTEGRATION = VERIFIED
+PostgreSQL = 17.10
+```
+
+The closure audit reconfirmed the complete private runtime path:
+
+```text
+Domain Contract
+    ↓
+Repository Port
+    ↓
+PostgreSQL Adapter
+    ↓
+Private Application Runtime
+    ↓
+Real PostgreSQL Integration
+```
+
+| Durable fact              | Domain | Persistence | Private Runtime | Real PostgreSQL |
+| ------------------------- | ------ | ----------- | --------------- | --------------- |
+| Internal Identity         | PASS   | PASS        | PASS            | PASS            |
+| Commerce Profile          | PASS   | PASS        | PASS            | PASS            |
+| Commerce Reference        | PASS   | PASS        | PASS            | PASS            |
+| External Platform Account | PASS   | PASS        | PASS            | PASS            |
+| Commerce Relationship     | PASS   | PASS        | PASS            | PASS            |
+
+### 55.2 Canonical Graph, Invariants, and Lifecycle Boundary
+
+```text
+Authentication Account
+        ≠
+Internal Identity
+        │
+        └── 1:N Commerce Profiles
+                    ├── 0..1 Commerce Reference
+                    └── 0..N Commerce Relationships
+                              ▲
+                              │
+                        External Platform Account
+```
+
+```text
+Commerce Relationship
+= External Platform Account ↔ Commerce Profile historical binding
+```
+
+The audited invariants remain:
+
+```text
+Identity ID / Profile ID / Profile owner = immutable
+1 Identity : N Profiles
+
+1 Profile : 0..1 Reference
+Reference = unique, immutable, permanently reserved, never reusable
+
+(platform, platform_account_id) = unique
+External Account identity = immutable
+
+Relationship account target / profile target / role = immutable
+Historical relationships = retained and readable
+max 1 ACTIVE relationship per External Platform Account
+```
+
+No automatic cross-aggregate cascade was introduced. Identity, Profile, External Account, and
+Relationship lifecycles remain independent except for explicit private orchestration. Archiving a
+Profile does not release its Reference or delete Relationships.
+
+### 55.3 Runtime, Transaction, Error, and Namespace Audit
+
+The private application services depend on domain contracts, repository ports, clocks, and the
+Identity Foundation transaction abstraction. Targeted import-boundary audit found no PostgreSQL
+driver, Drizzle, SQL schema, HTTP, OpenAPI, OAuth, resolver, or QR dependency in the private
+Identity Foundation application services or domain contracts.
+
+```text
+Profile + supplied Commerce Reference = explicit transaction
+Relationship historicalization + verified replacement = explicit transaction
+reference failure = rollback
+replacement failure = rollback
+conditional lifecycle writes = conflict, not lost update
+```
+
+Application error mapping distinguishes:
+
+```text
+not_found
+conflict
+validation
+invalid_state = conflict category / identity_foundation_invalid_state code
+persistence_failure = unavailable category / identity_foundation_persistence_failure code
+```
+
+The ID namespace audit found branded canonical ID types and canonical rehydrators across the five
+facts. No unsafe production `as unknown as` or `as string` escape hatch was found in the private
+runtime/domain path. The only targeted findings were test-only narrowing after the
+`DATABASE_URL` gate and a malformed-input domain test fixture.
+
+### 55.4 PostgreSQL Evidence and Compatibility
+
+`DEV-041 / RUNTIME-007` remains the real PostgreSQL evidence: migrations, PK, FK, UNIQUE, CHECK,
+partial `ACTIVE` uniqueness, rehydration, reference atomicity, relationship replacement rollback,
+and conditional lifecycle updates all passed against an isolated temporary PostgreSQL 17.10
+database. The container was removed after evidence collection.
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+REQUEST = UNCHANGED
+RESERVATION = UNCHANGED
+CONTRACT = UNCHANGED
+```
+
+### 55.5 Boundary Matrix and Next Founder Gate
+
+| Layer                             | Status         |
+| --------------------------------- | -------------- |
+| Domain Contracts                  | COMPLETE       |
+| Durable Persistence               | COMPLETE       |
+| Repository Ports                  | COMPLETE       |
+| PostgreSQL Adapters               | COMPLETE       |
+| Private Application Runtime       | COMPLETE       |
+| Real PostgreSQL Integration       | VERIFIED       |
+| Public API                        | NOT AUTHORIZED |
+| Public Resolver                   | NOT AUTHORIZED |
+| QR Runtime                        | NOT AUTHORIZED |
+| OAuth                             | NOT AUTHORIZED |
+| External Platform Binding Runtime | NOT AUTHORIZED |
+| Verification Runtime              | NOT AUTHORIZED |
+| Event / Outbox                    | NOT AUTHORIZED |
+| Real Money                        | NOT AUTHORIZED |
+
+The next-surface Founder package is:
+
+```text
+docs/07_Product_Architecture/24_Private_Product_Surface_Decision_Package.md
+```
+
+It separates an authenticated private user surface from a public anonymous surface, requires a
+separate `ACCOUNT-IDENTITY-BINDING` decision, and does not authorize implementation.
+
+### 55.6 Engineering Verification Scope
+
+Runtime Foundation Verification is supported by the targeted RUNTIME-007 PostgreSQL evidence and
+the scoped domain, application, persistence, typecheck, lint, import-boundary, migration-contract,
+and database checks. It is not a claim that every repository-wide Vitest or Playwright suite has
+passed: the documented full-suite timeout, Playwright-state, and unrelated historical-whitespace
+issues remain separate engineering-stability concerns.
+
+```text
+Public API = NOT AUTHORIZED
+Public Resolver = NOT AUTHORIZED
+QR Runtime = NOT AUTHORIZED
+OAuth = NOT AUTHORIZED
+External Platform Binding Runtime = NOT AUTHORIZED
+Verification Runtime = NOT AUTHORIZED
+Event / Outbox = NOT AUTHORIZED
+Real Money = NOT AUTHORIZED
+
+COMMITTED = NO
+```
+
+## 56. DEV-043 / PRIVATE-SURFACE-ENTRY-001 — Account–Identity Binding and Private Surface Architecture
+
+> **Status**：Complete — Architecture Decision Preparation; Founder approval required before implementation
+> **Change Unit**：`DEV-043` / `PRIVATE-SURFACE-ENTRY-001`
+> **Date**：2026-08-27
+
+### 56.1 Result
+
+```text
+PRIVATE-SURFACE-ENTRY-001 = COMPLETE
+ACCOUNT-IDENTITY-BINDING = APPROVED FOR DESIGN
+PRIVATE_PRODUCT_SURFACE_A = APPROVED FOR DESIGN
+PRIVATE_PRODUCT_SURFACE_B = APPROVED FOR DESIGN
+PRIVATE_PRODUCT_SURFACE_C = APPROVED FOR DESIGN
+PRIVATE_PRODUCT_SURFACE_D = APPROVED FOR DESIGN
+PRIVATE_PRODUCT_SURFACE_E = APPROVED FOR DESIGN
+```
+
+The formal decision package is:
+
+```text
+docs/07_Product_Architecture/25_Account_Identity_Binding_and_Private_Surface_Decision_Package.md
+```
+
+### 56.2 Scope and Evidence
+
+This change unit is documentation-only. It defines the recommended explicit
+`AccountIdentityBinding` relationship, binding lifecycle, recovery/merge/split boundaries, the
+authorization subject chain, the responsibilities and limits of Private Product Surfaces A–E,
+the complete authorization matrix, mutable/immutable matrix, dependency graph, MVP order, and
+Founder decision list.
+
+No database migration, new table, application service, Runtime-008, authentication provider,
+session implementation, HTTP/OpenAPI contract, UI, OAuth, public resolver, QR runtime, external
+verification, event/outbox, payment, or real-money change was introduced by this change unit.
+
+### 56.3 Boundary Audits
+
+```text
+DOCUMENT_CONSISTENCY_AUDIT = PASS
+IDENTITY_TERMINOLOGY_AUDIT = PASS
+AUTHORIZATION_BOUNDARY_AUDIT = PASS
+SURFACE_DEPENDENCY_AUDIT = PASS
+VS01_COMPATIBILITY_AUDIT = PASS
+PUBLIC_PRIVATE_BOUNDARY_AUDIT = PASS
+NO_NEW_RUNTIME_AUDIT = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+The current working tree contains pre-existing uncommitted Stage 2 implementation artifacts.
+They were not modified by `DEV-043`; the package explicitly records that future Account–Identity
+runtime and Private Surface implementation remain unauthorized until Founder approval.
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+COMMITTED = NO
+```
+
+## 57. DEV-044 / SURFACE-001 — Account–Identity Binding and Private Identity Read-Only Surface
+
+> **Status**: Complete
+> **Change Unit**: `DEV-044` / `SURFACE-001`
+> **Date**: 2026-08-27
+
+### 57.1 Result
+
+```text
+SURFACE-001 = COMPLETE
+```
+
+The implementation establishes:
+
+```text
+Authenticated Account
+        ↓
+Active AccountIdentityBinding
+        ↓
+Internal Identity
+        ↓
+Private Identity Read-Only Surface
+```
+
+`Authentication Account ≠ Internal Identity`. An Account has `0..N` historical bindings and at
+most one `ACTIVE` binding; an Internal Identity may have multiple Account bindings. The only
+binding authority is `OWNER`. Binding targets and authority are immutable; lifecycle changes use
+dedicated domain transitions and history is retained.
+
+### 57.2 Runtime, Authorization, and Surface Evidence
+
+- `AccountIdentityMembership` is the existing implementation name for the approved
+  `AccountIdentityBinding` domain fact and is persisted in
+  `account_identity_memberships`.
+- PostgreSQL constraints include the Identity FK, OWNER-only check, lifecycle check, revocation
+  consistency check, and a partial unique index that allows at most one `ACTIVE` binding per
+  Account.
+- Initial onboarding creates Internal Identity plus OWNER binding within the existing
+  Unit-of-Work transaction. Retried onboarding returns the existing active binding target; a
+  binding persistence failure rolls back Identity creation.
+- `CurrentUserIdentityService` resolves authenticated `AccountContext → ACTIVE binding →
+Internal Identity` and fails closed when the active binding is absent.
+- `GET /api/v1/private/identity` is authenticated and returns only the product DTO
+  `{ identityId, status, createdAt }`. It does not accept an Identity ID as an authorization
+  input and does not expose binding IDs, credential data, or persistence records.
+- The authenticated private UI displays Identity ID, lifecycle status, and creation date only.
+  It provides no rename, delete, transfer, merge, split, Profile, Reference, or platform action.
+- Focused API tests prove Account A receives Identity A even when it supplies Identity B as an
+  ignored query value, while an authenticated Account without an active binding receives
+  authorization failure.
+
+### 57.3 Validation Evidence
+
+```text
+APPLICATION_PERSISTENCE_SECURITY_AND_PRIVATE_API_TESTS = PASS (18 tests)
+IDENTITY_INFRASTRUCTURE_TESTS = PASS (85 tests)
+DOMAIN_TESTS = PASS (144 tests)
+LINT = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS (2 tests)
+IMPORT_BOUNDARY_TEST = PASS (6 tests)
+TYPECHECK = PASS
+WEB_TYPECHECK = PASS
+OPENAPI_GENERATION = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+At the time of this initial implementation record, the focused PostgreSQL integration suite was
+invoked but skipped because both `DATABASE_URL` and `PCI_INTEGRATION_DATABASE` were unset on
+August 27, 2026. The later isolated real-PostgreSQL verification in `DEV-045` supersedes this
+verification status:
+
+```text
+REAL_POSTGRESQL_SURFACE_001_INTEGRATION = VERIFIED (see DEV-045)
+```
+
+The full-repository `git diff --check` reports three pre-existing, unrelated trailing-whitespace
+findings in product/governance documents. The SURFACE-001 scoped diff check passes.
+
+### 57.4 Preserved Boundaries
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+REQUEST = UNCHANGED
+RESERVATION = UNCHANGED
+CONTRACT = UNCHANGED
+
+PROFILE_MANAGEMENT = NOT IMPLEMENTED
+REFERENCE_MUTATION = NOT IMPLEMENTED
+EXTERNAL_PLATFORM = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+PUBLIC_API = NOT IMPLEMENTED
+PUBLIC_RESOLVER = NOT IMPLEMENTED
+QR = NOT IMPLEMENTED
+EVENT_OUTBOX = NOT IMPLEMENTED
+REAL_MONEY = NOT AUTHORIZED
+RECOVERY = NOT IMPLEMENTED
+ACCOUNT_MERGE = NOT IMPLEMENTED
+IDENTITY_MERGE_SPLIT = NOT IMPLEMENTED
+
+COMMITTED = NO
+```
+
+## 59. DEV-046 / SURFACE-002 — Private Commerce Profile Management
+
+> **Status**: Complete
+> **Change Unit**: `DEV-046` / `SURFACE-002`
+> **Date**: 2026-08-27
+
+### 59.1 Result
+
+```text
+SURFACE-002 = COMPLETE
+REAL_POSTGRESQL_SURFACE_002_INTEGRATION = VERIFIED
+```
+
+The implementation establishes the required private authorization chain:
+
+```text
+Authenticated Account
+        ↓
+ACTIVE AccountIdentityBinding
+        ↓
+Internal Identity
+        ↓
+Commerce Profile.owningIdentityId
+```
+
+Only the resolved current Identity can list, create, read, update, suspend, archive, or reactivate
+its own Commerce Profiles. Foreign Profile reads and mutations return the existing non-disclosing
+private not-found response. A client-supplied `identityId` query value does not change owner scope,
+and `owningIdentityId` is not accepted by the request DTO.
+
+### 59.2 Private Profile Management Surface
+
+```text
+LIST = IMPLEMENTED
+CREATE = IMPLEMENTED
+READ = IMPLEMENTED
+UPDATE displayName = IMPLEMENTED
+SUSPEND = IMPLEMENTED
+ARCHIVE = IMPLEMENTED
+REACTIVATE suspended Profile = IMPLEMENTED
+```
+
+The private API exposes authenticated-only `/api/v1/private/profiles` routes for those use cases.
+The product DTO returns Profile ID, display name, lifecycle, creation time, and update time; it
+does not return the owner Identity, Reference, relationship, platform, credential, or persistence
+internals. The authenticated web workspace supports the same authorized operations and never
+selects an authorization Identity in the client.
+
+Profile ID, `owningIdentityId`, Commerce Reference, and `createdAt` remain immutable. Lifecycle
+uses the existing canonical transitions:
+
+```text
+ACTIVE → SUSPENDED | ARCHIVED
+SUSPENDED → ACTIVE | ARCHIVED
+ARCHIVED → no reactivation
+```
+
+The canonical persistence write now uses the Profile's prior `updatedAt` as an explicit
+optimistic-concurrency condition for presentation and lifecycle updates. A same-version lifecycle
+race has exactly one durable success and one conflict; the real PostgreSQL suite verifies this
+database-backed behavior.
+
+### 59.3 Real PostgreSQL Evidence
+
+An isolated local PostgreSQL 17.10 instance was created in a temporary Podman container. The
+integration preflight and migrations passed before the real suite executed. The suite verified:
+
+- Profile create, read, display-name update, lifecycle persistence, and canonical rehydration;
+- same-version conditional lifecycle concurrency at the PostgreSQL boundary;
+- current-Account ownership enforcement and cross-account IDOR denial for read, update, suspend,
+  and archive;
+- owner-injection rejection and ignored arbitrary Identity query input;
+- missing active binding fail-closed through the private API.
+
+The temporary container was removed after verification. No connection URL, secret, credential,
+host, port, or container identifier is recorded.
+
+```text
+POSTGRESQL_VERSION = 17.10
+POSTGRESQL_INTEGRATION_PREFLIGHT = PASS
+POSTGRESQL_MIGRATION = PASS
+TEMPORARY_POSTGRESQL_CLEANUP = PASS
+```
+
+### 59.4 Validation Evidence
+
+```text
+IDENTITY_INFRASTRUCTURE_TESTS = PASS (86 tests)
+DOMAIN_TESTS = PASS (145 tests)
+PRIVATE_PROFILE_APPLICATION_AND_API_TESTS = PASS
+PRIVATE_PROFILE_PERSISTENCE_TESTS = PASS
+PRIVATE_PROFILE_POSTGRESQL_INTEGRATION = PASS (3 tests)
+TYPECHECK = PASS
+WEB_TYPECHECK = PASS
+LINT = PASS
+DATABASE_MIGRATION_CHECK = PASS
+MIGRATION_CONTRACT_TEST = PASS (2 tests)
+IMPORT_BOUNDARY_TEST = PASS (6 tests)
+OPENAPI_COMPATIBILITY = PASS
+GENERATED_WEB_CLIENT = PASS
+SCOPED_GIT_DIFF_CHECK = PASS
+```
+
+### 59.5 Preserved Boundaries
+
+```text
+VS01_COMPATIBILITY = PRESERVED
+MIGRATION = NOT IMPLEMENTED
+
+SURFACE-001 = PASS
+SURFACE-001-VERIFY = PASS
+RUNTIME-001 THROUGH RUNTIME-007 = PASS (existing evidence preserved)
+IDENTITY-001 THROUGH IDENTITY-003 = PASS (existing evidence preserved)
+
+SURFACE-003 = NOT STARTED
+PROFILE_OWNERSHIP_TRANSFER = NOT IMPLEMENTED
+COMMERCE_REFERENCE_MUTATION = NOT IMPLEMENTED
+EXTERNAL_PLATFORM_BINDING = NOT IMPLEMENTED
+COMMERCE_RELATIONSHIP_MUTATION = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+
+COMMITTED = NO
+```
+
+## 67. DEV-054 / SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-IMPLEMENTATION-002
+
+> **Change Unit**: `DEV-054` / `SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-IMPLEMENTATION-002`
+
+### 67.1 Result
+
+```text
+SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-IMPLEMENTATION-002 = BLOCKED
+SELF_SERVICE_EXTERNAL_RELATIONSHIP_MODEL = COMPOSITE_COMMAND
+```
+
+### 67.2 Implemented Boundary
+
+The authenticated private command accepts only `platform`, `platformAccountId`, and
+`commerceProfileId`. It resolves the current Identity from the active AccountIdentityBinding and
+revalidates ownership and lifecycle of the selected Profile inside the Unit of Work. It then creates
+or reuses the External Platform Account and creates one OWNER / SELF_DECLARED / PROPOSED Commerce
+Relationship. No Identity-to-External-Account ownership field or direct foreign key was introduced.
+
+The External Account and Relationship are separate durable facts in one PostgreSQL transaction. A
+new account rolls back if relationship creation fails; an existing account is preserved. Database
+uniqueness plus bounded repository conflict handling provide concurrent account deduplication and
+same-target relationship idempotency. Foreign account conflicts remain non-disclosing.
+
+### 67.3 Validation Evidence
+
+```text
+DOMAIN_AND_APPLICATION_TESTS = PASS
+API_RUNTIME_AND_OPENAPI = PASS
+OPENAPI_GENERATED_WEB_CLIENT = PASS
+USER_FACING_COPY_GOVERNANCE = PASS
+TYPECHECK = PASS
+WEB_TYPECHECK = PASS
+LINT = PASS
+DB_CHECK = PASS
+
+REAL_POSTGRESQL_SELF_SERVICE_EXTERNAL_RELATIONSHIP = BLOCKED (DATABASE_URL and PCI_INTEGRATION_DATABASE are not configured)
+REAL_BROWSER_SELF_SERVICE_FULL_JOURNEY = NOT_VERIFIED
+PILOT_READINESS = NOT_VERIFIED
+```
+
+### 67.4 Preserved Boundaries
+
+```text
+PLATFORM_VERIFIED = NOT IMPLEMENTED
+OAUTH = NOT IMPLEMENTED
+PLATFORM_API = NOT IMPLEMENTED
+VERIFICATION_RUNTIME = NOT IMPLEMENTED
+MANAGER = NOT IMPLEMENTED
+DELEGATED_MANAGER = NOT IMPLEMENTED
+PUBLIC_API = NOT AUTHORIZED
+PUBLIC_RESOLVER = NOT AUTHORIZED
+QR = NOT AUTHORIZED
+EVENT_OUTBOX = NOT AUTHORIZED
+REAL_MONEY = NOT AUTHORIZED
+MIGRATION = MINIMAL PROVENANCE + IDEMPOTENCY INDEX ONLY
+COMMITTED = NO
+```
+
+## 69. PCI-CONTROLLED-EXTERNAL-PILOT-READINESS-001
+
+> **Change Unit**: `PCI-CONTROLLED-EXTERNAL-PILOT-READINESS-001`
+> **Review Date**: 2026-08-28
+
+This is a Controlled External Pilot readiness review only. It does not authorize Pilot activation,
+Commercial Launch, Payment, Settlement, Refund, Platform Verification, OAuth, Manager, Marketplace,
+CRM, or Real Money.
+
+```text
+SELF_SERVICE_COMPLETE_CLOSURE = READY_FOR_PILOT
+CONTROLLED_EXTERNAL_PILOT_READINESS = BLOCKED
+PILOT_TECHNICAL_PACKAGE = READY
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT DECLARED
+REAL_MONEY_ENABLED = false
+TASK_ACCEPTANCE = PASS
+```
+
+The review confirms that Acceptance-004 supplied real Supabase Auth, real private API, real
+PostgreSQL, and real authenticated browser evidence for Account authentication, Identity
+onboarding, owned Commerce Profile, server-generated C号, External Platform Account, and
+SELF_DECLARED / OWNER / PROPOSED Relationship closure.
+
+Existing Request, Reservation, Contract, Completion, Earnings Projection, and Wallet Projection
+materials remain application, API, browser simulation, fixture, or operations-preparation evidence
+as applicable. They are not reported as real external Creator usage. Real Creator usage is still
+required before an actual controlled external Pilot can be considered executed.
+
+The minimum Pilot scope is limited to Founder-approved real Creators and coordinated Customers using
+existing Request, Reservation, or Contract patterns. Data must be isolated in a dedicated Pilot
+database and Auth environment with stable HTTPS, DNS/TLS, logs, audit/correlation retention, and
+backup/restore ownership. Participants may operate only their own private facts. `SELF_DECLARED`
+must remain distinct from `PLATFORM_VERIFIED`; `REAL_MONEY_ENABLED` remains exactly `false`.
+
+Current existing operational preflight evidence:
+
+```text
+pilot-preflight = BLOCKED
+pilot:activate:preflight = BLOCKED
+```
+
+The blockers are external deployment/environment inputs, named operator/cohort, evidence-retention
+ownership, and explicit Founder activation. The local Podman PostgreSQL Acceptance database is not
+a substitute for a Controlled External Pilot environment. No product implementation gap was
+authorized or created by this review.
+
+See `docs/08_Execution/23_Controlled_External_Pilot_Readiness_Review.md` for the scope, evidence
+matrix, observability contract, safety boundaries, success criteria, stop/exit criteria, Founder
+decisions, and exact next action.
+
+## 70. PCI-CONTROLLED-EXTERNAL-PILOT-PROVISIONING-001
+
+> **Change Unit**: `PCI-CONTROLLED-EXTERNAL-PILOT-PROVISIONING-001`
+> **Review Date**: 2026-08-28
+
+This provisioning task checks and prepares the external Pilot environment only. It does not
+activate or start a Pilot, change Commercial Launch, or enable Real Money.
+
+```text
+PILOT_ENVIRONMENT_PROVISIONED = BLOCKED
+PILOT_TECHNICAL_ENVIRONMENT = BLOCKED
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+REAL_MONEY_ENABLED = false
+PRODUCT_GAP = NOT_AUTHORIZED
+```
+
+The repository provisioning tooling is available: Podman/Compose, the external Pilot Compose
+definition, migration runner, `pilot-preflight`, activation preflight, deployment, and
+backup/restore scripts. No provisioning was executed because the current shell has no
+Founder/Operations inputs for the dedicated deployment target, Pilot PostgreSQL, Pilot Supabase
+project, domain/DNS/TLS, logging/audit, backup/restore ownership, Pilot ID/state, operator, or
+cohort.
+
+The local Acceptance PostgreSQL and Acceptance Supabase environment are not reused as Pilot
+resources. No Pilot container, database, Auth project, domain, TLS, state file, evidence directory,
+or real Creator session was created. Invoking the existing checks without inputs produced:
+
+```text
+pilot-preflight = BLOCKED
+pilot:activate:preflight = BLOCKED
+```
+
+The exact provisioning checklist and next command sequence are recorded in
+`docs/08_Execution/23_Controlled_External_Pilot_Readiness_Review.md`, section 15. Activation
+remains a separate Founder-authorized task.
+
+## 68. SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-003
+
+> **Change Unit**: `SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-003`
+
+### 68.1 Result
+
+```text
+SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-003 = BLOCKED
+SELF_SERVICE_COMPLETE_CLOSURE = NOT READY FOR PILOT
+TASK_ACCEPTANCE = BLOCKED
+REAL_POSTGRES_ACCEPTANCE = PASS
+AUTHENTICATED_BROWSER_FULL_JOURNEY = NOT_VERIFIED
+```
+
+### 68.2 PostgreSQL Environment
+
+Founder-approved local Podman PostgreSQL was started as an isolated acceptance dependency using
+`docker.io/library/postgres:17`, database `pci_integration`, and host port `55433`. Credentials and
+container identifiers are intentionally not recorded in project evidence.
+
+```text
+POSTGRESQL_VERSION = 17.10
+POSTGRESQL_INTEGRATION_PREFLIGHT = PASS
+POSTGRESQL_MIGRATION = PASS
+DATABASE_NAME_POLICY = PASS (dedicated name contains integration)
+TEMPORARY_CONTAINER = RUNNING FOR ACCEPTANCE
+```
+
+### 68.3 Acceptance Evidence
+
+```text
+IDENTITY_ONBOARDING_POSTGRES = PASS (6 tests)
+PROFILE_AND_COMMERCE_REFERENCE_POSTGRES = PASS (6 tests)
+PRIVATE_SELF_SERVICE_APPLICATION_AND_API = PASS (41 tests)
+CONTRACT_AND_MIGRATION_TESTS = PASS (22 tests)
+BUILD = PASS
+LINT = PASS
+WEB_TYPECHECK = PASS
+FIXTURE_BROWSER_REGRESSION = PASS (3 tests; not real authenticated evidence)
+```
+
+The real PostgreSQL run found and fixed one concurrency defect: a concurrent onboarding request
+could observe a committed historical binding decision after the competing transaction had created
+the ACTIVE binding. The recovery path now rechecks the ACTIVE binding while preserving fail-closed
+authorization for SUSPENDED, REVOKED, and HISTORICAL bindings. The focused PostgreSQL and
+application tests pass after the fix.
+
+The PostgreSQL relationship foundation test `SURFACE-005` has one unrelated fixture failure: its
+`createRelationshipForExistingAccount` helper does not create the external account supplied to it,
+so the repository correctly returns `ExternalPlatformAccountAlreadyExistsError` when the preceding
+fixture attempts to create the same `(platform, platformAccountId)`. This is recorded as an
+unrelated engineering regression and is not used as evidence for or against the self-service
+composite command.
+
+### 68.4 Gate Matrix
+
+```text
+REAL_POSTGRES_INTEGRATION = PASS
+IDENTITY_ONBOARDING = PASS
+PROFILE_PLUS_C号 = PASS
+EXTERNAL_ACCOUNT = PASS (focused application/API evidence)
+SELF_DECLARED_RELATIONSHIP = PASS (focused application/API evidence)
+TRANSACTIONALITY = PASS (PostgreSQL focused evidence)
+IDEMPOTENCY = PASS (PostgreSQL focused evidence)
+DUPLICATE_PRIVACY = PASS (application/API evidence)
+IDOR = PASS (application/API evidence)
+HORIZONTAL_ESCALATION = PASS (application/API evidence)
+CONCURRENCY = PASS (PostgreSQL onboarding/profile/reference evidence)
+PROVENANCE_SEMANTICS = PASS (application/API/contract evidence)
+PUBLIC_BOUNDARY = PRESERVED
+NO_UNAUTHORIZED_EXPANSION = PASS
+AUTHENTICATED_BROWSER_FULL_JOURNEY = NOT_VERIFIED
+```
+
+### 68.5 Browser and Remaining Blocker
+
+The real browser journey was attempted with `RUN_REAL_CR02_BROWSER_TESTS=1`, but the configured
+environment has no `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_TEST_EMAIL`, or
+`SUPABASE_TEST_PASSWORD`. The Playwright web server therefore cannot start the real authenticated
+configuration. The fixture-backed browser tests remain separate engineering regression evidence and
+must not be promoted to real authenticated acceptance.
+
+Founder/operator must provide a dedicated non-production Supabase project and test account, then run:
+
+```text
+$env:DATABASE_URL = '<PostgreSQL URL for the running pci_integration database>'
+$env:PCI_INTEGRATION_DATABASE = '1'
+$env:SUPABASE_URL = '<dedicated non-production Supabase URL>'
+$env:SUPABASE_ANON_KEY = '<dedicated non-production Supabase anon key>'
+$env:SUPABASE_TEST_EMAIL = '<dedicated acceptance user email>'
+$env:SUPABASE_TEST_PASSWORD = '<dedicated acceptance user password>'
+$env:RUN_REAL_CR02_BROWSER_TESTS = '1'
+pnpm exec playwright test tests/acceptance/browser/cr02-authenticated-creator-desk.spec.ts --project=system-edge
+```
+
+After real authentication is available, execute the full private self-service browser journey from
+registration/login through Identity, Profile, C号, External Platform Account, and OWNER /
+PROPOSED / SELF_DECLARED Relationship visibility. Only a passing real journey can change this task
+from `BLOCKED` to `COMPLETE`.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH ACCEPTANCE-003 EVIDENCE
+COMMITTED = NO
+```
+
+## 69. SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-004
+
+> **Change Unit**: `SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-004`
+
+### 69.1 Result
+
+```text
+SELF-DECLARED-EXTERNAL-ACCOUNT-AND-RELATIONSHIP-ACCEPTANCE-004 = COMPLETE
+SELF_SERVICE_COMPLETE_CLOSURE = READY_FOR_PILOT
+TASK_ACCEPTANCE = PASS
+```
+
+### 69.2 Real Authentication and PostgreSQL Evidence
+
+The acceptance used a dedicated non-production Supabase Auth environment through injected runtime
+variables. Credentials, keys, user identifiers, and tokens are intentionally excluded from this
+document and from tracked acceptance artifacts.
+
+```text
+REAL_SUPABASE_AUTH = PASS
+REAL_PRIVATE_API = PASS
+REAL_POSTGRESQL = PASS
+PCI_INTEGRATION_DATABASE = PASS
+RUN_REAL_CR02_BROWSER_TESTS = PASS
+FIXTURE_AUTHENTICATION = NOT_USED_FOR_ACCEPTANCE
+PRESEEDED_COMMERCIAL_FACTS = NOT_REQUIRED
+```
+
+The PostgreSQL preflight passed against the Founder-approved local Podman PostgreSQL acceptance
+database. Migration verification passed, and the server reported PostgreSQL `17.10`.
+
+### 69.3 Authenticated Browser Evidence
+
+The real `system-edge` Playwright acceptance passed all three tests with one worker:
+
+```text
+AUTHENTICATED_BROWSER_FULL_JOURNEY = PASS
+REAL_BROWSER_TESTS = 3 passed
+LOGIN_SESSION_RESTORE_AND_SIGN_OUT = PASS
+UNAUTHENTICATED_CREATOR_MANAGEMENT_REJECTED = PASS
+PRIVATE_SELF_SERVICE_COMMERCE_CLOSURE = PASS
+```
+
+The closure journey verified authenticated Supabase login, active identity onboarding, owned
+Commerce Profile creation, server-generated C号 display, External Platform Account declaration,
+and durable OWNER / PROPOSED / SELF_DECLARED Commerce Relationship visibility after reload. The UI
+did not imply platform verification.
+
+### 69.4 Acceptance Gate Matrix
+
+```text
+REAL_POSTGRES_INTEGRATION = PASS
+IDENTITY_ONBOARDING = PASS
+PROFILE_PLUS_C号 = PASS
+EXTERNAL_ACCOUNT = PASS
+SELF_DECLARED_RELATIONSHIP = PASS
+TRANSACTIONALITY = PASS
+IDEMPOTENCY = PASS
+DUPLICATE_PRIVACY = PASS
+IDOR = PASS
+HORIZONTAL_ESCALATION = PASS
+CONCURRENCY = PASS
+PROVENANCE_SEMANTICS = PASS
+PUBLIC_BOUNDARY = PRESERVED
+NO_UNAUTHORIZED_EXPANSION = PASS
+```
+
+The browser runtime wiring was corrected so all private Identity, Profile, C号, External Platform
+Account, Relationship, and composite-command routes use the same PostgreSQL composition. This was
+an infrastructure composition correction only; frozen product semantics were not changed.
+
+### 69.5 Engineering Preflight and Remaining Issues
+
+```text
+ENGINEERING_PREFLIGHT = FAIL
+UNRELATED_REGRESSION = PRESENT
+PRETTIER_BROAD_FORMAT_CHECK = FAIL (pre-existing issues in 42 files)
+SURFACE_005_FIXTURE_REGRESSION = PRESENT
+PRODUCT_ACCEPTANCE_BLOCKER = NONE
+```
+
+The Surface-005 fixture regression and existing broad Prettier issues are unrelated to the
+Acceptance-004 product closure and were not changed as part of this task.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH ACCEPTANCE-004 EVIDENCE
+COMMITTED = NO
+```
+
+## 71. PCI-OPERATING-CLOSURE-001 — Operating Closure Audit
+
+> **Change Unit**: `PCI-OPERATING-CLOSURE-001`
+> **Scope**: Operating-model discovery, loop audit, real-world gap analysis, and Founder decision input only
+> **Non-scope**: Deployment, Pilot activation/start, Commercial Launch, Real Money, or product implementation
+
+### 71.1 Result
+
+```text
+PCI-OPERATING-CLOSURE-001 = COMPLETE
+OPERATING_CLOSURE = NOT_VERIFIED
+CURRENT_OPERATING_MATURITY = L1
+SINGLE_TRANSACTION_LOOP = PRESENT (engineering and simulation evidence only)
+COMMERCE_EXECUTION_LOOP = NOT_VERIFIED (real-world evidence)
+```
+
+The audit preserves the authoritative self-service acceptance state. It does not change:
+
+```text
+SELF_SERVICE_COMPLETE_CLOSURE = READY_FOR_PILOT
+REAL_MONEY_ENABLED = false
+PILOT_ENVIRONMENT_PROVISIONED = BLOCKED
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+```
+
+### 71.2 Audit Outcome
+
+The audit found real runtime and authenticated browser evidence for Account, Identity, Commerce
+Profile, C号, and the Creator-declared External Platform Account relationship boundary. Existing
+Request, Reservation, Contract, Fulfillment, Completion, Earnings Projection, and Wallet
+Projection paths have application/API/browser simulation, fixture, or documented-operation evidence
+as applicable. They do not have real external Creator/Customer commerce evidence.
+
+The existing `Commerce Relationship` is a Commerce Profile-to-External Platform Account
+`OWNER / SELF_DECLARED / PROPOSED` declaration. It is not a Creator-to-Customer relationship and
+cannot close the relationship, reputation, or repeat-commerce loop.
+
+No runtime Customer relationship reuse, feedback/reputation eligibility, reputation, repeat
+opportunity, Opportunity Value, Allocation, or Effective Time Yield consumer was identified.
+These are recorded as proposed product gaps only; no implementation authorization is created.
+
+### 71.3 Next Decision Input
+
+The smallest proposed validation is one Founder-approved Creator, one Published Offer, one
+coordinated real Customer, one non-money Request, one Creator decision, and—if confirmed—one
+manual real-world fulfillment observation plus a reconstructible completion or permitted
+cancellation evidence package. It requires the separately provisioned external Pilot environment
+and Founder / authorized Operations owner decisions. It is not an activation authorization.
+
+The full operating model, evidence matrix, responsibility matrix, failure matrix, maturity
+criteria, gap classification, and stop conditions are recorded in:
+
+`docs/07_Product_Architecture/28_Operating_Closure_Model.md`.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH OPERATING CLOSURE AUDIT
+COMMITTED = NO
+```
+
+## 72. PCI-REAL-OPERATING-VALIDATION-ENVIRONMENT-001
+
+> **Change Unit**: `PCI-REAL-OPERATING-VALIDATION-ENVIRONMENT-001`
+> **Scope**: Isolated environment provisioning contract, tooling audit, and readiness verification
+> for one non-money Request Pattern operating-validation experiment
+> **Non-scope**: Experiment execution, Pilot activation/start, Commercial Launch, Real Money, or
+> product implementation
+
+### 72.1 Result
+
+```text
+PCI-REAL-OPERATING-VALIDATION-ENVIRONMENT-001 = BLOCKED
+OPERATING_VALIDATION_ID = OV-001
+VALIDATION_ENVIRONMENT = BLOCKED
+EXPERIMENT_STATUS = NOT_VERIFIED
+L2_EXPERIMENT = NOT_VERIFIED
+```
+
+This task preserves:
+
+```text
+SELF_SERVICE_COMPLETE_CLOSURE = READY_FOR_PILOT
+OPERATING_CLOSURE = NOT_VERIFIED
+CURRENT_OPERATING_MATURITY = L1
+PILOT_ENVIRONMENT_PROVISIONED = BLOCKED
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+REAL_MONEY_ENABLED = false
+```
+
+### 72.2 Existing Tooling and Verification
+
+The repository already supplies reusable controlled-environment tooling:
+
+```text
+pnpm pilot-preflight
+pnpm deploy:external-pilot
+pnpm pilot:backup-restore
+scripts/operations/pilot-activation-preflight.ps1
+scripts/operations/pilot-activation-control.ps1
+```
+
+No activation command was run. The activation tooling remains out of scope.
+
+On 2026-08-28, the non-mutating `pnpm pilot-preflight` command returned `BLOCKED` with exit code
+`1`. It found no injected Validation configuration or protected environment manifest. Missing
+required input included runtime/app state, isolated database and Supabase configuration, controlled
+HTTPS URLs/origins, Creator mapping, Operations access/operator, and audit retention configuration.
+The command emitted no secret values, did not deploy, did not migrate a database, and did not
+start an experiment.
+
+### 72.3 Blocking Inputs
+
+No protected Validation database, Supabase project/tenant, HTTPS domain, deployment target,
+database/backup/restore owner, logging/audit owner, state/audit location, source revision, Creator,
+Customer, or authorized Operator has been supplied for `OV-001`.
+
+```text
+VALIDATION_DATABASE != ACCEPTANCE_DATABASE = NOT_VERIFIED
+VALIDATION_AUTH != ACCEPTANCE_AUTH = NOT_VERIFIED
+VALIDATION_DATA != FIXTURE_DATA = NOT_VERIFIED
+DOMAIN_GAP = FOUNDER_INPUT_REQUIRED
+DEPLOYMENT_REVISION = BLOCKED
+OBSERVABILITY_GAP = BLOCKED
+BACKUP_RESTORE = NOT_VERIFIED
+```
+
+The local Acceptance PostgreSQL URL, Acceptance Supabase project/accounts, fixture data, test
+accounts, Development credentials, and production data remain prohibited from this experiment.
+
+### 72.4 Exact Next Gate
+
+Founder / Main Control or an authorized Operations owner must provide protected external resource
+inputs and a Founder-selected accepted source revision. The next permitted action is to run the
+existing `pnpm pilot-preflight` against that protected manifest, then provision and verify the
+isolated environment using existing deployment and backup/restore tooling. Only after those checks
+pass may Founder / Main Control separately authorize the specific non-money `OV-001` experiment.
+
+The detailed environment contract, evidence register, safety stops, money boundary, and readiness
+gate are recorded in:
+
+`docs/07_Product_Architecture/28_Operating_Closure_Model.md`.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH REAL OPERATING VALIDATION ENVIRONMENT AUDIT
+COMMITTED = NO
+```
+
+## 73. PCI-OV001-EXPERIMENT-AUTHORIZATION-001
+
+> **Change Unit**: `PCI-OV001-EXPERIMENT-AUTHORIZATION-001`
+> **Scope**: Founder / Operations input and authorization contract for one non-money `OV-001`
+> Request Pattern experiment
+> **Non-scope**: Pilot authorization/start, experiment execution, Commercial Launch, Real Money,
+> deployment, or product implementation
+
+### 73.1 Result
+
+```text
+PCI-OV001-EXPERIMENT-AUTHORIZATION-001 = COMPLETE
+OPERATING_VALIDATION_ID = OV-001
+OPERATING_VALIDATION_AUTHORIZATION_LIFECYCLE = AUTHORIZED
+OPERATING_VALIDATION_AUTHORIZED = true
+OV-001_EXECUTION_READINESS = NOT_READY
+OV-001_STARTED = false
+```
+
+Founder / Main Control authorizes the fixed non-money `OV-001` Request Pattern experiment. This
+authorization approves experiment purpose, scope, safety boundary, and non-money boundary only.
+It does not assert that participants, environment, source snapshot, or evidence resources exist.
+
+### 73.2 Deployment Revision and State Separation
+
+The existing external-pilot deployment script builds the checked-out workspace snapshot and does
+not itself require a Git commit, tag, or immutable revision. Current workspace state remains
+uncommitted. Founder must select the accepted source snapshot/revision before deployment evidence
+can be reconstructed. No Git action was performed by this task.
+
+```text
+DEPLOYMENT_REVISION = BLOCKED
+OV001_ENVIRONMENT_ISOLATION = BLOCKED
+VALIDATION_ENVIRONMENT = BLOCKED
+OV-001_EXECUTION_READINESS = NOT_READY
+OV-001_STARTED = false
+EXPERIMENT_STATUS = NOT_STARTED
+L2_EXPERIMENT = NOT_VERIFIED
+```
+
+### 73.3 Preserved Boundaries
+
+```text
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+REAL_MONEY_ENABLED = false
+PAYMENT = OFF
+SETTLEMENT = OFF
+REFUND = OFF
+PROVIDER = OFF
+```
+
+The full participant-role contract, evidence requirements, stop authority, outcome rule, gap
+classification boundary, and authorization-to-environment-to-execution gate are recorded in:
+
+`docs/07_Product_Architecture/28_Operating_Closure_Model.md`.
+
+### 73.4 Exact Next Gate
+
+Participants, environment, deployment source snapshot, evidence location, retention, and safety
+owners are execution inputs. They must be supplied and verified before
+`OV-001_EXECUTION_READINESS` can become `READY_FOR_EXECUTION`; their absence does not revoke
+`OPERATING_VALIDATION_AUTHORIZED = true`.
+
+Even when execution readiness passes, `OV-001_STARTED = false` remains until Founder / Main Control
+explicitly authorizes `START_OV001`. Pilot authorization/start, Commercial Launch, and Real Money
+remain separate and unchanged.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH OV-001 AUTHORIZATION CONTRACT
+COMMITTED = NO
+```
+
+## 74. PCI-OV001-AUTHORIZATION-GATE-CALIBRATION-002
+
+> **Change Unit**: `PCI-OV001-AUTHORIZATION-GATE-CALIBRATION-002`
+> **Authority**: Founder / Main Control
+> **Scope**: Governance calibration only; separates experiment authorization, execution readiness,
+> and experiment execution
+
+### 74.1 Result
+
+```text
+PCI-OV001-AUTHORIZATION-GATE-CALIBRATION-002 = COMPLETE
+
+OPERATING_VALIDATION_AUTHORIZATION_LIFECYCLE = AUTHORIZED
+OPERATING_VALIDATION_AUTHORIZED = true
+
+OV-001_EXECUTION_READINESS = NOT_READY
+OV-001_STARTED = false
+
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+REAL_MONEY_ENABLED = false
+```
+
+`AUTHORIZED` means Founder / Main Control approves the defined one-time `OV-001` experiment. It
+does not mean environment provisioned, participants selected, deployment complete, or experiment
+started. Missing execution resources block readiness only; they do not revoke authorization.
+
+### 74.2 Current Gate
+
+```text
+Authorization
+→ Execution Readiness
+→ START_OV001
+→ Evidence
+→ Completion
+```
+
+Execution readiness remains blocked pending the selected participants, dedicated environment,
+controlled HTTPS access, accepted source snapshot, protected evidence location/retention, and
+named safety owners. `START_OV001` remains a separate explicit Founder / Main Control action.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH OV-001 AUTHORIZATION GATE CALIBRATION
+COMMITTED = NO
+```
+
+## 75. PCI-OV001-EXECUTION-READINESS-001
+
+> **Change Unit**: `PCI-OV001-EXECUTION-READINESS-001`
+> **Authority**: Founder / Main Control
+> **Scope**: Review of OV-001 execution inputs, environment, ownership, evidence, deployment, and
+> operating procedures only
+> **Non-scope**: `START_OV001`, real participant sessions, Pilot start, Commercial Launch, Real
+> Money, deployment, migrations, backup/restore execution, or product implementation
+
+### 75.1 Result
+
+```text
+PCI-OV001-EXECUTION-READINESS-001 = COMPLETE
+
+OPERATING_VALIDATION_AUTHORIZATION_LIFECYCLE = AUTHORIZED
+OPERATING_VALIDATION_AUTHORIZED = true
+
+OV-001_EXECUTION_READINESS = NOT_READY
+OV-001_STARTED = false
+EXPERIMENT_STATUS = NOT_STARTED
+
+PILOT_AUTHORIZED = NOT_VERIFIED
+PILOT_STARTED = NOT_VERIFIED
+COMMERCIAL_LAUNCH = NOT_DECLARED
+REAL_MONEY_ENABLED = false
+```
+
+Founder authorization remains valid. The readiness decision is `NOT_READY` because execution
+inputs and safe, auditable operating evidence are absent; this does not revoke authorization.
+
+### 75.2 Reviewed Evidence
+
+On 2026-08-28, the non-mutating existing command:
+
+```text
+pnpm pilot-preflight
+```
+
+ran without an OV-001 protected environment file or injected runtime configuration and returned:
+
+```text
+PILOT_PREFLIGHT = BLOCKED
+EXIT_CODE = 1
+```
+
+It found no runtime/app configuration, dedicated database or Supabase configuration, controlled
+HTTPS URLs/origins, Creator mapping, Operations access/operator, or audit-retention configuration.
+It emitted no secret values and performed no deployment, migration, backup/restore, Pilot action,
+or OV-001 start.
+
+Existing tooling is available but unexecuted for OV-001:
+
+```text
+pnpm deploy:external-pilot
+pnpm pilot:backup-restore
+pnpm smoke:deployment
+```
+
+The deployment tooling builds the checked-out workspace and does not itself require a Git commit,
+tag, or immutable artifact. No Founder-selected accepted reconstructible source snapshot is
+recorded, so:
+
+```text
+SOURCE_REVISION_READINESS = BLOCKED
+```
+
+### 75.3 Blocking Readiness Items
+
+```text
+CREATOR_READINESS = BLOCKED
+CUSTOMER_READINESS = BLOCKED
+OPERATOR_READINESS = BLOCKED
+EVIDENCE_OWNER_READINESS = BLOCKED
+STOP_AUTHORITY_READINESS = BLOCKED
+OFFER_READINESS = BLOCKED
+CUSTOMER_ENTRY_AND_REQUEST_PATH = NOT_VERIFIED
+
+VALIDATION_ENVIRONMENT = BLOCKED
+OV001_ENVIRONMENT_ISOLATION = NOT_VERIFIED
+OV001_DATABASE != ACCEPTANCE_DATABASE = NOT_VERIFIED
+OV001_AUTH != ACCEPTANCE_AUTH = NOT_VERIFIED
+OV001_DATA != FIXTURE_DATA = NOT_VERIFIED
+
+POSTGRES_READINESS = BLOCKED
+SUPABASE_AUTH_READINESS = BLOCKED
+DOMAIN_HTTPS_READINESS = BLOCKED
+CORS_COOKIE_SESSION_READINESS = NOT_VERIFIED
+SECRETS_READINESS = BLOCKED
+OBSERVABILITY_READINESS = NOT_VERIFIED
+EVIDENCE_STORAGE_READINESS = BLOCKED
+FULFILLMENT_PROCEDURE_READINESS = BLOCKED
+COMPLETION_PROCEDURE_READINESS = BLOCKED
+COMMERCE_FACT_RECONSTRUCTION_READINESS = NOT_VERIFIED
+SAFETY_READINESS = NOT_VERIFIED
+MONEY_BOUNDARY_READINESS = NOT_VERIFIED
+BACKUP_RESTORE = NOT_VERIFIED
+```
+
+No real Creator, Customer, Offer, approved handoff, named Operator, Evidence Owner, Stop
+Authority, protected deployment target, dedicated PostgreSQL, dedicated Supabase Auth, controlled
+HTTPS endpoint, isolated audit/evidence store, source snapshot, or operating procedure has been
+provided. No protected secret values are recorded in this execution record.
+
+### 75.4 Classification and Non-Blocking Items
+
+```text
+PARTICIPANT_AND_OFFER = OPERATIONS_GAP
+VALIDATION_ENVIRONMENT = ENVIRONMENT_GAP
+EVIDENCE_AND_PROCEDURES = GOVERNANCE_GAP
+PRODUCT_GAP = NOT_VERIFIED
+BUSINESS_MODEL_GAP = NOT_VERIFIED
+EXTERNAL_DEPENDENCY = NOT_VERIFIED
+
+PRODUCT_EXECUTION_READINESS = NOT_VERIFIED
+ENGINEERING_PREFLIGHT = NOT_VERIFIED
+PRETTIER_42_FILE_ISSUE = NON_BLOCKING
+SURFACE_005_FIXTURE_REGRESSION = NON_BLOCKING
+```
+
+No product change is proposed or authorized. The two existing engineering issues do not determine
+OV-001 readiness unless they directly block the selected deployment, Request path, or audit
+reconstruction.
+
+### 75.5 Exact Next Gate
+
+Founder / authorized Operations must provide and verify the execution input record:
+
+```text
+Creator
+Customer
+Operator
+Evidence Owner
+Stop Authority
+One Creator-owned Request-compatible Offer
+Approved Customer handoff
+Deployment target and accepted source snapshot
+Dedicated Validation PostgreSQL and owner
+Dedicated Validation Supabase Auth and owner
+Controlled HTTPS domain/access and DNS/TLS owner
+Protected configuration injection
+Isolated logs/audit and evidence location/retention
+Fulfillment, Completion/Cancellation, dispute, and closeout procedure
+```
+
+Then run the existing preflight against the protected configuration, provision and verify the
+isolated environment, verify deployment/health/readiness/backup-restore/evidence reconstruction,
+and perform a new readiness review. Only if every mandatory readiness item is `READY` may:
+
+```text
+OV-001_EXECUTION_READINESS = READY_FOR_EXECUTION
+```
+
+Even then:
+
+```text
+OV-001_STARTED = false
+```
+
+until Founder / Main Control separately authorizes `START_OV001`.
+
+```text
+DOCUMENTATION_STATUS = UPDATED WITH OV-001 EXECUTION READINESS REVIEW
+COMMITTED = NO
 ```

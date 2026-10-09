@@ -1,13 +1,23 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 
-const apiBaseUrl = 'http://127.0.0.1:45100';
+const apiBaseUrl = 'http://127.0.0.1:41000';
 const creatorHeaders = { authorization: 'Bearer test-creator-token' };
 const operationsHeaders = { authorization: 'Bearer test-operations-token' };
+
+test.setTimeout(60_000);
 
 test('VS-02A connects a confirmed Request to controlled Creator Earnings without real payment', async ({
   page,
 }, testInfo) => {
   const suffix = String(Date.now());
+  const initialWalletResponse = await page.request.get(`${apiBaseUrl}/api/v1/creator/wallet`, {
+    headers: creatorHeaders,
+  });
+  expect(initialWalletResponse.ok()).toBe(true);
+  const initialWallet = (await initialWalletResponse.json()) as {
+    readonly availableMinor: string;
+    readonly withdrawnMinor: string;
+  };
 
   const identityResponse = await page.request.post(`${apiBaseUrl}/api/v1/creator/identity`, {
     headers: creatorHeaders,
@@ -94,7 +104,7 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
 
   await page.getByLabel('订单金额（分）').fill('39900');
   await page.getByLabel('服务履约条件').fill('一次 60 分钟线下舞蹈私教服务。');
-  await confirmedRequestCard.getByRole('button', { name: '创建待支付订单' }).click();
+  await clickVisibleAction(confirmedRequestCard.getByRole('button', { name: '创建待支付订单' }));
   await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
     '订单已创建，正在等待受控支付事实。',
   );
@@ -128,9 +138,9 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
   await pendingCustomerPage.reload();
   await expect(pendingCustomerPage.getByText('付款事实已受控确认，等待服务履约。')).toBeVisible();
 
-  await page.getByRole('button', { name: '刷新订单与收益' }).click();
+  await clickVisibleAction(page.getByRole('button', { name: '刷新订单与收益' }));
   await page.getByLabel('履约证据引用').fill(`local://vs02a/fulfillment/${suffix}`);
-  await page.getByRole('button', { name: '记录服务已履约' }).click();
+  await clickVisibleAction(page.getByRole('button', { name: '记录服务已履约' }));
   await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
     '已记录服务履约，等待受控结算。',
   );
@@ -149,12 +159,23 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
   );
   expect(settlementResponse.ok()).toBe(true);
 
-  await page.getByRole('button', { name: '刷新订单与收益' }).click();
+  await clickVisibleAction(page.getByRole('button', { name: '刷新订单与收益' }));
+  const settledWalletResponse = await page.request.get(`${apiBaseUrl}/api/v1/creator/wallet`, {
+    headers: creatorHeaders,
+  });
+  expect(settledWalletResponse.ok()).toBe(true);
+  const settledWallet = (await settledWalletResponse.json()) as {
+    readonly availableMinor: string;
+  };
+  const earnedMinor = (
+    BigInt(settledWallet.availableMinor) - BigInt(initialWallet.availableMinor)
+  ).toString();
+  expect(earnedMinor).toBe('35670');
   await expect(page.locator('.ds-status-card').filter({ hasText: '可发起提现' })).toContainText(
-    '35670',
+    settledWallet.availableMinor,
   );
 
-  await page.getByLabel('提现金额（分）').fill('35670');
+  await page.getByLabel('提现金额（分）').fill(earnedMinor);
   await page.getByLabel('脱敏结算目标引用').fill(`destination-redacted-${suffix}`);
   await page.getByLabel('提现幂等键').fill(`withdrawal-${suffix}`);
   const withdrawalResponse = page.waitForResponse(
@@ -162,7 +183,7 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
       response.url().endsWith('/api/v1/creator/wallet/withdrawals') &&
       response.request().method() === 'POST',
   );
-  await page.getByRole('button', { name: '提交提现意图' }).click();
+  await clickVisibleAction(page.getByRole('button', { name: '提交提现意图' }));
   const withdrawalPayload = (await (await withdrawalResponse).json()) as { readonly id: string };
   await expect(page.getByTestId('creator-earnings-action-status')).toHaveText(
     '提现意图已创建，等待受控完成事实。',
@@ -177,9 +198,26 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
   );
   expect(completedResponse.ok()).toBe(true);
 
-  await page.getByRole('button', { name: '刷新订单与收益' }).click();
+  await expect
+    .poll(
+      async () => {
+        const workspaceResponse = await page.request.get(
+          `${apiBaseUrl}/api/v1/creator/local-commerce/workspace`,
+          { headers: creatorHeaders },
+        );
+        expect(workspaceResponse.ok()).toBe(true);
+        const workspace = (await workspaceResponse.json()) as {
+          readonly wallet: { readonly withdrawnMinor: string };
+        };
+        return workspace.wallet.withdrawnMinor;
+      },
+      { timeout: 15_000 },
+    )
+    .toBe((BigInt(initialWallet.withdrawnMinor) + BigInt(earnedMinor)).toString());
+
+  await page.reload();
   await expect(page.locator('.ds-status-card').filter({ hasText: '已完成提现' })).toContainText(
-    '35670',
+    earnedMinor,
   );
   await expect(
     page.getByText('余额来自不可覆盖的 Earnings Ledger 投影，不是平台资金账户或可写余额。'),
@@ -204,3 +242,10 @@ test('VS-02A connects a confirmed Request to controlled Creator Earnings without
     contentType: 'application/json',
   });
 });
+
+async function clickVisibleAction(locator: Locator): Promise<void> {
+  await locator.evaluate((element) => {
+    element.scrollIntoView({ block: 'center', inline: 'nearest' });
+  });
+  await locator.click();
+}

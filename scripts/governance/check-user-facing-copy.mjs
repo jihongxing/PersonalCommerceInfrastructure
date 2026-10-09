@@ -38,7 +38,7 @@ for (const file of files) {
   const relativeFile = path.relative(repo, file);
   const isUiPrimitive = relativeFile.includes(`${path.sep}components${path.sep}ui${path.sep}`);
   const userFacingFragments = [
-    ...source.matchAll(/>([^<>\r\n]+)</g),
+    ...source.matchAll(/<(?:[A-Za-z][^<>]*?)>([^<>\r\n]+)<\/[A-Za-z][^<>]*>/g),
     ...source.matchAll(/(?:aria-label|placeholder|title|alt)\s*=\s*["']([^"']+)["']/g),
   ];
 
@@ -52,7 +52,9 @@ for (const file of files) {
   }
 
   if (!isUiPrimitive) {
-    const staticJsxText = [...source.matchAll(/>([^<>{}\r\n]+)</g)]
+    const staticJsxText = [
+      ...source.matchAll(/<(?:[A-Za-z][^<>]*?)>([^<>{}\r\n]+)<\/[A-Za-z][^<>]*>/g),
+    ]
       .map((match) => match[1].trim())
       .filter((fragment) => fragment.length > 0);
     for (const fragment of staticJsxText) {

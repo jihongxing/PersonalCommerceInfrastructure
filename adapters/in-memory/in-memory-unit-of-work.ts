@@ -1,4 +1,5 @@
 import type { UnitOfWork, UnitOfWorkScope } from '../../applications/core/ports/unit-of-work.js';
+import type { AccountIdentityMembershipRepository } from '../../applications/account-identity-membership/account-identity-membership-repositories.js';
 import type { ProductEventStore } from '../../applications/core/ports/product-event-store.js';
 import type { DistributionAssetRepository } from '../../applications/distribution/distribution-repositories.js';
 import type {
@@ -17,6 +18,12 @@ import type {
   ContractRepository,
   ContractScopeVersionRepository,
 } from '../../applications/contract-commerce/contract-repositories.js';
+import type { IdentityRepository } from '../../applications/identity/identity-repositories.js';
+import type { LegacySubjectMappingRepository } from '../../applications/legacy-subject-mapping/legacy-subject-mapping-repositories.js';
+import type { CommerceProfileRepository } from '../../modules/identity-infrastructure/commerce-profile-repository.js';
+import type { CommerceReferenceRepository } from '../../modules/identity-infrastructure/commerce-reference-repository.js';
+import type { ExternalPlatformAccountRepository } from '../../modules/identity-infrastructure/external-platform-account-repository.js';
+import type { CommerceRelationshipRepository } from '../../modules/identity-infrastructure/commerce-relationship-repository.js';
 
 import type { TransactionParticipant } from './transaction-participant.js';
 
@@ -27,6 +34,13 @@ export class InMemoryUnitOfWork implements UnitOfWork {
     private readonly participants: readonly TransactionParticipant[],
     private readonly productEventStore: ProductEventStore,
     private readonly repositories: {
+      readonly formalIdentityRepository?: IdentityRepository;
+      readonly commerceProfileRepository?: CommerceProfileRepository;
+      readonly commerceReferenceRepository?: CommerceReferenceRepository;
+      readonly externalPlatformAccountRepository?: ExternalPlatformAccountRepository;
+      readonly commerceRelationshipRepository?: CommerceRelationshipRepository;
+      readonly legacySubjectMappingRepository?: LegacySubjectMappingRepository;
+      readonly accountIdentityMembershipRepository?: AccountIdentityMembershipRepository;
       readonly identityRepository?: CommerceIdentityRepository;
       readonly capabilityRepository?: CapabilityRepository;
       readonly offeringRepository?: OfferingRepository;

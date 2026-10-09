@@ -1,8 +1,53 @@
 import type { AuthContextProvider } from '../../applications/core/ports/auth-context-provider.js';
+import { createIdentityProfileAuthorizationPolicy } from '../../applications/core/identity-profile-authorization-policy.js';
+import { createIdentityProfileContextResolver } from '../../applications/core/identity-profile-context.js';
 import {
   createCreatorIdentityService,
   type CreatorIdentityService,
 } from '../../applications/creator-identity/creator-identity-service.js';
+import {
+  createAccountIdentityMembershipService,
+  type AccountIdentityMembershipService,
+} from '../../applications/account-identity-membership/account-identity-membership-service.js';
+import {
+  createCurrentUserIdentityService,
+  type CurrentUserIdentityService,
+} from '../../applications/account-identity-membership/current-user-identity-service.js';
+import {
+  createSelfServiceIdentityInitializationService,
+  type SelfServiceIdentityInitializationService,
+} from '../../applications/account-identity-membership/self-service-identity-initialization-service.js';
+import {
+  createCommerceProfileService,
+  type CommerceProfileService,
+} from '../../applications/commerce-profile/commerce-profile-service.js';
+import { createCanonicalCommerceProfileService } from '../../applications/canonical-commerce-profile/canonical-commerce-profile-service.js';
+import { UuidCommerceProfileIdGenerator } from '../../applications/canonical-commerce-profile/uuid-commerce-profile-id-generator.js';
+import { CsprngCommerceReferenceGenerator } from '../../applications/canonical-commerce-reference/commerce-reference-generator.js';
+import type {
+  CommerceRelationshipId,
+  ExternalPlatformAccountId,
+} from '../../modules/identity-infrastructure/external-platform-contract.js';
+import {
+  createPrivateCommerceProfileService,
+  type PrivateCommerceProfileService,
+} from '../../applications/private-commerce-profile/private-commerce-profile-service.js';
+import {
+  createPrivateCommerceReferenceService,
+  type PrivateCommerceReferenceService,
+} from '../../applications/private-commerce-reference/private-commerce-reference-service.js';
+import {
+  createPrivateExternalPlatformAccountService,
+  type PrivateExternalPlatformAccountService,
+} from '../../applications/private-external-platform-account/private-external-platform-account-service.js';
+import {
+  createPrivateCommerceRelationshipService,
+  type PrivateCommerceRelationshipService,
+} from '../../applications/private-commerce-relationship/private-commerce-relationship-service.js';
+import {
+  createPrivateSelfDeclaredExternalRelationshipService,
+  type PrivateSelfDeclaredExternalRelationshipService,
+} from '../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import {
   createServiceOfferingService,
   type ServiceOfferingService,
@@ -19,6 +64,13 @@ import type { Offering } from '../../modules/service-offering/offering.js';
 import type { DistributionAsset } from '../../modules/distribution/distribution-asset.js';
 import { InMemoryAuthContextProvider } from '../auth/testing/in-memory-auth-context-provider.js';
 import { InMemoryEntityCollectionRepository } from './in-memory-entity-collection-repository.js';
+import { InMemoryIdentityRepository } from './in-memory-identity-repository.js';
+import { InMemoryAccountIdentityMembershipRepository } from './in-memory-account-identity-membership-repository.js';
+import { InMemoryCommerceProfileRepository } from './in-memory-commerce-profile-repository.js';
+import { InMemoryCanonicalCommerceProfileRepository } from './in-memory-canonical-commerce-profile-repository.js';
+import { InMemoryCanonicalCommerceReferenceRepository } from './in-memory-canonical-commerce-reference-repository.js';
+import { InMemoryExternalPlatformAccountRepository } from './in-memory-external-platform-account-repository.js';
+import { InMemoryCommerceRelationshipRepository } from './in-memory-commerce-relationship-repository.js';
 import { SequentialIdGenerator } from './sequential-id-generator.js';
 import { InMemoryProductEventStore } from './in-memory-product-event-store.js';
 import { InMemoryUnitOfWork } from './in-memory-unit-of-work.js';
@@ -70,6 +122,15 @@ import { InMemoryContractRepository } from './in-memory-contract-repository.js';
 
 export interface CreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
+  readonly accountIdentityMembershipService: AccountIdentityMembershipService;
+  readonly currentUserIdentityService: CurrentUserIdentityService;
+  readonly selfServiceIdentityInitializationService: SelfServiceIdentityInitializationService;
+  readonly commerceProfileService: CommerceProfileService;
+  readonly privateCommerceProfileService: PrivateCommerceProfileService;
+  readonly privateCommerceReferenceService: PrivateCommerceReferenceService;
+  readonly privateExternalPlatformAccountService: PrivateExternalPlatformAccountService;
+  readonly privateCommerceRelationshipService: PrivateCommerceRelationshipService;
+  readonly privateSelfDeclaredExternalRelationshipService: PrivateSelfDeclaredExternalRelationshipService;
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
@@ -88,6 +149,21 @@ export interface CreatorIdentityComposition {
 export function createInMemoryCreatorIdentityComposition(
   publicOrigin = 'http://127.0.0.1:3001',
 ): CreatorIdentityComposition {
+  const formalIdentityRepository = new InMemoryIdentityRepository();
+  const accountIdentityMembershipRepository = new InMemoryAccountIdentityMembershipRepository();
+  const commerceProfileRepository = new InMemoryCommerceProfileRepository();
+  const canonicalCommerceProfileRepository = new InMemoryCanonicalCommerceProfileRepository({
+    exists: async (identityId) =>
+      (await formalIdentityRepository.findById(identityId)) !== undefined,
+  });
+  const canonicalCommerceReferenceRepository = new InMemoryCanonicalCommerceReferenceRepository(
+    canonicalCommerceProfileRepository,
+  );
+  const externalPlatformAccountRepository = new InMemoryExternalPlatformAccountRepository();
+  const commerceRelationshipRepository = new InMemoryCommerceRelationshipRepository(
+    externalPlatformAccountRepository,
+    canonicalCommerceProfileRepository,
+  );
   const identityRepository = new InMemoryEntityCollectionRepository<CommerceIdentity>(
     (identity) => identity.creatorId,
     (identity) => identity.creatorId,
@@ -112,6 +188,13 @@ export function createInMemoryCreatorIdentityComposition(
   const productEventStore = new InMemoryProductEventStore();
   const unitOfWork = new InMemoryUnitOfWork(
     [
+      formalIdentityRepository,
+      accountIdentityMembershipRepository,
+      commerceProfileRepository,
+      canonicalCommerceProfileRepository,
+      canonicalCommerceReferenceRepository,
+      externalPlatformAccountRepository,
+      commerceRelationshipRepository,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -125,6 +208,12 @@ export function createInMemoryCreatorIdentityComposition(
     ],
     productEventStore,
     {
+      formalIdentityRepository,
+      accountIdentityMembershipRepository,
+      commerceProfileRepository: canonicalCommerceProfileRepository,
+      commerceReferenceRepository: canonicalCommerceReferenceRepository,
+      externalPlatformAccountRepository,
+      commerceRelationshipRepository,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -143,6 +232,81 @@ export function createInMemoryCreatorIdentityComposition(
     eventStore: productEventStore,
     idGenerator: new SequentialIdGenerator('event'),
   });
+  const accountIdentityMembershipService = createAccountIdentityMembershipService({
+    membershipRepository: accountIdentityMembershipRepository,
+    unitOfWork,
+    identityIdGenerator: new SequentialIdGenerator('identity'),
+    membershipIdGenerator: new SequentialIdGenerator('membership'),
+    clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+  });
+  const currentUserIdentityService = createCurrentUserIdentityService({
+    identityRepository: formalIdentityRepository,
+    membershipRepository: accountIdentityMembershipRepository,
+  });
+  const selfServiceIdentityInitializationService = createSelfServiceIdentityInitializationService({
+    identityRepository: formalIdentityRepository,
+    membershipRepository: accountIdentityMembershipRepository,
+    unitOfWork,
+    identityIdGenerator: new SequentialIdGenerator('identity'),
+    membershipIdGenerator: new SequentialIdGenerator('membership'),
+    clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+  });
+  const identityProfileAuthorizationPolicy = createIdentityProfileAuthorizationPolicy({
+    contextResolver: createIdentityProfileContextResolver({
+      identityRepository: formalIdentityRepository,
+      commerceProfileRepository,
+      accountIdentityMembershipRepository,
+    }),
+  });
+  const commerceProfileService = createCommerceProfileService({
+    commerceProfileRepository,
+    authorizationPolicy: identityProfileAuthorizationPolicy,
+    commerceProfileIdGenerator: new SequentialIdGenerator('commerce-profile'),
+    clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+  });
+  const canonicalCommerceProfileService = createCanonicalCommerceProfileService({
+    repository: canonicalCommerceProfileRepository,
+    idGenerator: new UuidCommerceProfileIdGenerator(),
+    clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+  });
+  const privateCommerceProfileService = createPrivateCommerceProfileService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceProfileIdGenerator: new UuidCommerceProfileIdGenerator(),
+    commerceReferenceGenerator: new CsprngCommerceReferenceGenerator(),
+    clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+    unitOfWork,
+  });
+  const privateCommerceReferenceService = createPrivateCommerceReferenceService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceReferenceRepository: canonicalCommerceReferenceRepository,
+  });
+  const privateExternalPlatformAccountService = createPrivateExternalPlatformAccountService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceRelationshipRepository,
+    externalPlatformAccountRepository,
+  });
+  const privateCommerceRelationshipService = createPrivateCommerceRelationshipService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceRelationshipRepository,
+    externalPlatformAccountRepository,
+  });
+  const privateSelfDeclaredExternalRelationshipService =
+    createPrivateSelfDeclaredExternalRelationshipService({
+      currentUserIdentityService,
+      commerceProfileService: canonicalCommerceProfileService,
+      unitOfWork,
+      externalPlatformAccountIdGenerator: {
+        generate: () => `external-account-${crypto.randomUUID()}` as ExternalPlatformAccountId,
+      },
+      commerceRelationshipIdGenerator: {
+        generate: () => `relationship-${crypto.randomUUID()}` as CommerceRelationshipId,
+      },
+      clock: new FixedClock('2026-08-12T00:00:00.000Z'),
+    });
   const notificationAdapter = new InMemoryNotificationAdapter();
   const idGenerator = new SequentialIdGenerator('offering');
   const paidCommerceService = createPaidCommerceService({
@@ -215,6 +379,15 @@ export function createInMemoryCreatorIdentityComposition(
     generateId: () => `operations-audit-${Date.now()}-${Math.random().toString(16).slice(2)}`,
   });
   return {
+    accountIdentityMembershipService,
+    currentUserIdentityService,
+    selfServiceIdentityInitializationService,
+    commerceProfileService,
+    privateCommerceProfileService,
+    privateCommerceReferenceService,
+    privateExternalPlatformAccountService,
+    privateCommerceRelationshipService,
+    privateSelfDeclaredExternalRelationshipService,
     authContextProvider: new InMemoryAuthContextProvider([
       {
         accessToken: 'test-creator-token',

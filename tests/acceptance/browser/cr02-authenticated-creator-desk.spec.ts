@@ -68,7 +68,63 @@ test.describe('CR-02 real Authenticated Creator Desk', () => {
     await page.goto('/creator');
     await expect(page.getByRole('heading', { name: '登录你的创作者工作台' })).toBeVisible();
 
-    const response = await request.get('http://127.0.0.1:45100/api/v1/creator/identity');
+    const response = await request.get('http://127.0.0.1:41000/api/v1/creator/identity');
     expect(response.status()).toBe(401);
+  });
+
+  test('completes the private self-service commerce closure', async ({ page }) => {
+    await page.goto('/creator');
+    await expect(page.getByRole('heading', { name: '登录你的创作者工作台' })).toBeVisible();
+    await page.getByLabel('邮箱').fill(process.env.SUPABASE_TEST_EMAIL ?? '');
+    await page.getByLabel('密码').fill(process.env.SUPABASE_TEST_PASSWORD ?? '');
+    await page.getByRole('button', { name: '登录' }).click();
+
+    await expect(page.getByRole('heading', { name: '我的商业主页' })).toBeVisible({
+      timeout: 20_000,
+    });
+    const privateIdentityWorkspace = page.locator('#private-identity-heading').locator('..');
+    await expect(privateIdentityWorkspace).toContainText('ACTIVE', { timeout: 20_000 });
+
+    const profileName = `Acceptance 004 ${Date.now()}`;
+    const profileWorkspace = page.locator('#private-commerce-profiles-heading').locator('..');
+    const profileNameInput = page.locator('#new-commerce-profile-display-name');
+    await expect(profileNameInput).toBeVisible();
+    await profileNameInput.fill(profileName);
+    await profileWorkspace.getByRole('button', { name: 'Create Profile' }).click();
+    await expect(profileWorkspace).toContainText('Commerce Profile created.');
+
+    const ownedProfileRow = profileWorkspace.locator('li').filter({ hasText: profileName }).last();
+    await expect(ownedProfileRow).toContainText(/C号/);
+
+    const reference = ownedProfileRow.locator('code').first();
+    await expect(reference).toHaveText(/^[3479ACDEFHJKMNPQRTVWXY]{6}(?:-[3479ACDEFHJKMNPQRTVWXY]{6}){2}$/);
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: '我的商业主页' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.locator('#private-identity-heading').locator('..')).toContainText('ACTIVE', {
+      timeout: 20_000,
+    });
+
+    const externalAccountId = `acceptance-004-${Date.now()}`;
+    await page.getByRole('textbox', { name: 'Platform', exact: true }).fill('acceptance-platform');
+    await page
+      .getByRole('textbox', { name: 'Platform Account ID', exact: true })
+      .fill(externalAccountId);
+    await page.getByRole('button', { name: 'Declare Account & Relationship' }).click();
+
+    await expect(page.getByText('External account declared. Relationship status: Proposed. Provenance: Self-declared.')).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('heading', { name: '我的商业主页' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByRole('heading', { name: 'My Commerce Relationships' })).toBeVisible();
+
+    const relationship = page.locator('li').filter({ hasText: externalAccountId }).last();
+    await expect(relationship).toContainText('Role: Owner');
+    await expect(relationship).toContainText('Relationship Status: Proposed');
+    await expect(relationship).toContainText('Provenance: Self-declared');
+    await expect(relationship).not.toContainText(/Verified|Platform-verified/i);
   });
 });

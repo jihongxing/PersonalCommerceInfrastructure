@@ -6,6 +6,19 @@ import { randomUUID } from 'node:crypto';
 import { createInMemoryCreatorIdentityComposition } from '../../../adapters/in-memory/creator-identity-composition.js';
 import { registerApiErrorHandling } from '../../../adapters/transport/http/api-error-handler.js';
 import { registerCreatorIdentityRoutes } from '../../../adapters/transport/http/creator-identity-routes.js';
+import { registerPrivateIdentityRoutes } from '../../../adapters/transport/http/private-identity-routes.js';
+import { registerPrivateCommerceProfileRoutes } from '../../../adapters/transport/http/private-commerce-profile-routes.js';
+import { registerPrivateCommerceReferenceRoutes } from '../../../adapters/transport/http/private-commerce-reference-routes.js';
+import { registerPrivateExternalPlatformAccountRoutes } from '../../../adapters/transport/http/private-external-platform-account-routes.js';
+import { registerPrivateCommerceRelationshipRoutes } from '../../../adapters/transport/http/private-commerce-relationship-routes.js';
+import { registerPrivateSelfDeclaredExternalRelationshipRoutes } from '../../../adapters/transport/http/private-self-declared-external-relationship-routes.js';
+import type { CurrentUserIdentityService } from '../../../applications/account-identity-membership/current-user-identity-service.js';
+import type { SelfServiceIdentityInitializationService } from '../../../applications/account-identity-membership/self-service-identity-initialization-service.js';
+import type { PrivateCommerceProfileService } from '../../../applications/private-commerce-profile/private-commerce-profile-service.js';
+import type { PrivateCommerceReferenceService } from '../../../applications/private-commerce-reference/private-commerce-reference-service.js';
+import type { PrivateExternalPlatformAccountService } from '../../../applications/private-external-platform-account/private-external-platform-account-service.js';
+import type { PrivateCommerceRelationshipService } from '../../../applications/private-commerce-relationship/private-commerce-relationship-service.js';
+import type { PrivateSelfDeclaredExternalRelationshipService } from '../../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import { registerCustomerRequestRoutes } from '../../../adapters/transport/http/customer-request-routes.js';
 import { registerServiceOfferingRoutes } from '../../../adapters/transport/http/service-offering-routes.js';
 import { registerSystemRoutes } from '../../../adapters/transport/http/system-routes.js';
@@ -35,6 +48,13 @@ import { registerContractRoutes } from '../../../adapters/transport/http/contrac
 export interface ApiServerDependencies {
   readonly authContextProvider?: AuthContextProvider;
   readonly creatorIdentityService?: CreatorIdentityService;
+  readonly currentUserIdentityService?: CurrentUserIdentityService;
+  readonly selfServiceIdentityInitializationService?: SelfServiceIdentityInitializationService;
+  readonly privateCommerceProfileService?: PrivateCommerceProfileService;
+  readonly privateCommerceReferenceService?: PrivateCommerceReferenceService;
+  readonly privateExternalPlatformAccountService?: PrivateExternalPlatformAccountService;
+  readonly privateCommerceRelationshipService?: PrivateCommerceRelationshipService;
+  readonly privateSelfDeclaredExternalRelationshipService?: PrivateSelfDeclaredExternalRelationshipService;
   readonly serviceOfferingService?: ServiceOfferingService;
   readonly customerRequestService?: CustomerRequestService;
   readonly operationsAuthContextProvider?: OperationsAuthContextProvider;
@@ -63,6 +83,12 @@ export async function createApiServer(
   const hasExternalComposition =
     dependencies.authContextProvider !== undefined ||
     dependencies.creatorIdentityService !== undefined ||
+    dependencies.currentUserIdentityService !== undefined ||
+    dependencies.selfServiceIdentityInitializationService !== undefined ||
+    dependencies.privateCommerceProfileService !== undefined ||
+    dependencies.privateCommerceReferenceService !== undefined ||
+    dependencies.privateCommerceRelationshipService !== undefined ||
+    dependencies.privateSelfDeclaredExternalRelationshipService !== undefined ||
     dependencies.serviceOfferingService !== undefined ||
     dependencies.customerRequestService !== undefined ||
     dependencies.operationsAuthContextProvider !== undefined ||
@@ -120,6 +146,15 @@ export async function createApiServer(
       tags: [
         { name: 'system', description: 'API runtime health and readiness.' },
         { name: 'creator-identity', description: 'Creator Commerce Identity.' },
+        { name: 'private-identity', description: 'Authenticated Internal Identity.' },
+        {
+          name: 'private-commerce-profile',
+          description: 'Authenticated Commerce Profile management.',
+        },
+        {
+          name: 'private-commerce-reference',
+          description: 'Authenticated Commerce Reference viewing.',
+        },
         { name: 'service-offering', description: 'Creator Service Offerings.' },
         { name: 'customer-request', description: 'Public Storefront and Customer Requests.' },
         { name: 'external-observation', description: 'Pilot Operations external facts.' },
@@ -145,6 +180,42 @@ export async function createApiServer(
   registerCreatorIdentityRoutes(server, {
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     service: dependencies.creatorIdentityService ?? composition.service,
+  });
+  registerPrivateIdentityRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.currentUserIdentityService ?? composition.currentUserIdentityService,
+    initializationService:
+      dependencies.selfServiceIdentityInitializationService ??
+      composition.selfServiceIdentityInitializationService,
+  });
+  registerPrivateCommerceProfileRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.privateCommerceProfileService ?? composition.privateCommerceProfileService,
+  });
+  registerPrivateCommerceReferenceRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.privateCommerceReferenceService ?? composition.privateCommerceReferenceService,
+  });
+  registerPrivateExternalPlatformAccountRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.privateExternalPlatformAccountService ??
+      composition.privateExternalPlatformAccountService,
+  });
+  registerPrivateCommerceRelationshipRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.privateCommerceRelationshipService ??
+      composition.privateCommerceRelationshipService,
+  });
+  registerPrivateSelfDeclaredExternalRelationshipRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.privateSelfDeclaredExternalRelationshipService ??
+      composition.privateSelfDeclaredExternalRelationshipService,
   });
   registerServiceOfferingRoutes(server, {
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,

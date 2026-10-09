@@ -1,3 +1,7 @@
+import {
+  createAccountContext,
+  type AccountContext,
+} from '../../../applications/core/account-context.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
 import type {
   AuthContextProvider,
@@ -16,6 +20,25 @@ export class InMemoryAuthContextProvider implements AuthContextProvider {
 
   public constructor(identities: readonly TestAuthIdentity[]) {
     this.identities = new Map(identities.map((identity) => [identity.accessToken, identity.actor]));
+  }
+
+  public resolveAccountContext(request: AuthContextRequest): Promise<AccountContext> {
+    if (!this.identities.has(request.accessToken)) {
+      return Promise.reject(
+        new ApplicationError({
+          category: 'authentication',
+          code: 'invalid_access_token',
+          message: 'Authentication could not be verified.',
+        }),
+      );
+    }
+
+    return Promise.resolve(
+      createAccountContext({
+        accountId: `test:${request.accessToken}`,
+        correlationId: request.correlationId,
+      }),
+    );
   }
 
   public resolveActorContext(request: AuthContextRequest) {

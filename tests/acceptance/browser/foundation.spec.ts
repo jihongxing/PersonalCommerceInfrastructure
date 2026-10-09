@@ -7,7 +7,7 @@ test('Acceptance Harness starts the governed API and Web Reference Client', asyn
   page,
   request,
 }, testInfo) => {
-  const apiResponse = await request.get('http://127.0.0.1:45100/api/v1/health');
+  const apiResponse = await request.get('http://127.0.0.1:41000/api/v1/health');
   expect(apiResponse.ok()).toBe(true);
   const apiHealth: unknown = await apiResponse.json();
   expect(apiHealth).toEqual({
@@ -46,7 +46,7 @@ test('Reference Client exposes no unapproved product expansion surfaces', async 
 test('OpenAPI preserves the VS-01 contract while allowing governed VS-02 operations', async ({
   request,
 }) => {
-  const response = await request.get('http://127.0.0.1:45100/openapi.json');
+  const response = await request.get('http://127.0.0.1:41000/openapi.json');
   expect(response.ok()).toBe(true);
   const openApi = (await response.json()) as {
     readonly paths: Readonly<

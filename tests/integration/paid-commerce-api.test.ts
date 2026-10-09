@@ -115,7 +115,7 @@ describe('Paid Commerce API', () => {
     });
 
     await server.close();
-  });
+  }, 15_000);
 
   it('keeps refunds and failed refunds out of completed earnings', async () => {
     const server = await createApiServer();

@@ -1,8 +1,9 @@
 # 04 — North Star & End State
 
-> 状态：Decision v1  
-> 文档角色：终局北极星目标与长期校准合同  
-> 上游文档：[01 — Project Thesis](./01_Project_Thesis.md)、[02 — Vision & Endgame](./02_Vision_and_Endgame.md)、[03 — Core Abstraction](./03_Core_Abstraction.md)  
+> 状态：Decision v1
+> 文档角色：终局北极星目标与长期校准合同
+> 上游文档：[01 — Project Thesis](./01_Project_Thesis.md)、[02 — Vision & Endgame](./02_Vision_and_Endgame.md)、[03 — Core Abstraction](./03_Core_Abstraction.md)
+> 产品方向 SSOT：[05 — Personal Commerce Infrastructure Product Direction](./05_Personal_Commerce_Infrastructure_Product_Direction.md)
 > 下游边界：[09 — MVP Product Definition](../04_Product/09_MVP_Product_Definition.md)、[20 — MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)
 
 ## 1. 为什么需要这份文档
@@ -165,7 +166,7 @@ Personal Identity
 
 ### 6.1 核心结果指标
 
-> **Verified Personal Commerce Relationships**  
+> **Verified Personal Commerce Relationships**
 > 在指定期间内，由个人发起或承接、经过明确商业动作、产生可验证结果并具备后续经营可能性的真实商业关系数量。
 
 一条关系至少需要满足：

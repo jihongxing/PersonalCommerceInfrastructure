@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-const apiBaseUrl = 'http://127.0.0.1:45100';
+const apiBaseUrl = 'http://127.0.0.1:41000';
 const creatorHeaders = { authorization: 'Bearer test-creator-token' };
 
 test('CON-01 through CON-07 expose Quote then Accept Contract Commerce through the Reference Client', async ({

@@ -1,13 +1,14 @@
 # 20 — MVP PRD: VS-01
 
-> **Status**：Frozen  
-> **Product**：Personal Commerce Infrastructure  
-> **Version**：VS-01 — Dancer Private Lesson Request  
-> **Wedge**：Independent Dancer  
-> **Commerce Primitive**：Service Offering / Request  
-> **Commerce Model**：Shadow Commerce / Creator-direct Settlement  
-> **Implementation Target**：Controlled Prototype  
-> **Upstream Product Definitions**：[17 Core Product Objects](./17_Core_Product_Objects.md)、[18 MVP Product Flow](./18_MVP_Product_Flow.md)、[19 MVP Product Specification](./19_MVP_Product_Specification.md)  
+> **Status**：Frozen
+> **Product**：Personal Commerce Infrastructure
+> **Version**：VS-01 — Dancer Private Lesson Request
+> **Wedge**：Independent Dancer
+> **Commerce Primitive**：Service Offering / Request
+> **Commerce Model**：Shadow Commerce / Creator-direct Settlement
+> **Implementation Target**：Controlled Prototype
+> **产品方向上游**：[05 — Personal Commerce Infrastructure Product Direction](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md)
+> **Upstream Product Definitions**：[17 Core Product Objects](./17_Core_Product_Objects.md)、[18 MVP Product Flow](./18_MVP_Product_Flow.md)、[19 MVP Product Specification](./19_MVP_Product_Specification.md)
 > **Implementation Authority**：本 PRD 是 Codex 构建 VS-01 的产品实现依据；如与上游文档冲突，以本 PRD 的显式范围与规则为当前实现合同
 
 ## 1. PRD Status

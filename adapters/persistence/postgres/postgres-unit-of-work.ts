@@ -13,6 +13,13 @@ import { PostgresProductEventStore } from './postgres-product-event-store.js';
 import { PostgresPaidCommerceRepository } from './postgres-paid-commerce-repository.js';
 import { PostgresReservationRepository } from './postgres-reservation-repository.js';
 import { PostgresContractRepository } from './postgres-contract-repository.js';
+import { PostgresAccountIdentityMembershipRepository } from './postgres-account-identity-membership-repository.js';
+import { PostgresIdentityRepository } from './postgres-identity-repository.js';
+import { PostgresLegacySubjectMappingRepository } from './postgres-legacy-subject-mapping-repository.js';
+import { PostgresCanonicalCommerceProfileRepository } from './postgres-canonical-commerce-profile-repository.js';
+import { PostgresCanonicalCommerceReferenceRepository } from './postgres-canonical-commerce-reference-repository.js';
+import { PostgresExternalPlatformAccountRepository } from './postgres-external-platform-account-repository.js';
+import { PostgresCommerceRelationshipRepository } from './postgres-commerce-relationship-repository.js';
 
 export class PostgresUnitOfWork implements UnitOfWork {
   public constructor(private readonly database: ProductDatabase) {}
@@ -21,6 +28,15 @@ export class PostgresUnitOfWork implements UnitOfWork {
     return this.database.transaction(async (transaction) =>
       operation({
         productEventStore: new PostgresProductEventStore(transaction),
+        formalIdentityRepository: new PostgresIdentityRepository(transaction),
+        commerceProfileRepository: new PostgresCanonicalCommerceProfileRepository(transaction),
+        commerceReferenceRepository: new PostgresCanonicalCommerceReferenceRepository(transaction),
+        externalPlatformAccountRepository: new PostgresExternalPlatformAccountRepository(transaction),
+        commerceRelationshipRepository: new PostgresCommerceRelationshipRepository(transaction),
+        legacySubjectMappingRepository: new PostgresLegacySubjectMappingRepository(transaction),
+        accountIdentityMembershipRepository: new PostgresAccountIdentityMembershipRepository(
+          transaction,
+        ),
         identityRepository: new PostgresCommerceIdentityRepository(transaction),
         capabilityRepository: new PostgresCapabilityRepository(transaction),
         offeringRepository: new PostgresOfferingRepository(transaction),

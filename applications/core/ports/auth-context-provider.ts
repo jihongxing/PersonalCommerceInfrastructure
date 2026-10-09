@@ -1,3 +1,4 @@
+import { createAccountContext, type AccountContext } from '../account-context.js';
 import { createActorContext, type ActorContext } from '../actor-context.js';
 import type { Actor } from '../../../modules/shared/actors.js';
 import { ApplicationError } from '../application-error.js';
@@ -21,6 +22,7 @@ export interface CreatorActorResolver {
 }
 
 export interface AuthContextProvider {
+  resolveAccountContext(request: AuthContextRequest): Promise<AccountContext>;
   resolveActorContext(request: AuthContextRequest): Promise<ActorContext>;
 }
 
@@ -33,6 +35,14 @@ export function createAuthContextProvider(
   dependencies: AuthContextProviderDependencies,
 ): AuthContextProvider {
   return {
+    async resolveAccountContext(request) {
+      const identity = await dependencies.tokenVerifier.verifyAccessToken(request.accessToken);
+      return createAccountContext({
+        accountId: `${identity.provider}:${identity.subject}`,
+        correlationId: request.correlationId,
+      });
+    },
+
     async resolveActorContext(request) {
       const identity = await dependencies.tokenVerifier.verifyAccessToken(request.accessToken);
       const creatorId = await dependencies.creatorActorResolver.resolveCreatorId(identity);
@@ -52,6 +62,7 @@ export function createAuthContextProvider(
 
       return createActorContext({
         actor,
+        accountId: `${identity.provider}:${identity.subject}`,
         correlationId: request.correlationId,
       });
     },

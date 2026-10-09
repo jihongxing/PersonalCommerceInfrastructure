@@ -1,11 +1,12 @@
 # 22 — 工程治理
 
-> **状态**：Decision v1 — M2 基础实现已通过门禁  
-> **阶段**：执行阶段  
-> **范围**：VS-01 受控原型  
-> **文档角色**：连接冻结 PRD 与代码实现的工程事实源  
-> **产品合同**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
-> **执行台账**：[21 Prototype Execution](../08_Execution/21_Prototype_Execution.md)  
+> **状态**：Decision v1 — M2 基础实现已通过门禁
+> **阶段**：执行阶段
+> **范围**：VS-01 受控原型
+> **文档角色**：连接冻结 PRD 与代码实现的工程事实源
+> **产品方向上游**：[05 — Personal Commerce Infrastructure Product Direction](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md)
+> **产品合同**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)
+> **执行台账**：[21 Prototype Execution](../08_Execution/21_Prototype_Execution.md)
 > **最后更新**：2026-08-11
 
 ## 1. 目的

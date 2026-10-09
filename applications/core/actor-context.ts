@@ -4,6 +4,7 @@ import { ApplicationError } from './application-error.js';
 
 export interface ActorContext {
   readonly actor: Actor;
+  readonly accountId?: string;
   readonly correlationId: string;
 }
 
@@ -18,6 +19,7 @@ export function createActorContext(context: ActorContext): ActorContext {
 
   return Object.freeze({
     actor: Object.freeze({ ...context.actor }),
+    ...(context.accountId === undefined ? {} : { accountId: context.accountId }),
     correlationId: context.correlationId,
   });
 }

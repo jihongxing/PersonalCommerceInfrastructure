@@ -12,6 +12,75 @@ export const commonCopy = {
   primaryNavigationLabel: '主要入口',
 } as const;
 
+export const privateIdentityCopy = {
+  eyebrow: 'Private Identity',
+  title: 'My PCI Identity',
+  identityIdLabel: 'Identity ID',
+  statusLabel: 'Status',
+  createdLabel: 'Created',
+  loading: 'Loading your Identity…',
+  unavailable: 'Your private Identity is not available.',
+  initializationFailed: 'Your private Identity could not be initialized.',
+  welcome: 'Welcome',
+  ready: 'Your PCI Identity is ready.',
+  nextStep: 'Next: Create your first Commerce Profile',
+} as const;
+
+export const privateCommerceProfileCopy = {
+  eyebrow: 'Private Commerce Profiles',
+  title: 'My Commerce Profiles',
+  displayNameLabel: 'Display name',
+  create: 'Create Profile',
+  save: 'Save',
+  editDisplayName: 'Edit display name',
+  suspend: 'Suspend',
+  reactivate: 'Reactivate',
+  archive: 'Archive',
+  referenceLabel: 'C号: ',
+  copyReference: 'Copy C号',
+  noReference: 'This profile has no assigned Commerce Reference.',
+  genericLoadFailed: 'Your Commerce Profiles are not available.',
+  genericReferenceFailed: 'Your Commerce Reference is not available.',
+  genericCreateFailed: 'Unable to create Commerce Profile.',
+  created: 'Commerce Profile created.',
+  genericUpdateFailed: 'Unable to update Commerce Profile.',
+  updated: 'Commerce Profile updated.',
+  genericLifecycleFailed: 'Unable to change Commerce Profile lifecycle.',
+  copied: 'C号 copied.',
+  copyFailed: 'Unable to copy C号.',
+  lifecycleChanged: {
+    suspend: 'Commerce Profile suspended.',
+    archive: 'Commerce Profile archived.',
+    reactivate: 'Commerce Profile reactivated.',
+  },
+} as const;
+
+export const privateCommerceRelationshipCopy = {
+  eyebrow: 'Private Commerce Relationships',
+  title: 'My Commerce Relationships',
+  empty: 'No commerce relationships.',
+  genericLoadFailed: 'Your Commerce Relationships are not available.',
+  accountSuffix: 'Account',
+  rolePrefix: ' · Role: ',
+  statusPrefix: ' · Relationship Status: ',
+} as const;
+
+export const privateExternalPlatformAccountCopy = {
+  eyebrow: 'Private External Platform Accounts',
+  title: 'My External Platform Accounts',
+  empty: 'No external platform accounts.',
+  genericLoadFailed: 'Your External Platform Accounts are not available.',
+  accountSuffix: 'Account',
+  addTitle: 'Add External Platform Account',
+  platformLabel: 'Platform',
+  platformAccountIdLabel: 'Platform Account ID',
+  profileLabel: 'Commerce Profile',
+  declare: 'Declare Account & Relationship',
+  declared: 'External account declared. Relationship status: Proposed. Provenance: Self-declared.',
+  declareFailed: 'Unable to declare this external account.',
+  noProfiles: 'Create a Commerce Profile before declaring an external account.',
+} as const;
+
 export const creatorIdentityCopy = {
   eyebrow: '创作者工作台',
   title: '我的商业主页',

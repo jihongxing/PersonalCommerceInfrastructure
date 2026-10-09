@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const apiBaseUrl = 'http://127.0.0.1:45100';
+const apiBaseUrl = 'http://127.0.0.1:41000';
 const creatorHeaders = { authorization: 'Bearer test-creator-token' };
 
 test.use({ viewport: { width: 390, height: 844 } });

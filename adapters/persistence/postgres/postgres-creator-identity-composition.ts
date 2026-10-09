@@ -1,9 +1,54 @@
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
 import type { NotificationPort } from '../../../applications/core/ports/notification-port.js';
+import { createIdentityProfileAuthorizationPolicy } from '../../../applications/core/identity-profile-authorization-policy.js';
+import { createIdentityProfileContextResolver } from '../../../applications/core/identity-profile-context.js';
 import {
   createCreatorIdentityService,
   type CreatorIdentityService,
 } from '../../../applications/creator-identity/creator-identity-service.js';
+import {
+  createAccountIdentityMembershipService,
+  type AccountIdentityMembershipService,
+} from '../../../applications/account-identity-membership/account-identity-membership-service.js';
+import {
+  createCurrentUserIdentityService,
+  type CurrentUserIdentityService,
+} from '../../../applications/account-identity-membership/current-user-identity-service.js';
+import {
+  createSelfServiceIdentityInitializationService,
+  type SelfServiceIdentityInitializationService,
+} from '../../../applications/account-identity-membership/self-service-identity-initialization-service.js';
+import {
+  createCommerceProfileService,
+  type CommerceProfileService,
+} from '../../../applications/commerce-profile/commerce-profile-service.js';
+import { createCanonicalCommerceProfileService } from '../../../applications/canonical-commerce-profile/canonical-commerce-profile-service.js';
+import { UuidCommerceProfileIdGenerator } from '../../../applications/canonical-commerce-profile/uuid-commerce-profile-id-generator.js';
+import { CsprngCommerceReferenceGenerator } from '../../../applications/canonical-commerce-reference/commerce-reference-generator.js';
+import type {
+  CommerceRelationshipId,
+  ExternalPlatformAccountId,
+} from '../../../modules/identity-infrastructure/external-platform-contract.js';
+import {
+  createPrivateCommerceProfileService,
+  type PrivateCommerceProfileService,
+} from '../../../applications/private-commerce-profile/private-commerce-profile-service.js';
+import {
+  createPrivateCommerceReferenceService,
+  type PrivateCommerceReferenceService,
+} from '../../../applications/private-commerce-reference/private-commerce-reference-service.js';
+import {
+  createPrivateExternalPlatformAccountService,
+  type PrivateExternalPlatformAccountService,
+} from '../../../applications/private-external-platform-account/private-external-platform-account-service.js';
+import {
+  createPrivateCommerceRelationshipService,
+  type PrivateCommerceRelationshipService,
+} from '../../../applications/private-commerce-relationship/private-commerce-relationship-service.js';
+import {
+  createPrivateSelfDeclaredExternalRelationshipService,
+  type PrivateSelfDeclaredExternalRelationshipService,
+} from '../../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import {
   createServiceOfferingService,
   type ServiceOfferingService,
@@ -23,7 +68,14 @@ import {
   PostgresDistributionAssetRepository,
   PostgresOfferingRepository,
 } from './postgres-creator-identity-repositories.js';
+import { PostgresAccountIdentityMembershipRepository } from './postgres-account-identity-membership-repository.js';
+import { PostgresCommerceProfileRepository } from './postgres-commerce-profile-repository.js';
+import { PostgresCanonicalCommerceProfileRepository } from './postgres-canonical-commerce-profile-repository.js';
+import { PostgresCanonicalCommerceReferenceRepository } from './postgres-canonical-commerce-reference-repository.js';
+import { PostgresExternalPlatformAccountRepository } from './postgres-external-platform-account-repository.js';
+import { PostgresCommerceRelationshipRepository } from './postgres-commerce-relationship-repository.js';
 import { createPostgresDatabase, type PostgresDatabaseConnection } from './postgres-database.js';
+import { PostgresIdentityRepository } from './postgres-identity-repository.js';
 import { PostgresUnitOfWork } from './postgres-unit-of-work.js';
 import { PostgresProductEventStore } from './postgres-product-event-store.js';
 import { CanonicalEventRecorder } from '../../../applications/core/canonical-event-recorder.js';
@@ -93,6 +145,15 @@ export interface RealMoneyRuntimeCompositionConfiguration {
 
 export interface PostgresCreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
+  readonly accountIdentityMembershipService: AccountIdentityMembershipService;
+  readonly currentUserIdentityService: CurrentUserIdentityService;
+  readonly selfServiceIdentityInitializationService: SelfServiceIdentityInitializationService;
+  readonly commerceProfileService: CommerceProfileService;
+  readonly privateCommerceProfileService: PrivateCommerceProfileService;
+  readonly privateCommerceReferenceService: PrivateCommerceReferenceService;
+  readonly privateExternalPlatformAccountService: PrivateExternalPlatformAccountService;
+  readonly privateCommerceRelationshipService: PrivateCommerceRelationshipService;
+  readonly privateSelfDeclaredExternalRelationshipService: PrivateSelfDeclaredExternalRelationshipService;
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
@@ -121,6 +182,23 @@ export function createPostgresCreatorIdentityComposition(
   },
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
+  const accountIdentityMembershipRepository = new PostgresAccountIdentityMembershipRepository(
+    database.database,
+  );
+  const formalIdentityRepository = new PostgresIdentityRepository(database.database);
+  const commerceProfileRepository = new PostgresCommerceProfileRepository(database.database);
+  const canonicalCommerceProfileRepository = new PostgresCanonicalCommerceProfileRepository(
+    database.database,
+  );
+  const canonicalCommerceReferenceRepository = new PostgresCanonicalCommerceReferenceRepository(
+    database.database,
+  );
+  const externalPlatformAccountRepository = new PostgresExternalPlatformAccountRepository(
+    database.database,
+  );
+  const commerceRelationshipRepository = new PostgresCommerceRelationshipRepository(
+    database.database,
+  );
   const identityRepository = new PostgresCommerceIdentityRepository(database.database);
   const capabilityRepository = new PostgresCapabilityRepository(database.database);
   const offeringRepository = new PostgresOfferingRepository(database.database);
@@ -132,6 +210,83 @@ export function createPostgresCreatorIdentityComposition(
   const contractRepository = new PostgresContractRepository(database.database);
   const idGenerator = new UuidIdGenerator();
   const unitOfWork = new PostgresUnitOfWork(database.database);
+  const accountIdentityMembershipService = createAccountIdentityMembershipService({
+    membershipRepository: accountIdentityMembershipRepository,
+    unitOfWork,
+    identityIdGenerator: new UuidIdGenerator(),
+    membershipIdGenerator: new UuidIdGenerator(),
+    clock: new FixedClock(new Date().toISOString()),
+  });
+  const currentUserIdentityService = createCurrentUserIdentityService({
+    identityRepository: formalIdentityRepository,
+    membershipRepository: accountIdentityMembershipRepository,
+  });
+  const selfServiceIdentityInitializationService = createSelfServiceIdentityInitializationService({
+    identityRepository: formalIdentityRepository,
+    membershipRepository: accountIdentityMembershipRepository,
+    unitOfWork,
+    identityIdGenerator: new UuidIdGenerator(),
+    membershipIdGenerator: new UuidIdGenerator(),
+    clock: new FixedClock(new Date().toISOString()),
+  });
+  const identityProfileAuthorizationPolicy = createIdentityProfileAuthorizationPolicy({
+    contextResolver: createIdentityProfileContextResolver({
+      identityRepository: formalIdentityRepository,
+      commerceProfileRepository,
+      accountIdentityMembershipRepository,
+    }),
+  });
+  const commerceProfileService = createCommerceProfileService({
+    commerceProfileRepository,
+    authorizationPolicy: identityProfileAuthorizationPolicy,
+    commerceProfileIdGenerator: new UuidIdGenerator(),
+    clock: new FixedClock(new Date().toISOString()),
+  });
+  const canonicalCommerceProfileService = createCanonicalCommerceProfileService({
+    repository: canonicalCommerceProfileRepository,
+    idGenerator: new UuidCommerceProfileIdGenerator(),
+    clock: new FixedClock(new Date().toISOString()),
+  });
+  const privateCommerceProfileService = createPrivateCommerceProfileService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceProfileIdGenerator: new UuidCommerceProfileIdGenerator(),
+    commerceReferenceGenerator: new CsprngCommerceReferenceGenerator(),
+    clock: new FixedClock(new Date().toISOString()),
+    unitOfWork,
+  });
+  const privateCommerceReferenceService = createPrivateCommerceReferenceService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceReferenceRepository: canonicalCommerceReferenceRepository,
+  });
+  const privateExternalPlatformAccountService = createPrivateExternalPlatformAccountService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceRelationshipRepository,
+    externalPlatformAccountRepository,
+  });
+  const privateCommerceRelationshipService = createPrivateCommerceRelationshipService({
+    currentUserIdentityService,
+    commerceProfileService: canonicalCommerceProfileService,
+    commerceRelationshipRepository,
+    externalPlatformAccountRepository,
+  });
+  const privateSelfDeclaredExternalRelationshipService =
+    createPrivateSelfDeclaredExternalRelationshipService({
+      currentUserIdentityService,
+      commerceProfileService: canonicalCommerceProfileService,
+      unitOfWork,
+      externalPlatformAccountIdGenerator: {
+        generate: () =>
+          `external-account-${new UuidIdGenerator().generate()}` as ExternalPlatformAccountId,
+      },
+      commerceRelationshipIdGenerator: {
+        generate: () =>
+          `relationship-${new UuidIdGenerator().generate()}` as CommerceRelationshipId,
+      },
+      clock: new FixedClock(new Date().toISOString()),
+    });
   const productEventStore = new PostgresProductEventStore(database.database);
   const canonicalEventRecorder = new CanonicalEventRecorder({
     clock: new FixedClock(new Date().toISOString()),
@@ -224,6 +379,15 @@ export function createPostgresCreatorIdentityComposition(
 
   return {
     database,
+    accountIdentityMembershipService,
+    currentUserIdentityService,
+    selfServiceIdentityInitializationService,
+    commerceProfileService,
+    privateCommerceProfileService,
+    privateCommerceReferenceService,
+    privateExternalPlatformAccountService,
+    privateCommerceRelationshipService,
+    privateSelfDeclaredExternalRelationshipService,
     authContextProvider: createSupabaseAuthContextProvider(
       authConfiguration,
       new InMemoryCreatorActorResolver(authConfiguration.creatorActorMappings),

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const apiPort = 45100;
-const webPort = 45101;
+const apiPort = 41000;
+const webPort = 41001;
 const realCr02BrowserTests = process.env.RUN_REAL_CR02_BROWSER_TESTS === '1';
 const postgresSimulationBrowserTests = process.env.RUN_VS02E_POSTGRES_BROWSER_TESTS === '1';
 const controlledEnvironment = Object.fromEntries(
@@ -66,8 +66,10 @@ export default defineConfig({
       url: `http://127.0.0.1:${apiPort}/api/v1/health`,
     },
     {
-      command: `pnpm --filter @personal-commerce/web build && pnpm --filter @personal-commerce/web exec next start -H 127.0.0.1 -p ${webPort}`,
+      command: 'node scripts/test/start-browser-web-server.mjs',
       env: {
+        HOSTNAME: '127.0.0.1',
+        PORT: String(webPort),
         NEXT_PUBLIC_API_BASE_URL: `http://127.0.0.1:${apiPort}`,
         NEXT_PUBLIC_RUNTIME_ENV: realCr02BrowserTests ? 'controlled' : 'test',
         ...(realCr02BrowserTests

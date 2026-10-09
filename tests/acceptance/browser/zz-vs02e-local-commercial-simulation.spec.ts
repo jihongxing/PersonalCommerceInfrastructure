@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const apiBaseUrl = 'http://127.0.0.1:45100';
+const apiBaseUrl = 'http://127.0.0.1:41000';
 const creatorHeaders = { authorization: 'Bearer test-creator-token' };
 
 test('VS-02E uses the browser simulation control through HTTP without real-money evidence', async ({
@@ -60,7 +60,7 @@ test('VS-02E uses the browser simulation control through HTTP without real-money
   await page.goto('/creator');
   await page.getByRole('button', { name: '刷新订单与收益' }).click();
   await expect(page.locator('.ds-status-card').filter({ hasText: '可发起提现' })).toContainText(
-    '35670',
+    String(BigInt(initialWallet.availableMinor) + 35670n),
   );
 
   await page.getByLabel('提现金额（分）').fill('35670');

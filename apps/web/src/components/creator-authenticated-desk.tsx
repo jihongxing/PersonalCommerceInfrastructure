@@ -19,6 +19,10 @@ import { CreatorEarningsWorkspace } from './creator-earnings-workspace';
 import { CreatorReservationWorkspace } from './creator-reservation-workspace';
 import { CreatorContractWorkspace } from './creator-contract-workspace';
 import { PatternNavigation } from './pattern-navigation';
+import { PrivateIdentityWorkspace } from './private-identity-workspace';
+import { PrivateCommerceProfileWorkspace } from './private-commerce-profile-workspace';
+import { PrivateExternalPlatformAccountWorkspace } from './private-external-platform-account-workspace';
+import { PrivateCommerceRelationshipWorkspace } from './private-commerce-relationship-workspace';
 
 export function CreatorAuthenticatedDesk() {
   const [sessionProvider, setSessionProvider] = useState<AuthSessionProvider | null>(null);
@@ -128,6 +132,10 @@ export function CreatorAuthenticatedDesk() {
   return (
     <div className="ds-workspace-page ds-page">
       <PatternNavigation audience="creator" />
+      <PrivateIdentityWorkspace accessTokenProvider={sessionProvider} />
+      <PrivateCommerceProfileWorkspace accessTokenProvider={sessionProvider} />
+      <PrivateExternalPlatformAccountWorkspace accessTokenProvider={sessionProvider} />
+      <PrivateCommerceRelationshipWorkspace accessTokenProvider={sessionProvider} />
       <CreatorIdentityWorkspace
         accessTokenProvider={sessionProvider}
         userEmail={session.userEmail}

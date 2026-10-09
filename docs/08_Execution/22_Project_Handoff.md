@@ -381,7 +381,7 @@ the identity gap. It does not grant automatic implementation permission.
 
 ### Stage 1 — Re-entry Audit
 
-1. Read this Handoff SSOT and `59_Identity_Anchor_and_Commerce_ID.md`;
+1. Read this Handoff SSOT and `docs/09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md`;
 2. Check the current Git commit and `suspend/client-002-complete-identity-reentry` tag;
 3. Run the complete engineering preflight;
 4. Verify CLIENT-001 and CLIENT-002 regressions remain PASS;
@@ -459,7 +459,7 @@ PROJECT_STATUS = SUSPENDED
 
 This document is the unique Project Restart SSOT. Historical handoff and commercialization records
 remain useful evidence, but they do not supersede this file for current project status, restart
-sequence or suspension boundaries. `59_Identity_Anchor_and_Commerce_ID.md` is the linked governance
+sequence or suspension boundaries. `docs/09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md` is the linked governance
 record for the identity architecture direction; it is not a second Restart SSOT.
 
 ```text

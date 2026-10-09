@@ -113,6 +113,69 @@
       "when": 1787760000000,
       "tag": "0015_vs02l03_contract_commerce",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1787788800000,
+      "tag": "0016_stage2_identity_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1787875200000,
+      "tag": "0017_stage2_account_identity_membership",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1787961600000,
+      "tag": "0018_stage2_commerce_profile_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1788048000000,
+      "tag": "0019_stage2_legacy_subject_mapping",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1788134400000,
+      "tag": "0020_stage2_commerce_reference_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1788220800000,
+      "tag": "0021_stage2_external_platform_account_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1788307200000,
+      "tag": "0022_stage2_commerce_relationship_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1788393600000,
+      "tag": "0023_stage2_commerce_relationship_provenance",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1788480000000,
+      "tag": "0024_stage2_commerce_relationship_self_declared_unique",
+      "breakpoints": true
     }
   ]
 }

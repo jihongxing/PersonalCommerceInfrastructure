@@ -80,7 +80,16 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
    定义 Creator、商业资产、可交易库存、商品和交易之间的底层关系。
 
 4. [04 — North Star & End State](./01_Strategy/04_North_Star_End_State.md)
-   定义项目终局北极星、终局必须成立的产品事实、长期衡量框架和阶段闸门。
+    定义项目终局北极星、终局必须成立的产品事实、长期衡量框架和阶段闸门。
+
+5. [05 — Personal Commerce Infrastructure Product Direction](./01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md)
+   产品方向层 SSOT；定义长期产品命题、领域模型、通用 Offer 类型、商业闭环和与阶段性产品合同的边界。
+
+6. [06 — Commerce Reference 跨平台传播研究](./01_Strategy/06_Commerce_Reference_Research.md)
+   记录 C号的跨平台传播、容量、人因与安全边界研究，以及已冻结的 22 字符、18 位引用设计。
+
+7. [07 — Commerce Reference 产品规范](./01_Strategy/07_Commerce_Reference_Product_Spec.md)
+   定义 C号与 QR 表示的产品语义、规范形式、生命周期、未来 resolver 边界和未授权实现范围。
 
 ### Market
 

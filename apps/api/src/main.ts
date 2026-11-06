@@ -100,6 +100,7 @@ export async function startApi(): Promise<ApiRuntime> {
           privateCommerceRelationshipService: composition.privateCommerceRelationshipService,
           privateSelfDeclaredExternalRelationshipService:
             composition.privateSelfDeclaredExternalRelationshipService,
+          database: composition.database, // 用于公开 Creator Profile API
           checkReadiness: () => composition.database.checkReadiness(),
           corsAllowedOrigins: [configuration.webReferenceClientOrigin],
           logger,

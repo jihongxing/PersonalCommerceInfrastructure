@@ -23,6 +23,7 @@ import type { PrivateCommerceRelationshipService } from '../../../applications/p
 import type { PrivateSelfDeclaredExternalRelationshipService } from '../../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import { registerCustomerRequestRoutes } from '../../../adapters/transport/http/customer-request-routes.js';
 import { registerServiceOfferingRoutes } from '../../../adapters/transport/http/service-offering-routes.js';
+import { registerPublicCreatorProfileRoutes } from '../../../adapters/transport/http/public-creator-profile-routes.js';
 import { registerSystemRoutes } from '../../../adapters/transport/http/system-routes.js';
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
 import type { CreatorIdentityService } from '../../../applications/creator-identity/creator-identity-service.js';
@@ -70,6 +71,7 @@ export interface ApiServerDependencies {
   readonly commercialPilotOperationsService?: CommercialPilotOperationsService;
   readonly reservationService?: ReservationService;
   readonly contractService?: ContractService;
+  readonly database?: any; // ProductDatabase，用于公开 API
   readonly corsAllowedOrigins?: readonly string[];
   readonly publicOrigin?: string;
   readonly checkReadiness?: () => Promise<void>;
@@ -246,6 +248,12 @@ export async function createApiServer(
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     service: dependencies.serviceOfferingService ?? composition.offeringService,
   });
+  // 公开的 Creator Profile 路由（需要 database）
+  if (dependencies.database) {
+    registerPublicCreatorProfileRoutes(server, {
+      database: dependencies.database,
+    });
+  }
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,

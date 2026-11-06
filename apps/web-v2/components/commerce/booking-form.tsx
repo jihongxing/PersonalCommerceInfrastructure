@@ -53,9 +53,8 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
       const result = await submitBooking.mutateAsync(values);
       setIsSubmitted(true);
       
-      // 跳转到结果页面（Phase 3 实现）
-      // router.push(`/o/${result.resultAccessToken}`);
-      console.log('Booking submitted:', result);
+      // 跳转到结果页面
+      router.push(`/o/${result.resultAccessToken}`);
     } catch (error) {
       console.error('Failed to submit booking:', error);
       // 错误已经通过 submitBooking.error 暴露给 UI
@@ -84,9 +83,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
         <CardFooter>
           <Button
             onClick={() => {
-              // TODO: 跳转到订单结果页
-              // router.push(`/o/${submitBooking.data.resultAccessToken}`);
-              console.log('Navigate to result page');
+              router.push(`/o/${submitBooking.data.resultAccessToken}`);
             }}
             className="w-full"
           >

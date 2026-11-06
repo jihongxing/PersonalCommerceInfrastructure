@@ -14,6 +14,7 @@ import { Input } from './ui/input';
 import { StatusMessage } from './ui/status-message';
 import { Surface } from './ui/surface';
 import { Textarea } from './ui/textarea';
+import { QrCodeScanner } from './qr-code-scanner';
 
 type ConfirmedRequest =
   operations['listCreatorConfirmedRequests']['responses'][200]['content']['application/json']['requests'][number];
@@ -69,6 +70,7 @@ export function CreatorEarningsWorkspace({
   const [pendingWithdrawalReferences, setPendingWithdrawalReferences] = useState<
     Readonly<Record<string, string>>
   >({});
+  const [showScanner, setShowScanner] = useState(false);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -147,6 +149,55 @@ export function CreatorEarningsWorkspace({
       }
       setMessage(creatorEarningsCopy.withdrawalRequested);
     });
+  }
+
+  async function confirmFulfillment(actionId: string, fulfillmentCode: string) {
+    await runAction(async () => {
+      const response = await client.POST(
+        '/api/v1/creator/requests/{actionId}/confirm-fulfillment',
+        {
+          params: { path: { actionId } },
+          body: { fulfillmentCode },
+        },
+      );
+      if (response.error !== undefined) {
+        const errorCode = response.error.error?.code ?? 'UNKNOWN';
+        if (errorCode === 'FULFILLMENT_CODE_INVALID') {
+          throw new Error('履约码格式无效');
+        } else if (errorCode === 'FULFILLMENT_CODE_EXPIRED') {
+          throw new Error('履约码已过期');
+        } else if (errorCode === 'FULFILLMENT_CODE_ALREADY_USED') {
+          throw new Error('履约码已被使用');
+        } else if (errorCode === 'COMMERCE_ACTION_NOT_FOUND') {
+          throw new Error('订单不存在');
+        } else if (errorCode === 'CREATOR_NOT_AUTHORIZED') {
+          throw new Error('您没有权限核销此订单');
+        }
+        throw new Error('核销失败');
+      }
+      setMessage('履约码核销成功');
+      setShowScanner(false);
+    });
+  }
+
+  async function handleCodeScanned(code: string) {
+    // Find the action ID for this fulfillment code
+    // Since we don't have the mapping, we'll need to try each confirmed request
+    // In a real implementation, the backend should return the action ID with the code
+    let found = false;
+    for (const request of confirmedRequests) {
+      try {
+        await confirmFulfillment(request.action.id, code);
+        found = true;
+        break;
+      } catch {
+        // Try next request
+      }
+    }
+    if (!found) {
+      setMessage('无法找到匹配的订单，或核销失败');
+      setShowScanner(false);
+    }
   }
 
   async function simulateSettlement(orderId: string) {
@@ -275,10 +326,28 @@ export function CreatorEarningsWorkspace({
       <section className="ds-section-stack">
         <div className="ds-action-row">
           <h3 className="ds-heading-section">{creatorEarningsCopy.confirmedRequestsTitle}</h3>
-          <Button disabled={busy} onClick={() => void refresh()} type="button" variant="outline">
-            {creatorEarningsCopy.refresh}
-          </Button>
+          <div className="ds-action-row">
+            <Button
+              disabled={busy}
+              onClick={() => setShowScanner(true)}
+              type="button"
+              variant="outline"
+            >
+              扫码核销
+            </Button>
+            <Button disabled={busy} onClick={() => void refresh()} type="button" variant="outline">
+              {creatorEarningsCopy.refresh}
+            </Button>
+          </div>
         </div>
+
+        {showScanner ? (
+          <QrCodeScanner
+            onCodeScanned={(code) => void handleCodeScanned(code)}
+            onCancel={() => setShowScanner(false)}
+          />
+        ) : null}
+
         {confirmedRequests.length === 0 ? (
           <EmptyState>{creatorEarningsCopy.confirmedRequestsEmpty}</EmptyState>
         ) : (

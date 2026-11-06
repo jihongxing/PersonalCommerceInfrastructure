@@ -70,6 +70,18 @@ export const CustomerRequestResultSchema = Type.Object(
       Type.Literal('declined'),
     ]),
     message: Type.String({ minLength: 1 }),
+    fulfillmentCode: Type.Optional(
+      Type.Object({
+        code: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
+        status: Type.Union([
+          Type.Literal('pending'),
+          Type.Literal('fulfilled'),
+          Type.Literal('expired'),
+        ]),
+        expiresAt: Type.String(),
+        confirmedAt: Type.Optional(Type.String()),
+      }),
+    ),
   },
   { additionalProperties: false },
 );

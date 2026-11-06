@@ -90,6 +90,9 @@ importers:
       openapi-fetch:
         specifier: 0.15.0
         version: 0.15.0
+      qr-scanner:
+        specifier: 1.4.2
+        version: 1.4.2
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -1156,6 +1159,9 @@ packages:
   '@types/node@22.20.1':
     resolution: {integrity: sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==}
 
+  '@types/offscreencanvas@2019.7.3':
+    resolution: {integrity: sha512-ieXiYmgSRXUDeOntE1InxjWyvEelZGP63M+cGuquuRLuIKKT1osnkXjxev9B7d1nXSug5vpunx+gNlbVxMlC9A==}
+
   '@types/qrcode@1.5.6':
     resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
 
@@ -2124,6 +2130,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  qr-scanner@1.4.2:
+    resolution: {integrity: sha512-kV1yQUe2FENvn59tMZW6mOVfpq9mGxGf8l6+EGaXUOd4RBOLg7tRC83OrirM5AtDvZRpdjdlXURsHreAOSPOUw==}
 
   qrcode@1.5.4:
     resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
@@ -3205,6 +3214,8 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/offscreencanvas@2019.7.3': {}
+
   '@types/qrcode@1.5.6':
     dependencies:
       '@types/node': 22.20.1
@@ -4127,6 +4138,10 @@ snapshots:
   process-warning@5.1.0: {}
 
   punycode@2.3.1: {}
+
+  qr-scanner@1.4.2:
+    dependencies:
+      '@types/offscreencanvas': 2019.7.3
 
   qrcode@1.5.4:
     dependencies:

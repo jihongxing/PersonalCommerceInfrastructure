@@ -468,6 +468,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/creator/requests/{actionId}/confirm-fulfillment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmFulfillment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/fulfillment-code/{code}/qrcode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFulfillmentCodeQrCode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operations/requests/{actionId}/external-payment": {
         parameters: {
             query?: never;
@@ -3813,6 +3845,12 @@ export interface operations {
                         resultAccessToken: string;
                         state: "submitted" | "confirmed" | "declined";
                         message: string;
+                        fulfillmentCode?: {
+                            code: string;
+                            status: "pending" | "fulfilled" | "expired";
+                            expiresAt: string;
+                            confirmedAt?: string;
+                        };
                     };
                 };
             };
@@ -3888,6 +3926,12 @@ export interface operations {
                         resultAccessToken: string;
                         state: "submitted" | "confirmed" | "declined";
                         message: string;
+                        fulfillmentCode?: {
+                            code: string;
+                            status: "pending" | "fulfilled" | "expired";
+                            expiresAt: string;
+                            confirmedAt?: string;
+                        };
                     };
                 };
             };
@@ -4205,6 +4249,143 @@ export interface operations {
             };
             /** @description Default Response */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    confirmFulfillment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                actionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    fulfillmentCode: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        actionId: string;
+                        /** @enum {unknown} */
+                        status: "fulfilled";
+                        confirmedAt: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            category: "validation" | "authentication" | "authorization" | "not_found" | "conflict" | "unavailable" | "internal";
+                            code: string;
+                            correlationId: string;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getFulfillmentCodeQrCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        dataUrl: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

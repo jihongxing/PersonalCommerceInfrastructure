@@ -11,6 +11,7 @@ import { FormField } from './ui/form-field';
 import { StatusMessage } from './ui/status-message';
 import { Surface } from './ui/surface';
 import { CustomerContractWorkspace } from './customer-contract-workspace';
+import { FulfillmentCodeDisplay } from './fulfillment-code-display';
 
 type CustomerRequestResult =
   operations['getCustomerRequestResult']['responses'][200]['content']['application/json'];
@@ -170,6 +171,17 @@ export function CustomerRequestResultWorkspace({
             <CustomerContractWorkspace resultAccessToken={resultAccessToken} />
             <h1 className="ds-heading-page">{resultCopy.title}</h1>
             <p className="ds-body-secondary ds-measure">{resultCopy.description}</p>
+
+            {result.state === 'confirmed' && result.fulfillmentCode !== undefined ? (
+              <FulfillmentCodeDisplay
+                code={result.fulfillmentCode.code}
+                status={result.fulfillmentCode.status}
+                expiresAt={result.fulfillmentCode.expiresAt}
+                fulfilledAt={result.fulfillmentCode.confirmedAt}
+                apiBaseUrl={configuration.apiBaseUrl}
+              />
+            ) : null}
+
             {result.state === 'confirmed' && paidServiceStatus !== null ? (
               <StatusMessage data-testid="customer-payment-status">
                 {paymentMessage(paidServiceStatus)}

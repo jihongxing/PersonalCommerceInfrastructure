@@ -1,3 +1,5 @@
+import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
 import {
   createCustomer,
   createDraftCommerceAction,
@@ -60,6 +62,7 @@ export interface CustomerRequestUseCaseDependencies {
   readonly offeringRepository: OfferingRepository;
   readonly customerRepository: CustomerRepository;
   readonly commerceActionRepository: CommerceActionRepository;
+  readonly fulfillmentCodeRepository: IFulfillmentCodeRepository;
   readonly idGenerator: IdGenerator;
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
@@ -97,6 +100,9 @@ export interface CustomerResult {
   readonly actionId: string;
   readonly state: CommerceAction['state'];
   readonly message: string;
+  readonly fulfillmentCode?: string;
+  readonly fulfillmentStatus?: 'pending' | 'fulfilled';
+  readonly fulfillmentConfirmedAt?: string;
 }
 
 export class GetPublicOfferingUseCase {
@@ -199,6 +205,11 @@ export class SubmitCustomerRequestUseCase {
         await customerRepository.save(customer);
       }
       await commerceActionRepository.save(action);
+      
+      // Generate fulfillment code for offline service verification
+      const fulfillmentCode = FulfillmentCode.generate(action.id);
+      await this.dependencies.fulfillmentCodeRepository.save(fulfillmentCode);
+      
       await this.dependencies.canonicalEventRecorder.record(
         {
           actorId: customer.id,
@@ -413,10 +424,22 @@ export class GetCustomerRequestResultUseCase {
         "Your Request was declined by the Creator. This status records only the Creator's response to your Request.",
     };
 
+    // Fetch fulfillment code if exists
+    const fulfillmentCode = await this.dependencies.fulfillmentCodeRepository.findByActionId(
+      action.id,
+    );
+
     return {
       actionId: action.id,
       state: action.state,
       message: messageByState[action.state],
+      ...(fulfillmentCode
+        ? {
+            fulfillmentCode: fulfillmentCode.getCode(),
+            fulfillmentStatus: fulfillmentCode.getStatus() === 'fulfilled' ? 'fulfilled' as const : 'pending' as const,
+            fulfillmentConfirmedAt: fulfillmentCode.getFulfilledAt()?.toISOString(),
+          }
+        : {}),
     };
   }
 }

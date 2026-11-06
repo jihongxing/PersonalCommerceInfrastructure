@@ -4,10 +4,13 @@ import type { AccountContext } from '../core/account-context.js';
 import { ApplicationError } from '../core/application-error.js';
 import {
   formatCommerceReferenceForDisplay,
+  createCommerceReference,
 } from '../../modules/identity-infrastructure/commerce-reference-contract.js';
 import { CommerceProfileNotFoundError } from '../../modules/identity-infrastructure/commerce-profile-repository.js';
 import type { CommerceReferenceRepository } from '../../modules/identity-infrastructure/commerce-reference-repository.js';
+import { CommerceReferenceAlreadyExistsError } from '../../modules/identity-infrastructure/commerce-reference-repository.js';
 import { createCommerceProfileId } from '../../modules/identity-infrastructure/identity-contract.js';
+import { generateCommerceReference } from '../../modules/commerce-reference/commerce-reference-generator.js';
 
 export type PrivateCommerceReferenceView =
   | {
@@ -24,6 +27,11 @@ export interface PrivateCommerceReferenceService {
     accountContext: AccountContext,
     profileId: string,
   ): Promise<PrivateCommerceReferenceView>;
+
+  assignCommerceReferenceWithRetry(
+    commerceProfileId: string,
+    maxRetries?: number,
+  ): Promise<string>;
 }
 
 export function createPrivateCommerceReferenceService(dependencies: {
@@ -65,6 +73,38 @@ export function createPrivateCommerceReferenceService(dependencies: {
         commerceReference: assigned.commerceReference,
         displayValue: formatCommerceReferenceForDisplay(assigned.commerceReference),
       };
+    },
+
+    async assignCommerceReferenceWithRetry(
+      commerceProfileId: string,
+      maxRetries: number = 3,
+    ): Promise<string> {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const ref = generateCommerceReference();
+
+        try {
+          await dependencies.commerceReferenceRepository.assign({
+            commerceReference: createCommerceReference(ref),
+            commerceProfileId: createCommerceProfileId(commerceProfileId),
+            assignedAt: new Date().toISOString(),
+          });
+
+          return ref;
+        } catch (error) {
+          if (error instanceof CommerceReferenceAlreadyExistsError && attempt < maxRetries) {
+            // 碰撞，重试
+            continue;
+          }
+
+          throw error;
+        }
+      }
+
+      throw new ApplicationError({
+        category: 'conflict',
+        code: 'commerce_reference_assignment_failed',
+        message: `Failed to assign Commerce Reference after ${maxRetries} retries`,
+      });
     },
   };
 }

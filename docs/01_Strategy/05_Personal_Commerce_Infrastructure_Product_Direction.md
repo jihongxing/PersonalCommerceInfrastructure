@@ -2,11 +2,14 @@
 
 > **状态**：Frozen Product Direction v0.3 — Formally Aligned
 > **文档角色**：Personal Commerce Infrastructure 的产品方向层 SSOT
+> **必读前置文档**：[`05A — Core Problem and Anti-封禁 Strategy`](./05A_Core_Problem_and_Anti_封禁_Strategy.md) — 理解 PCI 解决的核心问题与反封禁战略
 > **上游文档**：[`01 — Project Thesis`](./01_Project_Thesis.md)、[`02 — Vision & Endgame`](./02_Vision_and_Endgame.md)、[`03 — Core Abstraction`](./03_Core_Abstraction.md)、[`04 — North Star & End State`](./04_North_Star_End_State.md)
 > **下游文档**：[`20 — MVP PRD: VS-01`](../07_Product_Architecture/20_MVP_PRD_VS01.md)、[`22 — Project Handoff / Suspend Baseline`](../08_Execution/22_Project_Handoff.md)、[`06 — Commerce Reference 跨平台传播研究`](./06_Commerce_Reference_Research.md)、[`07 — Commerce Reference 产品规范`](./07_Commerce_Reference_Product_Spec.md)
-> **最后更新**：2026-08-26
+> **最后更新**：2026-11-06
 
 本文档定义 Personal Commerce Infrastructure（PCI）的产品定义、方向模型、领域词汇、产品楔子、长期演进和非目标。它不替代阶段性产品合同，不自动授权实现，也不改变当前项目暂停状态。
+
+**核心价值主张**：为被平台封禁的 Creator 提供永不失效的商业身份。
 
 ## 1. Authority & Scope
 
@@ -45,7 +48,13 @@ STAGE_2_IMPLEMENTATION = AUTHORIZED (approved scoped change units only)
 
 ## 2. Product Definition
 
-PCI 是面向个人经济参与者的商业基础设施。它把原本分散在社交平台、聊天工具、私信、日历和临时交易记录中的商业意图，组织成由个人控制的、可迁移的商业系统。
+PCI 为被平台封禁的 Creator 提供永不失效的商业身份。它把原本分散在社交平台、聊天工具、私信、日历和临时交易记录中的商业意图，组织成由个人控制的、可迁移的商业系统。
+
+**核心问题**：中国互联网平台的封闭生态正在系统性地打压独立 Creator 的商业行为。地陪、台球助教、占卜师等个人商业者因"私域引流"被封号，失去商业入口。
+
+**PCI 解决方案**：通过 Commerce Reference（C号）—— 一个平台无法封禁的商业标识 —— 让 Creator 能在任何平台引流到自己的独立商业页面。
+
+**技术原理**：平台可以封禁域名（www.example.com），但无法封禁一串无意义的字符（3479AC-DEFHJK-MNPQRT）。
 
 PCI 的本质不是替个人建立一个新的流量平台，而是让个人拥有：
 

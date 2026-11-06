@@ -6,6 +6,7 @@ import type { ActorContext } from '../../../applications/core/actor-context.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
 import type { CustomerRequestService } from '../../../applications/customer-request/customer-request-service.js';
+import type { IQrCodeGenerator } from '../../image-generation/qr-code-generator.js';
 import type { SubmitCustomerRequestCommand } from '../../../applications/customer-request/customer-request-use-cases.js';
 import {
   CustomerRequestResultSchema,
@@ -22,6 +23,7 @@ export function registerCustomerRequestRoutes(
   dependencies: {
     readonly service: CustomerRequestService;
     readonly authContextProvider: AuthContextProvider;
+    readonly qrCodeGenerator: IQrCodeGenerator;
   },
 ): void {
   const params = Type.Object({ offeringId: Type.String({ minLength: 1 }) });
@@ -217,6 +219,67 @@ export function registerCustomerRequestRoutes(
         state: action.state,
         resultAccessToken: action.resultAccessToken,
       };
+    },
+  );
+
+  // Fulfillment code confirmation route
+  server.post(
+    '/api/v1/creator/requests/:actionId/confirm-fulfillment',
+    {
+      schema: {
+        operationId: 'confirmFulfillment',
+        params: actionParams,
+        body: Type.Object({
+          fulfillmentCode: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
+        }),
+        response: {
+          200: Type.Object({
+            actionId: Type.String(),
+            status: Type.Literal('fulfilled'),
+            confirmedAt: Type.String(),
+          }),
+          400: ApiErrorEnvelopeSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['customer-request'],
+      },
+      preHandler: authenticate,
+    },
+    async (request) => {
+      const { actionId } = request.params as { readonly actionId: string };
+      const { fulfillmentCode } = request.body as { readonly fulfillmentCode: string };
+      return dependencies.service.confirmFulfillment(
+        actionId,
+        fulfillmentCode,
+        requireContext(request),
+      );
+    },
+  );
+
+  // QR code generation route (public)
+  server.get(
+    '/api/v1/public/fulfillment-code/:code/qrcode',
+    {
+      schema: {
+        operationId: 'getFulfillmentCodeQrCode',
+        params: Type.Object({
+          code: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
+        }),
+        response: {
+          200: Type.Object({
+            dataUrl: Type.String(),
+          }),
+          400: ApiErrorEnvelopeSchema,
+        },
+        tags: ['customer-request'],
+      },
+    },
+    async (request) => {
+      const { code } = request.params as { readonly code: string };
+      const dataUrl = await dependencies.qrCodeGenerator.generateDataUrl(code);
+      return { dataUrl };
     },
   );
 }

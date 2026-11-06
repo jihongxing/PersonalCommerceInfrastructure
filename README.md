@@ -1,9 +1,15 @@
 # Personal Commerce Infrastructure
 
+**为被平台封禁的 Creator 提供永不失效的商业身份**
+
 当前仓库已完成 VS-01 Product Proof、VS-02A Provider-neutral Money Domain、VS-02B Provider
 Integration Readiness 和 VS-02E Local Commercial Simulation。VS-02C 微信支付 Adapter 仅完成本地
 工程资格化，外部 Provider Qualification 仍为 `CONDITIONAL`。VS-02D 内部 Engineering Readiness
 已完成，但 Real Money Activation 仍保持关闭并要求人工 Founder GO。
+
+**核心问题**：地陪、台球助教、占卜师等个人商业者在抖音/小红书/微信因"私域引流"被封号，失去商业入口。
+
+**PCI 解决方案**：通过 Commerce Reference（C号）—— 一个平台无法封禁的商业标识 —— 让 Creator 能在任何平台引流到自己的独立商业页面。
 
 当前版本：`0.1.0`  
 当前交付状态：`VS-02E Local Commercial Simulation COMPLETE / No Real Money Evidence`

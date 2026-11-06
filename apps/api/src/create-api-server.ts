@@ -1,10 +1,12 @@
 import swagger from '@fastify/swagger';
+import rateLimit from '@fastify/rate-limit';
 import { TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 
 import { createInMemoryCreatorIdentityComposition } from '../../../adapters/in-memory/creator-identity-composition.js';
 import { registerApiErrorHandling } from '../../../adapters/transport/http/api-error-handler.js';
+import type { IQrCodeGenerator } from '../../../adapters/image-generation/qr-code-generator.js';
 import { registerCreatorIdentityRoutes } from '../../../adapters/transport/http/creator-identity-routes.js';
 import { registerPrivateIdentityRoutes } from '../../../adapters/transport/http/private-identity-routes.js';
 import { registerPrivateCommerceProfileRoutes } from '../../../adapters/transport/http/private-commerce-profile-routes.js';
@@ -27,6 +29,7 @@ import type { CreatorIdentityService } from '../../../applications/creator-ident
 import type { ServiceOfferingService } from '../../../applications/service-offering/offering-service.js';
 import type { CustomerRequestService } from '../../../applications/customer-request/customer-request-service.js';
 import type { SafeLogger } from '../../../adapters/observability/safe-logger.js';
+import type { PerformanceMonitor } from '../../../adapters/observability/performance-monitor.js';
 import { registerExternalObservationRoutes } from '../../../adapters/transport/http/external-observation-routes.js';
 import type { OperationsAuthContextProvider } from '../../../applications/core/ports/operations-auth-context-provider.js';
 import type { RecordExternalObservationUseCase } from '../../../applications/shadow-commerce/external-observation-use-cases.js';
@@ -57,6 +60,7 @@ export interface ApiServerDependencies {
   readonly privateSelfDeclaredExternalRelationshipService?: PrivateSelfDeclaredExternalRelationshipService;
   readonly serviceOfferingService?: ServiceOfferingService;
   readonly customerRequestService?: CustomerRequestService;
+  readonly qrCodeGenerator?: IQrCodeGenerator;
   readonly operationsAuthContextProvider?: OperationsAuthContextProvider;
   readonly recordExternalObservation?: RecordExternalObservationUseCase;
   readonly paidCommerceService?: PaidCommerceService;
@@ -70,6 +74,7 @@ export interface ApiServerDependencies {
   readonly publicOrigin?: string;
   readonly checkReadiness?: () => Promise<void>;
   readonly logger?: SafeLogger;
+  readonly performanceMonitor?: PerformanceMonitor;
 }
 
 export async function createApiServer(
@@ -120,6 +125,14 @@ export async function createApiServer(
     });
   }
 
+  // Performance monitoring hook
+  if (dependencies.performanceMonitor !== undefined) {
+    server.addHook('onResponse', (_request, _reply, done) => {
+      // Performance metrics recorded by onResponse hook
+      done();
+    });
+  }
+
   server.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
     if (origin !== undefined && dependencies.corsAllowedOrigins?.includes(origin) === true) {
@@ -135,6 +148,18 @@ export async function createApiServer(
   });
 
   server.setValidatorCompiler(TypeBoxValidatorCompiler);
+
+  // Register rate limiting before routes
+  await server.register(rateLimit, {
+    max: 100, // 每个 IP 每分钟 100 次请求
+    timeWindow: '1 minute',
+    skipOnError: false,
+    errorResponseBuilder: (_request, context) => ({
+      error: 'TOO_MANY_REQUESTS',
+      message: `Rate limit exceeded. Retry after ${context.after}`,
+      statusCode: 429,
+    }),
+  });
 
   await server.register(swagger, {
     openapi: {
@@ -224,6 +249,7 @@ export async function createApiServer(
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    qrCodeGenerator: dependencies.qrCodeGenerator ?? composition.qrCodeGenerator,
   });
   registerExternalObservationRoutes(server, {
     authContextProvider:

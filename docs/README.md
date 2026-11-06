@@ -5,7 +5,8 @@
 > **RESTART SSOT**：[`docs/08_Execution/22_Project_Handoff.md`](./08_Execution/22_Project_Handoff.md)
 > **ARCHITECTURAL DISCOVERY BEFORE SUSPENSION**：Identity Infrastructure is required
 > **NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
-> 最近执行更新：2026-08-18
+> **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
+> 最近执行更新：2026-10-09
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -25,7 +26,7 @@ CLIENT-002 Golden Path Closure      Complete
 Project Development                Suspended
 Real Money                         Disabled
 Native App                         Deferred
-Identity Infrastructure           Architecture direction frozen; not implemented
+Identity / Commerce Profile Runtime 已有提交实现；整体授权和验收状态待恢复审查核对
 ```
 
 当前产品状态：
@@ -166,6 +167,9 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
 
 23. [23 — 2026-08-15 Handoff](./08_Execution/23_2026-08-15_Handoff.md)
     记录 VS-02A–VS-02D 交接，并由 2026-08-16 `EXEC-002` 更新补充当前验证基线。
+
+24. [24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
+    用简体中文汇总 M1–M9、VS-01 / VS-02、Stage 2、Private Self-Service、Stage 3–5、OV-001、Real Money 和工程治理任务；标注状态、依赖、验收和授权边界。本清单仍待 Founder / Main Control 接受。
 
 ### 工程治理
 

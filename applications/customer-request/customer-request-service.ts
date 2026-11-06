@@ -1,3 +1,5 @@
+import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
+import { confirmFulfillmentUseCase, type ConfirmFulfillmentResult } from '../fulfillment/confirm-fulfillment-use-case.js';
 import type { CanonicalEventRecorder } from '../core/canonical-event-recorder.js';
 import type { IdGenerator } from '../core/ports/id-generator.js';
 import type { NotificationPort } from '../core/ports/notification-port.js';
@@ -45,6 +47,11 @@ export interface CustomerRequestService {
   confirm(actionId: string, context: ActorContext): Promise<CommerceAction>;
   decline(actionId: string, context: ActorContext): Promise<CommerceAction>;
   getResult(token: string): Promise<CustomerResult>;
+  confirmFulfillment(
+    actionId: string,
+    fulfillmentCode: string,
+    context: ActorContext,
+  ): Promise<ConfirmFulfillmentResult>;
 }
 
 export function createCustomerRequestService(dependencies: {
@@ -53,6 +60,7 @@ export function createCustomerRequestService(dependencies: {
   readonly offeringRepository: OfferingRepository;
   readonly customerRepository: CustomerRepository;
   readonly commerceActionRepository: CommerceActionRepository;
+  readonly fulfillmentCodeRepository: IFulfillmentCodeRepository;
   readonly idGenerator: IdGenerator;
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
@@ -75,5 +83,21 @@ export function createCustomerRequestService(dependencies: {
     confirm: (actionId, context) => confirm.execute(actionId, context),
     decline: (actionId, context) => decline.execute(actionId, context),
     getResult: (token) => getResult.execute(token),
+    confirmFulfillment: (actionId, fulfillmentCode, context) => {
+      if (context.actor.kind !== 'creator') {
+        throw new Error('Only creators can confirm fulfillment');
+      }
+      return confirmFulfillmentUseCase(
+        {
+          fulfillmentCodeRepository: dependencies.fulfillmentCodeRepository,
+          commerceActionRepository: dependencies.commerceActionRepository,
+        },
+        {
+          actionId,
+          fulfillmentCode,
+          creatorId: context.actor.creatorId,
+        },
+      );
+    },
   };
 }

@@ -152,6 +152,8 @@ describe('API runtime skeleton', () => {
       '/api/v1/creator/confirmed-requests',
       '/api/v1/creator/requests/{actionId}/confirm',
       '/api/v1/creator/requests/{actionId}/decline',
+      '/api/v1/creator/requests/{actionId}/confirm-fulfillment',
+      '/api/v1/public/fulfillment-code/{code}/qrcode',
       '/api/v1/operations/requests/{actionId}/external-payment',
       '/api/v1/operations/requests/{actionId}/fulfillment',
       '/api/v1/creator/paid-orders',

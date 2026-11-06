@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { InMemoryFulfillmentCodeRepository } from '../../adapters/in-memory/in-memory-fulfillment-code-repository.js';
 
 import { InMemoryCommerceActionRepository } from '../../adapters/in-memory/in-memory-commerce-action-repository.js';
 import { InMemoryCustomerRepository } from '../../adapters/in-memory/in-memory-customer-repository.js';
@@ -97,6 +98,7 @@ async function createFixture() {
     offeringRepository,
     customerRepository,
     commerceActionRepository,
+    fulfillmentCodeRepository: new InMemoryFulfillmentCodeRepository(),
     idGenerator: new SequentialIdGenerator('request'),
     canonicalEventRecorder,
     notificationPort: notificationAdapter,
@@ -417,6 +419,7 @@ describe('Customer Request application use cases', () => {
       offeringRepository: fixture.offeringRepository,
       customerRepository: fixture.customerRepository,
       commerceActionRepository: fixture.commerceActionRepository,
+      fulfillmentCodeRepository: new InMemoryFulfillmentCodeRepository(),
       idGenerator: new SequentialIdGenerator('failed-notification'),
       canonicalEventRecorder: fixture.canonicalEventRecorder,
       notificationPort: {

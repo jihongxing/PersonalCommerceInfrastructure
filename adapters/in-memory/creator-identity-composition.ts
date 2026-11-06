@@ -79,6 +79,9 @@ import { CanonicalEventRecorder } from '../../applications/core/canonical-event-
 import { FixedClock } from './fixed-clock.js';
 import { InMemoryCustomerRepository } from './in-memory-customer-repository.js';
 import { InMemoryCommerceActionRepository } from './in-memory-commerce-action-repository.js';
+import { InMemoryFulfillmentCodeRepository } from './in-memory-fulfillment-code-repository.js';
+import type { IQrCodeGenerator } from '../image-generation/qr-code-generator.js';
+import { QrCodeGeneratorImpl } from '../image-generation/qr-code-generator.js';
 import { InMemoryNotificationAdapter } from '../notifications/in-memory-notification-adapter.js';
 import { RecordExternalObservationUseCase } from '../../applications/shadow-commerce/external-observation-use-cases.js';
 import { StaticOperationsAuthContextProvider } from '../auth/operations/static-operations-auth-context-provider.js';
@@ -134,6 +137,7 @@ export interface CreatorIdentityComposition {
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
+  readonly qrCodeGenerator: IQrCodeGenerator;
   readonly operationsAuthContextProvider: OperationsAuthContextProvider;
   readonly recordExternalObservation: RecordExternalObservationUseCase;
   readonly paidCommerceService: PaidCommerceService;
@@ -182,6 +186,7 @@ export function createInMemoryCreatorIdentityComposition(
   );
   const customerRepository = new InMemoryCustomerRepository();
   const commerceActionRepository = new InMemoryCommerceActionRepository();
+  const fulfillmentCodeRepository = new InMemoryFulfillmentCodeRepository();
   const paidCommerceRepository = new InMemoryPaidCommerceRepository();
   const reservationRepository = new InMemoryReservationRepository();
   const contractRepository = new InMemoryContractRepository();
@@ -419,12 +424,14 @@ export function createInMemoryCreatorIdentityComposition(
       offeringRepository,
       customerRepository,
       commerceActionRepository,
+      fulfillmentCodeRepository,
       idGenerator,
       canonicalEventRecorder,
       notificationPort: notificationAdapter,
       unitOfWork,
       contractRepository,
     }),
+    qrCodeGenerator: new QrCodeGeneratorImpl(),
     operationsAuthContextProvider: new StaticOperationsAuthContextProvider({
       accessToken: 'test-operations-token',
       operatorId: 'pilot-operator-test-1',

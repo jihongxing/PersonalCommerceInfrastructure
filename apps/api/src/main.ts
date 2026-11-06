@@ -8,6 +8,7 @@ import {
   loadOperationsAuthConfiguration,
   loadRealMoneyRuntimeConfiguration,
 } from '../../prototype/src/configuration/bootstrap.js';
+import { QrCodeGeneratorImpl } from '../../../adapters/image-generation/qr-code-generator.js';
 import {
   createPostgresCreatorIdentityComposition,
   type CreatorIdentityAuthConfiguration,
@@ -16,6 +17,7 @@ import {
 import { InMemoryAuthContextProvider } from '../../../adapters/auth/testing/in-memory-auth-context-provider.js';
 import { LogNotificationAdapter } from '../../../adapters/notifications/log-notification-adapter.js';
 import { createSafeLogger } from '../../../adapters/observability/safe-logger.js';
+import { createPerformanceMonitor } from '../../../adapters/observability/performance-monitor.js';
 import { createApiServer } from './create-api-server.js';
 import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js';
 
@@ -25,6 +27,10 @@ export async function startApi(): Promise<ApiRuntime> {
     configuration.environment === 'test' && configuration.usePostgresTestComposition;
   const realMoneyRuntime = loadRealMoneyRuntimeConfiguration();
   const logger = createSafeLogger(configuration.logLevel);
+  const performanceMonitor = createPerformanceMonitor({
+    mode: configuration.environment === 'production' ? 'aggregate' : 'console',
+    enabled: true,
+  });
   logger.info('real_money_runtime_configured', {
     runtimeEnvironment: realMoneyRuntime.runtimeEnvironment,
     realMoneyEnabled: realMoneyRuntime.realMoneyEnabled,
@@ -72,6 +78,7 @@ export async function startApi(): Promise<ApiRuntime> {
           creatorIdentityService: composition.service,
           serviceOfferingService: composition.offeringService,
           customerRequestService: composition.customerRequestService,
+          qrCodeGenerator: new QrCodeGeneratorImpl(),
           operationsAuthContextProvider: composition.operationsAuthContextProvider,
           recordExternalObservation: composition.recordExternalObservation,
           paidCommerceService: composition.paidCommerceService,
@@ -96,6 +103,7 @@ export async function startApi(): Promise<ApiRuntime> {
           checkReadiness: () => composition.database.checkReadiness(),
           corsAllowedOrigins: [configuration.webReferenceClientOrigin],
           logger,
+          performanceMonitor,
           publicOrigin: configuration.webReferenceClientOrigin,
         },
   );

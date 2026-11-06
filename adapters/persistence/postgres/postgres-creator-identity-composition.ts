@@ -60,6 +60,9 @@ import {
 import { createSupabaseAuthContextProvider } from '../../auth/supabase/supabase-auth-context-provider.js';
 import { InMemoryCreatorActorResolver } from '../../auth/testing/creator-actor-resolver.js';
 import { UuidIdGenerator } from '../../system/uuid-id-generator.js';
+import type { IQrCodeGenerator } from '../../image-generation/qr-code-generator.js';
+import { QrCodeGeneratorImpl } from '../../image-generation/qr-code-generator.js';
+import { PostgresFulfillmentCodeRepository } from './postgres-fulfillment-code-repository.js';
 import {
   PostgresCapabilityRepository,
   PostgresCommerceActionRepository,
@@ -157,6 +160,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly service: CreatorIdentityService;
   readonly offeringService: ServiceOfferingService;
   readonly customerRequestService: CustomerRequestService;
+  readonly qrCodeGenerator: IQrCodeGenerator;
   readonly operationsAuthContextProvider: OperationsAuthContextProvider;
   readonly recordExternalObservation: RecordExternalObservationUseCase;
   readonly paidCommerceService: PaidCommerceService;
@@ -205,6 +209,7 @@ export function createPostgresCreatorIdentityComposition(
   const distributionAssetRepository = new PostgresDistributionAssetRepository(database.database);
   const customerRepository = new PostgresCustomerRepository(database.database);
   const commerceActionRepository = new PostgresCommerceActionRepository(database.database);
+  const fulfillmentCodeRepository = new PostgresFulfillmentCodeRepository(database.database);
   const paidCommerceRepository = new PostgresPaidCommerceRepository(database.database);
   const reservationRepository = new PostgresReservationRepository(database.database);
   const contractRepository = new PostgresContractRepository(database.database);
@@ -414,12 +419,14 @@ export function createPostgresCreatorIdentityComposition(
       offeringRepository,
       customerRepository,
       commerceActionRepository,
+      fulfillmentCodeRepository,
       idGenerator,
       canonicalEventRecorder,
       notificationPort,
       unitOfWork,
       contractRepository,
     }),
+    qrCodeGenerator: new QrCodeGeneratorImpl(),
     operationsAuthContextProvider: new StaticOperationsAuthContextProvider({
       accessToken: operationsConfiguration.operationsAccessToken,
       operatorId: operationsConfiguration.operationsOperatorId,

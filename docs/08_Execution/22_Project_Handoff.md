@@ -379,6 +379,11 @@ is created by this suspension task.
 `RESUME-001` starts with a re-entry audit and then defines the first Founder-authorized direction for
 the identity gap. It does not grant automatic implementation permission.
 
+The complete Chinese project task inventory is tracked in
+[`24 — 项目开发任务总清单`](./24_Development_Backlog.md). The backlog is proposed and does not
+change this handoff's `SUSPENDED` status or authorize implementation until accepted by Founder /
+Main Control.
+
 ### Stage 1 — Re-entry Audit
 
 1. Read this Handoff SSOT and `docs/09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md`;

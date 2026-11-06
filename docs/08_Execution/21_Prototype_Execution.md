@@ -6685,3 +6685,52 @@ until Founder / Main Control separately authorizes `START_OV001`.
 DOCUMENTATION_STATUS = UPDATED WITH OV-001 EXECUTION READINESS REVIEW
 COMMITTED = NO
 ```
+
+## 76. PCI-DEVELOPMENT-BACKLOG-001 — 项目开发任务总清单
+
+> **Change Unit**: `PCI-DEVELOPMENT-BACKLOG-001`
+> **Date**: 2026-10-09
+> **Authority**: Main Control / Founder acceptance required
+> **Scope**: 建立简体中文、分阶段、带状态 / 依赖 / 验收 / 授权边界的项目任务总清单
+> **Non-scope**: 产品实现、项目解冻、Stage 2 完成签署、OV-001 启动、Pilot 激活、部署或真实资金
+
+### 76.1 Result
+
+```text
+PCI-DEVELOPMENT-BACKLOG-001 = PROPOSED — FOUNDER ACCEPTANCE REQUIRED
+BACKLOG_COVERAGE = M1-M9 / VS-01 / VS-02 / STAGE 2-5 / PRIVATE SELF-SERVICE / OV-001 / GOVERNANCE
+PROJECT_STATUS = SUSPENDED
+IMPLEMENTATION_AUTHORIZED = false
+```
+
+简体中文任务总表、已知决策冲突、任务依赖和验收边界见
+[`24 — 项目开发任务总清单`](./24_Development_Backlog.md)。该清单不改变项目 Handoff，
+也不授权任何候选实现任务。
+
+### 76.2 Current Validation Evidence
+
+On 2026-10-09, against commit `7c2a0d6`:
+
+```text
+pnpm typecheck = PASS
+pnpm lint = PASS
+pnpm test = FAIL
+TESTS = 518 passed, 2 failed, 41 skipped
+```
+
+Both failures are in `tests/persistence/commerce-relationship.test.ts`: one schema-column
+expectation omits the persisted `provenance` column; the other expects `SELF_DECLARED` after
+rehydration but receives `UNKNOWN`. The intended contract and whether the test or implementation is
+incorrect remain unresolved. The proposed Stage 2 reconciliation must be updated to use this
+observed evidence before it can be accepted.
+
+### 76.3 Backlog Review Boundary
+
+```text
+PCI-DEVELOPMENT-BACKLOG-001 = [ACCEPT / MODIFY / REJECT]
+RESUME-001 = [AUTHORIZE RE-ENTRY AUDIT / MODIFY / DEFER]
+PCI-BACKLOG-RECONCILIATION-001 = RESUME-001 REQUIRED SUBTASK
+```
+
+本任务只建立中文任务清单，不证明任务覆盖已穷尽，也不改变当前暂停状态。Founder 接受前，
+需由下一轮重返审查根据证据继续补正遗漏。未明确接受 Resume Gate 前，不得启动实施包。

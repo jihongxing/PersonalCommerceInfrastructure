@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCreatorProfile } from '@/features/creator-profile/api/use-creator-profile';
 import { CreatorProfileCard } from '@/components/commerce/creator-profile-card';
 import { ServiceCard, ServiceListEmpty } from '@/components/commerce/service-card';
@@ -11,6 +12,7 @@ export default function CreatorProfilePage({
 }: {
   params: { commerceRef: string };
 }) {
+  const router = useRouter();
   const { data, isLoading, error } = useCreatorProfile(params.commerceRef);
 
   // 加载状态
@@ -62,9 +64,8 @@ export default function CreatorProfilePage({
   }
 
   const handleServiceSelect = (serviceId: string) => {
-    // 跳转到服务详情页（Phase 2 实现）
-    console.log('Selected service:', serviceId);
-    // TODO: router.push(`/s/${serviceId}`);
+    // 跳转到服务详情页
+    router.push(`/s/${serviceId}`);
   };
 
   return (

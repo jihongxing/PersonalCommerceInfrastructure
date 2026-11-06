@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { Type } from 'typebox';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 import type { ProductDatabase } from '../../persistence/postgres/postgres-database.js';
 import { commerceReferences } from '../../../database/schema/commerce-reference.js';
 import { commerceProfiles } from '../../../database/schema/commerce-profile.js';
+import { serviceOfferings } from '../../../database/schema/creator-identity.js';
 import {
   PublicCreatorProfileResponseSchema,
 } from '../../../contracts/api/v1/public-creator-profile-contracts.js';
@@ -81,9 +82,28 @@ export function registerPublicCreatorProfileRoutes(
 
       const { displayName } = profileRows[0]!;
 
-      // 3. TODO: 查找该 Creator 的 published offerings
-      // 暂时返回空数组，Phase 1 先完成 Profile 展示
-      const offerings: Array<{ id: string; title: string; description: string }> = [];
+      // 3. 查找该 Creator 的 published offerings
+      // 注意：commerce_profile_id 需要映射到 creator_id
+      // 假设 commerce_profile_id === creator_id（需要确认数据模型）
+      const offeringRows = await dependencies.database
+        .select({
+          id: serviceOfferings.id,
+          title: serviceOfferings.title,
+          description: serviceOfferings.description,
+        })
+        .from(serviceOfferings)
+        .where(
+          and(
+            eq(serviceOfferings.creatorId, commerceProfileId),
+            eq(serviceOfferings.state, 'published')
+          )
+        );
+
+      const offerings = offeringRows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+      }));
 
       return reply.send({
         profile: {

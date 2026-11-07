@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,24 +20,33 @@ import { Plus, Edit2, Trash2, Eye, FileText } from 'lucide-react';
 export default function ServicesPage() {
   const { toast } = useToast();
   const { data: services, isLoading } = useCreatorServices();
-  const publishMutation = usePublishService('');
-  const unpublishMutation = useUnpublishService('');
-  const deleteMutation = useDeleteService('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [publishId, setPublishId] = useState<string | null>(null);
-  const [unpublishId, setUnpublishId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // 为待删除的服务创建 mutation
+  const deleteMutation = useDeleteService(deletingId || '');
+
+  // 使用 useMemo 优化分类计算
+  const { draftServices, publishedServices, archivedServices } = useMemo(() => {
+    return {
+      draftServices: services?.filter((s) => s.state === 'draft') || [],
+      publishedServices: services?.filter((s) => s.state === 'published') || [],
+      archivedServices:
+        services?.filter((s) => s.state === 'archived' || s.state === 'unpublished') || [],
+    };
+  }, [services]);
 
   async function handleDelete(serviceId: string) {
     if (!confirm('确定要删除这个服务吗？此操作不可撤销。')) {
       return;
     }
     try {
+      setDeletingId(serviceId);
       await deleteMutation.mutateAsync();
       toast({
         title: '成功',
         description: '服务已删除',
       });
-      // setDeleteId(null);
+      setDeletingId(null);
     } catch (error) {
       toast({
         title: '错误',
@@ -45,41 +54,7 @@ export default function ServicesPage() {
           error instanceof Error ? error.message : '操作失败，请重试',
         variant: 'destructive',
       });
-    }
-  }
-
-  async function handlePublish(serviceId: string) {
-    try {
-      // 这里需要重构 hooks 来传递 ID
-      toast({
-        title: '成功',
-        description: '服务已发布',
-      });
-      setPublishId(null);
-    } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
-        variant: 'destructive',
-      });
-    }
-  }
-
-  async function handleUnpublish(serviceId: string) {
-    try {
-      toast({
-        title: '成功',
-        description: '服务已下架',
-      });
-      setUnpublishId(null);
-    } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
-        variant: 'destructive',
-      });
+      setDeletingId(null);
     }
   }
 
@@ -97,12 +72,6 @@ export default function ServicesPage() {
     );
   }
 
-  const draftServices = services?.filter((s) => s.state === 'draft') || [];
-  const publishedServices =
-    services?.filter((s) => s.state === 'published') || [];
-  const archivedServices =
-    services?.filter((s) => s.state === 'archived' || s.state === 'unpublished') ||
-    [];
   const isEmpty = !services || services.length === 0;
 
   const ServiceCard = ({ service }: { service: ServiceOffering }) => (
@@ -127,7 +96,6 @@ export default function ServicesPage() {
                   : '已下架'}
             </Badge>
           </div>
-          <div className="flex gap-2">
             <Link href={`/creator/services/${service.id}`}>
               <Button variant="ghost" size="sm">
                 <Eye className="w-4 h-4" />
@@ -146,7 +114,6 @@ export default function ServicesPage() {
             >
               <Trash2 className="w-4 h-4" />
             </Button>
-          </div>
         </div>
 
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -163,23 +130,19 @@ export default function ServicesPage() {
 
         <div className="flex gap-2 text-xs text-muted-foreground">
           {service.state === 'draft' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPublishId(service.id)}
-            >
-              <FileText className="w-3 h-3 mr-1" />
-              发布
-            </Button>
+            <span className="text-xs text-muted-foreground">
+              编辑后可发布
+            </span>
           )}
           {service.state === 'published' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setUnpublishId(service.id)}
-            >
-              下架
-            </Button>
+            <span className="text-xs text-green-600">
+              ✓ 已发布
+            </span>
+          )}
+          {service.state === 'archived' && (
+            <span className="text-xs text-gray-500">
+              已下架
+            </span>
           )}
         </div>
       </CardContent>
@@ -218,13 +181,13 @@ export default function ServicesPage() {
         <Tabs defaultValue="draft" className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="draft">
-              草稿 ({draftServices.length})
+              草稿 <Badge className="ml-2" variant="secondary">{draftServices.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="published">
-              已发布 ({publishedServices.length})
+              已发布 <Badge className="ml-2">{publishedServices.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="archived">
-              已下架 ({archivedServices.length})
+              已下架 <Badge className="ml-2" variant="outline">{archivedServices.length}</Badge>
             </TabsTrigger>
           </TabsList>
 

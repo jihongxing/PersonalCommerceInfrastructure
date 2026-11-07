@@ -103,7 +103,8 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
       refreshToken,
     });
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Signup error:', error instanceof Error ? error.message : String(error));
+    console.error('Stack:', error instanceof Error ? error.stack : '');
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getSession, clearSession, AuthSession } from '@/lib/auth/session';
+import { initializeFetchInterceptor } from '@/lib/api/interceptor';
 import { authService } from './service';
 
 /**
@@ -55,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: session.userEmail,
         });
       }
+      // 初始化 fetch 拦截器
+      initializeFetchInterceptor();
     } catch (err) {
       console.error('Failed to restore session:', err);
       clearSession();

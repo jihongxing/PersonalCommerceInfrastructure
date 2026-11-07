@@ -11,8 +11,8 @@ import {
   usePublishService,
   useUnpublishService,
 } from '@/features/creator-onboarding/api/use-creator-services';
-import { useState } from 'react';
-import { FileText, Edit2 } from 'lucide-react';
+import { FileText, Edit2, AlertCircle } from 'lucide-react';
+import { PublishChecklist } from '@/features/creator-onboarding/components/publish-checklist';
 
 interface ServiceDetailPageProps {
   params: {
@@ -25,16 +25,77 @@ export default function ServiceDetailPage({
 }: ServiceDetailPageProps) {
   const { toast } = useToast();
   const { data: service, isLoading } = useServiceOffering(params.id);
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
-  const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
+  const publishMutation = usePublishService(params.id);
+  const unpublishMutation = useUnpublishService(params.id);
+
+  // 检查发布前的条件
+  const canPublish =
+    !!service?.title &&
+    !!service?.description &&
+    service?.capabilityIds &&
+    service.capabilityIds.length > 0 &&
+    !!service?.availabilityDescription &&
+    !!service?.requestInstructions;
+
+  async function handlePublish() {
+    if (!canPublish) {
+      toast({
+        title: '错误',
+        description: '请完成所有必填项后再发布',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm('确定要发布此服务吗？发布后消费者将可以搜索和预约。')) {
+      return;
+    }
+
+    try {
+      await publishMutation.mutateAsync();
+      toast({
+        title: '成功',
+        description: '服务已发布',
+      });
+    } catch (error) {
+      toast({
+        title: '错误',
+        description:
+          error instanceof Error ? error.message : '发布失败，请重试',
+        variant: 'destructive',
+      });
+    }
+  }
+
+  async function handleUnpublish() {
+    if (!confirm('确定要下架此服务吗？下架后消费者将无法看到此服务。')) {
+      return;
+    }
+
+    try {
+      await unpublishMutation.mutateAsync();
+      toast({
+        title: '成功',
+        description: '服务已下架',
+      });
+    } catch (error) {
+      toast({
+        title: '错误',
+        description:
+          error instanceof Error ? error.message : '下架失败，请重试',
+        variant: 'destructive',
+      });
+    }
+  }
 
   if (isLoading) {
     return (
       <div className="py-8">
         <Skeleton className="h-8 w-48 mb-6" />
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="max-w-3xl mx-auto space-y-6">
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
       </div>
     );
@@ -60,7 +121,7 @@ export default function ServiceDetailPage({
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{service.title}</h1>
-          <Badge className="mt-2">
+          <Badge className="mt-2" variant={service.state === 'published' ? 'default' : service.state === 'draft' ? 'secondary' : 'outline'}>
             {service.state === 'published'
               ? '已发布'
               : service.state === 'draft'
@@ -78,7 +139,7 @@ export default function ServiceDetailPage({
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         {/* 基本信息 */}
         <Card>
           <CardHeader>
@@ -108,13 +169,27 @@ export default function ServiceDetailPage({
               <div>
                 <p className="text-sm text-muted-foreground">价格范围</p>
                 <p className="mt-1">
-                  {service.appearance.currency ||'CNY'} {service.appearance.priceRangeMin} -{' '}
+                  {service.appearance.currency || 'CNY'} {service.appearance.priceRangeMin} -{' '}
                   {service.appearance.priceRangeMax}
                 </p>
               </div>
             )}
+
+            <div>
+              <p className="text-sm text-muted-foreground">关联能力</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {service.capabilityIds?.map((id: string) => (
+                  <Badge key={id} variant="outline">
+                    {id.substring(0, 8)}...
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
+
+        {/* 发布前检查清单 */}
+        {service.state === 'draft' && <PublishChecklist service={service} />}
 
         {/* 发布状态和操作 */}
         <Card>
@@ -123,34 +198,60 @@ export default function ServiceDetailPage({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm">
-                {service.state === 'draft'
-                  ? '此服务还未发布。消费者无法看到。发布后，消费者将能够发现和预约此服务。'
-                  : service.state === 'published'
-                    ? '此服务已发布。消费者可以搜索并预约此服务。'
-                    : '此服务已下架。消费者无法看到。'}
-              </p>
+              {service.state === 'draft' && (
+                <>
+                  <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-blue-700">
+                      此服务还未发布。消费者无法看到。发布后，消费者将能够发现和预约此服务。
+                    </p>
+                  </div>
 
-              <div className="flex gap-2">
-                {service.state === 'draft' && (
-                  <Button onClick={() => setShowPublishDialog(true)}>
+                  <Button
+                    onClick={handlePublish}
+                    disabled={!canPublish || publishMutation.isPending}
+                    className="w-full"
+                  >
                     <FileText className="w-4 h-4 mr-2" />
-                    发布服务
+                    {publishMutation.isPending ? '发布中...' : '发布服务'}
                   </Button>
-                )}
-                {service.state === 'published' && (
+
+                  {!canPublish && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      请完成上面的检查清单后再发布
+                    </p>
+                  )}
+                </>
+              )}
+
+              {service.state === 'published' && (
+                <>
+                  <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded">
+                    <div className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5">✓</div>
+                    <p className="text-sm text-green-700">
+                      此服务已发布。消费者可以搜索并预约此服务。
+                    </p>
+                  </div>
+
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      if (confirm('确定要下架这个服务吗？')) {
-                        setShowUnpublishDialog(true);
-                      }
-                    }}
+                    onClick={handleUnpublish}
+                    disabled={unpublishMutation.isPending}
+                    className="w-full text-destructive"
                   >
-                    下架服务
+                    {unpublishMutation.isPending ? '下架中...' : '下架服务'}
                   </Button>
-                )}
-              </div>
+                </>
+              )}
+
+              {service.state === 'archived' && (
+                <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded">
+                  <AlertCircle className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-gray-700">
+                    此服务已下架。消费者无法看到。已有的预约仍会保留。
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

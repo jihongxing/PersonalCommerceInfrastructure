@@ -11,7 +11,7 @@ import {
   useCreatorCapabilities,
   useDeleteCapability,
 } from '@/features/creator-onboarding/api/use-creator-capabilities';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Edit2 } from 'lucide-react';
 
 export default function CapabilitiesPage() {
   const { toast } = useToast();
@@ -104,15 +104,22 @@ export default function CapabilitiesPage() {
                       )}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(capability.id)}
-                    disabled={deleteMutation.isPending}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Link href={`/creator/capabilities/${capability.id}/edit`}>
+                      <Button variant="ghost" size="sm">
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(capability.id)}
+                      disabled={deleteMutation.isPending}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

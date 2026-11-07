@@ -90,7 +90,7 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
     // 存储 refresh token
     const tokenId = uuidv4();
     await pool.query(
-      'INSERT INTO refresh_tokens (id, account_id, token, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
+      'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
       [tokenId, accountId, refreshToken, false]
     );
 
@@ -141,7 +141,7 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
     // 存储 refresh token
     const tokenId = uuidv4();
     await pool.query(
-      'INSERT INTO refresh_tokens (id, account_id, token, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
+      'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
       [tokenId, accountId, refreshToken, false]
     );
 
@@ -175,7 +175,7 @@ app.post(`${API_V1}/auth/refresh`, async (req: Request, res: Response) => {
       const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { accountId: string };
 
       // 检查 token 是否已撤销
-      const tokenResult = await pool.query('SELECT is_revoked FROM refresh_tokens WHERE token = $1', [refreshToken]);
+      const tokenResult = await pool.query('SELECT is_revoked FROM refresh_tokens WHERE token_hash = $1', [refreshToken]);
       if (tokenResult.rows.length === 0 || tokenResult.rows[0].is_revoked) {
         return res.status(401).json({ error: 'Invalid refresh token' });
       }
@@ -213,7 +213,7 @@ app.post(`${API_V1}/auth/logout`, async (req: Request, res: Response) => {
 
     if (refreshToken) {
       // 撤销 refresh token
-      await pool.query('UPDATE refresh_tokens SET is_revoked = true WHERE token = $1', [refreshToken]);
+      await pool.query('UPDATE refresh_tokens SET is_revoked = true WHERE token_hash = $1', [refreshToken]);
     }
 
     res.json({ message: 'Logged out successfully' });
@@ -285,7 +285,7 @@ app.post(`${API_V1}/auth/reset-password`, async (req: Request, res: Response) =>
 
       // 检查 reset token 是否有效
       const resetResult = await pool.query(
-        'SELECT id, is_used FROM password_resets WHERE token = $1 AND is_used = false',
+        'SELECT id, is_used FROM password_resets WHERE token_hash = $1 AND is_used = false',
         [token]
       );
 

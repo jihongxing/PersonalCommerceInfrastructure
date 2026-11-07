@@ -1,4 +1,6 @@
 import createClient from 'openapi-fetch';
+import { getBearerToken } from '@/lib/auth/session';
+
 // TODO: Import types from contracts package
 // import type { paths } from '@personal-commerce-infrastructure/contracts';
 
@@ -8,7 +10,9 @@ type paths = Record<string, any>;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
-export const apiClient = createClient<paths>({ baseUrl: API_BASE_URL });
+export const apiClient = createClient<paths>({ 
+  baseUrl: API_BASE_URL,
+});
 
 export type ApiClient = typeof apiClient;
 

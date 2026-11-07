@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import cors from 'cors';
-import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import pg from 'pg';
@@ -74,7 +74,7 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
     }
 
     // 哈希密码
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = crypto.createHash('sha256').update(password + 'pci-salt').digest('hex');
 
     // 创建账户
     const accountId = uuidv4();
@@ -131,7 +131,7 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
     const { id: accountId, password_hash, name } = result.rows[0];
 
     // 验证密码
-    const validPassword = await bcrypt.compare(password, password_hash);
+    const validPassword = crypto.createHash('sha256').update(password + 'pci-salt').digest('hex') === password_hash;
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -297,7 +297,7 @@ app.post(`${API_V1}/auth/reset-password`, async (req: Request, res: Response) =>
       }
 
       // 哈希新密码
-      const passwordHash = await bcrypt.hash(newPassword, 10);
+      const passwordHash = crypto.createHash('sha256').update(newPassword + 'pci-salt').digest('hex');
 
       // 更新账户密码
       await pool.query('UPDATE accounts SET password_hash = $1, updated_at = NOW() WHERE email = $2', [

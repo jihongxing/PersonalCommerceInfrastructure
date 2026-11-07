@@ -89,9 +89,10 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
 
     // 存储 refresh token
     const tokenId = uuidv4();
+    const tokenHash = Buffer.from(refreshToken).toString('base64');
     await pool.query(
       'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
-      [tokenId, accountId, refreshToken, false]
+      [tokenId, accountId, tokenHash, false]
     );
 
     res.status(201).json({
@@ -140,9 +141,10 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
 
     // 存储 refresh token
     const tokenId = uuidv4();
+    const tokenHash = Buffer.from(refreshToken).toString('base64');
     await pool.query(
       'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
-      [tokenId, accountId, refreshToken, false]
+      [tokenId, accountId, tokenHash, false]
     );
 
     res.json({

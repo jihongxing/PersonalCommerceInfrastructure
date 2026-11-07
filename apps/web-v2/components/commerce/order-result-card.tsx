@@ -16,7 +16,7 @@ function StateBadge({ state }: { state: OrderResult['state'] }) {
   };
 
   const config = variants[state];
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  return <Badge data-testid="status-badge" variant={config.variant}>{config.label}</Badge>;
 }
 
 function FulfillmentCodeDisplay({ code }: { code: OrderResult['fulfillmentCode'] }) {
@@ -79,7 +79,7 @@ function FulfillmentCodeDisplay({ code }: { code: OrderResult['fulfillmentCode']
 
 export function OrderResultCard({ result }: OrderResultCardProps) {
   return (
-    <Card>
+    <Card data-testid="order-result-card">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>预约状态</CardTitle>
@@ -95,7 +95,7 @@ export function OrderResultCard({ result }: OrderResultCardProps) {
         {/* 查询码 */}
         <div>
           <p className="text-xs text-muted-foreground mb-1">查询码（请保存）</p>
-          <p className="font-mono text-sm">{result.resultAccessToken}</p>
+          <p data-testid="query-code" className="font-mono text-sm">{result.resultAccessToken}</p>
         </div>
 
         {/* 履约码（如果已确认） */}

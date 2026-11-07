@@ -26,7 +26,7 @@ export function RequestCard({
   const codeIsPending = fulfillmentCode?.status === 'pending';
 
   return (
-    <Card>
+    <Card data-testid="request-card">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -63,6 +63,7 @@ export function RequestCard({
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium">履约码</p>
                 <Badge
+                  data-testid="fulfillment-code-status"
                   variant={
                     fulfillmentCode.status === 'pending'
                       ? 'default'
@@ -78,7 +79,7 @@ export function RequestCard({
                     : '已过期'}
                 </Badge>
               </div>
-              <p className="text-2xl font-mono font-bold text-center p-3 bg-muted rounded">
+              <p data-testid="fulfillment-code" className="text-2xl font-mono font-bold text-center p-3 bg-muted rounded">
                 {fulfillmentCode.code}
               </p>
               <p className="text-xs text-muted-foreground mt-2 text-center">

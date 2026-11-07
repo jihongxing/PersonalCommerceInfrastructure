@@ -69,10 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /**
    * 注册
    */
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string, password: string, name: string) => {
     setError(null);
     try {
-      const response = await authService.signup({ email, password });
+      const response = await authService.signup({ email, password, name });
       setUser({
         email: response.user.email,
       });

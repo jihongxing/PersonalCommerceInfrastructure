@@ -10,6 +10,7 @@ import { setSession, clearSession, getBearerToken } from '@/lib/auth/session';
 export interface SignupRequest {
   email: string;
   password: string;
+  name: string;
 }
 
 export interface SignupResponse {

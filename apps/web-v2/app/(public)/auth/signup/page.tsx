@@ -92,6 +92,7 @@ export default function SignupPage() {
   const { signup, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +107,7 @@ export default function SignupPage() {
     clearError();
 
     // 表单验证
-    if (!email || !password || !confirmPassword) {
+    if (!email || !name || !password || !confirmPassword) {
       setLocalError('所有字段都不能为空');
       return;
     }
@@ -129,7 +130,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await signup(email, password);
+      await signup(email, password, name);
       // 注册成功，重定向到仪表板
       router.push('/creator/dashboard');
     } catch (err) {
@@ -180,6 +181,22 @@ export default function SignupPage() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+
+              {/* 名称输入 */}
+              <div className="space-y-2">
+                <label htmlFor="name" className="block text-sm font-medium text-slate-700">
+                  名称
+                </label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="你的名称"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   disabled={isLoading}
                   required
                 />

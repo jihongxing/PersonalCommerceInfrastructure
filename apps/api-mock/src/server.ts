@@ -251,7 +251,7 @@ app.post(`${API_V1}/auth/forgot-password`, async (req: Request, res: Response) =
     // 保存重置请求
     const resetId = uuidv4();
     await pool.query(
-      'INSERT INTO password_resets (id, email, token, is_used, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'1 hour\', NOW())',
+      'INSERT INTO password_resets (id, email, token_hash, is_used, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'1 hour\', NOW())',
       [resetId, email, resetToken, false]
     );
 

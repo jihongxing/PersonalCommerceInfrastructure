@@ -74,7 +74,7 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
     }
 
     // 哈希密码
-    const passwordHash = crypto.createHash('sha256').update(password + 'pci-salt').digest('hex');
+    const passwordHash = password; // TODO: 正式环境需要使用真正的密码哈希
 
     // 创建账户
     const accountId = uuidv4();
@@ -131,7 +131,7 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
     const { id: accountId, password_hash, name } = result.rows[0];
 
     // 验证密码
-    const validPassword = crypto.createHash('sha256').update(password + 'pci-salt').digest('hex') === password_hash;
+    const validPassword = password === password_hash; // TODO: 正式环境需要使用 bcrypt 比对
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }

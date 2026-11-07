@@ -1,118 +1,119 @@
-import createClient from 'openapi-fetch';
+'use client';
+
 import { getBearerToken, setSession, getSession, clearSession } from '@/lib/auth/session';
 
-// TODO: Import types from contracts package
-// import type { paths } from '@personal-commerce-infrastructure/contracts';
-
-// 临时使用空的 paths 类型，等待 contracts 包完善
-type paths = Record<string, any>;
-
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-/**
- * 创建带拦截器的 API 客户端
- */
-function createApiClient() {
-  const client = createClient<paths>({ 
-    baseUrl: API_BASE_URL,
-  });
+class SimpleApiClient {
+  private baseUrl: string;
 
-  // 保存原始的 request 方法
-  const originalRequest = (client as any).request?.bind(client) || (() => ({}));
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
-  /**
-   * 请求拦截器 - 自动添加 Bearer Token
-   */
-  async function requestWithAuth(init: any) {
+  private async request(
+    method: string,
+    path: string,
+    options: any = {}
+  ): Promise<any> {
+    const url = `${this.baseUrl}${path}`;
     const token = getBearerToken();
 
-    // 添加 Bearer Token 到请求头
-    const headers = new Headers(init.headers || {});
+    const headers = new Headers(options.headers || {});
+    headers.set('Content-Type', 'application/json');
+
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    return {
-      ...init,
-      headers,
-    };
-  }
+    let body: string | undefined;
+    if (options.body) {
+      body = JSON.stringify(options.body);
+    }
 
-  /**
-   * 响应拦截器 - 处理 401 和自动刷新
-   */
-  async function handleResponse(response: Response, init: any): Promise<any | null> {
-    // 401 Unauthorized
-    if (response.status === 401) {
-      // 尝试使用 refresh token 刷新
-      const session = getSession();
-      if (session?.refreshToken) {
-        try {
-          const refreshResponse = await fetch(
-            `${API_BASE_URL}/api/v1/auth/refresh`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refreshToken: session.refreshToken }),
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body,
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        const session = getSession();
+        if (session?.refreshToken) {
+          try {
+            const refreshResponse = await fetch(
+              `${this.baseUrl}/api/v1/auth/refresh`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: session.refreshToken }),
+              }
+            );
+
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              setSession({
+                accessToken: refreshData.accessToken,
+                refreshToken: session.refreshToken,
+              });
+
+              return this.request(method, path, options);
             }
-          );
-
-          if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            // 更新会话
-            setSession({
-              accessToken: refreshData.accessToken,
-              userEmail: session.userEmail,
-              expiresAt: Math.floor(Date.now() / 1000) + 15 * 60,
-            });
-
-            // 重试原始请求
-            const newHeaders = new Headers(init.headers || {});
-            newHeaders.set('Authorization', `Bearer ${refreshData.accessToken}`);
-
-            const retryResponse = await fetch(response.url, {
-              ...init,
-              headers: newHeaders,
-            });
-
-            if (retryResponse.ok) {
-              return await retryResponse.json();
-            }
+          } catch (error) {
+            console.error('Token refresh failed:', error);
           }
-        } catch (error) {
-          console.error('Token refresh failed:', error);
+        }
+
+        clearSession();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
         }
       }
 
-      // 刷新失败，清理会话并重定向到登陆
-      clearSession();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login';
-      }
+      return {
+        data: response.ok ? data : null,
+        error: response.ok ? null : data,
+        status: response.status,
+      };
+    } catch (error) {
+      console.error('API request failed:', error);
+      return {
+        data: null,
+        error: { message: (error as Error).message },
+        status: 0,
+      };
     }
-
-    return null;
   }
 
-  // 使用 openapi-fetch 的中间件系统来实现拦截器
-  // 这里我们返回原始客户端，但已配置 headers 获取器
-  return {
-    ...client,
-    // 扩展：当需要发送请求时自动添加 token
-    async makeRequest(init: any) {
-      return requestWithAuth(init);
-    },
-  };
+  async GET(path: string, options?: any) {
+    return this.request('GET', path, options);
+  }
+
+  async POST(path: string, options?: any) {
+    return this.request('POST', path, options);
+  }
+
+  async PUT(path: string, options?: any) {
+    return this.request('PUT', path, options);
+  }
+
+  async PATCH(path: string, options?: any) {
+    return this.request('PATCH', path, options);
+  }
+
+  async DELETE(path: string, options?: any) {
+    return this.request('DELETE', path, options);
+  }
 }
 
-export const apiClient = createApiClient() as any;
+export const apiClient = new SimpleApiClient(API_BASE_URL);
 
 export type ApiClient = typeof apiClient;
 
-/**
- * API 错误类
- */
 export class ApiError extends Error {
   constructor(
     message: string,

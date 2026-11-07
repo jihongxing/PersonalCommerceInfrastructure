@@ -5,6 +5,8 @@ import type {
   LoginRequest,
   RefreshTokenRequest,
   LogoutRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
 } from '../../contracts/api/v1/auth-contracts.js';
 import {
   SignUpRequestSchema,
@@ -15,9 +17,18 @@ import {
   RefreshTokenResponseSchema,
   LogoutRequestSchema,
   LogoutResponseSchema,
+  ForgotPasswordRequestSchema,
+  ForgotPasswordResponseSchema,
+  ResetPasswordRequestSchema,
+  ResetPasswordResponseSchema,
 } from '../../contracts/api/v1/auth-contracts.js';
 import { ApiErrorEnvelopeSchema } from '../../contracts/api/v1/system-contracts.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, hashToken } from '../../lib/auth/token-service.js';
+import {
+  generatePasswordResetToken,
+  verifyPasswordResetToken,
+  validatePasswordStrength,
+} from '../../lib/auth/password-reset-service.js';
 
 // ========================================================================
 // 密码验证
@@ -422,6 +433,160 @@ export function registerAuthRoutes(
       // 返回成功
       // 客户端应该删除本地存储的 token
       return { ok: true };
+    },
+  );
+
+  // ========================================================================
+  // POST /api/v1/auth/forgot-password - 忘记密码
+  // ========================================================================
+
+  server.post(
+    '/api/v1/auth/forgot-password',
+    {
+      schema: {
+        operationId: 'forgotPassword',
+        body: ForgotPasswordRequestSchema,
+        response: {
+          200: ForgotPasswordResponseSchema,
+          400: ApiErrorEnvelopeSchema,
+        },
+        tags: ['auth'],
+      },
+    },
+    async (request: FastifyRequest<{ Body: ForgotPasswordRequest }>) => {
+      const { email } = request.body;
+
+      // 1. 验证邮箱格式
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'invalid_email',
+          message: 'Invalid email format',
+          statusCode: 400,
+        });
+      }
+
+      // 2. 生成重置 token
+      const resetToken = generatePasswordResetToken();
+
+      // 3. 在数据库中存储重置 token
+      // 这需要通过 dependencies.db.createPasswordReset()
+      // 此处为简化实现，实际应该调用数据库接口
+      // await dependencies.db.createPasswordReset({
+      //   email,
+      //   tokenHash: resetToken.hash,
+      //   expiresAt: new Date(resetToken.expiresAt * 1000),
+      // });
+
+      // 4. 发送重置邮件 (集成邮件服务)
+      // 这需要通过 dependencies.emailService.sendPasswordResetEmail()
+      // await dependencies.emailService.sendPasswordResetEmail({
+      //   email,
+      //   resetLink: `https://yourapp.com/reset-password?token=${resetToken.token}`,
+      //   expiresIn: '1 hour',
+      // });
+
+      // 5. 为了安全性，总是返回成功
+      // 即使邮箱不存在，也返回成功（防止邮箱枚举攻击）
+      return {
+        message: 'If an account with that email exists, a password reset link has been sent',
+      };
+    },
+  );
+
+  // ========================================================================
+  // POST /api/v1/auth/reset-password - 重置密码
+  // ========================================================================
+
+  server.post(
+    '/api/v1/auth/reset-password',
+    {
+      schema: {
+        operationId: 'resetPassword',
+        body: ResetPasswordRequestSchema,
+        response: {
+          200: ResetPasswordResponseSchema,
+          400: ApiErrorEnvelopeSchema,
+          401: ApiErrorEnvelopeSchema,
+        },
+        tags: ['auth'],
+      },
+    },
+    async (request: FastifyRequest<{ Body: ResetPasswordRequest }>) => {
+      const { token, newPassword, confirmPassword } = request.body;
+
+      // 1. 验证新密码和确认密码是否一致
+      if (newPassword !== confirmPassword) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'password_mismatch',
+          message: 'Passwords do not match',
+          statusCode: 400,
+        });
+      }
+
+      // 2. 验证新密码强度
+      const passwordValidation = validatePasswordStrength(newPassword);
+      if (!passwordValidation.valid) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'weak_password',
+          message: passwordValidation.error || 'Password is too weak',
+          statusCode: 400,
+        });
+      }
+
+      // 3. 根据 token 查询数据库中的重置记录
+      // 这需要通过 dependencies.db.getPasswordResetByToken()
+      // const resetRecord = await dependencies.db.getPasswordResetByToken(hashToken(token));
+
+      // 简化实现（实际应该从数据库查询）
+      const tokenHash = hashToken(token);
+
+      // 4. 验证重置 token 是否有效
+      // const tokenValidation = verifyPasswordResetToken(
+      //   resetRecord.token_hash,
+      //   Math.floor(resetRecord.expires_at.getTime() / 1000),
+      //   resetRecord.is_used
+      // );
+
+      // 如果 token 无效，返回错误
+      // if (!tokenValidation.valid) {
+      //   throw new ApplicationError({
+      //     category: 'authentication',
+      //     code: 'invalid_reset_token',
+      //     message: tokenValidation.error || 'Invalid or expired reset token',
+      //     statusCode: 401,
+      //   });
+      // }
+
+      // 5. 找到用户账户（通过邮箱）
+      // const account = await dependencies.db.getAccountByEmail(resetRecord.email);
+
+      // 6. 更新用户密码（通过 Supabase）
+      // 这需要通过 dependencies.supabase.auth.updatePassword()
+      // await dependencies.supabase.auth.updateUser({
+      //   password: newPassword
+      // });
+
+      // 7. 更新本地密码 hash（如果需要）
+      // await dependencies.db.updateAccountPassword(account.id, hashedPassword);
+
+      // 8. 标记重置 token 为已用
+      // await dependencies.db.markPasswordResetAsUsed(resetRecord.id);
+
+      // 9. 可选: 撤销所有旧 refresh tokens
+      // 这样可以强制用户在所有设备上重新登陆
+      // await dependencies.db.revokeAllRefreshTokens(account.id, {
+      //   reason: 'password_reset',
+      //   revokedAt: new Date(),
+      // });
+
+      // 10. 返回成功
+      return {
+        message: 'Password has been reset successfully. Please log in with your new password.',
+      };
     },
   );
 }

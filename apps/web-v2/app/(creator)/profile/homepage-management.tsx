@@ -50,17 +50,41 @@ type ApiResponse<T> = {
   data: T | null;
   error: { error?: { message?: string; code?: string }; message?: string } | null;
 };
+type ReferenceResponse = {
+  assignmentStatus: 'ASSIGNED' | 'PENDING';
+  displayValue: string;
+};
 
-async function loadManagement(): Promise<{ management: Management; profiles: Profile[] }> {
-  const [management, profiles] = await Promise.all([
+async function loadManagement(): Promise<{
+  management: Management;
+  profiles: Profile[];
+  reference: string;
+}> {
+  const [management, profiles, reference] = await Promise.all([
     apiClient.GET('/api/v1/private/homepages') as Promise<ApiResponse<Management>>,
     apiClient.GET('/api/v1/private/profiles') as Promise<ApiResponse<{ profiles: Profile[] }>>,
+    apiClient.GET('/api/v1/private/identity/reference') as Promise<ApiResponse<ReferenceResponse>>,
   ]);
-  if (management.error || profiles.error || !management.data || !profiles.data)
+  if (
+    management.error ||
+    profiles.error ||
+    reference.error ||
+    !management.data ||
+    !profiles.data ||
+    !reference.data ||
+    reference.data.assignmentStatus !== 'ASSIGNED'
+  )
     throw new Error(
-      management.error?.error?.message || profiles.error?.error?.message || '无法加载主页设置',
+      management.error?.error?.message ||
+        profiles.error?.error?.message ||
+        reference.error?.error?.message ||
+        '无法加载主页设置',
     );
-  return { management: management.data, profiles: profiles.data.profiles };
+  return {
+    management: management.data,
+    profiles: profiles.data.profiles,
+    reference: reference.data.displayValue,
+  };
 }
 
 function formatInstant(value: string | null): string {
@@ -90,10 +114,10 @@ function statusLabel(state: Version['state']): string {
   return { UNPUBLISHED: '草稿', PUBLISHED: '已发布', PAUSED: '已暂停', ARCHIVED: '已归档' }[state];
 }
 
-export function HomepageManagement({ reference }: { reference: string }) {
+export function HomepageManagement({ reference }: { reference?: string }) {
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['homepage-management'],
+    queryKey: ['homepage-management', reference],
     queryFn: loadManagement,
     retry: false,
   });
@@ -109,10 +133,11 @@ export function HomepageManagement({ reference }: { reference: string }) {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<PublicHomepage | null>(null);
+  const [previewAt, setPreviewAt] = useState('');
   const [qr, setQr] = useState('');
   const [editingWindowId, setEditingWindowId] = useState<string | null>(null);
-  const url = homepageUrl(reference);
   const data = query.data;
+  const url = homepageUrl(data?.reference ?? reference ?? '');
   const selected = useMemo(
     () =>
       data?.management.versions.find((version) => version.homepageId === selectedId) ??
@@ -128,6 +153,14 @@ export function HomepageManagement({ reference }: { reference: string }) {
   );
   const selectedWindows =
     data?.management.windows.filter((window) => window.homepageId === selected?.homepageId) ?? [];
+
+  function selectVersion(homepageId: string) {
+    setSelectedId(homepageId);
+    setEditingWindowId(null);
+    setStart('');
+    setEnd('');
+    setWindowState('ENABLED');
+  }
 
   async function action<T>(
     path: string,
@@ -195,12 +228,37 @@ export function HomepageManagement({ reference }: { reference: string }) {
     if (result) setName('');
   }
 
+  async function previewHomepage(at?: string) {
+    if (!selected) return;
+    const query = at ? `?at=${encodeURIComponent(at)}` : '';
+    const value = await action<PublicHomepage>(
+      `/api/v1/private/homepages/${selected.homepageId}/preview${query}`,
+      'GET',
+    );
+    if (value) setPreview(value);
+  }
+
+  async function previewScheduledHomepage(event: FormEvent) {
+    event.preventDefault();
+    if (!previewAt) return;
+    const value = await action<PublicHomepage>(
+      `/api/v1/private/homepages/resolve-preview?at=${encodeURIComponent(previewAt)}`,
+      'GET',
+    );
+    if (value) setPreview(value);
+  }
+
   const profileName = activeVersion?.commerceProfile?.displayName || '暂无激活主页';
   return (
-    <section className="border-t pt-6" aria-labelledby="homepage-heading">
-      <h2 id="homepage-heading" className="text-xl font-semibold">
-        对外主页
-      </h2>
+    <section aria-labelledby="homepage-heading">
+      <div>
+        <h2 id="homepage-heading" className="text-xl font-semibold">
+          对外主页
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          管理访客通过稳定 C 号地址看到的资料、服务和自动切换安排。
+        </p>
+      </div>
       {query.isPending ? (
         <p className="mt-3 text-sm">正在加载主页设置...</p>
       ) : query.isError || !data ? (
@@ -259,15 +317,7 @@ export function HomepageManagement({ reference }: { reference: string }) {
                   <Button
                     variant="outline"
                     disabled={busy || selected.state !== 'PUBLISHED'}
-                    onClick={() => {
-                      void (async () => {
-                        const value = await action<PublicHomepage>(
-                          `/api/v1/private/homepages/${selected.homepageId}/preview`,
-                          'GET',
-                        );
-                        if (value) setPreview(value);
-                      })();
-                    }}
+                    onClick={() => void previewHomepage()}
                   >
                     预览
                   </Button>
@@ -325,11 +375,38 @@ export function HomepageManagement({ reference }: { reference: string }) {
                 </Button>
               )}
             </div>
+            {data.management.versions.some((version) => version.state === 'PUBLISHED') && (
+              <form
+                className="mt-3 flex max-w-xl flex-wrap items-end gap-2"
+                onSubmit={(event) => {
+                  void previewScheduledHomepage(event);
+                }}
+              >
+                <div className="min-w-56 flex-1">
+                  <label className="text-sm font-medium" htmlFor="homepage-preview-at">
+                    指定预览时间（UTC）
+                  </label>
+                  <Input
+                    id="homepage-preview-at"
+                    className="mt-1"
+                    type="datetime-local"
+                    value={previewAt}
+                    onChange={(event) => setPreviewAt(event.target.value)}
+                    required
+                  />
+                </div>
+                <Button variant="outline" disabled={busy || !previewAt}>
+                  按时间预览
+                </Button>
+              </form>
+            )}
           </article>
 
-          <div>
+          <section aria-labelledby="homepage-versions-heading">
             <div>
-              <h3 className="text-base font-semibold">主页版本</h3>
+              <h3 id="homepage-versions-heading" className="text-base font-semibold">
+                公开方案
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 同一时间最多公开一个已发布版本；没有命中窗口时使用默认主页。
               </p>
@@ -343,7 +420,7 @@ export function HomepageManagement({ reference }: { reference: string }) {
                     type="button"
                     key={version.homepageId}
                     className={`flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left ${selected?.homepageId === version.homepageId ? 'bg-muted/50' : ''}`}
-                    onClick={() => setSelectedId(version.homepageId)}
+                    onClick={() => selectVersion(version.homepageId)}
                   >
                     <span>
                       <span className="block font-medium">
@@ -362,7 +439,7 @@ export function HomepageManagement({ reference }: { reference: string }) {
                 ))
               )}
             </div>
-          </div>
+          </section>
 
           <form
             className="flex max-w-xl flex-wrap gap-2"
@@ -397,7 +474,7 @@ export function HomepageManagement({ reference }: { reference: string }) {
             <section className="space-y-3" aria-labelledby="window-heading">
               <div>
                 <h3 id="window-heading" className="text-base font-semibold">
-                  时间窗口
+                  自动切换
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   使用指定时区创建未来窗口，时间保存为 UTC。窗口不能重叠。
@@ -576,7 +653,15 @@ export function HomepageManagement({ reference }: { reference: string }) {
             </div>
           )}
           {url && (
-            <div className="space-y-3">
+            <section className="space-y-3" aria-labelledby="sharing-heading">
+              <div>
+                <h3 id="sharing-heading" className="text-base font-semibold">
+                  分享工具
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  C 号和这个地址保持不变，主页内容可以继续更新。
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
@@ -615,7 +700,7 @@ export function HomepageManagement({ reference }: { reference: string }) {
                   </a>
                 </div>
               )}
-            </div>
+            </section>
           )}
           {message && (
             <p role="status" className="text-sm">

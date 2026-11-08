@@ -7890,3 +7890,74 @@ outside this local acceptance record.
 preserves the existing window state during edits, and permits an authorized creator to re-enable a disabled window.
 Preview timestamps are normalized through the UTC contract so unzoned values do not depend on the API process timezone.
 The targeted application/API tests, web-v2 typecheck and production build passed after this correction.
+
+2026-11-09 local runtime route reload verification: the pre-existing process on port 8080 was serving an older
+API runtime whose OpenAPI inventory did not contain `/api/v1/private/homepages`; it returned `route_not_found` for
+the dashboard request. The stale process was stopped and the current formal `apps/api` was started with
+`node --env-file=.env.local --import tsx apps/api/src/main.ts`. The current runtime now returns `200` from
+`/health`, exposes the versioned private homepage route in `/openapi.json`, and returns `401 missing_authorization`
+without a token. A real local signup followed by an authenticated `GET /api/v1/private/homepages` returned the
+expected empty `UNPUBLISHED` management projection. The configured database migration completed successfully;
+the web-v2 production build passed and port 3000 was restarted from that build.
+
+2026-11-09 identity-resolution follow-up: public homepage resolution now resolves every active OWNER membership
+through an explicit account-to-Creator mapping. Local memberships normalize the stored `local:<account-id>` form
+before consulting `local_creator_mappings`; hosted Supabase accounts use the existing `supabase:<subject>` creator
+mapping and do not require a row in `local_auth_accounts`. Resolution fails closed when an active owner is unmapped,
+has conflicting mappings, or maps to more than one Creator. The PostgreSQL integration suite includes both the legacy
+local-auth case and a Supabase-mapped case with no local-auth row.
+
+2026-11-09 verification evidence (the database URL and credentials were supplied outside this ledger):
+
+| Command | Result |
+| --- | --- |
+| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:migrate` | PASS; migration journal applied through `0030_time_scheduled_public_homepages.sql` |
+| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:integration:check` | PASS; isolated PostgreSQL preflight and schema checks completed |
+| `$env:LOCAL_AUTH_TEST_DATABASE_URL='<isolated PostgreSQL URL>'; $env:DEV062_INTEGRATION_DATABASE_URL=$env:LOCAL_AUTH_TEST_DATABASE_URL; pnpm exec vitest run tests/persistence/public-homepage-migration.integration.test.ts tests/integration/public-homepage-postgres.integration.test.ts tests/integration/public-homepage-api.test.ts tests/application/public-commerce-homepage.test.ts modules/public-commerce-homepage/scheduling.test.ts` | PASS; 5 files and 16 tests passed |
+| `pnpm --filter web-v2 exec tsc --noEmit` | PASS |
+| `pnpm --filter web-v2 build` | PASS; production build generated all 25 routes |
+| `pnpm check:openapi` | PASS |
+| `pnpm exec prettier --check adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts` | PASS |
+| `pnpm exec eslint adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts` | PASS |
+| `git diff --check` | PASS |
+
+Acceptance evidence mapping:
+
+| Acceptance | Evidence | Status |
+| --- | --- | --- |
+| `AT-SCH-001` multi-version selection | Scheduling tests, application/API tests, and PostgreSQL repository integration | PASS (local) |
+| `AT-SCH-002` non-overlapping windows | Application validation plus PostgreSQL exclusion-constraint and migration checks | PASS (local) |
+| `AT-SCH-003` published-default fallback | Scheduling boundary/fallback tests and repository resolution | PASS (local) |
+| `AT-SCH-004` time-zone boundaries | Valid wall-clock conversion plus nonexistent and ambiguous DST rejection tests | PASS (local) |
+| `AT-SCH-005` concurrent conflict handling | PostgreSQL overlap constraint was exercised; separate concurrent-writer stress was not run | PARTIAL (local) |
+| `AT-SCH-006` stable C number | Migration preservation and PostgreSQL public resolution retain the existing commerce reference | PASS (local) |
+| `AT-SCH-007` public resolution cannot select a version | Public API contract and repository resolver accept only the server-selected version | PASS (local) |
+| `AT-SCH-008` migration regression | Real PostgreSQL migration test covers legacy migration, constraints, audit rows, and rollback | PASS (local) |
+
+The Supabase-mapped public homepage fix is verified only against the isolated local PostgreSQL environment. Hosted
+Supabase credentials, production deployment, public internet access, real mobile QR scanning, and external
+observability remain unverified; this record does not claim production acceptance.
+
+## DEV-065 / CREATOR-WORKSPACE-PROFILE-SURFACE
+
+| Field | Record |
+| --- | --- |
+| Date | 2026-11-09 |
+| Change Unit | `DEV-065` / `CREATOR-WORKSPACE-PROFILE-SURFACE` |
+| Product Decision | [32 — Creator 工作台与个人资料界面结构决策](../07_Product_Architecture/32_Creator_Workspace_Profile_Surface_Decision.md) |
+| Implementation Plan | [115 — Creator 工作台与个人资料界面重构实施计划](../09_Engineering_Governance/115_Creator_Workspace_Profile_Surface_Implementation_Plan.md) |
+| Product Change | Move complete public homepage management from the Creator dashboard into a two-tab Profile surface, while keeping the dashboard as a lightweight operations summary. |
+| Status | **IMPLEMENTED; LOCAL ACCEPTANCE PASSED** |
+| Scope | `apps/web-v2` information architecture, navigation, progressive disclosure, dashboard summary, and Profile deep link `/profile?tab=public`. |
+| Non-goals | No API, database, domain state, canonical event, C-number, public resolution, service publication, authentication, or permission changes. |
+| Evidence | Decision 32 and implementation plan 115 record the approved structure, invariants, error-state rules, affected files, phased work, rollback, and acceptance checks. The complete homepage manager now lives under the Profile surface; the dashboard keeps an independent summary and `/profile?tab=public` deep link. |
+
+This change is an interface-only restructuring. The existing homepage management operations, stable `/r/{C号}`
+address, one-active-homepage rule, empty-service behavior, and distinction between normal empty state and API failure
+remain unchanged. The Profile surface also exposes the existing authenticated scheduled-preview contract with a UTC
+test-time input. Local acceptance passed: web-v2 typecheck and production build, the focused Profile Tab tests
+(2 passed), full Vitest (127 files / 920 tests passed; 17 files / 57 tests skipped by existing conditions),
+OpenAPI compatibility, scoped Prettier, scoped ESLint, `git diff --check`, and browser checks against the local
+3000/8080 services. Responsive evidence is recorded in `artifacts/profile-surface-mobile.png`,
+`artifacts/profile-surface-tablet.png`, and `artifacts/profile-surface-desktop.png`. Production deployment, public
+internet access, real mobile QR scanning, and external observability remain outside this local acceptance.

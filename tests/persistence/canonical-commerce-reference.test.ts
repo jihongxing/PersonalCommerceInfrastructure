@@ -37,21 +37,22 @@ const referenceA = createCommerceReference('3C7M4Q9RDFHJKNTWVY');
 const referenceB = createCommerceReference('4C7M4Q9RDFHJKNTWVY');
 
 describe('canonical Commerce Reference durable persistence', () => {
-  it('defines a one-to-one Profile association with canonical durable facts', () => {
+  it('defines Identity ownership and retains the optional historical Profile association', () => {
     const config = getTableConfig(commerceReferences);
 
     expect(config.name).toBe('commerce_references');
     expect(config.columns.map((column) => column.name)).toEqual([
       'commerce_reference',
+      'identity_id',
       'commerce_profile_id',
       'lifecycle',
       'assigned_at',
       'created_at',
       'updated_at',
     ]);
-    expect(config.foreignKeys).toHaveLength(1);
-    expect(config.foreignKeys[0]?.onDelete).toBe('restrict');
-    expect(config.uniqueConstraints).toHaveLength(1);
+    expect(config.foreignKeys).toHaveLength(2);
+    expect(config.foreignKeys.every((foreignKey) => foreignKey.onDelete === 'restrict')).toBe(true);
+    expect(config.uniqueConstraints).toHaveLength(2);
   });
 
   it('assigns a supplied canonical Reference to one existing Profile and rehydrates it', async () => {
@@ -157,7 +158,9 @@ describe('canonical Commerce Reference durable persistence', () => {
 
     expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
     expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
-    await expect(referenceRepository.getByProfileId(profileA.commerceProfileId)).resolves.toBeDefined();
+    await expect(
+      referenceRepository.getByProfileId(profileA.commerceProfileId),
+    ).resolves.toBeDefined();
   });
 
   it('permanently reserves only once and protects the losing conditional update', async () => {
@@ -196,11 +199,7 @@ describe('canonical Commerce Reference durable persistence', () => {
     });
     await referenceRepository.reserve({ commerceReference: referenceA, updatedAt: reservedAt });
 
-    const archived = transitionCommerceProfile(
-      profileA,
-      'ARCHIVED',
-      '2026-08-26T02:00:00.000Z',
-    );
+    const archived = transitionCommerceProfile(profileA, 'ARCHIVED', '2026-08-26T02:00:00.000Z');
     await profileRepository.updateLifecycle({
       profileId: archived.commerceProfileId,
       expectedLifecycle: profileA.lifecycle,
@@ -230,11 +229,7 @@ describe('canonical Commerce Reference durable persistence', () => {
       assignedAt: createdAt,
     });
 
-    const suspended = transitionCommerceProfile(
-      profileA,
-      'SUSPENDED',
-      '2026-08-26T02:00:00.000Z',
-    );
+    const suspended = transitionCommerceProfile(profileA, 'SUSPENDED', '2026-08-26T02:00:00.000Z');
     await profileRepository.updateLifecycle({
       profileId: suspended.commerceProfileId,
       expectedLifecycle: profileA.lifecycle,
@@ -319,9 +314,7 @@ describe('canonical Commerce Reference durable persistence', () => {
       'FOREIGN KEY ("commerce_profile_id") REFERENCES "public"."commerce_profiles"("commerce_profile_id")',
     );
     expect(migration).toContain('ON DELETE RESTRICT');
-    expect(migration).toContain(
-      'CHECK ("lifecycle" IN (\'ASSIGNED\', \'PERMANENTLY_RESERVED\'))',
-    );
+    expect(migration).toContain("CHECK (\"lifecycle\" IN ('ASSIGNED', 'PERMANENTLY_RESERVED'))");
     expect(migration).not.toMatch(
       /\b(identity_id|account_id|resolver|qr_|oauth|external_platform|relationship|token|payment|outbox)\b/iu,
     );

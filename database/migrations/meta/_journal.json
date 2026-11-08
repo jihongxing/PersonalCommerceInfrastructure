@@ -197,6 +197,27 @@
       "when": 1794000000000,
       "tag": "0027_local_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794086400000,
+      "tag": "0028_identity_owned_commerce_reference",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794172800000,
+      "tag": "0029_public_commerce_homepage",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794259200000,
+      "tag": "0030_time_scheduled_public_homepages",
+      "breakpoints": true
     }
   ]
 }

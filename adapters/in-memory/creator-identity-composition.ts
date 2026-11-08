@@ -24,6 +24,8 @@ import {
 import { createCanonicalCommerceProfileService } from '../../applications/canonical-commerce-profile/canonical-commerce-profile-service.js';
 import { UuidCommerceProfileIdGenerator } from '../../applications/canonical-commerce-profile/uuid-commerce-profile-id-generator.js';
 import { CsprngCommerceReferenceGenerator } from '../../applications/canonical-commerce-reference/commerce-reference-generator.js';
+import { createIdentityCommerceReferenceService } from '../../applications/canonical-commerce-reference/identity-commerce-reference-service.js';
+import { InMemoryIdentityCommerceReferenceRepository } from './in-memory-identity-commerce-reference-repository.js';
 import type {
   CommerceRelationshipId,
   ExternalPlatformAccountId,
@@ -163,6 +165,10 @@ export function createInMemoryCreatorIdentityComposition(
   const canonicalCommerceReferenceRepository = new InMemoryCanonicalCommerceReferenceRepository(
     canonicalCommerceProfileRepository,
   );
+  const identityReferenceService = createIdentityCommerceReferenceService(
+    new InMemoryIdentityCommerceReferenceRepository(),
+    new CsprngCommerceReferenceGenerator(),
+  );
   const externalPlatformAccountRepository = new InMemoryExternalPlatformAccountRepository();
   const commerceRelationshipRepository = new InMemoryCommerceRelationshipRepository(
     externalPlatformAccountRepository,
@@ -275,6 +281,7 @@ export function createInMemoryCreatorIdentityComposition(
     clock: new FixedClock('2026-08-12T00:00:00.000Z'),
   });
   const privateCommerceProfileService = createPrivateCommerceProfileService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: canonicalCommerceProfileService,
     commerceProfileIdGenerator: new UuidCommerceProfileIdGenerator(),
@@ -283,6 +290,7 @@ export function createInMemoryCreatorIdentityComposition(
     unitOfWork,
   });
   const privateCommerceReferenceService = createPrivateCommerceReferenceService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: canonicalCommerceProfileService,
     commerceReferenceRepository: canonicalCommerceReferenceRepository,

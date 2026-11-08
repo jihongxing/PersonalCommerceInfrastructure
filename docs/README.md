@@ -81,7 +81,7 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
    定义 Creator、商业资产、可交易库存、商品和交易之间的底层关系。
 
 4. [04 — North Star & End State](./01_Strategy/04_North_Star_End_State.md)
-    定义项目终局北极星、终局必须成立的产品事实、长期衡量框架和阶段闸门。
+   定义项目终局北极星、终局必须成立的产品事实、长期衡量框架和阶段闸门。
 
 5. [05 — Personal Commerce Infrastructure Product Direction](./01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md)
    产品方向层 SSOT；定义长期产品命题、领域模型、通用 Offer 类型、商业闭环和与阶段性产品合同的边界。
@@ -157,6 +157,10 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
 20. [20 — MVP PRD: VS-01](./07_Product_Architecture/20_MVP_PRD_VS01.md)  
     将 17–19 收束为 VS-01 的冻结实现合同：范围、角色权限、功能要求、状态转换、事件、通知、验收标准与明确非目标。
 
+- [29 — Identity 持有 C 号的产品决策](./07_Product_Architecture/29_Identity_Owned_Commerce_Reference_Decision.md)：一个 Identity 一个终身不变的 C 号，以及迁移和注册边界。
+- [30 — C 号公开商业主页产品决策](./07_Product_Architecture/30_Public_Commerce_Homepage_Decision.md)：公开查询、稳定主页、资料选择、分享及发布控制的已确认方向与合同闭合事项。
+- [31 — 按日期和时间切换公开商业主页](./07_Product_Architecture/31_Time_Scheduled_Public_Homepages_Decision.md)：一个 Identity 多主页版本、默认主页和同一时间唯一激活主页的产品决策。
+
 ### Execution
 
 21. [21 — Prototype Execution](./08_Execution/21_Prototype_Execution.md)  
@@ -172,6 +176,9 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
     用简体中文汇总 M1–M9、VS-01 / VS-02、Stage 2、Private Self-Service、Stage 3–5、OV-001、Real Money 和工程治理任务；标注状态、依赖、验收和授权边界。本清单仍待 Founder / Main Control 接受。
 
 ### 工程治理
+
+- [113 — C 号公开商业主页实施计划](./09_Engineering_Governance/113_Public_Commerce_Homepage_Implementation_Plan.md)：DEV-062 的实施门禁、分阶段交付、迁移与验收计划。
+- [114 — 按日期和时间切换公开商业主页实施计划](./09_Engineering_Governance/114_Time_Scheduled_Public_Homepages_Implementation_Plan.md)：DEV-064 的版本、时间窗口、解析、迁移、接口和验收计划。
 
 22. [22 — 工程治理](./09_Engineering_Governance/22_Engineering_Governance.md)  
     定义 Product Truth 到 Engineering Truth 的转换规则、业务模块边界、领域模型映射、状态机、Canonical Event、测试、偏差、配置、安全和外部依赖治理。

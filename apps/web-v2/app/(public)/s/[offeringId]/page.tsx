@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense, use } from 'react';
 import { useServiceOffering } from '@/features/service-booking/api/use-service-offering';
 import { ServiceDetailCard } from '@/components/commerce/service-detail-card';
 import { BookingForm } from '@/components/commerce/booking-form';
@@ -11,9 +12,18 @@ import { Badge } from '@/components/ui/badge';
 export default function ServiceOfferingPage({
   params,
 }: {
-  params: { offeringId: string };
+  params: Promise<{ offeringId: string }>;
 }) {
-  const { data, isLoading, error } = useServiceOffering(params.offeringId);
+  return (
+    <Suspense fallback={<p role="status">正在加载...</p>}>
+      <ServiceOffering params={params} />
+    </Suspense>
+  );
+}
+
+function ServiceOffering({ params }: { params: Promise<{ offeringId: string }> }) {
+  const { offeringId } = use(params);
+  const { data, isLoading, error } = useServiceOffering(offeringId);
 
   // 加载状态
   if (isLoading) {
@@ -42,15 +52,9 @@ export default function ServiceOfferingPage({
       <div className="container mx-auto py-8 max-w-2xl">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-lg font-semibold text-destructive mb-2">
-              加载失败
-            </p>
-            <p className="text-muted-foreground">
-              {error?.message || '无法加载服务信息'}
-            </p>
-            <p className="text-sm text-muted-foreground mt-4">
-              请检查服务 ID 是否正确，或稍后重试
-            </p>
+            <p className="text-lg font-semibold text-destructive mb-2">加载失败</p>
+            <p className="text-muted-foreground">{error?.message || '无法加载服务信息'}</p>
+            <p className="text-sm text-muted-foreground mt-4">请检查服务 ID 是否正确，或稍后重试</p>
           </CardContent>
         </Card>
       </div>
@@ -74,9 +78,7 @@ export default function ServiceOfferingPage({
         <CardContent className="py-6">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-12 w-12">
-              <AvatarFallback className="text-lg font-semibold">
-                {initials}
-              </AvatarFallback>
+              <AvatarFallback className="text-lg font-semibold">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <h2 className="text-xl font-semibold">{creator.displayName}</h2>
@@ -89,9 +91,7 @@ export default function ServiceOfferingPage({
               </div>
             </div>
           </div>
-          {creator.bio && (
-            <p className="text-sm text-muted-foreground mt-3">{creator.bio}</p>
-          )}
+          {creator.bio && <p className="text-sm text-muted-foreground mt-3">{creator.bio}</p>}
         </CardContent>
       </Card>
 
@@ -99,10 +99,7 @@ export default function ServiceOfferingPage({
       <ServiceDetailCard offering={offering} />
 
       {/* 预约表单 */}
-      <BookingForm 
-        offeringId={offering.id} 
-        requestInstructions={offering.requestInstructions}
-      />
+      <BookingForm offeringId={offering.id} requestInstructions={offering.requestInstructions} />
     </div>
   );
 }

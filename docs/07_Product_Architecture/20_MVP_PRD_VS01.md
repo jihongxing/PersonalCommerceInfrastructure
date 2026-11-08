@@ -10,6 +10,7 @@
 > **产品方向上游**：[05 — Personal Commerce Infrastructure Product Direction](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md)
 > **Upstream Product Definitions**：[17 Core Product Objects](./17_Core_Product_Objects.md)、[18 MVP Product Flow](./18_MVP_Product_Flow.md)、[19 MVP Product Specification](./19_MVP_Product_Specification.md)
 > **Implementation Authority**：本 PRD 是 Codex 构建 VS-01 的产品实现依据；如与上游文档冲突，以本 PRD 的显式范围与规则为当前实现合同
+> **已批准修订**：2026-11-08 DEV-062；本文件末尾的明确修订条款优先于本版中与之冲突的原条款，未涉及内容继续有效。
 
 ## 1. PRD Status
 
@@ -598,3 +599,95 @@ Codex Build
 ```
 
 后续实现偏差、产品决定、缺陷和 PRD 修订应记录到未来的 `21_Prototype_Execution_Log.md`；不再通过新增产品架构文档扩展范围。
+
+## DEV-062 Amendment — C 号公开商业主页
+
+> 批准日期：2026-11-08；依据 [产品决策 30](./30_Public_Commerce_Homepage_Decision.md)
+> Founder 已确认产品方向及无服务空态，并授权确定状态和事件细则。
+> 本节是对冻结合同的显式修订，优先于上文冲突的对象表述、流程、状态、FR、事件、验收和 Non-goal；其他规则不变。
+
+### A. 范围和状态
+
+新增以 Identity 持有的 C 号为稳定地址的公开商业主页，以及仅按完整 C 号精确查询的匿名入口；
+这不包括目录、模糊搜索、推荐、Marketplace 或社交发现。C 号、身份、公开资料和服务的权限及
+隐私边界以产品决策 30 为准。注册和分配号码不自动公开资料。
+
+主页具有独立状态 `UNPUBLISHED → PUBLISHED → PAUSED → PUBLISHED`。拥有授权的创作者
+在已选择本 Identity 所有、有效且满足最小公开展示条件的资料后可主动发布；无需已发布服务。
+暂停后主页对访客不可访问，创作者可授权预览并恢复。重复相同命令幂等；非法或无权限操作不
+改变状态。主页发布、暂停和恢复不直接改变 Commerce Identity 或 Offering 的状态。
+
+保留第 6.3 节既有 Commerce Identity 和 Offering 状态转换及合格服务条件。服务下架，包括最后
+一个已发布服务下架，不改变主页状态；已发布主页的服务列表为空时显示“尚无服务”。暂停主页
+不会撤下独立服务链接、改变服务请求资格或删除既有请求；独立链接继续执行既有 Identity、
+Offering 和可请求条件。资料归档或失去归属时不得继续公开该资料。
+
+### B. 对功能要求和验收的修订
+
+- **FR-005**：Draft 或 Unpublished Commerce Identity 不得作为已发布 Commerce Identity
+  或可请求服务公开；已独立发布的 C 号主页可展示经创作者选择的公开资料，即使此时既有
+  Commerce Identity 尚非 Published。主页未发布或暂停时不得匿名访问主页内容。
+- **FR-016** 保留首次合格 Offering 发布与 Commerce Identity 发布的关系；它不再是 C 号
+  主页首次发布的前提。首次发布合格 Offering 不自动发布 C 号主页。
+- **FR-023**：已发布 C 号主页可通过公开查询或稳定链接匿名访问；Published Commerce
+  Identity 的既有独立服务入口继续可按既有条件访问，主页暂停不自动关闭该入口。
+- **FR-024**：已发布 C 号主页展示创作者选定的公开资料及符合条件的已发布服务；无服务时
+  显示“尚无服务”。Capability 仅在已选择公开且实际存在时展示，不要求凭空创建。
+- 第 9.1 节的不完整 Identity / Offering 发布条件继续适用于对应的既有对象；C 号主页按本节
+  独立的资料和归属条件发布。第 9.1、9.2 节中首次发布服务与公开入口的验收，按上述主页与
+  独立服务入口的区别执行。第 10 节和 9.4 节的 Search 排除不禁止完整 C 号精确查询。
+- 新增验收：无服务可发布主页并显示空态；最后服务下架后主页保持发布且显示空态；草稿、
+  下架和归档服务不可见；暂停主页后匿名主页不可访问而独立服务仍按原条件判断；恢复后 C 号
+  与主页地址不变；未经授权不能预览或管理；历史请求不受影响。
+
+### C. 规范事件
+
+- `creator_published` 仍仅在首个合格 Offering 使既有 Commerce Identity 首次 Published 时
+  产生；其业务事实是首次具备合格公开服务，不表示 C 号主页一定已发布。单独发布、暂停或
+  恢复主页不能产生或重发该事件。第 9.4 节相关验收按此解释。
+- `storefront_viewed` 在访客成功打开已发布的 C 号主页或符合条件的既有独立公开服务入口时
+  产生，即使主页没有服务；内部预览、后台、错误和不可访问响应不产生。相同页面视图不得重复
+  记录；访客随后独立打开服务详情是另一页面视图。
+- 发布、暂停、恢复和选择资料应记录可审计状态变化，不新增 Canonical Event；生成或复制
+  链接/二维码和预览不等于实际外部分发，不触发 `creator_distributed`。
+
+本修订批准产品合同变化，不表示相关代码、迁移、回归或 AT 已完成。后续状态与证据记录在
+[执行台账 DEV-062](../08_Execution/21_Prototype_Execution.md#dev-062--public-commerce-homepage)。
+
+## DEV-064 Amendment — 按日期和时间切换公开商业主页
+
+> 登记日期：2026-11-08；依据 [产品决策 31](./31_Time_Scheduled_Public_Homepages_Decision.md)
+> 本节是对 DEV-062 主页实现合同的后续显式修订；Identity、C 号、稳定 URL、公开字段、服务过滤、
+> 权限、空态和事件规则继续有效，只有主页数量和激活选择规则按本节扩展。
+
+### A. 主页版本和激活规则
+
+一个 Identity 仍只有一个终身不变的 C 号和一个稳定的 `/r/{C号}` 地址，但可以拥有多个主页版本。
+每个版本独立维护 Profile 选择、发布状态和时间窗口。访客访问 C 号地址时，服务端按当前时间选择一个
+已发布且命中时间窗口的版本；同一时刻不得存在两个命中的启用窗口。没有命中窗口时使用一个已发布默认
+主页；没有可用主页时返回主页不可访问。
+
+时间窗口使用 `[startsAt, endsAt)`，结束时刻不包含在窗口内。创作者选择 IANA 时区，服务端保存 UTC
+时刻并保留时区名称。第一期只支持明确的日期时间区间，不支持按周重复、节假日或访客选择版本。保存窗口
+时重叠必须返回冲突错误，应用层和真实 PostgreSQL 约束都必须防止并发重叠。
+
+主页版本仍使用 `UNPUBLISHED → PUBLISHED → PAUSED → PUBLISHED`；`ACTIVE` 是当前解析结果而不是
+可手工设置的持久化状态。暂停、取消发布、资料归档或失去归属的版本不得被选中；服务发布和下架不改变
+主页版本或窗口状态。无服务主页仍可显示“尚无服务”。
+
+### B. 功能要求和验收增补
+
+- **FR-054**：系统必须允许一个 Identity 创建多个主页版本，并且为每个版本校验 Profile 归属和权限。
+- **FR-055**：系统必须保证同一时间同一 Identity 至多有一个当前公开主页；窗口重叠和并发冲突必须被拒绝。
+- **FR-056**：公开 C 号解析必须使用服务端当前时间选择主页；公开请求不得使用访客提供的时间、时区或版本 ID。
+- **FR-057**：系统必须支持已发布默认主页；无命中窗口时回退默认主页，无默认且无命中版本时显示主页不可访问。
+- **FR-058**：创作者必须能在工作台查看当前激活版本、默认版本、下一次切换和窗口冲突，并能预览指定时间。
+- **FR-059**：主页版本切换不得改变 C 号、稳定 URL、二维码、资料披露白名单、已发布服务过滤或历史请求。
+
+新增验收覆盖多版本创建、默认回退、起止边界、时区/DST、并发冲突、跨 Identity 越权、公开不可绕过、
+迁移后既有单主页行为不变和 `storefront_viewed` 去重。主页切换、默认设置和窗口维护只产生审计事实，
+不产生新的 Canonical Event。
+
+本修订登记产品行为变化，不表示 DEV-064 已实现。实施步骤、迁移、接口和验证证据记录在
+[114 — 按日期和时间切换公开商业主页实施计划](../09_Engineering_Governance/114_Time_Scheduled_Public_Homepages_Implementation_Plan.md)
+和 [执行台账 DEV-064](../08_Execution/21_Prototype_Execution.md#dev-064--time-scheduled-public-homepages)。

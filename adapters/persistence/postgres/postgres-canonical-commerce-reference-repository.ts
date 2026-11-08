@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import { commerceReferences } from '../../../database/schema/commerce-reference.js';
+import { commerceProfiles } from '../../../database/schema/commerce-profile.js';
 import {
   createCommerceReference,
   rehydrateAssignedCommerceReference,
@@ -37,8 +38,15 @@ export class PostgresCanonicalCommerceReferenceRepository implements CommerceRef
     });
 
     try {
+      const profiles = await this.database
+        .select({ identityId: commerceProfiles.owningIdentityId })
+        .from(commerceProfiles)
+        .where(eq(commerceProfiles.commerceProfileId, input.commerceProfileId));
+      if (profiles[0] === undefined)
+        throw new CommerceProfileNotFoundForReferenceError(input.commerceProfileId);
       await this.database.insert(commerceReferences).values({
         commerceReference: assigned.commerceReference,
+        identityId: profiles[0].identityId,
         commerceProfileId: assigned.commerceProfileId,
         lifecycle: assigned.lifecycle,
         assignedAt: assigned.assignedAt,
@@ -64,7 +72,9 @@ export class PostgresCanonicalCommerceReferenceRepository implements CommerceRef
       .from(commerceReferences)
       .where(eq(commerceReferences.commerceReference, commerceReference));
     const row = rows[0];
-    return row === undefined ? undefined : rehydrateCommerceReferenceRow(row);
+    return row === undefined || row.commerceProfileId === null
+      ? undefined
+      : rehydrateCommerceReferenceRow({ ...row, commerceProfileId: row.commerceProfileId });
   }
 
   public async getByProfileId(
@@ -75,11 +85,17 @@ export class PostgresCanonicalCommerceReferenceRepository implements CommerceRef
       .from(commerceReferences)
       .where(eq(commerceReferences.commerceProfileId, profileId));
     const row = rows[0];
-    return row === undefined ? undefined : rehydrateCommerceReferenceRow(row);
+    return row === undefined || row.commerceProfileId === null
+      ? undefined
+      : rehydrateCommerceReferenceRow({ ...row, commerceProfileId: row.commerceProfileId });
   }
 
   public async exists(commerceReference: CommerceReference): Promise<boolean> {
-    return (await this.getByReference(commerceReference)) !== undefined;
+    const rows = await this.database
+      .select({ value: commerceReferences.commerceReference })
+      .from(commerceReferences)
+      .where(eq(commerceReferences.commerceReference, commerceReference));
+    return rows.length > 0;
   }
 
   public async reserve(input: {
@@ -105,7 +121,6 @@ export class PostgresCanonicalCommerceReferenceRepository implements CommerceRef
     }
     throw new CommerceReferenceLifecycleConflictError(input.commerceReference);
   }
-
 }
 
 export function rehydrateCommerceReferenceRow(row: {

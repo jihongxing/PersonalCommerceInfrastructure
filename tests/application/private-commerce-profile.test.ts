@@ -14,15 +14,19 @@ import { createCanonicalCommerceProfileService } from '../../applications/canoni
 import { createPrivateCommerceProfileService } from '../../applications/private-commerce-profile/private-commerce-profile-service.js';
 import { createCommerceProfileId } from '../../modules/identity-infrastructure/identity-contract.js';
 import { createCommerceReference } from '../../modules/identity-infrastructure/commerce-reference-contract.js';
+import { InMemoryIdentityCommerceReferenceRepository } from '../../adapters/in-memory/in-memory-identity-commerce-reference-repository.js';
+import { createIdentityCommerceReferenceService } from '../../applications/canonical-commerce-reference/identity-commerce-reference-service.js';
 
 const accountA = { accountId: 'test:account-a', correlationId: 'correlation-a' };
 const accountB = { accountId: 'test:account-b', correlationId: 'correlation-b' };
 
-function setup(options: {
-  readonly references?: readonly string[];
-  readonly referenceRepository?: InMemoryCanonicalCommerceReferenceRepository;
-  readonly referenceGenerator?: { generate(): ReturnType<typeof createCommerceReference> };
-} = {}) {
+function setup(
+  options: {
+    readonly references?: readonly string[];
+    readonly referenceRepository?: InMemoryCanonicalCommerceReferenceRepository;
+    readonly referenceGenerator?: { generate(): ReturnType<typeof createCommerceReference> };
+  } = {},
+) {
   let profileIndex = 0;
   let referenceIndex = 0;
   const references = options.references ?? ['3C7M4Q9RDFHJKNTWVY', '4C7M4Q9RDFHJKNTWVY'];
@@ -47,8 +51,14 @@ function setup(options: {
     exists: async (identityId) => (await identityRepository.findById(identityId)) !== undefined,
   });
   const referenceRepository =
-    options.referenceRepository ?? new InMemoryCanonicalCommerceReferenceRepository(profileRepository);
-  const participants = [identityRepository, membershipRepository, profileRepository, referenceRepository];
+    options.referenceRepository ??
+    new InMemoryCanonicalCommerceReferenceRepository(profileRepository);
+  const participants = [
+    identityRepository,
+    membershipRepository,
+    profileRepository,
+    referenceRepository,
+  ];
   const atomicUnitOfWork = new InMemoryUnitOfWork(participants, new InMemoryProductEventStore(), {
     formalIdentityRepository: identityRepository,
     accountIdentityMembershipRepository: membershipRepository,
@@ -59,7 +69,16 @@ function setup(options: {
     identityRepository,
     membershipRepository,
   });
+  const identityReferenceService = createIdentityCommerceReferenceService(
+    new InMemoryIdentityCommerceReferenceRepository(),
+    {
+      generate: () =>
+        options.referenceGenerator?.generate() ??
+        createCommerceReference(references[referenceIndex++] ?? references[0]!),
+    },
+  );
   const service = createPrivateCommerceProfileService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: createCanonicalCommerceProfileService({
       repository: profileRepository,
@@ -80,7 +99,13 @@ function setup(options: {
     unitOfWork: atomicUnitOfWork,
   });
 
-  return { membershipService, profileRepository, referenceRepository, service };
+  return {
+    membershipService,
+    profileRepository,
+    referenceRepository,
+    identityReferenceService,
+    service,
+  };
 }
 
 describe('Private Commerce Profile service', () => {
@@ -98,7 +123,9 @@ describe('Private Commerce Profile service', () => {
         lifecycle: profile.lifecycle,
       },
     ]);
-    await expect(service.getMyCommerceProfile(accountA, profile.commerceProfileId)).resolves.toMatchObject({
+    await expect(
+      service.getMyCommerceProfile(accountA, profile.commerceProfileId),
+    ).resolves.toMatchObject({
       commerceProfileId: profile.commerceProfileId,
       displayName: profile.displayName,
       lifecycle: profile.lifecycle,
@@ -128,7 +155,9 @@ describe('Private Commerce Profile service', () => {
     const { membershipService, profileRepository, service } = setup();
     await membershipService.createIdentityForAuthenticatedAccount(accountA);
     const identityB = await membershipService.createIdentityForAuthenticatedAccount(accountB);
-    const foreignProfile = await service.createMyCommerceProfile(accountB, { displayName: 'Studio B' });
+    const foreignProfile = await service.createMyCommerceProfile(accountB, {
+      displayName: 'Studio B',
+    });
 
     await expect(
       service.updateMyCommerceProfile(accountA, foreignProfile.commerceProfileId, {
@@ -156,55 +185,34 @@ describe('Private Commerce Profile service', () => {
     });
   });
 
-  it('creates a canonical Commerce Reference atomically with the Profile', async () => {
-    const { membershipService, referenceRepository, service } = setup();
-    await membershipService.createIdentityForAuthenticatedAccount(accountA);
+  it('returns the existing Identity reference when creating a Profile', async () => {
+    const { membershipService, identityReferenceService, service } = setup();
+    const identity = await membershipService.createIdentityForAuthenticatedAccount(accountA);
+    await identityReferenceService.ensure(identity.identity.identityId);
 
     const profile = await service.createMyCommerceProfile(accountA, { displayName: 'Studio A' });
 
     expect(profile.commerceReference).toBe('3C7M4Q9RDFHJKNTWVY');
     expect(profile.commerceReferenceDisplayValue).toBe('3C7M4Q-9RDFHJ-KNTWVY');
-    await expect(referenceRepository.getByProfileId(createCommerceProfileId(profile.commerceProfileId)))
-      .resolves.toMatchObject({ commerceReference: '3C7M4Q9RDFHJKNTWVY' });
   });
 
-  it('retries a unique collision and assigns only the succeeding candidate', async () => {
-    const { membershipService, referenceRepository, service } = setup({
-      references: [
-        '3C7M4Q9RDFHJKNTWVY',
-        '3C7M4Q9RDFHJKNTWVY',
-        '4C7M4Q9RDFHJKNTWVY',
-      ],
-    });
-    await membershipService.createIdentityForAuthenticatedAccount(accountA);
+  it('shares the Identity reference across Profiles', async () => {
+    const { membershipService, identityReferenceService, service } = setup();
+    const identity = await membershipService.createIdentityForAuthenticatedAccount(accountA);
+    await identityReferenceService.ensure(identity.identity.identityId);
 
     const first = await service.createMyCommerceProfile(accountA, { displayName: 'First' });
     const second = await service.createMyCommerceProfile(accountA, { displayName: 'Second' });
 
     expect(first.commerceReference).toBe('3C7M4Q9RDFHJKNTWVY');
-    expect(second.commerceReference).toBe('4C7M4Q9RDFHJKNTWVY');
-    await expect(
-      referenceRepository.getByProfileId(createCommerceProfileId(second.commerceProfileId)),
-    ).resolves.toMatchObject({ commerceReference: '4C7M4Q9RDFHJKNTWVY' });
+    expect(second.commerceReference).toBe(first.commerceReference);
   });
 
-  it('rolls back the Profile when Reference persistence fails', async () => {
-    const profileRepository = new InMemoryCanonicalCommerceProfileRepository({
-      exists: () => Promise.resolve(true),
-    });
-    const failingReferenceRepository = new FailingReferenceRepository(profileRepository);
-    const { membershipService, service } = setup({ referenceRepository: failingReferenceRepository });
+  it('does not allocate a number when an Identity has none', async () => {
+    const { membershipService, identityReferenceService, service } = setup();
     await membershipService.createIdentityForAuthenticatedAccount(accountA);
-
-    await expect(
-      service.createMyCommerceProfile(accountA, { displayName: 'Rollback' }),
-    ).rejects.toThrow('Reference persistence failed.');
-    await expect(service.listMyCommerceProfiles(accountA)).resolves.toEqual([]);
+    const profile = await service.createMyCommerceProfile(accountA, { displayName: 'Unassigned' });
+    expect(profile.commerceReference).toBeUndefined();
+    expect(await identityReferenceService.find('identity-1')).toBeUndefined();
   });
 });
-
-class FailingReferenceRepository extends InMemoryCanonicalCommerceReferenceRepository {
-  public override assign(): Promise<void> {
-    return Promise.reject(new Error('Reference persistence failed.'));
-  }
-}

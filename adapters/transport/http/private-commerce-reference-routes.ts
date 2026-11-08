@@ -3,9 +3,7 @@ import { Type } from 'typebox';
 
 import type { PrivateCommerceReferenceService } from '../../../applications/private-commerce-reference/private-commerce-reference-service.js';
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
-import {
-  PrivateCommerceReferenceViewSchema,
-} from '../../../contracts/api/v1/private-identity-contracts.js';
+import { PrivateCommerceReferenceViewSchema } from '../../../contracts/api/v1/private-identity-contracts.js';
 import { ApiErrorEnvelopeSchema } from '../../../contracts/api/v1/system-contracts.js';
 import { extractBearerToken } from '../../auth/transport/bearer-token.js';
 
@@ -23,6 +21,28 @@ export function registerPrivateCommerceReferenceRoutes(
     readonly service: PrivateCommerceReferenceService;
   },
 ): void {
+  server.get(
+    '/api/v1/private/identity/reference',
+    {
+      schema: {
+        operationId: 'getMyIdentityCommerceReference',
+        response: {
+          200: PrivateCommerceReferenceViewSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['private-commerce-reference'],
+      },
+      preHandler: async (request) => {
+        (request as AuthenticatedRequest).accountContext =
+          await dependencies.authContextProvider.resolveAccountContext({
+            accessToken: extractBearerToken(request.headers.authorization),
+            correlationId: request.id,
+          });
+      },
+    },
+    async (request) => dependencies.service.getMyIdentityReference(requireAccountContext(request)),
+  );
   server.get(
     '/api/v1/private/profiles/:profileId/reference',
     {

@@ -1,17 +1,23 @@
 'use client';
 
+import { Suspense, use } from 'react';
 import { useOrderResult } from '@/features/order-fulfillment/api/use-order-result';
 import { OrderResultCard } from '@/components/commerce/order-result-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
-export default function OrderResultPage({
-  params,
-}: {
-  params: { token: string };
-}) {
-  const { data, isLoading, error, refetch, isRefetching } = useOrderResult(params.token);
+export default function OrderResultPage({ params }: { params: Promise<{ token: string }> }) {
+  return (
+    <Suspense fallback={<p role="status">正在加载...</p>}>
+      <OrderResult params={params} />
+    </Suspense>
+  );
+}
+
+function OrderResult({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params);
+  const { data, isLoading, error, refetch, isRefetching } = useOrderResult(token);
 
   // 加载状态
   if (isLoading) {
@@ -37,15 +43,9 @@ export default function OrderResultPage({
       <div className="container mx-auto py-8 max-w-2xl">
         <Card>
           <CardContent className="py-12 text-center space-y-4">
-            <p className="text-lg font-semibold text-destructive mb-2">
-              查询失败
-            </p>
-            <p className="text-muted-foreground">
-              {error?.message || '无法加载订单信息'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              请检查查询码是否正确，或稍后重试
-            </p>
+            <p className="text-lg font-semibold text-destructive mb-2">查询失败</p>
+            <p className="text-muted-foreground">{error?.message || '无法加载订单信息'}</p>
+            <p className="text-sm text-muted-foreground">请检查查询码是否正确，或稍后重试</p>
             <Button onClick={() => refetch()} variant="outline" className="mt-4">
               重试
             </Button>
@@ -63,25 +63,16 @@ export default function OrderResultPage({
       {/* 手动刷新按钮 */}
       {data.state === 'submitted' && (
         <div className="text-center">
-          <Button 
-            onClick={() => refetch()} 
-            variant="outline"
-            disabled={isRefetching}
-          >
+          <Button onClick={() => refetch()} variant="outline" disabled={isRefetching}>
             {isRefetching ? '刷新中...' : '手动刷新状态'}
           </Button>
-          <p className="text-xs text-muted-foreground mt-2">
-            页面会自动每 10 秒刷新一次
-          </p>
+          <p className="text-xs text-muted-foreground mt-2">页面会自动每 10 秒刷新一次</p>
         </div>
       )}
 
       {/* 返回首页 */}
       <div className="text-center pt-4">
-        <Button 
-          onClick={() => window.location.href = '/'} 
-          variant="ghost"
-        >
+        <Button onClick={() => (window.location.href = '/')} variant="ghost">
           返回首页
         </Button>
       </div>

@@ -358,7 +358,7 @@ podman exec pci-postgres psql -U pci_user -d pci_auth -c \
 - `apps/web-v2/lib/api/` - API 客户端
 
 **数据库**:
-- `database/migrations/0100_auth_system.sql` - 认证表结构
+- `database/migrations/0027_local_auth.sql` - 正式 API 的本地认证表结构；旧认证原型保留在 `database/archive/0100_auth_system.sql`，不得作为正式迁移运行。
 
 **文档**:
 - `docs/09_Engineering_Governance/102_Week3_Deployment_Guide.md` - 部署指南

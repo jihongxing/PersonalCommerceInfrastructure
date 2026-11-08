@@ -100,6 +100,7 @@ export async function startApi(): Promise<ApiRuntime> {
                 ])
               : composition.authContextProvider,
             creatorIdentityService: composition.service,
+            publicHomepageService: composition.publicHomepageService,
             serviceOfferingService: composition.offeringService,
             customerRequestService: composition.customerRequestService,
             qrCodeGenerator: new QrCodeGeneratorImpl(),

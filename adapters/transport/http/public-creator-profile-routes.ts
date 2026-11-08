@@ -63,6 +63,13 @@ export function registerPublicCreatorProfileRoutes(
       }
 
       const { commerceProfileId } = referenceRows[0]!;
+      if (commerceProfileId === null) {
+        throw new ApplicationError({
+          category: 'not_found',
+          code: 'CREATOR_NOT_FOUND',
+          message: 'Creator profile not found.',
+        });
+      }
 
       // 2. 查找 commerce_profile
       const profileRows = await dependencies.database

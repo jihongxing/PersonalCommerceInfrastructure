@@ -1,4 +1,9 @@
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
+import {
+  createPublicHomepageService,
+  type PublicHomepageService,
+} from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
+import { PostgresPublicHomepageRepository } from './postgres-public-homepage-repository.js';
 import { withTraceSpan } from '../../observability/tracing.js';
 import type { SafeLogger } from '../../observability/safe-logger.js';
 import type { NotificationPort } from '../../../applications/core/ports/notification-port.js';
@@ -27,6 +32,8 @@ import {
 import { createCanonicalCommerceProfileService } from '../../../applications/canonical-commerce-profile/canonical-commerce-profile-service.js';
 import { UuidCommerceProfileIdGenerator } from '../../../applications/canonical-commerce-profile/uuid-commerce-profile-id-generator.js';
 import { CsprngCommerceReferenceGenerator } from '../../../applications/canonical-commerce-reference/commerce-reference-generator.js';
+import { createIdentityCommerceReferenceService } from '../../../applications/canonical-commerce-reference/identity-commerce-reference-service.js';
+import { PostgresIdentityCommerceReferenceRepository } from './postgres-identity-commerce-reference-repository.js';
 import type {
   CommerceRelationshipId,
   ExternalPlatformAccountId,
@@ -154,6 +161,7 @@ export interface RealMoneyRuntimeCompositionConfiguration {
 }
 
 export interface PostgresCreatorIdentityComposition {
+  readonly publicHomepageService: PublicHomepageService;
   readonly authContextProvider: AuthContextProvider;
   readonly localAuthService?: LocalAuthService;
   readonly accountIdentityMembershipService: AccountIdentityMembershipService;
@@ -206,6 +214,10 @@ export function createPostgresCreatorIdentityComposition(
   const canonicalCommerceReferenceRepository = new PostgresCanonicalCommerceReferenceRepository(
     database.database,
   );
+  const identityReferenceService = createIdentityCommerceReferenceService(
+    new PostgresIdentityCommerceReferenceRepository(database.database),
+    new CsprngCommerceReferenceGenerator(),
+  );
   const externalPlatformAccountRepository = new PostgresExternalPlatformAccountRepository(
     database.database,
   );
@@ -235,6 +247,13 @@ export function createPostgresCreatorIdentityComposition(
     identityRepository: formalIdentityRepository,
     membershipRepository: accountIdentityMembershipRepository,
   });
+  const publicHomepageService = createPublicHomepageService({
+    currentUserIdentityService,
+    repository: new PostgresPublicHomepageRepository(
+      database.client,
+      'localAuthSecret' in authConfiguration ? undefined : authConfiguration.creatorActorMappings,
+    ),
+  });
   const selfServiceIdentityInitializationService = createSelfServiceIdentityInitializationService({
     identityRepository: formalIdentityRepository,
     membershipRepository: accountIdentityMembershipRepository,
@@ -243,23 +262,39 @@ export function createPostgresCreatorIdentityComposition(
     membershipIdGenerator: new UuidIdGenerator(),
     clock: new FixedClock(new Date().toISOString()),
   });
-  const localAuthService = 'localAuthSecret' in authConfiguration
-    ? new LocalAuthService(
-        new PostgresLocalAuthRepository(database.client),
-        authConfiguration.localAuthSecret,
-        async (account, creatorId, requestContext) => {
-          const identity = await selfServiceIdentityInitializationService.initializeAuthenticatedIdentity({
-            accountId: `local:${account.id}`,
-            correlationId: requestContext.correlationId,
-          });
-          if (identity.status !== 'ACTIVE') {
-            throw new ApplicationError({ category: 'authorization', code: 'identity_not_active', message: '账号身份不可用。' });
-          }
-          await identityRepository.createIfAbsent(createInitialCommerceIdentity(creatorId, account.name ?? ''));
-        },
-        { trace: withTraceSpan, workspaceFailure: (requestContext) => logger?.error('workspace_initialization_failed', { correlationId: requestContext.correlationId, errorCategory: 'initialization_failed' }) },
-      )
-    : undefined;
+  const localAuthService =
+    'localAuthSecret' in authConfiguration
+      ? new LocalAuthService(
+          new PostgresLocalAuthRepository(database.client),
+          authConfiguration.localAuthSecret,
+          async (account, creatorId, requestContext) => {
+            const identity =
+              await selfServiceIdentityInitializationService.initializeAuthenticatedIdentity({
+                accountId: `local:${account.id}`,
+                correlationId: requestContext.correlationId,
+              });
+            if (identity.status !== 'ACTIVE') {
+              throw new ApplicationError({
+                category: 'authorization',
+                code: 'identity_not_active',
+                message: '账号身份不可用。',
+              });
+            }
+            await identityReferenceService.ensure(identity.identityId);
+            await identityRepository.createIfAbsent(
+              createInitialCommerceIdentity(creatorId, account.name ?? ''),
+            );
+          },
+          {
+            trace: withTraceSpan,
+            workspaceFailure: (requestContext) =>
+              logger?.error('workspace_initialization_failed', {
+                correlationId: requestContext.correlationId,
+                errorCategory: 'initialization_failed',
+              }),
+          },
+        )
+      : undefined;
   const identityProfileAuthorizationPolicy = createIdentityProfileAuthorizationPolicy({
     contextResolver: createIdentityProfileContextResolver({
       identityRepository: formalIdentityRepository,
@@ -279,6 +314,7 @@ export function createPostgresCreatorIdentityComposition(
     clock: new FixedClock(new Date().toISOString()),
   });
   const privateCommerceProfileService = createPrivateCommerceProfileService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: canonicalCommerceProfileService,
     commerceProfileIdGenerator: new UuidCommerceProfileIdGenerator(),
@@ -287,6 +323,7 @@ export function createPostgresCreatorIdentityComposition(
     unitOfWork,
   });
   const privateCommerceReferenceService = createPrivateCommerceReferenceService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: canonicalCommerceProfileService,
     commerceReferenceRepository: canonicalCommerceReferenceRepository,
@@ -409,6 +446,7 @@ export function createPostgresCreatorIdentityComposition(
   });
 
   return {
+    publicHomepageService,
     database,
     accountIdentityMembershipService,
     currentUserIdentityService,
@@ -420,12 +458,18 @@ export function createPostgresCreatorIdentityComposition(
     privateCommerceRelationshipService,
     privateSelfDeclaredExternalRelationshipService,
     ...(localAuthService === undefined ? {} : { localAuthService }),
-    authContextProvider: localAuthService !== undefined
-      ? createAuthContextProvider({ tokenVerifier: localAuthService, creatorActorResolver: localAuthService })
-      : createSupabaseAuthContextProvider(
-          authConfiguration as CreatorIdentityAuthConfiguration,
-          new InMemoryCreatorActorResolver((authConfiguration as CreatorIdentityAuthConfiguration).creatorActorMappings),
-        ),
+    authContextProvider:
+      localAuthService !== undefined
+        ? createAuthContextProvider({
+            tokenVerifier: localAuthService,
+            creatorActorResolver: localAuthService,
+          })
+        : createSupabaseAuthContextProvider(
+            authConfiguration as CreatorIdentityAuthConfiguration,
+            new InMemoryCreatorActorResolver(
+              (authConfiguration as CreatorIdentityAuthConfiguration).creatorActorMappings,
+            ),
+          ),
     service: createCreatorIdentityService({
       identityRepository,
       capabilityRepository,

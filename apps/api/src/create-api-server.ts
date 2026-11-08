@@ -34,7 +34,6 @@ import type { PrivateCommerceRelationshipService } from '../../../applications/p
 import type { PrivateSelfDeclaredExternalRelationshipService } from '../../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import { registerCustomerRequestRoutes } from '../../../adapters/transport/http/customer-request-routes.js';
 import { registerServiceOfferingRoutes } from '../../../adapters/transport/http/service-offering-routes.js';
-import { registerPublicCreatorProfileRoutes } from '../../../adapters/transport/http/public-creator-profile-routes.js';
 import { registerSystemRoutes } from '../../../adapters/transport/http/system-routes.js';
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
 import type { CreatorIdentityService } from '../../../applications/creator-identity/creator-identity-service.js';
@@ -62,8 +61,13 @@ import { registerContractRoutes } from '../../../adapters/transport/http/contrac
 import { registerLocalAuthRoutes } from '../../../adapters/transport/http/local-auth-routes.js';
 import type { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
 import { registerBrowserTracingRoutes } from '../../../adapters/transport/http/browser-tracing-routes.js';
+import { registerPublicCommerceHomepageRoutes } from '../../../adapters/transport/http/public-commerce-homepage-routes.js';
+import type { PublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
+import { createPublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
+import { ApplicationError } from '../../../applications/core/application-error.js';
 
 export interface ApiServerDependencies {
+  readonly publicHomepageService?: PublicHomepageService;
   readonly localAuthService?: LocalAuthService;
   readonly authContextProvider?: AuthContextProvider;
   readonly creatorIdentityService?: CreatorIdentityService;
@@ -271,6 +275,28 @@ export async function createApiServer(
   });
 
   registerApiErrorHandling(server, dependencies.logger);
+  const homepageUnavailable = (): Promise<never> =>
+    Promise.reject(new ApplicationError({
+      category: 'internal',
+      code: 'homepage_storage_unavailable',
+      message: 'Homepage storage is unavailable.',
+    }));
+  registerPublicCommerceHomepageRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    service:
+      dependencies.publicHomepageService ??
+      createPublicHomepageService({
+        currentUserIdentityService:
+          dependencies.currentUserIdentityService ?? composition.currentUserIdentityService,
+        repository: {
+          configuration: homepageUnavailable,
+          selectProfile: homepageUnavailable,
+          transition: homepageUnavailable,
+          preview: homepageUnavailable,
+          resolve: homepageUnavailable,
+        },
+      }),
+  });
   if (dependencies.browserTracingEndpoint !== undefined) {
     registerBrowserTracingRoutes(server, {
       endpoint: dependencies.browserTracingEndpoint,
@@ -331,12 +357,6 @@ export async function createApiServer(
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     service: dependencies.serviceOfferingService ?? composition.offeringService,
   });
-  // 公开的 Creator Profile 路由（需要 database）
-  if (dependencies.database) {
-    registerPublicCreatorProfileRoutes(server, {
-      database: dependencies.database,
-    });
-  }
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,

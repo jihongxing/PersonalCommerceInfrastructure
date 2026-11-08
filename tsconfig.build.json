@@ -7,6 +7,16 @@
     "declaration": true,
     "declarationMap": true
   },
+  "include": [
+    "apps/api/**/*.ts",
+    "apps/prototype/**/*.ts",
+    "adapters/**/*.ts",
+    "applications/**/*.ts",
+    "contracts/**/*.ts",
+    "database/**/*.ts",
+    "modules/**/*.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": [
     "**/*.test.ts",
     "tests",
@@ -16,7 +26,7 @@
     "dist",
     "node_modules",
     "coverage",
-    "apps/web-v2/e2e/tracing-harness",
-    "apps/web"
+    "adapters/auth/middleware/auth-middleware.ts",
+    "adapters/transport/http/auth-routes.ts"
   ]
 }

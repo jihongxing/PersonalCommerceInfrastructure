@@ -20,6 +20,13 @@ describe('Auth API contracts', () => {
       'missing_access_token',
       'invalid_access_token',
       'creator_actor_not_mapped',
+      'invalid_credentials',
+      'user_not_found',
+      'user_already_exists',
+      'invalid_token',
+      'token_expired',
+      'weak_password',
+      'invalid_email_format',
     ]);
   });
 });

@@ -17,6 +17,8 @@ import { createPrivateCommerceProfileService } from '../../applications/private-
 import { createCommerceProfileId } from '../../modules/identity-infrastructure/identity-contract.js';
 import { createCommerceReference } from '../../modules/identity-infrastructure/commerce-reference-contract.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
+import { InMemoryIdentityCommerceReferenceRepository } from '../../adapters/in-memory/in-memory-identity-commerce-reference-repository.js';
+import { createIdentityCommerceReferenceService } from '../../applications/canonical-commerce-reference/identity-commerce-reference-service.js';
 
 const activeServers = new Set<FastifyInstance>();
 
@@ -70,7 +72,19 @@ async function createPrivateCommerceProfileTestServer(): Promise<FastifyInstance
   const referenceRepository = new InMemoryCanonicalCommerceReferenceRepository(profileRepository);
   let profileIndex = 0;
   let referenceIndex = 0;
+  const identityReferenceService = createIdentityCommerceReferenceService(
+    new InMemoryIdentityCommerceReferenceRepository(),
+    {
+      generate: () =>
+        createCommerceReference(
+          referenceIndex++ === 0 ? '3C7M4Q9RDFHJKNTWVY' : '4C7M4Q9RDFHJKNTWVY',
+        ),
+    },
+  );
+  await identityReferenceService.ensure('identity-1');
+  await identityReferenceService.ensure('identity-2');
   const privateCommerceProfileService = createPrivateCommerceProfileService({
+    identityReferenceService,
     currentUserIdentityService,
     commerceProfileService: createCanonicalCommerceProfileService({
       repository: profileRepository,

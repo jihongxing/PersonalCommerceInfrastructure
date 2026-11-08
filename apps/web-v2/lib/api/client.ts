@@ -107,7 +107,8 @@ class SimpleApiClient {
   private async request(method: string, path: string, options: any = {}, retried = false, links: SpanContext[] = []): Promise<any> {
     const resolvedPath = path.replace(/\{([^}]+)\}/g, (_match, key: string) => encodeURIComponent(String(options.params?.path?.[key] ?? '')));
     const url = `${this.baseUrl}${resolvedPath}`;
-    const token = getBearerToken();
+    const anonymous = path.startsWith('/api/v1/public/');
+    const token = anonymous ? null : getBearerToken();
 
     const headers = new Headers(options.headers || {});
     if (options.body !== undefined) headers.set('Content-Type', 'application/json');
@@ -130,13 +131,14 @@ class SimpleApiClient {
         headers,
         body,
         signal: options.signal,
+        ...(anonymous ? { credentials: 'omit' as const } : {}),
       });
       status = response.status;
       finishRequestSpan(span, status);
 
       const data = await response.json();
 
-      if (response.status === 401 && data?.error?.code !== 'creator_actor_not_mapped' && (!path.startsWith('/api/v1/auth/') || path === '/api/v1/auth/workspace/initialize' || path === '/api/v1/auth/logout') && !retried) {
+      if (!anonymous && response.status === 401 && data?.error?.code !== 'creator_actor_not_mapped' && (!path.startsWith('/api/v1/auth/') || path === '/api/v1/auth/workspace/initialize' || path === '/api/v1/auth/logout') && !retried) {
         if (options.signal?.aborted) throw new DOMException('请求已取消', 'AbortError');
         if (token && getBearerToken() && getBearerToken() !== token) {
           return this.request(method, path, options, true, [span?.spanContext()].filter((value): value is SpanContext => value !== undefined));

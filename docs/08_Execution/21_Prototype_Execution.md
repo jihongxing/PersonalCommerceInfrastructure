@@ -8,7 +8,7 @@
 > **Source of Truth**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
 > **Upstream Product Definitions**：[17 Core Product Objects](../07_Product_Architecture/17_Core_Product_Objects.md)、[18 MVP Product Flow](../07_Product_Architecture/18_MVP_Product_Flow.md)、[19 MVP Product Specification](../07_Product_Architecture/19_MVP_Product_Specification.md)  
 > **Document Type**：Living execution record; implementation status, deviations, blockers, testing evidence and handoff only  
-> **Last Updated**：2026-11-07
+> **Last Updated**：2026-11-09
 
 ## 1. Purpose
 
@@ -7648,3 +7648,245 @@ correlation ID was replaced, and an allowed-origin preflight included tracing he
 with trace ID `0123456789abcdef0123456789abcdef` produced a `GET /health` server span in local
 Jaeger with the supplied parent span ID. This verifies the current 8080 runtime for these checks;
 concurrent isolation and production acceptance retain the limitations stated above.
+
+## DEV-061 / IDENTITY-OWNED-COMMERCE-REFERENCE
+
+Founder approved changing Commerce Reference ownership from Commerce Profile to Internal Identity:
+one immutable, non-transferable, never-reused C number per Identity. The approved decision and
+conflict boundary are recorded in [29 — Identity 持有 C 号的产品决策](../07_Product_Architecture/29_Identity_Owned_Commerce_Reference_Decision.md).
+This supersedes the Profile ownership and per-Profile allocation portions of DEV-030 / DEV-052.
+Implementation, migration, registration integration and verification status are recorded below as
+work progresses; this entry alone is not evidence that existing runtime data has been migrated.
+
+2026-11-08 local read-only inventory: 10 Identities, 0 canonical Commerce Profiles, 0 Commerce
+References, 0 conflicting owner groups and 0 orphan References. These counts apply only to the
+local database at inspection time. The target Identity-owned domain contract and three focused
+unit tests were added; `pnpm build:api`, scoped ESLint and Prettier passed. Root `tsc --noEmit`
+failed on pre-existing JSX syntax in `apps/web-v2/features/order-fulfillment/api/__tests__/use-order-result.test.ts`.
+
+2026-11-08 implementation and local verification:
+
+- Migration `0028` maps historical Profile references to their owner Identity, rejects invalid or
+  multiple historical numbers before changing the schema, and enforces a unique non-null Identity
+  foreign key, valid format, immutable ownership/history and no deletion. The historical Profile
+  association remains optional evidence. An Identity without a reference remains possible during
+  failed initialization; the database enforces at most one, while the initialization service
+  supplies the missing one and reports failure for retry.
+- Local signup and login initialize the Identity and allocate a C number using a CSPRNG, database
+  uniqueness and bounded collision retry. A failed initialization returns `setupPending`; the
+  workspace initialization endpoint retries it. The private Identity endpoint reads the number;
+  the legacy private Profile endpoint checks ownership and returns the same Identity number.
+  Profile creation does not allocate another number. Public C-number profile resolution is
+  disabled pending a separate public Profile selection decision; this is a breaking change for
+  users of that former public endpoint.
+- Before migrating the local `pci_workspace_verify_20261107` database, the API was stopped and a
+  PostgreSQL custom-format backup was made at `%TEMP%/pci_dev061_20261108_before.dump` and in the
+  local Podman container. It was restored into `pci_dev061_restore_11081525`; identity, Profile
+  and reference counts matched (10 / 0 / 0). Migration succeeded and the idempotent backfill
+  allocated 10 references; a subsequent dry run found zero missing. These results cover only this
+  local database. Once new numbers exist, an old backup must not be restored without preserving
+  and reconciling the new registry.
+- A separate PostgreSQL database was migrated from scratch. Integration tests passed for signup,
+  concurrent initialization, shared Profile reference, rename/archive, cross-account access,
+  stable login, immutable records, historic mapping and conflict rollback. Focused application
+  tests covered collision and storage failure/retry. Browser testing against `apps/api` on 8080
+  and web on 3000 verified signup, displayed C number, logout and login with the same number.
+  The signup page's Next.js instant-navigation validation warning was corrected.
+- `pnpm build:api` and web-v2 TypeScript checking passed. The full test run before updating the
+  two affected assertions reported 894 passed, 54 skipped and five failures: two affected
+  assertions were corrected and passed on rerun; unrelated pre-existing failures were the auth
+  error vocabulary assertion and unjournaled `0100_auth_system.sql`. A random-distribution test
+  failed once and passed on focused rerun. Root build remains blocked by existing type errors;
+  migration and OpenAPI checking scripts also encounter existing unjournaled SQL and two
+  unlisted fulfillment routes respectively. These are not evidence of a fully green repository.
+
+Status: **IMPLEMENTED AND LOCALLY VERIFIED**. Production or other environment migration,
+historical conflict resolution and public Profile selection remain separate work.
+
+## DEV-062 / PUBLIC-COMMERCE-HOMEPAGE
+
+| Field                         | Record                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date                          | 2026-11-08                                                                                                                                                                                                                                                                                                                                                              |
+| Related PRD                   | FR-001–005, FR-008–024, FR-026–027; public Storefront, Commerce Identity publication, Distribution Asset and relevant AT-001–AT-013 paths. FR-025 and FR-028–033 require impact review.                                                                                                                                                                                 |
+| Type                          | UX ambiguity / Product state and public access change                                                                                                                                                                                                                                                                                                                   |
+| Observed Implementation Issue | Identity C numbers are displayed in the workspace, but there is no public number lookup; the previous public resolver was unregistered under DEV-061 and the existing `/r/` page cannot resolve it. Its former Profile ownership and Creator ID assumptions are incompatible with the current model.                                                                    |
+| Impact                        | Visitors cannot reach a Creator homepage from a C number; explicit homepage publication, pause, public Profile selection, sharing and QR change public access and may affect existing publication rules, events, contracts and acceptance.                                                                                                                              |
+| Options Considered            | Retain current PRD and provide only eligible Offering-based public access; restore the old resolver after fixing its mapping while retaining current publication semantics; adopt the confirmed Identity-based public homepage and revise or formally supplement affected product contracts before implementation. Directly restoring the old implementation is unsafe. |
+| Recommended Resolution        | Deliver the Identity-owned stable C-number URL, anonymous lookup and QR, explicit Creator-controlled homepage publication, authorized preview and selected public data, with published offerings only. An empty published homepage remains visible when the final offering is unpublished; homepage state is independent of existing Identity and Offering states.      |
+| Product Decision              | Founder approved the direction and empty-service behavior and delegated state/event details on 2026-11-08; [decision 30](../07_Product_Architecture/30_Public_Commerce_Homepage_Decision.md) records those choices. Profile ownership mapping and migration remain implementation inventory.                                                                            |
+| PRD Amendment                 | Approved and recorded 2026-11-08 in [VS-01 DEV-062 amendment](../07_Product_Architecture/20_MVP_PRD_VS01.md#dev-062-amendment--c-号公开商业主页): explicit homepage lifecycle and empty state, FR-005/016/023/024, search boundary, events and acceptance. Earlier conflicting text is superseded as stated by the amendment.                                           |
+| Implementation Status         | In progress. [Plan 113](../09_Engineering_Governance/113_Public_Commerce_Homepage_Implementation_Plan.md) defines the remaining phases and verification.                                                                                                                                                                                                                |
+| Evidence                      | Implementation and verification evidence is recorded chronologically below; remaining acceptance and environment limitations are explicit.                                                                                                                                                                                                                              |
+
+2026-11-08 documentation verification: Prettier check passed for decision 30 and plan 113;
+`git diff --check` passed. No product or acceptance tests were run for this documentation-only unit.
+The subsequent Founder-authorized empty-service, independent homepage-state and event decisions
+were added to decision 30, the DEV-062 PRD amendment and plan 113. Prettier recheck passed for
+decision 30 and plan 113; scoped `git diff --check` passed. Implementation remains Not Started.
+
+2026-11-08 implementation started: domain normalization and homepage transition tests passed
+(`pnpm exec vitest run modules/public-commerce-homepage/homepage.test.ts`, 8 tests). Migration
+0029 adds an initially empty homepage configuration, with one row per Identity and a composite
+foreign key preventing selection of a Profile owned by another Identity. It does not alter or
+publish existing C numbers. On an isolated Podman PostgreSQL 17 instance, a fresh migration and
+13 scoped domain, application, migration and repository tests passed, including cross-Identity
+selection, empty publication, draft filtering, view deduplication, pause, Profile archive and
+transactional actor audit. `pnpm build:api` passed. API transport, frontend and full acceptance
+remain in progress; these results do not establish production readiness.
+
+2026-11-08 local implementation and verification update:
+
+- The formal `apps/api` serves authenticated homepage configuration, Profile selection, preview,
+  publish and pause, plus anonymous C-number resolution. The `apps/web-v2` lookup, canonical
+  `/r/{C number}` page, workspace controls, QR and legacy `/public/{offeringId}` redirect use this
+  API. Plan 113 section 5 records the actual association, disclosure whitelist and migration,
+  compatibility and operational boundaries.
+- `pnpm build:api` and `pnpm exec next build` in `apps/web-v2` passed. Focused application, API
+  and runtime tests passed (3 files, 17 tests). `pnpm exec vitest run tests/acceptance` passed
+  13 automated tests; this is not evidence of complete real external VS-01 acceptance.
+- On isolated Podman PostgreSQL, homepage migration and repository tests passed, including
+  same-Identity Profile constraints, no automatic publication, unauthorized selection, archive,
+  empty publication, private/draft filtering, no events for preview or unavailable pages, and
+  concurrent deduplication of one view. The Identity reference migration and registration tests
+  passed (2 files, 3 tests), including historical conflict rollback and stable C numbers.
+  A custom-format backup of the isolated test database was restored to a separate database;
+  C-number, homepage and Commerce Action counts matched (3, 3, 1). This is not a production
+  backup or rollback exercise.
+- Local browser exercise used web port 13000 and the real API on 18080 with an isolated database:
+  signup and C number, Profile selection, homepage publication, public service and request,
+  Creator pending request, pause and independent service access, resume, then last-service
+  unpublish and empty homepage were observed. Desktop and mobile renderings were inspected.
+  The generated QR image was decoded locally and its URL opened in the browser; actual phone
+  scanning, public network access and external distribution were not tested.
+- Focused lint, formatting and OpenAPI compatibility checks passed apart from a Next.js image
+  optimization warning on the QR image and an existing navigation warning. A full Vitest run
+  before the route inventory fix reported 908 passed, 56 skipped and 4 failures: the route list
+  and an import-boundary timeout passed on focused rerun; the existing auth error vocabulary
+  mismatch and unjournaled `0100_auth_system.sql` remain. The root build has existing TypeScript
+  errors outside this change. These results do not establish a green full repository.
+- Production domain, TLS, monitoring, proxy/rate-limit behavior, actual historical ownership
+  inventory, external clients of the retired API and real-environment migration/rollback remain
+  unverified. The local browser and test evidence does not close all HOME-05 or AT-001–AT-013
+  acceptance requirements.
+
+Final full-suite rerun: `pnpm exec vitest run` reported 910 passed, 56 skipped and 2 failed
+(124 files passed, 17 skipped, 2 failed). The failures remain the frozen authentication error
+vocabulary and the unjournaled legacy `0100_auth_system.sql`; no database migration was added
+merely to satisfy the inventory assertion. The automatic identity integration test was separately
+run against the isolated PostgreSQL database and passed both tests, including `setupPending`.
+
+Status: **IMPLEMENTED; LOCAL ACCEPTANCE INCOMPLETE**. Do not treat this as production approval.
+
+### 2026-11-08 Authentication Contract and Build Repair
+
+The frozen authentication-code test was updated to include the seven codes already present in
+the contract; the active local authentication service already uses `invalid_credentials` and
+`user_already_exists`. This aligns the test with existing behavior and changes no API response.
+The unjournaled `0100_auth_system.sql` belonged to an unregistered authentication prototype;
+it was preserved in `database/archive/`, outside the Drizzle migration folder. Formal local
+authentication continues to use migration 0027. No database was modified by moving the file;
+an independently applied prototype requires separate inventory and data migration planning.
+
+### 2026-11-08 Formal API Route Activation Repair
+
+The 8080 process was serving an older `apps/api` image of the source and returned
+`route_not_found` for both public and private homepage paths. The formal database was backed up
+to a custom-format PostgreSQL dump and verified with `pg_restore --list`; migration 0029 was then
+applied to the configured local database. No historical C-number ownership conflicts were found,
+and no existing homepage was published by the migration. The required local operations settings
+(`OPERATIONS_ACCESS_TOKEN` and `OPERATIONS_OPERATOR_ID`) were added to the root `.env.local`
+without changing user authentication credentials.
+
+The 8080 `apps/api` process was restarted against the existing database. Direct verification
+returned `200` from `/health`, `401 missing_authorization` from
+`/api/v1/private/homepage` without a token, and `200` with `state: UNPUBLISHED` for an existing
+creator session. The reported C number now resolves through the registered public route and
+returns `404 homepage_unavailable`, which reflects its unpublished state rather than a missing
+route. The focused homepage application and API tests passed (`5/5`).
+
+Status: **LOCAL API ROUTES ACTIVE; C NUMBER REMAINS UNPUBLISHED**. A creator must select a
+profile and publish the homepage from the dashboard before anonymous visitors can view it.
+
+The root Node build now explicitly includes the formal API, prototype and shared backend modules.
+It excludes two unregistered, incomplete legacy authentication prototype files; web-v2 is checked
+by its own Next.js production build, and api-mock is not a formal backend. `pnpm build`,
+`pnpm db:check`, `pnpm check:openapi`, the web-v2 production build, the two previously failing
+contract tests, and four local authentication/identity integration tests on isolated Podman
+PostgreSQL passed. A full suite run concurrent with builds had two 5-second timeouts; both test
+files passed separately (18 tests). The full-suite rerun is recorded below when complete.
+
+With builds finished, `pnpm exec vitest run` passed: 126 test files and 913 tests passed;
+17 files and 56 tests were skipped. These skips do not constitute external-service acceptance.
+
+## DEV-063 / PUBLIC-HOMEPAGE-CURRENT-PROFILE-VISIBILITY
+
+2026-11-08 Founder approved keeping the rule that one Identity's public homepage exposes one
+selected Commerce Profile at a time, while adding an explicit “对外主页” primary card to the
+Creator workspace. The card must show the homepage lifecycle, the current public Profile name
+and lifecycle, the stable C-number URL, and actions for preview, opening, copying, QR generation,
+profile switching, publishing and pausing. Profile switching keeps the Identity's C number and
+`/r/{C号}` address unchanged and requires a confirmation that visitors will see the newly selected
+Profile. The management API now returns a summary of the selected Profile so the UI does not infer
+public visibility from an ID alone; the existing `commerceProfileId` field remains for compatibility.
+
+Scope is limited to management projection and workspace information architecture. It does not
+create additional homepage rows, change homepage states, expose unselected Profiles, or alter the
+public disclosure whitelist. The selected Profile must still be active to publish or preview.
+Verification must cover the summary contract, one current Profile marker among multiple Profiles,
+stable URL after switching, and the existing API, build and homepage acceptance checks.
+
+2026-11-08 implementation and local verification:
+
+- The private homepage configuration now returns the selected Profile summary (`id`, display name
+  and lifecycle) alongside the existing `commerceProfileId`. PostgreSQL reprojects the summary
+  after configuration reads, Profile selection, publish and pause, including an archived selected
+  Profile so the workspace can distinguish an unavailable selection from no selection.
+- The `apps/web-v2` dashboard now presents an 对外主页 primary card with lifecycle, current public
+  Profile, stable C-number URL, preview, open, copy, QR, publish, pause and resume actions. The
+  Profile list marks exactly the selected Profile as 当前对外 and requires confirmation before a
+  switch. The C number and `/r/{C号}` URL remain unchanged by selection.
+- `pnpm exec vitest run tests/application/public-commerce-homepage.test.ts tests/integration/public-homepage-api.test.ts`
+  passed (6 tests). The read-only configuration projection was also executed for five Identities
+  in the configured local database; all were `UNPUBLISHED` with no selected Profile, and the new
+  query completed successfully.
+- `pnpm build:api`, web-v2 TypeScript checking, `pnpm exec next build` in `apps/web-v2`, scoped
+  ESLint, Prettier and `pnpm check:openapi` passed. The existing 8080 API returned health 200,
+  private homepage 401 without authorization, and the known public homepage route responded 200
+  with `Cache-Control: no-store`. The formal API process was restarted on 8080 from the updated
+  source using the configured `.env.local` settings.
+
+Status: **IMPLEMENTED; LOCAL ACCEPTANCE INCOMPLETE**. Production and full browser acceptance remain
+outside this local verification; existing repository-wide failures are tracked under DEV-062.
+
+2026-11-08 final local recheck: `pnpm exec eslint` passed for the changed API, scheduling, persistence,
+contract and web-v2 homepage files (web-v2 retains the repository's existing `<img>` performance
+warning). The focused scheduling, application, API and migration tests passed (21 passed, 2 skipped),
+including real Podman PostgreSQL repository and migration tests. `pnpm build:api`, `pnpm build`,
+`pnpm --filter web-v2 exec tsc --noEmit`, and `pnpm check:openapi` passed. The implementation remains
+local-only; the acceptance limitations above are unchanged.
+
+## DEV-064 / TIME-SCHEDULED-PUBLIC-HOMEPAGES
+
+| Field               | Record                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date                | 2026-11-08                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Change Unit         | `DEV-064` / `TIME-SCHEDULED-PUBLIC-HOMEPAGES`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Product Decision    | [31 — 按日期和时间切换公开商业主页](../07_Product_Architecture/31_Time_Scheduled_Public_Homepages_Decision.md)                                                                                                                                                                                                                                                                                                                                                                |
+| PRD Amendment       | [VS-01 DEV-064 amendment](../07_Product_Architecture/20_MVP_PRD_VS01.md#dev-064-amendment--按日期和时间切换公开商业主页)                                                                                                                                                                                                                                                                                                                                                      |
+| Implementation Plan | [114 — 按日期和时间切换公开商业主页实施计划](../09_Engineering_Governance/114_Time_Scheduled_Public_Homepages_Implementation_Plan.md)                                                                                                                                                                                                                                                                                                                                         |
+| Product Change      | One Identity keeps one immutable C number and stable `/r/{C号}`, while owning multiple homepage versions. At any instant, at most one version is active; date/time windows select it and a published default is the fallback.                                                                                                                                                                                                                                                 |
+| Status              | **IMPLEMENTED; LOCAL AUTOMATED ACCEPTANCE PASSED**                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Scope               | Database versions and non-overlapping windows, private management API, server-time public resolver, workspace management, migration and local Podman acceptance.                                                                                                                                                                                                                                                                                                              |
+| Non-goals           | Weekly recurrence, complex calendar rules, visitor version selection, new Canonical Events, payment, Marketplace or CRM.                                                                                                                                                                                                                                                                                                                                                      |
+| Evidence            | DEV-064 code, migration, API, workspace and public resolver are implemented. Scheduling now validates local calendar values and DST ambiguity, window updates revalidate published targets, version archiving disables its windows, and the workspace supports editing windows and shows the actual active version. Domain/application/API tests, real Podman PostgreSQL repository and migration tests, OpenAPI, API build, repository build and workspace typecheck passed. |
+
+DEV-064 extends the DEV-062 and DEV-063 runtime baseline and preserves the stable C number, public URL, disclosure
+whitelist, empty-service behavior, independent service links, historical requests and existing `storefront_viewed`
+semantics. Production deployment, public internet access, real mobile QR scanning and external observability remain
+outside this local acceptance record.
+
+2026-11-09 implementation follow-up: the web-v2 workspace now edits both enabled and disabled activation windows,
+preserves the existing window state during edits, and permits an authorized creator to re-enable a disabled window.
+Preview timestamps are normalized through the UTC contract so unzoned values do not depend on the API process timezone.
+The targeted application/API tests, web-v2 typecheck and production build passed after this correction.

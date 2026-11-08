@@ -8,7 +8,7 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 
 function CreatorHeader() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, error } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -40,6 +40,7 @@ function CreatorHeader() {
           </Button>
         </div>
       </div>
+      {error && <p role="alert" className="container mx-auto px-4 pb-3 text-sm text-red-700">登出失败：{error}</p>}
     </header>
   );
 }
@@ -57,20 +58,20 @@ export default function CreatorLayout({
 
         {/* Creator 导航菜单 */}
         <nav className="border-b bg-muted/30">
-          <div className="container mx-auto px-4 flex gap-8 text-sm">
-            <Link href="/creator/onboarding" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              入门
+          <div className="container mx-auto px-4 flex gap-8 overflow-x-auto whitespace-nowrap text-sm">
+            <Link href="/dashboard" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
+              工作台
             </Link>
-            <Link href="/creator/profile" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
+            <Link href="/profile" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
               个人资料
             </Link>
-            <Link href="/creator/capabilities" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
+            <Link href="/capabilities" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
               能力
             </Link>
-            <Link href="/creator/services" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
+            <Link href="/services" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
               服务
             </Link>
-            <Link href="/dashboard" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
+            <Link href="/requests" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
               预约审核
             </Link>
           </div>

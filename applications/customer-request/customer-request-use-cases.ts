@@ -100,9 +100,12 @@ export interface CustomerResult {
   readonly actionId: string;
   readonly state: CommerceAction['state'];
   readonly message: string;
-  readonly fulfillmentCode?: string;
-  readonly fulfillmentStatus?: 'pending' | 'fulfilled';
-  readonly fulfillmentConfirmedAt?: string;
+  readonly fulfillmentCode?: {
+    readonly code: string;
+    readonly status: 'pending' | 'fulfilled' | 'expired';
+    readonly expiresAt: string;
+    readonly confirmedAt?: string;
+  };
 }
 
 export class GetPublicOfferingUseCase {
@@ -208,7 +211,9 @@ export class SubmitCustomerRequestUseCase {
       
       // Generate fulfillment code for offline service verification
       const fulfillmentCode = FulfillmentCode.generate(action.id);
-      await this.dependencies.fulfillmentCodeRepository.save(fulfillmentCode);
+      await (scope.fulfillmentCodeRepository ?? this.dependencies.fulfillmentCodeRepository).save(
+        fulfillmentCode,
+      );
       
       await this.dependencies.canonicalEventRecorder.record(
         {
@@ -435,9 +440,16 @@ export class GetCustomerRequestResultUseCase {
       message: messageByState[action.state],
       ...(fulfillmentCode
         ? {
-            fulfillmentCode: fulfillmentCode.getCode(),
-            fulfillmentStatus: fulfillmentCode.getStatus() === 'fulfilled' ? 'fulfilled' as const : 'pending' as const,
-            fulfillmentConfirmedAt: fulfillmentCode.getFulfilledAt()?.toISOString(),
+            fulfillmentCode: {
+              code: fulfillmentCode.getCode(),
+              status: fulfillmentCode.getStatus() === 'pending' && fulfillmentCode.isExpired()
+                ? 'expired' as const
+                : fulfillmentCode.getStatus(),
+              expiresAt: fulfillmentCode.getExpiresAt().toISOString(),
+              ...(fulfillmentCode.getFulfilledAt() === undefined
+                ? {}
+                : { confirmedAt: fulfillmentCode.getFulfilledAt()!.toISOString() }),
+            },
           }
         : {}),
     };

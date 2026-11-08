@@ -58,7 +58,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
       });
 
       // 返回到能力列表
-      router.push('/creator/capabilities');
+      router.push('/capabilities');
     } catch (error) {
       toast({
         title: '错误',
@@ -96,7 +96,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
             <p className="text-muted-foreground">能力未找到</p>
             <Button
               variant="outline"
-              onClick={() => router.push('/creator/capabilities')}
+              onClick={() => router.push('/capabilities')}
               className="mt-4"
             >
               返回能力列表

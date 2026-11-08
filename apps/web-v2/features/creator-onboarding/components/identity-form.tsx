@@ -23,13 +23,14 @@ import {
   useUpdateIdentity,
 } from '../api/use-creator-identity';
 import { IdentityFormSchema, IdentityFormData } from '../lib/validation';
+import { ApiError } from '@/lib/api/client';
 
 export function IdentityForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isNew, setIsNew] = useState(false);
 
-  const { data: identity, isLoading: isLoadingIdentity } = useCreatorIdentity();
+  const { data: identity, isLoading: isLoadingIdentity, error: identityError, refetch } = useCreatorIdentity();
   const createMutation = useCreateIdentity();
   const updateMutation = useUpdateIdentity();
 
@@ -46,10 +47,13 @@ export function IdentityForm() {
 
   // 当数据加载完成，如果没有身份则标记为新建
   useEffect(() => {
-    if (!isLoadingIdentity && !identity) {
+    if (identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found') {
       setIsNew(true);
+    } else if (identity) {
+      setIsNew(false);
+      form.reset({ ...identity.profile, socialLinks: (identity.profile.socialLinks || []).map((item) => typeof item === 'string' ? { platform: 'link', url: item } : item) });
     }
-  }, [isLoadingIdentity, identity]);
+  }, [identityError, identity, form]);
 
   async function onSubmit(data: IdentityFormData) {
     try {
@@ -68,7 +72,7 @@ export function IdentityForm() {
       }
 
       // 返回到资料查看页
-      router.push('/creator/profile');
+      router.push('/profile');
     } catch (error) {
       toast({
         title: '错误',
@@ -81,6 +85,10 @@ export function IdentityForm() {
 
   const isLoading =
     isLoadingIdentity || createMutation.isPending || updateMutation.isPending;
+
+  if (identityError && !(identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found')) {
+    return <div role="alert"><p>商业身份加载失败</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto">

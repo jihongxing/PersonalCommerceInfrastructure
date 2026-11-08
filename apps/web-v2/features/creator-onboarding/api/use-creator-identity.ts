@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, ApiError } from '@/lib/api/client';
 
 export interface CreatorIdentity {
   creatorId: string;
@@ -48,7 +48,7 @@ export function useCreatorIdentity() {
   return useQuery({
     queryKey: ['creator-identity'],
     queryFn: async (): Promise<CreatorIdentity> => {
-      const { data, error } = await apiClient.GET(
+      const { data, error, status } = await apiClient.GET(
         '/api/v1/creator/identity',
         {
           params: {
@@ -60,9 +60,7 @@ export function useCreatorIdentity() {
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load creator identity'
-        );
+        throw new ApiError(error.error?.message || '加载商业身份失败', error.error?.code, status);
       }
 
       if (!data) {
@@ -86,7 +84,7 @@ export function useCreateIdentity() {
       const { data, error } = await apiClient.POST(
         '/api/v1/creator/identity',
         {
-          body: request,
+          body: { profile: { ...request, avatarUrl: request.avatarUrl || undefined, location: request.location || undefined, socialLinks: (request.socialLinks || []).map((item) => item.url) } },
         }
       );
 
@@ -121,7 +119,7 @@ export function useUpdateIdentity() {
       const { data, error } = await apiClient.PATCH(
         '/api/v1/creator/identity',
         {
-          body: request,
+          body: { profile: { ...request, avatarUrl: request.avatarUrl || undefined, location: request.location || undefined, socialLinks: (request.socialLinks || []).map((item) => item.url) } },
         }
       );
 

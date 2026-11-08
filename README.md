@@ -54,13 +54,40 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 - TypeBox
 - OpenAPI 3
 - PostgreSQL + Drizzle
-- Supabase Auth Adapter
+- `apps/api` 自建账号认证（PostgreSQL、scrypt 和会话令牌）；旧 Supabase Adapter 仅供遗留组件使用
 - Next.js 16 + React 19
 - Tailwind CSS + shadcn/ui 基线
 - openapi-typescript + openapi-fetch
 - Playwright + 系统 Edge
 
 ## 常用命令
+
+### 工作台本地启动
+
+工作台前端位于 `apps/web-v2`，后端使用 `apps/api` 和 PostgreSQL。以下示例使用 PowerShell，
+需要 Node.js 22、pnpm 和已启动的 PostgreSQL；请根据本机情况设置数据库地址，并使用随机生成的
+至少 32 字节的 `JWT_SECRET`。迁移会修改所指定的数据库，已有数据库请先审查迁移历史。
+
+```powershell
+$env:DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/personal_commerce'
+$env:JWT_SECRET = '<至少 32 字节的随机密钥>'
+$env:OPERATIONS_ACCESS_TOKEN = '<至少 16 字符的随机令牌>'
+$env:OPERATIONS_OPERATOR_ID = 'local-operator'
+$env:API_PORT = '8080'
+$env:WEB_REFERENCE_CLIENT_ORIGIN = 'http://localhost:3000'
+pnpm db:migrate
+pnpm dev:api
+```
+
+另开一个 PowerShell 窗口启动前端：
+
+```powershell
+$env:NEXT_PUBLIC_API_BASE_URL = 'http://localhost:8080'
+pnpm --dir apps/web-v2 exec next dev -p 3000
+```
+
+打开 `http://localhost:3000/dashboard`。Supabase 和 mock 中的既有账号不会自动迁移到自建认证；
+自建认证目前尚未实现密码找回。
 
 ```powershell
 pnpm install
@@ -81,9 +108,7 @@ pnpm preflight
 OpenAPI Client 生成、Web 类型检查和 Next Production Build。
 Preflight 还会使用系统 Edge 启动 API 与 Web Reference Client，执行基础浏览器验收。
 
-开发 API 以 `APP_ENV=development` 启动时，必须提供 `DATABASE_URL`、`SUPABASE_URL`、
-`SUPABASE_ANON_KEY` 与 `CREATOR_ACTOR_MAPPINGS`。后者是显式的
-`"supabase:<provider-user-id>":"<creator-id>"` 映射；Supabase User 不会自动成为 Creator。
+开发 API 以 `APP_ENV=development` 启动时，需要 `DATABASE_URL`、`JWT_SECRET` 和上述运营认证配置。
 
 VS-01 Regression 验证的是 Identity、Offering、Publish、Share、Request、Confirm / Decline、
 Public Result、状态机与权限语义稳定，不要求仓库隔离或删除合法 VS-02 能力。

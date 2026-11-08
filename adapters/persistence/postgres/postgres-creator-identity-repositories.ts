@@ -73,6 +73,16 @@ function toOffering(row: typeof serviceOfferings.$inferSelect): Offering {
 export class PostgresCommerceIdentityRepository implements CommerceIdentityRepository {
   public constructor(private readonly database: ProductDatabase) {}
 
+  public async createIfAbsent(entity: CommerceIdentity): Promise<void> {
+    await this.database.insert(commerceIdentities).values({
+      creatorId: entity.creatorId,
+      displayName: entity.profile.displayName,
+      bio: entity.profile.bio,
+      socialLinks: [...entity.profile.socialLinks],
+      state: entity.state,
+    }).onConflictDoNothing();
+  }
+
   public async findById(id: string): Promise<CommerceIdentity | undefined> {
     const rows = await this.database
       .select()

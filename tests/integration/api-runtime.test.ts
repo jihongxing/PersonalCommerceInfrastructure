@@ -30,6 +30,9 @@ describe('API runtime skeleton', () => {
       status: 'ok',
       version: 'v1',
     });
+    const rootHealth = await server.inject({ method: 'GET', url: '/health' });
+    expect(rootHealth.statusCode).toBe(200);
+    expect(rootHealth.json()).toEqual(health.json());
     expect(readiness.statusCode).toBe(200);
     expect(readiness.json()).toEqual({
       service: 'vs-01-api',

@@ -1,44 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import {
-  useCreatorCapabilities,
-  useDeleteCapability,
-} from '@/features/creator-onboarding/api/use-creator-capabilities';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { useCreatorCapabilities } from '@/features/creator-onboarding/api/use-creator-capabilities';
+import { Plus } from 'lucide-react';
 
 export default function CapabilitiesPage() {
-  const { toast } = useToast();
-  const { data: capabilities, isLoading } = useCreatorCapabilities();
-  const deleteMutation = useDeleteCapability();
-
-  async function handleDelete(capabilityId: string) {
-    if (!confirm('确定要删除这个能力吗？此操作不可撤销。')) {
-      return;
-    }
-
-    try {
-      await deleteMutation.mutateAsync(capabilityId);
-      toast({
-        title: '成功',
-        description: '能力已删除',
-      });
-      // setDeleteId(null);
-    } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '删除失败，请重试',
-        variant: 'destructive',
-      });
-    }
-  }
+  const { data: capabilities, isLoading, isError, refetch } = useCreatorCapabilities();
 
   if (isLoading) {
     return (
@@ -65,7 +35,7 @@ export default function CapabilitiesPage() {
             管理您的专业能力和特长
           </p>
         </div>
-        <Link href="/creator/capabilities/new">
+        <Link href="/capabilities/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             添加能力
@@ -73,13 +43,15 @@ export default function CapabilitiesPage() {
         </Link>
       </div>
 
-      {isEmpty ? (
+      {isError ? (
+        <div role="alert" className="space-y-3"><p>能力加载失败，请重试。</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>
+      ) : isEmpty ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-muted-foreground mb-4">
               还没有添加任何能力。添加能力来帮助消费者了解您的专长。
             </p>
-            <Link href="/creator/capabilities/new">
+            <Link href="/capabilities/new">
               <Button variant="outline">添加第一个能力</Button>
             </Link>
           </CardContent>
@@ -97,28 +69,6 @@ export default function CapabilitiesPage() {
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {capability.description}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-3">
-                      添加于:{' '}
-                      {new Date(capability.createdAt).toLocaleDateString(
-                        'zh-CN'
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/creator/capabilities/${capability.id}/edit`}>
-                      <Button variant="ghost" size="sm">
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(capability.id)}
-                      disabled={deleteMutation.isPending}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
               </CardContent>

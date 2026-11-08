@@ -37,7 +37,7 @@ export interface CreatorConfirmedRequest {
   offering: {
     title: string;
   };
-  fulfillmentCode: {
+  fulfillmentCode?: {
     code: string;
     status: 'pending' | 'fulfilled' | 'expired';
     expiresAt: string;

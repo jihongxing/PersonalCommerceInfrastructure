@@ -150,7 +150,7 @@ export default function OnboardingWelcomePage() {
 
         {/* 立即开始按钮 */}
         <div className="flex gap-3 justify-center">
-          <Link href="/creator/profile/edit" className="flex-1 max-w-xs">
+          <Link href="/profile/edit" className="flex-1 max-w-xs">
             <Button size="lg" className="w-full">
               立即开始
             </Button>

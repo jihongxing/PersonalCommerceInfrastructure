@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.build.json",
+  "include": ["apps/api/src/main.ts", "scripts/database/migrate.ts"]
+}

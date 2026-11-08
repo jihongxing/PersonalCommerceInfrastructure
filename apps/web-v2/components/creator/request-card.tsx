@@ -119,7 +119,7 @@ export function RequestCard({
             确认履约
           </Button>
         )}
-        {isConfirmed && !codeIsPending && (
+        {isConfirmed && fulfillmentCode && !codeIsPending && (
           <Button disabled className="w-full">
             {fulfillmentCode?.status === 'fulfilled' ? '已使用' : '已过期'}
           </Button>

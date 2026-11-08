@@ -1,14 +1,14 @@
 /**
  * 简单的客户端认证会话管理
- * 
- * 注意：这是一个简化版本，用于 Phase 4 演示。
- * 生产环境应该使用更安全的认证方案（Supabase/Auth0/NextAuth.js）
+ *
+ * 会话由 apps/api 签发和刷新。
  */
 
 const STORAGE_KEY = 'pci.auth.session';
 
 export interface AuthSession {
   accessToken: string;
+  refreshToken?: string;
   userEmail: string;
   expiresAt: number;
 }
@@ -28,9 +28,10 @@ export function getSession(): AuthSession | null {
 
   try {
     const session = JSON.parse(raw) as AuthSession;
-    
+
     // 检查是否过期
-    if (session.expiresAt && Date.now() > session.expiresAt) {
+    // Session timestamps are stored as Unix seconds to match the API contract.
+    if (session.expiresAt && Math.floor(Date.now() / 1000) > session.expiresAt && !session.refreshToken) {
       clearSession();
       return null;
     }

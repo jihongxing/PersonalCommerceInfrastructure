@@ -670,6 +670,7 @@ describe('Creator Identity API', () => {
       actionId: submittedAction.actionId,
       resultAccessToken: submittedAction.resultAccessToken,
       state: 'confirmed',
+      fulfillmentCode: { status: 'pending' },
     });
     expect(customerResult.message).toMatch(/records only the Creator's response/);
 

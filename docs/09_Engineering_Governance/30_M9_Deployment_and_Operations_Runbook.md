@@ -4,6 +4,10 @@
 > **Scope**：VS-01 Deployable Prototype Hardening  
 > **Product Behavior**：No change
 
+本页保留 M9 历史部署合同，使用旧 Web 和旧认证配置；它不是当前 Web V2 / 本地 JWT
+部署指南。历史 Compose 依赖的 API Dockerfile 已更新，其命令未验证且不能视为可运行部署。
+当前入口及限制见 `112_Request_Tracing_Operations.md`。
+
 ## 1. Build
 
 ```powershell
@@ -19,8 +23,8 @@ podman build `
 ## 2. Production-like Startup
 
 ```powershell
-Copy-Item deploy/.env.production.example deploy/.env.production
-podman compose --env-file deploy/.env.production -f deploy/compose.production.yml up --build
+Copy-Item deploy/.env.m9-legacy.example deploy/.env.m9-legacy
+podman compose --env-file deploy/.env.m9-legacy -f deploy/compose.m9-legacy.yml up --build
 ```
 
 启动顺序固定为：
@@ -35,6 +39,9 @@ PostgreSQL Ready
 应用实例不得执行隐式 Schema Push。所有 Schema 变化必须先由独立 Migration Job 完成。
 
 ## 3. Smoke
+
+以下命令和入口描述为历史记录。当前 `smoke:deployment` 与部署演练已切换至 Web V2
+和本地 JWT；当前命令、端口和验证范围见 `112_Request_Tracing_Operations.md` 的隔离部署演练。
 
 ```powershell
 $env:SMOKE_API_BASE_URL = "http://127.0.0.1:3000"
@@ -90,8 +97,9 @@ pnpm test:deployment
 4. 若旧应用与当前 Schema 不兼容，停止回滚并恢复新版本；
 5. 不通过删除业务数据或回滚合法 Canonical Event 完成应用回滚。
 
-`test-production-deployment.ps1` 会以 `RollbackApiImage` 替换当前 API 容器，并在不恢复数据库
-备份的前提下重新执行 Readiness 与 Smoke，用于验证应用层回滚路径。
+当前 `test-production-deployment.ps1` 会以 `RollbackApiImage` 替换当前 API 容器，并在不恢复数据库
+备份的前提下重新执行 Readiness、Smoke、登录和身份读取。默认镜像相同，只验证替换流程；
+实际回退仍须使用经过验证的旧镜像检查 schema 兼容性。
 
 ## 7. Minimum Alerts
 

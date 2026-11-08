@@ -2,8 +2,7 @@
 
 import { getBearerToken, setSession, getSession, clearSession } from '@/lib/auth/session';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 /**
  * HTTP 拦截器配置
@@ -20,10 +19,7 @@ export interface RequestInterceptorConfig {
 export function createInterceptedFetch(config: RequestInterceptorConfig = {}) {
   const originalFetch = globalThis.fetch;
 
-  return async (
-    input: RequestInfo | URL,
-    init?: RequestInit
-  ): Promise<Response> => {
+  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString();
     let requestInit = init || {};
 
@@ -56,8 +52,9 @@ export function createInterceptedFetch(config: RequestInterceptorConfig = {}) {
               // 更新会话
               setSession({
                 accessToken: refreshData.accessToken,
+                refreshToken: refreshData.refreshToken,
                 userEmail: session.userEmail,
-                expiresAt: Math.floor(Date.now() / 1000) + 15 * 60,
+                expiresAt: Math.floor(Date.now() / 1000) + refreshData.expiresIn,
               });
 
               // 使用新 token 重试原始请求

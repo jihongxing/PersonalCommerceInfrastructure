@@ -3,6 +3,17 @@ import rateLimit from '@fastify/rate-limit';
 import { TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
+import {
+  context,
+  defaultTextMapGetter,
+  ROOT_CONTEXT,
+  SpanKind,
+  SpanStatusCode,
+  trace,
+  type Context,
+  type Span,
+} from '@opentelemetry/api';
+import { traceContextPropagator } from '../../../adapters/observability/tracing.js';
 
 import { createInMemoryCreatorIdentityComposition } from '../../../adapters/in-memory/creator-identity-composition.js';
 import { registerApiErrorHandling } from '../../../adapters/transport/http/api-error-handler.js';
@@ -48,8 +59,12 @@ import type { ReservationService } from '../../../applications/reservation/reser
 import { registerReservationRoutes } from '../../../adapters/transport/http/reservation-routes.js';
 import type { ContractService } from '../../../applications/contract-commerce/contract-service.js';
 import { registerContractRoutes } from '../../../adapters/transport/http/contract-routes.js';
+import { registerLocalAuthRoutes } from '../../../adapters/transport/http/local-auth-routes.js';
+import type { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
+import { registerBrowserTracingRoutes } from '../../../adapters/transport/http/browser-tracing-routes.js';
 
 export interface ApiServerDependencies {
+  readonly localAuthService?: LocalAuthService;
   readonly authContextProvider?: AuthContextProvider;
   readonly creatorIdentityService?: CreatorIdentityService;
   readonly currentUserIdentityService?: CurrentUserIdentityService;
@@ -77,14 +92,20 @@ export interface ApiServerDependencies {
   readonly checkReadiness?: () => Promise<void>;
   readonly logger?: SafeLogger;
   readonly performanceMonitor?: PerformanceMonitor;
+  readonly browserTracingEndpoint?: string;
 }
 
 export async function createApiServer(
   dependencies: ApiServerDependencies = {},
 ): Promise<FastifyInstance> {
   const server = Fastify({
-    genReqId: () => randomUUID(),
-    requestIdHeader: 'x-correlation-id',
+    genReqId: (request) => {
+      const value = request.headers['x-correlation-id'];
+      return typeof value === 'string' && /^[A-Za-z0-9._:-]{1,128}$/u.test(value)
+        ? value
+        : randomUUID();
+    },
+    requestIdHeader: false,
   });
   const composition = createInMemoryCreatorIdentityComposition(dependencies.publicOrigin);
   const hasExternalComposition =
@@ -107,40 +128,94 @@ export async function createApiServer(
     dependencies.contractService !== undefined ||
     dependencies.providerWebhookRuntime !== undefined;
 
-  if (dependencies.logger !== undefined) {
-    server.addHook('onRequest', (request, _reply, done) => {
+  const requests = new WeakMap<object, { span: Span; context: Context; started: bigint }>();
+  server.addHook('onRequest', (request, reply, done) => {
+    const extracted = traceContextPropagator.extract(
+      ROOT_CONTEXT,
+      request.headers,
+      defaultTextMapGetter,
+    );
+    const upstream = trace.getSpanContext(extracted);
+    // External tracestate is arbitrary vendor data and can contain private values.
+    const parent = upstream
+      ? trace.setSpanContext(extracted, {
+          traceId: upstream.traceId,
+          spanId: upstream.spanId,
+          traceFlags: upstream.traceFlags,
+          isRemote: true,
+        })
+      : extracted;
+    const span = trace
+      .getTracer('pci-api')
+      .startSpan('HTTP request', { kind: SpanKind.SERVER }, parent);
+    const requestContext = trace.setSpan(parent, span);
+    requests.set(request, { span, context: requestContext, started: process.hrtime.bigint() });
+    reply.header('x-correlation-id', request.id);
+    context.with(requestContext, () => {
       dependencies.logger?.info('api_request_started', {
         correlationId: request.id,
         method: request.method,
-        path: request.routeOptions.url ?? request.url,
+        path: request.routeOptions.url ?? 'unmatched',
       });
       done();
     });
-    server.addHook('onResponse', (request, reply, done) => {
-      dependencies.logger?.info('api_request_completed', {
-        correlationId: request.id,
-        method: request.method,
-        path: request.routeOptions.url ?? request.url,
-        statusCode: reply.statusCode,
+  });
+  server.addHook('onResponse', (request, reply, done) => {
+    const state = requests.get(request);
+    if (state !== undefined)
+      context.with(state.context, () => {
+        const path = request.routeOptions.url ?? 'unmatched';
+        const durationMs = Number(process.hrtime.bigint() - state.started) / 1_000_000;
+        state.span.updateName(`${request.method} ${path}`);
+        state.span.setAttributes({
+          'http.request.method': request.method,
+          'http.route': path,
+          'http.response.status_code': reply.statusCode,
+        });
+        if (reply.statusCode >= 500) state.span.setStatus({ code: SpanStatusCode.ERROR });
+        dependencies.logger?.info('api_request_completed', {
+          correlationId: request.id,
+          method: request.method,
+          path,
+          statusCode: reply.statusCode,
+          durationMs,
+        });
+        state.span.end();
+        requests.delete(request);
       });
-      done();
-    });
-  }
-
-  // Performance monitoring hook
-  if (dependencies.performanceMonitor !== undefined) {
-    server.addHook('onResponse', (_request, _reply, done) => {
-      // Performance metrics recorded by onResponse hook
-      done();
-    });
-  }
+    done();
+  });
+  server.addHook('onRequestAbort', (request, done) => {
+    const state = requests.get(request);
+    if (state !== undefined) {
+      context.with(state.context, () => {
+        const path = request.routeOptions.url ?? 'unmatched';
+        state.span.updateName(`${request.method} ${path}`);
+        state.span.setAttributes({ 'http.request.method': request.method, 'http.route': path });
+        state.span.setStatus({ code: SpanStatusCode.ERROR });
+        dependencies.logger?.info('api_request_aborted', {
+          correlationId: request.id,
+          method: request.method,
+          path,
+          durationMs: Number(process.hrtime.bigint() - state.started) / 1_000_000,
+        });
+        state.span.end();
+        requests.delete(request);
+      });
+    }
+    done();
+  });
 
   server.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
     if (origin !== undefined && dependencies.corsAllowedOrigins?.includes(origin) === true) {
       reply.header('access-control-allow-origin', origin);
       reply.header('vary', 'Origin');
-      reply.header('access-control-allow-headers', 'authorization, content-type');
+      reply.header(
+        'access-control-allow-headers',
+        'authorization, content-type, traceparent, tracestate, x-correlation-id',
+      );
+      reply.header('access-control-expose-headers', 'x-correlation-id');
       reply.header('access-control-allow-methods', 'GET, POST, PATCH, OPTIONS');
     }
 
@@ -196,6 +271,15 @@ export async function createApiServer(
   });
 
   registerApiErrorHandling(server, dependencies.logger);
+  if (dependencies.browserTracingEndpoint !== undefined) {
+    registerBrowserTracingRoutes(server, {
+      endpoint: dependencies.browserTracingEndpoint,
+      origins: dependencies.corsAllowedOrigins ?? [],
+      logger: dependencies.logger,
+    });
+  }
+  if (dependencies.localAuthService !== undefined)
+    registerLocalAuthRoutes(server, dependencies.localAuthService);
   registerSystemRoutes(
     server,
     dependencies.checkReadiness === undefined
@@ -210,8 +294,7 @@ export async function createApiServer(
   });
   registerPrivateIdentityRoutes(server, {
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
-    service:
-      dependencies.currentUserIdentityService ?? composition.currentUserIdentityService,
+    service: dependencies.currentUserIdentityService ?? composition.currentUserIdentityService,
     initializationService:
       dependencies.selfServiceIdentityInitializationService ??
       composition.selfServiceIdentityInitializationService,

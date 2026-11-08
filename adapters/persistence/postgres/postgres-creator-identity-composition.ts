@@ -1,4 +1,6 @@
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
+import { withTraceSpan } from '../../observability/tracing.js';
+import type { SafeLogger } from '../../observability/safe-logger.js';
 import type { NotificationPort } from '../../../applications/core/ports/notification-port.js';
 import { createIdentityProfileAuthorizationPolicy } from '../../../applications/core/identity-profile-authorization-policy.js';
 import { createIdentityProfileContextResolver } from '../../../applications/core/identity-profile-context.js';
@@ -59,6 +61,11 @@ import {
 } from '../../../applications/customer-request/customer-request-service.js';
 import { createSupabaseAuthContextProvider } from '../../auth/supabase/supabase-auth-context-provider.js';
 import { InMemoryCreatorActorResolver } from '../../auth/testing/creator-actor-resolver.js';
+import { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
+import { createInitialCommerceIdentity } from '../../../modules/creator-commerce-identity/commerce-identity.js';
+import { ApplicationError } from '../../../applications/core/application-error.js';
+import { createAuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
+import { PostgresLocalAuthRepository } from './postgres-local-auth-repository.js';
 import { UuidIdGenerator } from '../../system/uuid-id-generator.js';
 import type { IQrCodeGenerator } from '../../image-generation/qr-code-generator.js';
 import { QrCodeGeneratorImpl } from '../../image-generation/qr-code-generator.js';
@@ -148,6 +155,7 @@ export interface RealMoneyRuntimeCompositionConfiguration {
 
 export interface PostgresCreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
+  readonly localAuthService?: LocalAuthService;
   readonly accountIdentityMembershipService: AccountIdentityMembershipService;
   readonly currentUserIdentityService: CurrentUserIdentityService;
   readonly selfServiceIdentityInitializationService: SelfServiceIdentityInitializationService;
@@ -175,7 +183,7 @@ export interface PostgresCreatorIdentityComposition {
 
 export function createPostgresCreatorIdentityComposition(
   databaseConfiguration: CreatorIdentityDatabaseConfiguration,
-  authConfiguration: CreatorIdentityAuthConfiguration,
+  authConfiguration: CreatorIdentityAuthConfiguration | { readonly localAuthSecret: string },
   publicOrigin: string,
   notificationPort: NotificationPort,
   operationsConfiguration: OperationsConfiguration,
@@ -184,6 +192,7 @@ export function createPostgresCreatorIdentityComposition(
     realMoneyEnabled: false,
     liveProviderConfigured: false,
   },
+  logger?: SafeLogger,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const accountIdentityMembershipRepository = new PostgresAccountIdentityMembershipRepository(
@@ -234,6 +243,23 @@ export function createPostgresCreatorIdentityComposition(
     membershipIdGenerator: new UuidIdGenerator(),
     clock: new FixedClock(new Date().toISOString()),
   });
+  const localAuthService = 'localAuthSecret' in authConfiguration
+    ? new LocalAuthService(
+        new PostgresLocalAuthRepository(database.client),
+        authConfiguration.localAuthSecret,
+        async (account, creatorId, requestContext) => {
+          const identity = await selfServiceIdentityInitializationService.initializeAuthenticatedIdentity({
+            accountId: `local:${account.id}`,
+            correlationId: requestContext.correlationId,
+          });
+          if (identity.status !== 'ACTIVE') {
+            throw new ApplicationError({ category: 'authorization', code: 'identity_not_active', message: '账号身份不可用。' });
+          }
+          await identityRepository.createIfAbsent(createInitialCommerceIdentity(creatorId, account.name ?? ''));
+        },
+        { trace: withTraceSpan, workspaceFailure: (requestContext) => logger?.error('workspace_initialization_failed', { correlationId: requestContext.correlationId, errorCategory: 'initialization_failed' }) },
+      )
+    : undefined;
   const identityProfileAuthorizationPolicy = createIdentityProfileAuthorizationPolicy({
     contextResolver: createIdentityProfileContextResolver({
       identityRepository: formalIdentityRepository,
@@ -393,10 +419,13 @@ export function createPostgresCreatorIdentityComposition(
     privateExternalPlatformAccountService,
     privateCommerceRelationshipService,
     privateSelfDeclaredExternalRelationshipService,
-    authContextProvider: createSupabaseAuthContextProvider(
-      authConfiguration,
-      new InMemoryCreatorActorResolver(authConfiguration.creatorActorMappings),
-    ),
+    ...(localAuthService === undefined ? {} : { localAuthService }),
+    authContextProvider: localAuthService !== undefined
+      ? createAuthContextProvider({ tokenVerifier: localAuthService, creatorActorResolver: localAuthService })
+      : createSupabaseAuthContextProvider(
+          authConfiguration as CreatorIdentityAuthConfiguration,
+          new InMemoryCreatorActorResolver((authConfiguration as CreatorIdentityAuthConfiguration).creatorActorMappings),
+        ),
     service: createCreatorIdentityService({
       identityRepository,
       capabilityRepository,

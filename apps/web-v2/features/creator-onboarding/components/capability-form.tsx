@@ -41,7 +41,7 @@ export function CapabilityForm() {
       });
 
       // 返回到能力列表页
-      router.push('/creator/capabilities');
+      router.push('/capabilities');
     } catch (error) {
       toast({
         title: '错误',

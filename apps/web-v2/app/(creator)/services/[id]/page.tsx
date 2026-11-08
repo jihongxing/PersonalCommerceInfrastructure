@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +15,10 @@ import {
 import { FileText, Edit2, AlertCircle } from 'lucide-react';
 import { PublishChecklist } from '@/features/creator-onboarding/components/publish-checklist';
 
-interface ServiceDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function ServiceDetailPage({
-  params,
-}: ServiceDetailPageProps) {
+export default function ServiceDetailPage() {
+  const params = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { data: service, isLoading } = useServiceOffering(params.id);
+  const { data: service, isLoading, isError, refetch } = useServiceOffering(params.id);
   const publishMutation = usePublishService(params.id);
   const unpublishMutation = useUnpublishService(params.id);
 
@@ -101,13 +95,17 @@ export default function ServiceDetailPage({
     );
   }
 
+  if (isError) {
+    return <div role="alert" className="py-8 space-y-3"><p>服务加载失败，请重试。</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>;
+  }
+
   if (!service) {
     return (
       <div className="py-8">
         <Card>
           <CardContent className="pt-6">
             <p className="text-muted-foreground">服务未找到</p>
-            <Link href="/creator/services" className="mt-4 block">
+            <Link href="/services" className="mt-4 block">
               <Button variant="outline">返回服务列表</Button>
             </Link>
           </CardContent>
@@ -130,7 +128,7 @@ export default function ServiceDetailPage({
           </Badge>
         </div>
         <div className="flex gap-2">
-          <Link href={`/creator/services/${service.id}/edit`}>
+          <Link href={`/services/${service.id}/edit`}>
             <Button variant="outline">
               <Edit2 className="w-4 h-4 mr-2" />
               编辑
@@ -189,7 +187,7 @@ export default function ServiceDetailPage({
         </Card>
 
         {/* 发布前检查清单 */}
-        {service.state === 'draft' && <PublishChecklist service={service} />}
+        {(service.state === 'draft' || service.state === 'unpublished') && <PublishChecklist service={service} />}
 
         {/* 发布状态和操作 */}
         <Card>
@@ -198,7 +196,7 @@ export default function ServiceDetailPage({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {service.state === 'draft' && (
+              {(service.state === 'draft' || service.state === 'unpublished') && (
                 <>
                   <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
                     <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -258,7 +256,7 @@ export default function ServiceDetailPage({
 
         {/* 返回按钮 */}
         <div>
-          <Link href="/creator/services">
+          <Link href="/services">
             <Button variant="outline">返回服务列表</Button>
           </Link>
         </div>

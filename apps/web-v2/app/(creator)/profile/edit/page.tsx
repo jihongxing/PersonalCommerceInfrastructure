@@ -1,5 +1,7 @@
 import { IdentityForm } from '@/features/creator-onboarding/components/identity-form';
 
+export const instant = false;
+
 export default function EditProfilePage() {
   return (
     <div className="py-8">

@@ -8,7 +8,7 @@ import { useCreatorIdentity } from '@/features/creator-onboarding/api/use-creato
 /**
  * Onboarding 入口页面
  * 逻辑：
- * - 如果已有身份 → 重定向到 /creator/profile
+ * - 如果已有身份 → 重定向到 /profile
  * - 如果没有身份 → 重定向到 /creator/onboarding/welcome
  */
 export default function OnboardingPage() {
@@ -19,7 +19,7 @@ export default function OnboardingPage() {
     if (!isLoading) {
       if (identity) {
         // 已有身份，重定向到个人资料页
-        router.push('/creator/profile');
+        router.push('/profile');
       } else {
         // 没有身份，重定向到欢迎页
         router.push('/creator/onboarding/welcome');

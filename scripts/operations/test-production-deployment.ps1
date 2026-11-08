@@ -3,9 +3,9 @@ param(
   [string]$ContainerCli = "podman",
   [int]$ApiPort = 45200,
   [int]$WebPort = 45201,
-  [string]$ApiImage = "personal-commerce-api:m9",
-  [string]$WebImage = "personal-commerce-web:m9",
-  [string]$RollbackApiImage = "personal-commerce-api:m9"
+  [string]$ApiImage = "personal-commerce-api:current",
+  [string]$WebImage = "personal-commerce-web-v2:current",
+  [string]$RollbackApiImage = "personal-commerce-api:current"
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,13 +58,11 @@ try {
     "RUNTIME_ENV=production"
     "REAL_MONEY_ENABLED=false"
     "API_HOST=0.0.0.0"
-    "API_PORT=3000"
+    "API_PORT=8080"
     "LOG_LEVEL=info"
     "WEB_REFERENCE_CLIENT_ORIGIN=http://127.0.0.1:$WebPort"
     "DATABASE_URL=$databaseUrl"
-    "SUPABASE_URL=https://example.supabase.co"
-    "SUPABASE_ANON_KEY=test-key"
-    'CREATOR_ACTOR_MAPPINGS={"supabase:test-user":"creator-test"}'
+    "JWT_SECRET=isolated-deployment-drill-secret-at-least-32-bytes"
     "OPERATIONS_ACCESS_TOKEN=production-drill-operations-token"
     "OPERATIONS_OPERATOR_ID=production-drill-operator"
   ) | Set-Content -LiteralPath $environmentFile -Encoding ascii
@@ -119,7 +117,7 @@ try {
     "--network",
     $network,
     "-p",
-    "${ApiPort}:3000",
+    "127.0.0.1:${ApiPort}:8080",
     "--env-file",
     $environmentFile,
     $ApiImage
@@ -134,7 +132,7 @@ try {
     "--network",
     $network,
     "-p",
-    "${WebPort}:3001",
+    "127.0.0.1:${WebPort}:3000",
     $WebImage
   ) | Out-Null
   Wait-HttpReady "http://127.0.0.1:$WebPort"
@@ -145,6 +143,19 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Deployment smoke failed with exit code $LASTEXITCODE"
   }
+
+  $testEmail = "deployment-$suffix@example.test"
+  $testPassword = "deployment-drill-password"
+  $credentials = @{ email = $testEmail; password = $testPassword; name = "Deployment Test" } | ConvertTo-Json -Compress
+  $session = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$ApiPort/api/v1/auth/signup" -ContentType "application/json" -Body $credentials
+  if (-not $session.accessToken -or $session.setupPending) {
+    throw "Signup did not create an initialized local session."
+  }
+  $login = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$ApiPort/api/v1/auth/login" -ContentType "application/json" -Body $credentials
+  if (-not $login.accessToken -or $login.setupPending) {
+    throw "Local login did not return an initialized session."
+  }
+  $null = Invoke-RestMethod -Uri "http://127.0.0.1:$ApiPort/api/v1/creator/identity" -Headers @{ Authorization = "Bearer $($login.accessToken)" }
 
   & "$PSScriptRoot/backup-postgres.ps1" `
     -ContainerName $databaseContainer `
@@ -183,7 +194,7 @@ try {
     "--network",
     $network,
     "-p",
-    "${ApiPort}:3000",
+    "127.0.0.1:${ApiPort}:8080",
     "--env-file",
     $environmentFile,
     $RollbackApiImage
@@ -193,6 +204,11 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Rollback smoke failed with exit code $LASTEXITCODE"
   }
+  $rollbackLogin = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$ApiPort/api/v1/auth/login" -ContentType "application/json" -Body $credentials
+  if (-not $rollbackLogin.accessToken -or $rollbackLogin.setupPending) {
+    throw "Local login failed after the API image replacement."
+  }
+  $null = Invoke-RestMethod -Uri "http://127.0.0.1:$ApiPort/api/v1/creator/identity" -Headers @{ Authorization = "Bearer $($rollbackLogin.accessToken)" }
 
   Write-Output "Production deployment drill passed: migrations=$migrationCount backup=$backupPath"
 }

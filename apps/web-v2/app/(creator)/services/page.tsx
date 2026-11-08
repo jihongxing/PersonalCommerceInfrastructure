@@ -1,29 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
 import {
   useCreatorServices,
-  usePublishService,
-  useUnpublishService,
-  useDeleteService,
   ServiceOffering,
 } from '@/features/creator-onboarding/api/use-creator-services';
-import { Plus, Edit2, Trash2, Eye, FileText } from 'lucide-react';
+import { Plus, Edit2, Eye } from 'lucide-react';
 
 export default function ServicesPage() {
-  const { toast } = useToast();
-  const { data: services, isLoading } = useCreatorServices();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  // 为待删除的服务创建 mutation
-  const deleteMutation = useDeleteService(deletingId || '');
+  const { data: services, isLoading, isError, refetch } = useCreatorServices();
 
   // 使用 useMemo 优化分类计算
   const { draftServices, publishedServices, archivedServices } = useMemo(() => {
@@ -34,29 +25,6 @@ export default function ServicesPage() {
         services?.filter((s) => s.state === 'archived' || s.state === 'unpublished') || [],
     };
   }, [services]);
-
-  async function handleDelete(serviceId: string) {
-    if (!confirm('确定要删除这个服务吗？此操作不可撤销。')) {
-      return;
-    }
-    try {
-      setDeletingId(serviceId);
-      await deleteMutation.mutateAsync();
-      toast({
-        title: '成功',
-        description: '服务已删除',
-      });
-      setDeletingId(null);
-    } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
-        variant: 'destructive',
-      });
-      setDeletingId(null);
-    }
-  }
 
   if (isLoading) {
     return (
@@ -96,24 +64,16 @@ export default function ServicesPage() {
                   : '已下架'}
             </Badge>
           </div>
-            <Link href={`/creator/services/${service.id}`}>
-              <Button variant="ghost" size="sm">
+            <Link href={`/services/${service.id}`}>
+              <Button variant="ghost" size="sm" aria-label="查看服务" title="查看服务">
                 <Eye className="w-4 h-4" />
               </Button>
             </Link>
-            <Link href={`/creator/services/${service.id}/edit`}>
-              <Button variant="ghost" size="sm">
+            <Link href={`/services/${service.id}/edit`}>
+              <Button variant="ghost" size="sm" aria-label="编辑服务" title="编辑服务">
                 <Edit2 className="w-4 h-4" />
               </Button>
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(service.id)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
         </div>
 
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -158,7 +118,7 @@ export default function ServicesPage() {
             创建和管理您提供的服务
           </p>
         </div>
-        <Link href="/creator/services/new">
+        <Link href="/services/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             创建服务
@@ -166,13 +126,15 @@ export default function ServicesPage() {
         </Link>
       </div>
 
-      {isEmpty ? (
+      {isError ? (
+        <div role="alert" className="space-y-3"><p>服务加载失败，请重试。</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>
+      ) : isEmpty ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-muted-foreground mb-4">
               还没有创建任何服务。创建服务来让消费者发现和预约。
             </p>
-            <Link href="/creator/services/new">
+            <Link href="/services/new">
               <Button variant="outline">创建第一个服务</Button>
             </Link>
           </CardContent>

@@ -36,9 +36,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   const { toast } = useToast();
   const isEdit = !!serviceId;
 
-  const { data: capabilities, isLoading: capabilitiesLoading } =
+  const { data: capabilities, isLoading: capabilitiesLoading, isError: capabilitiesError, refetch: refetchCapabilities } =
     useCreatorCapabilities();
-  const { data: existingService, isLoading: serviceLoading } = useServiceOffering(
+  const { data: existingService, isLoading: serviceLoading, isError: serviceError, refetch: refetchService } = useServiceOffering(
     serviceId || ''
   );
   const createMutation = useCreateService();
@@ -73,13 +73,13 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   async function onSubmit(data: ServiceFormData) {
     try {
       if (isEdit) {
-        await updateMutation.mutateAsync(data);
+        await updateMutation.mutateAsync({ ...data, appearance: undefined });
         toast({
           title: '成功',
           description: '服务已更新',
         });
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync({ ...data, appearance: undefined });
         toast({
           title: '成功',
           description: '服务已创建',
@@ -87,7 +87,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
       }
 
       // 返回到服务列表页
-      router.push('/creator/services');
+      router.push('/services');
     } catch (error) {
       toast({
         title: '错误',
@@ -103,6 +103,14 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     serviceLoading ||
     createMutation.isPending ||
     updateMutation.isPending;
+
+  if (capabilitiesError || (isEdit && serviceError)) {
+    return <div className="max-w-2xl mx-auto space-y-3"><p>加载服务信息失败，请重试。</p><Button variant="outline" onClick={() => { if (capabilitiesError) refetchCapabilities(); if (serviceError) refetchService(); }}>重试</Button></div>;
+  }
+
+  if (isEdit && !serviceLoading && !existingService) {
+    return <div className="max-w-2xl mx-auto">未找到此服务。</div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -127,22 +135,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     {capabilities && capabilities.length > 0 ? (
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground">
-                          选择相关的能力标签 (支持多选，输入能力 ID)
+                          选择相关能力，可多选
                         </p>
-                        <FormControl>
-                          <Input
-                            placeholder="输入能力 ID，多个用逗号分隔"
-                            value={field.value.join(', ')}
-                            onChange={(e) => {
-                              const ids = e.target.value
-                                .split(',')
-                                .map((id) => id.trim())
-                                .filter((id) => id.length > 0);
-                              field.onChange(ids);
-                            }}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
                         <div className="flex flex-wrap gap-2">
                           {capabilities.map((cap) => (
                             <Button
@@ -173,7 +167,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         请先{' '}
-                        <a href="/creator/capabilities" className="underline">
+                        <a href="/capabilities" className="underline">
                           添加能力
                         </a>
                         ，然后再创建服务

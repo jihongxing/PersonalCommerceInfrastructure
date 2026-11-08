@@ -3,11 +3,8 @@ import { apiClient } from '@/lib/api/client';
 
 export interface Capability {
   id: string;
-  creatorId: string;
   name: string;
   description: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface CreateCapabilityRequest {
@@ -23,7 +20,7 @@ export function useCreatorCapabilities() {
     queryKey: ['creator-capabilities'],
     queryFn: async (): Promise<Capability[]> => {
       const { data, error } = await apiClient.GET(
-        '/api/v1/creator/identity/capabilities',
+        '/api/v1/creator/identity',
         {
           params: {
             header: {},

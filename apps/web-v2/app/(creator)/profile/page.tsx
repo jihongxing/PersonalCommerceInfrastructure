@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCreatorIdentity } from '@/features/creator-onboarding/api/use-creator-identity';
+import { ApiError } from '@/lib/api/client';
 
 function ProfileContent() {
-  const { data: identity, isLoading, error } = useCreatorIdentity();
+  const { data: identity, isLoading, error, refetch } = useCreatorIdentity();
 
   if (isLoading) {
     return (
@@ -28,7 +29,10 @@ function ProfileContent() {
     );
   }
 
-  if (error || !identity) {
+  if (error && !(error instanceof ApiError && error.code === 'commerce_identity_not_found')) {
+    return <div role="alert"><p>商业身份加载失败</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>;
+  }
+  if (!identity) {
     return (
       <div className="max-w-2xl mx-auto">
         <Card>
@@ -36,7 +40,7 @@ function ProfileContent() {
             <p className="text-muted-foreground mb-4">
               您还没有创建商业身份。立即创建以开始销售服务。
             </p>
-            <Link href="/creator/profile/edit">
+            <Link href="/profile/edit">
               <Button>创建身份</Button>
             </Link>
           </CardContent>
@@ -50,7 +54,7 @@ function ProfileContent() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>个人资料</CardTitle>
-          <Link href="/creator/profile/edit">
+          <Link href="/profile/edit">
             <Button variant="outline">编辑</Button>
           </Link>
         </CardHeader>
@@ -88,10 +92,6 @@ function ProfileContent() {
             </Badge>
           </div>
 
-          {/* 创建时间 */}
-          <div className="text-xs text-muted-foreground border-t pt-4">
-            创建于: {new Date(identity.createdAt).toLocaleDateString('zh-CN')}
-          </div>
         </CardContent>
       </Card>
 
@@ -105,12 +105,12 @@ function ProfileContent() {
             继续设置您的能力和服务，以便消费者发现您。
           </p>
           <div className="flex gap-3">
-            <Link href="/creator/capabilities">
+            <Link href="/capabilities">
               <Button variant="outline" className="flex-1">
                 管理能力
               </Button>
             </Link>
-            <Link href="/creator/services">
+            <Link href="/services">
               <Button className="flex-1">
                 创建服务
               </Button>

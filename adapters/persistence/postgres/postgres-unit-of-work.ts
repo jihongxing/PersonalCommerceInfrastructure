@@ -1,4 +1,5 @@
 import type { UnitOfWork, UnitOfWorkScope } from '../../../applications/core/ports/unit-of-work.js';
+import { withTraceSpan } from '../../observability/tracing.js';
 
 import type { ProductDatabase } from './postgres-database.js';
 import {
@@ -20,12 +21,13 @@ import { PostgresCanonicalCommerceProfileRepository } from './postgres-canonical
 import { PostgresCanonicalCommerceReferenceRepository } from './postgres-canonical-commerce-reference-repository.js';
 import { PostgresExternalPlatformAccountRepository } from './postgres-external-platform-account-repository.js';
 import { PostgresCommerceRelationshipRepository } from './postgres-commerce-relationship-repository.js';
+import { PostgresFulfillmentCodeRepository } from './postgres-fulfillment-code-repository.js';
 
 export class PostgresUnitOfWork implements UnitOfWork {
   public constructor(private readonly database: ProductDatabase) {}
 
   public execute<Result>(operation: (scope: UnitOfWorkScope) => Promise<Result>): Promise<Result> {
-    return this.database.transaction(async (transaction) =>
+    return withTraceSpan('postgres.transaction', () => this.database.transaction(async (transaction) =>
       operation({
         productEventStore: new PostgresProductEventStore(transaction),
         formalIdentityRepository: new PostgresIdentityRepository(transaction),
@@ -43,12 +45,13 @@ export class PostgresUnitOfWork implements UnitOfWork {
         distributionAssetRepository: new PostgresDistributionAssetRepository(transaction),
         customerRepository: new PostgresCustomerRepository(transaction),
         commerceActionRepository: new PostgresCommerceActionRepository(transaction),
+        fulfillmentCodeRepository: new PostgresFulfillmentCodeRepository(transaction),
         paidCommerceRepository: new PostgresPaidCommerceRepository(transaction),
         reservationRepository: new PostgresReservationRepository(transaction),
         contractRepository: new PostgresContractRepository(transaction),
         contractScopeVersionRepository: new PostgresContractRepository(transaction),
         contractAcceptanceFactRepository: new PostgresContractRepository(transaction),
       }),
-    );
+    ));
   }
 }

@@ -22,9 +22,8 @@ export function useToast() {
         console.log(message);
       }
       
-      // 可选：显示浏览器通知
       if (typeof window !== 'undefined') {
-        // 未来可以集成更好的 toast 库
+        window.alert(message);
       }
     },
   };

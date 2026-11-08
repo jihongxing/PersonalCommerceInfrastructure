@@ -16,6 +16,7 @@
     "dist",
     "node_modules",
     "coverage",
+    "apps/web-v2/e2e/tracing-harness",
     "apps/web"
   ]
 }

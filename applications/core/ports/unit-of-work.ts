@@ -23,6 +23,7 @@ import type { CommerceProfileRepository } from '../../../modules/identity-infras
 import type { CommerceReferenceRepository } from '../../../modules/identity-infrastructure/commerce-reference-repository.js';
 import type { ExternalPlatformAccountRepository } from '../../../modules/identity-infrastructure/external-platform-account-repository.js';
 import type { CommerceRelationshipRepository } from '../../../modules/identity-infrastructure/commerce-relationship-repository.js';
+import type { IFulfillmentCodeRepository } from '../../fulfillment/fulfillment-repositories.js';
 
 export interface UnitOfWorkScope {
   readonly productEventStore: ProductEventStore;
@@ -39,6 +40,7 @@ export interface UnitOfWorkScope {
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly customerRepository?: CustomerRepository;
   readonly commerceActionRepository?: CommerceActionRepository;
+  readonly fulfillmentCodeRepository?: IFulfillmentCodeRepository;
   readonly paidCommerceRepository?: PaidCommerceRepository;
   readonly reservationRepository?: ReservationRepository;
   readonly contractRepository?: ContractRepository;

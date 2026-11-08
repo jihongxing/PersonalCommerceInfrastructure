@@ -4,7 +4,7 @@ import type { Actor } from '../../../modules/shared/actors.js';
 import { ApplicationError } from '../application-error.js';
 
 export interface ProviderIdentity {
-  readonly provider: 'supabase';
+  readonly provider: 'supabase' | 'local';
   readonly subject: string;
 }
 

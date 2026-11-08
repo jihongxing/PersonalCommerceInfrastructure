@@ -29,14 +29,20 @@ ADD COLUMN IF NOT EXISTS "fulfillment_confirmed_at" timestamp with time zone;
 CREATE INDEX IF NOT EXISTS "commerce_actions_fulfillment_status_idx" ON "commerce_actions" ("fulfillment_status");
 
 -- Add foreign key constraint
-ALTER TABLE "fulfillment_codes"
-ADD CONSTRAINT IF NOT EXISTS "fulfillment_codes_action_id_fk"
-FOREIGN KEY ("action_id") REFERENCES "commerce_actions" ("id") ON DELETE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fulfillment_codes_action_id_fk' AND conrelid = 'fulfillment_codes'::regclass) THEN
+    ALTER TABLE "fulfillment_codes" ADD CONSTRAINT "fulfillment_codes_action_id_fk"
+      FOREIGN KEY ("action_id") REFERENCES "commerce_actions" ("id") ON DELETE CASCADE;
+  END IF;
+END $$;
 
 -- Add foreign key constraint for fulfillment_code_id
-ALTER TABLE "commerce_actions"
-ADD CONSTRAINT IF NOT EXISTS "commerce_actions_fulfillment_code_id_fk"
-FOREIGN KEY ("fulfillment_code_id") REFERENCES "fulfillment_codes" ("id") ON DELETE SET NULL;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'commerce_actions_fulfillment_code_id_fk' AND conrelid = 'commerce_actions'::regclass) THEN
+    ALTER TABLE "commerce_actions" ADD CONSTRAINT "commerce_actions_fulfillment_code_id_fk"
+      FOREIGN KEY ("fulfillment_code_id") REFERENCES "fulfillment_codes" ("id") ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- 3. Create unique index to enforce one fulfillment code per action
 CREATE UNIQUE INDEX IF NOT EXISTS "fulfillment_codes_action_id_unique_idx" ON "fulfillment_codes" ("action_id");

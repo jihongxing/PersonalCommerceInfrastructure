@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,8 +86,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
   );
 }
 
-export default function ResetPasswordPage() {
-  const router = useRouter();
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const { resetPassword, error, clearError } = useAuth();
 
@@ -98,12 +97,6 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-
-  useEffect(() => {
-    if (!token) {
-      setLocalError('无效的重置链接');
-    }
-  }, [token]);
 
   const passwordStrength = getPasswordStrength(password);
   const isPasswordStrong = passwordStrength.score >= 4;
@@ -296,5 +289,13 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

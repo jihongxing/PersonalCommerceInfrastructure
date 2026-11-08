@@ -190,6 +190,13 @@
       "when": 1731024000000,
       "tag": "0026_m6_fulfillment_code_infrastructure",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1794000000000,
+      "tag": "0027_local_auth",
+      "breakpoints": true
     }
   ]
 }

@@ -10,12 +10,15 @@ const { Pool } = pg;
 
 // 配置
 const PORT = 8080;
-const JWT_SECRET = process.env.JWT_SECRET || 'local-dev-secret-key-change-in-production-must-be-32-chars-minimum';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'local-refresh-secret-key-change-in-production-min-32-chars';
+const JWT_SECRET =
+  process.env.JWT_SECRET || 'local-dev-secret-key-change-in-production-must-be-32-chars-minimum';
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || 'local-refresh-secret-key-change-in-production-min-32-chars';
 
 // 数据库连接池
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://pci_user:pci_local_pass@localhost:5432/pci_auth',
+  connectionString:
+    process.env.DATABASE_URL || 'postgresql://pci_user:pci_local_pass@localhost:5432/pci_auth',
 });
 
 // 应用
@@ -56,19 +59,24 @@ const API_V1 = '/api/v1';
  */
 app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name } = req.body ?? {};
+    const normalizedEmail = typeof email === 'string' ? email.trim() : '';
+    const normalizedPassword = typeof password === 'string' ? password : '';
+    const normalizedName = typeof name === 'string' && name.trim() ? name.trim() : null;
 
     // 验证输入
-    if (!email || !password || !name) {
+    if (!normalizedEmail || !normalizedPassword) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (password.length < 8) {
+    if (normalizedPassword.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
     // 检查邮箱是否已存在
-    const existing = await pool.query('SELECT id FROM accounts WHERE email = $1', [email]);
+    const existing = await pool.query('SELECT id FROM accounts WHERE email = $1', [
+      normalizedEmail,
+    ]);
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Email already exists' });
     }
@@ -80,7 +88,7 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
     const accountId = uuidv4();
     await pool.query(
       'INSERT INTO accounts (id, email, password_hash, name, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())',
-      [accountId, email, passwordHash, name, true]
+      [accountId, normalizedEmail, passwordHash, normalizedName, true],
     );
 
     // 生成 tokens
@@ -89,18 +97,22 @@ app.post(`${API_V1}/auth/signup`, async (req: Request, res: Response) => {
 
     // 存储 refresh token
     const tokenId = uuidv4();
-    const tokenHash = Buffer.from(refreshToken).toString('base64');
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await pool.query(
-      'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
-      [tokenId, accountId, tokenHash, false]
+      "INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL '7 days', NOW())",
+      [tokenId, accountId, tokenHash, false],
     );
 
     res.status(201).json({
-      accountId,
-      email,
-      name,
       accessToken,
       refreshToken,
+      user: {
+        id: accountId,
+        email: normalizedEmail,
+        ...(normalizedName === null ? {} : { name: normalizedName }),
+        createdAt: new Date().toISOString(),
+      },
+      expiresIn: 15 * 60,
     });
   } catch (error) {
     console.error('Signup error:', error instanceof Error ? error.message : String(error));
@@ -123,7 +135,10 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
     }
 
     // 查找账户
-    const result = await pool.query('SELECT id, password_hash, name FROM accounts WHERE email = $1', [email]);
+    const result = await pool.query(
+      'SELECT id, password_hash, name FROM accounts WHERE email = $1',
+      [email],
+    );
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -142,18 +157,22 @@ app.post(`${API_V1}/auth/login`, async (req: Request, res: Response) => {
 
     // 存储 refresh token
     const tokenId = uuidv4();
-    const tokenHash = Buffer.from(refreshToken).toString('base64');
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await pool.query(
-      'INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'7 days\', NOW())',
-      [tokenId, accountId, tokenHash, false]
+      "INSERT INTO refresh_tokens (id, account_id, token_hash, is_revoked, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL '7 days', NOW())",
+      [tokenId, accountId, tokenHash, false],
     );
 
     res.json({
-      accountId,
-      email,
-      name,
       accessToken,
       refreshToken,
+      user: {
+        id: accountId,
+        email,
+        ...(name === null || name === undefined ? {} : { name }),
+        createdAt: new Date().toISOString(),
+      },
+      expiresIn: 15 * 60,
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -178,13 +197,19 @@ app.post(`${API_V1}/auth/refresh`, async (req: Request, res: Response) => {
       const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { accountId: string };
 
       // 检查 token 是否已撤销
-      const tokenResult = await pool.query('SELECT is_revoked FROM refresh_tokens WHERE token_hash = $1', [refreshToken]);
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      const tokenResult = await pool.query(
+        'SELECT is_revoked FROM refresh_tokens WHERE token_hash = $1',
+        [tokenHash],
+      );
       if (tokenResult.rows.length === 0 || tokenResult.rows[0].is_revoked) {
         return res.status(401).json({ error: 'Invalid refresh token' });
       }
 
       // 获取账户信息
-      const accountResult = await pool.query('SELECT email FROM accounts WHERE id = $1', [decoded.accountId]);
+      const accountResult = await pool.query('SELECT email FROM accounts WHERE id = $1', [
+        decoded.accountId,
+      ]);
       if (accountResult.rows.length === 0) {
         return res.status(401).json({ error: 'Account not found' });
       }
@@ -192,10 +217,14 @@ app.post(`${API_V1}/auth/refresh`, async (req: Request, res: Response) => {
       const email = accountResult.rows[0].email;
 
       // 生成新的 access token
-      const newAccessToken = jwt.sign({ accountId: decoded.accountId, email }, JWT_SECRET, { expiresIn: '15m' });
+      const newAccessToken = jwt.sign({ accountId: decoded.accountId, email }, JWT_SECRET, {
+        expiresIn: '15m',
+      });
 
       res.json({
         accessToken: newAccessToken,
+        refreshToken,
+        expiresIn: 15 * 60,
       });
     } catch (error) {
       return res.status(401).json({ error: 'Invalid refresh token' });
@@ -216,7 +245,10 @@ app.post(`${API_V1}/auth/logout`, async (req: Request, res: Response) => {
 
     if (refreshToken) {
       // 撤销 refresh token
-      await pool.query('UPDATE refresh_tokens SET is_revoked = true WHERE token_hash = $1', [refreshToken]);
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      await pool.query('UPDATE refresh_tokens SET is_revoked = true WHERE token_hash = $1', [
+        tokenHash,
+      ]);
     }
 
     res.json({ message: 'Logged out successfully' });
@@ -251,8 +283,8 @@ app.post(`${API_V1}/auth/forgot-password`, async (req: Request, res: Response) =
     // 保存重置请求
     const resetId = uuidv4();
     await pool.query(
-      'INSERT INTO password_resets (id, email, token_hash, is_used, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL \'1 hour\', NOW())',
-      [resetId, email, resetToken, false]
+      "INSERT INTO password_resets (id, email, token_hash, is_used, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL '1 hour', NOW())",
+      [resetId, email, resetToken, false],
     );
 
     // 模拟发送邮件
@@ -289,7 +321,7 @@ app.post(`${API_V1}/auth/reset-password`, async (req: Request, res: Response) =>
       // 检查 reset token 是否有效
       const resetResult = await pool.query(
         'SELECT id, is_used FROM password_resets WHERE token_hash = $1 AND is_used = false',
-        [token]
+        [token],
       );
 
       if (resetResult.rows.length === 0) {
@@ -297,16 +329,21 @@ app.post(`${API_V1}/auth/reset-password`, async (req: Request, res: Response) =>
       }
 
       // 哈希新密码
-      const passwordHash = crypto.createHash('sha256').update(newPassword + 'pci-salt').digest('hex');
+      const passwordHash = crypto
+        .createHash('sha256')
+        .update(newPassword + 'pci-salt')
+        .digest('hex');
 
       // 更新账户密码
-      await pool.query('UPDATE accounts SET password_hash = $1, updated_at = NOW() WHERE email = $2', [
-        passwordHash,
-        decoded.email,
-      ]);
+      await pool.query(
+        'UPDATE accounts SET password_hash = $1, updated_at = NOW() WHERE email = $2',
+        [passwordHash, decoded.email],
+      );
 
       // 标记 reset token 为已使用
-      await pool.query('UPDATE password_resets SET is_used = true WHERE id = $1', [resetResult.rows[0].id]);
+      await pool.query('UPDATE password_resets SET is_used = true WHERE id = $1', [
+        resetResult.rows[0].id,
+      ]);
 
       res.json({ message: 'Password reset successfully' });
     } catch (error) {

@@ -16,10 +16,8 @@ await assertJson(`${apiBaseUrl}/api/v1/readiness`, {
 });
 await assertStatus(`${apiBaseUrl}/openapi.json`, 200);
 await assertStatus(webBaseUrl, 200);
-await assertStatus(`${webBaseUrl}/creator`, 200);
-await assertStatus(`${webBaseUrl}/public`, 200);
-await assertStatus(`${webBaseUrl}/customer`, 200);
-await assertStatus(`${webBaseUrl}/operations`, 200);
+await assertStatus(`${webBaseUrl}/auth/signup`, 200);
+await assertStatus(`${webBaseUrl}/auth/login`, 200);
 
 process.stdout.write('Deployment smoke check passed.');
 

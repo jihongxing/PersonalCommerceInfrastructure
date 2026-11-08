@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .next/
+.next-*/
 apps/web/.next/
 output/playwright/
 output/backups/
@@ -9,6 +10,8 @@ tests/acceptance/browser/fixtures/auth-state.json
 .env
 .env.*
 !.env.example
+!deploy/.env.production.example
+!deploy/.env.m9-legacy.example
 *.log
 *.tsbuildinfo
 .DS_Store

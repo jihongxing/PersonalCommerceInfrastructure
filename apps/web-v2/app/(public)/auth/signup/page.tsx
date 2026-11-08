@@ -57,7 +57,14 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 
   const { score, feedback } = getPasswordStrength(password);
   const strengthLabels = ['', '弱', '中等', '强', '非常强', '极强'];
-  const strengthColors = ['', 'bg-red-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 'bg-green-600'];
+  const strengthColors = [
+    '',
+    'bg-red-500',
+    'bg-yellow-500',
+    'bg-lime-500',
+    'bg-green-500',
+    'bg-green-600',
+  ];
 
   return (
     <div className="space-y-2">
@@ -68,9 +75,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
             style={{ width: `${(score / 5) * 100}%` }}
           />
         </div>
-        <span className="text-xs font-medium text-slate-600">
-          {strengthLabels[score]}
-        </span>
+        <span className="text-xs font-medium text-slate-600">{strengthLabels[score]}</span>
       </div>
 
       {feedback.length > 0 && (
@@ -132,7 +137,7 @@ export default function SignupPage() {
     try {
       await signup(email, password, name);
       // 注册成功，重定向到仪表板
-      router.push('/creator/dashboard');
+      router.push('/dashboard');
     } catch (err) {
       // 错误已在 hook 中处理
       console.error('Signup failed:', err);
@@ -148,17 +153,13 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">开始使用</h1>
-          <p className="mt-2 text-slate-600">
-            创建您的商业账户
-          </p>
+          <p className="mt-2 text-slate-600">创建您的商业账户</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>创建账户</CardTitle>
-            <CardDescription>
-              注册以管理您的服务和能力
-            </CardDescription>
+            <CardDescription>注册以管理您的服务和能力</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -221,7 +222,10 @@ export default function SignupPage() {
 
               {/* 确认密码 */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   确认密码
                 </label>
                 <Input
@@ -239,11 +243,7 @@ export default function SignupPage() {
               </div>
 
               {/* 提交按钮 */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !isPasswordStrong}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading || !isPasswordStrong}>
                 {isLoading ? '注册中...' : '创建账户'}
               </Button>
 
@@ -278,8 +278,8 @@ export default function SignupPage() {
           注册即代表您同意我们的{' '}
           <Link href="/terms" className="text-slate-600 hover:text-slate-700 underline">
             服务条款
-          </Link>
-          {' '}和{' '}
+          </Link>{' '}
+          和{' '}
           <Link href="/privacy" className="text-slate-600 hover:text-slate-700 underline">
             隐私政策
           </Link>

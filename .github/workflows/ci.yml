@@ -54,6 +54,66 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm test:persistence
 
+  tracing-regression:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: pci_tracing_disposable
+          POSTGRES_PASSWORD: tracing_test
+          POSTGRES_USER: tracing_test
+        options: >-
+          --health-cmd "pg_isready -U tracing_test -d pci_tracing_disposable"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://tracing_test:tracing_test@127.0.0.1:5432/pci_tracing_disposable
+      LOCAL_AUTH_TEST_DATABASE_URL: postgresql://tracing_test:tracing_test@127.0.0.1:5432/pci_tracing_disposable
+      TRACING_DISPOSABLE_DATABASE_URL: postgresql://tracing_test:tracing_test@127.0.0.1:5432/pci_tracing_disposable
+      TRACING_OTLP_TEST_ENDPOINT: http://127.0.0.1:4318/v1/traces
+      TRACING_JAEGER_TEST_URL: http://127.0.0.1:16686
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.22.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - name: Start isolated tracing stack
+        run: |
+          docker compose -p pci-tracing-ci -f deploy/compose.observability.local.yml up -d
+          curl --fail --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:8888/metrics -o /dev/null
+          curl --fail --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:16686/ -o /dev/null
+      - name: API tracing regression
+        run: >-
+          pnpm exec vitest run
+          adapters/observability/tracing-configuration.test.ts
+          adapters/observability/safe-logger.test.ts
+          tests/integration/api-runtime.test.ts
+          tests/integration/request-tracing.test.ts
+          tests/integration/browser-tracing.test.ts
+          tests/integration/automatic-identity.integration.test.ts
+          tests/integration/local-auth.integration.test.ts
+          tests/integration/tracing-collector-privacy.test.ts
+          tests/integration/tracing-export-failure.test.ts
+          tests/integration/tracing-disabled-startup.test.ts
+          tests/integration/tracing-partial-success.test.ts
+          tests/integration/tracing-probe.test.ts
+          tests/integration/tracing-shutdown-flush.test.ts
+      - name: Browser tracing regression
+        run: pnpm --filter web-v2 exec vitest run lib/api/client-tracing.test.ts lib/api/client-tracing-export.test.ts lib/api/tracing.test.ts lib/auth/service-logging.test.ts
+      - name: Stop isolated tracing stack
+        if: always()
+        run: docker compose -p pci-tracing-ci -f deploy/compose.observability.local.yml down
+
   deployment-build:
     runs-on: ubuntu-latest
     steps:
@@ -67,13 +127,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build API image
-        run: docker build -f deploy/Dockerfile.api -t personal-commerce-api:m9 .
+        run: docker build -f deploy/Dockerfile.api -t personal-commerce-api:current .
       - name: Build Web image
         run: >-
           docker build
-          --build-arg NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3000
-          -f deploy/Dockerfile.web
-          -t personal-commerce-web:m9
+          --build-arg NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:45200
+          -f deploy/Dockerfile.web-v2
+          -t personal-commerce-web-v2:current
           .
       - name: Run production deployment drill
         shell: pwsh

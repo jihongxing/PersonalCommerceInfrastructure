@@ -38,6 +38,15 @@ export function createDraftCommerceIdentity(
   };
 }
 
+export function createInitialCommerceIdentity(creatorId: string, displayName: string): CommerceIdentity {
+  return {
+    creatorId,
+    profile: { displayName: displayName.trim(), bio: '', socialLinks: [] },
+    capabilityIds: [],
+    state: 'draft',
+  };
+}
+
 export function updateCommerceIdentity(
   identity: CommerceIdentity,
   profile: CommerceIdentityProfile,

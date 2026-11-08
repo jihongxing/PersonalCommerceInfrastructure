@@ -1,12 +1,7 @@
 import { ServiceForm } from '@/features/creator-onboarding/components/service-form';
 
-interface EditServicePageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function EditServicePage({ params }: EditServicePageProps) {
+export default async function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return (
     <div className="py-8">
       <div className="mb-6">
@@ -16,7 +11,7 @@ export default function EditServicePage({ params }: EditServicePageProps) {
         </p>
       </div>
 
-      <ServiceForm serviceId={params.id} />
+      <ServiceForm serviceId={id} />
     </div>
   );
 }

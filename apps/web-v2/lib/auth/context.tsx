@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getSession, clearSession, AuthSession } from '@/lib/auth/session';
-import { initializeFetchInterceptor } from '@/lib/api/interceptor';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { getSession, clearSession } from '@/lib/auth/session';
+import { refreshSession } from '@/lib/api/client';
+import { queryClient } from '@/lib/api/query-client';
 import { authService } from './service';
 
 /**
@@ -20,9 +21,11 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
+  restoreError: boolean;
+  retryRestore: () => void;
 
   // 认证操作
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -44,27 +47,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState(false);
+  const restoreVersion = useRef(0);
 
   /**
    * 初始化：从 localStorage 恢复会话
    */
-  useEffect(() => {
+  const restore = useCallback(async () => {
+    const version = ++restoreVersion.current;
+    setIsLoading(true);
+    setRestoreError(false);
     try {
       const session = getSession();
       if (session) {
-        setUser({
-          email: session.userEmail,
-        });
+        if (session.expiresAt <= Math.floor(Date.now() / 1000) && session.refreshToken) {
+          if (!(await refreshSession())) {
+            if (version !== restoreVersion.current) return;
+            if (getSession()?.refreshToken === session.refreshToken) clearSession();
+          }
+        }
+        if (version !== restoreVersion.current) return;
+        const currentSession = getSession();
+        setUser(currentSession ? { email: currentSession.userEmail } : null);
+      } else {
+        setUser(null);
       }
-      // 初始化 fetch 拦截器
-      initializeFetchInterceptor();
-    } catch (err) {
-      console.error('Failed to restore session:', err);
-      clearSession();
+    } catch {
+      if (version !== restoreVersion.current) return;
+      setUser(null);
+      setRestoreError(true);
     } finally {
-      setIsLoading(false);
+      if (version === restoreVersion.current) setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const version = restoreVersion;
+    queueMicrotask(() => {
+      if (!cancelled) void restore();
+    });
+    return () => {
+      cancelled = true;
+      version.current++;
+    };
+  }, [restore]);
 
   /**
    * 注册
@@ -73,6 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       const response = await authService.signup({ email, password, name });
+      restoreVersion.current++;
+      setRestoreError(false);
+      setIsLoading(false);
       setUser({
         email: response.user.email,
       });
@@ -90,6 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       const response = await authService.login({ email, password });
+      restoreVersion.current++;
+      setRestoreError(false);
+      setIsLoading(false);
       setUser({
         email: response.user.email,
       });
@@ -107,6 +140,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       await authService.logout();
+      restoreVersion.current++;
+      queryClient.clear();
       setUser(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : '登出失败';
@@ -132,11 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /**
    * 重置密码
    */
-  const resetPassword = async (
-    token: string,
-    newPassword: string,
-    confirmPassword: string
-  ) => {
+  const resetPassword = async (token: string, newPassword: string, confirmPassword: string) => {
     setError(null);
     try {
       await authService.resetPassword({ token, newPassword, confirmPassword });
@@ -157,6 +188,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isAuthenticated: user !== null,
     error,
+    restoreError,
+    retryRestore: () => {
+      void restore();
+    },
     signup,
     login,
     logout,
@@ -165,11 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearError,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 /**

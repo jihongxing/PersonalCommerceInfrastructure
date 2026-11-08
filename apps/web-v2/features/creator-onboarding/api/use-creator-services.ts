@@ -83,16 +83,8 @@ export function useCreatorServices() {
 export function useServiceOffering(offeringId: string) {
   return useQuery({
     queryKey: ['creator-service', offeringId],
-    queryFn: async (): Promise<ServiceOffering> => {
-      const { data, error } = await apiClient.GET(
-        '/api/v1/creator/offerings/{offeringId}',
-        {
-          params: {
-            path: { offeringId },
-            header: {},
-          },
-        }
-      );
+    queryFn: async (): Promise<ServiceOffering | null> => {
+      const { data, error } = await apiClient.GET('/api/v1/creator/offerings');
 
       if (error) {
         throw new Error(
@@ -104,7 +96,7 @@ export function useServiceOffering(offeringId: string) {
         throw new Error('No data returned from API');
       }
 
-      return data as ServiceOffering;
+      return (data.offerings as ServiceOffering[]).find((offering) => offering.id === offeringId) ?? null;
     },
     enabled: !!offeringId,
     retry: 1,

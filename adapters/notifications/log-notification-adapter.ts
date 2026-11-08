@@ -20,7 +20,6 @@ function notificationLogContext(notification: ProductNotification) {
       recipientCreatorId: notification.recipientCreatorId,
       actionId: notification.actionId,
       offeringId: notification.offeringId,
-      offeringTitle: notification.offeringTitle,
     };
   }
 

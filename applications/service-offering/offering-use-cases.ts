@@ -180,6 +180,13 @@ export class PublishServiceOfferingUseCase implements ApplicationUseCase<
       const scopedAssetRepository =
         scope.distributionAssetRepository ?? distributionAssetRepository;
       const identity = await requireIdentity(creatorId, scopedIdentityRepository);
+      if (!identity.profile.displayName.trim() || !identity.profile.bio.trim()) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'commerce_identity_profile_incomplete',
+          message: '请先完善商业资料中的名称和简介。',
+        });
+      }
       const publishedOffering = publishOffering(offering);
       const existingAsset = await scopedAssetRepository.findById(offering.id);
       const distributionAsset =

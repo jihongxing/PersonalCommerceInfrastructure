@@ -8,7 +8,7 @@
 > **Source of Truth**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
 > **Upstream Product Definitions**：[17 Core Product Objects](../07_Product_Architecture/17_Core_Product_Objects.md)、[18 MVP Product Flow](../07_Product_Architecture/18_MVP_Product_Flow.md)、[19 MVP Product Specification](../07_Product_Architecture/19_MVP_Product_Specification.md)  
 > **Document Type**：Living execution record; implementation status, deviations, blockers, testing evidence and handoff only  
-> **Last Updated**：2026-08-16
+> **Last Updated**：2026-11-07
 
 ## 1. Purpose
 
@@ -6734,3 +6734,917 @@ PCI-BACKLOG-RECONCILIATION-001 = RESUME-001 REQUIRED SUBTASK
 
 本任务只建立中文任务清单，不证明任务覆盖已穷尽，也不改变当前暂停状态。Founder 接受前，
 需由下一轮重返审查根据证据继续补正遗漏。未明确接受 Resume Gate 前，不得启动实施包。
+
+## 77. DEV-055 / AUTH-REGISTRATION-RUNTIME-REPAIR-001
+
+> **Change Unit**：`DEV-055` / `AUTH-REGISTRATION-RUNTIME-REPAIR-001`
+> **Date**：2026-11-07
+> **Scope**：Local authentication signup runtime and `apps/web-v2` registration journey
+> **Related Contract**：`contracts/api/v1/auth-contracts.ts` signup response; local auth acceptance path
+
+### 77.1 Observed Implementation Issue
+
+The running local API and Web processes were serving stale builds. The stale signup path required a
+name that the older client did not send, and its refresh-token insert used the removed `token`
+column. The current API source also returned a legacy flat response while `apps/web-v2` reads the
+canonical `user` response object. A successful signup then redirected to `/creator/dashboard`, but
+the route-group path is `/dashboard`.
+
+### 77.2 Resolution and Boundary
+
+The local signup adapter now validates the required email and password, treats the contract's name
+as optional, trims string fields, stores a fixed-length SHA-256 refresh-token hash in `token_hash`,
+and returns the canonical auth response. Refresh and logout hash the incoming token with the same
+algorithm. The Web auth context and session types now carry the name and refresh token, use Unix
+seconds consistently for expiry, surface API error fields, and redirect signup/login to the actual
+dashboard route. No VS-01 object, state transition, canonical event, permission, payment, settlement,
+refund, marketplace, CRM, or deferred capability changed.
+
+### 77.3 Validation Evidence
+
+```text
+API signup with name = PASS (HTTP 201; canonical user response)
+API signup without name = PASS (HTTP 201; name remains optional per contract)
+API refresh after signup = PASS (HTTP 200; accessToken and expiresIn returned)
+API logout after signup = PASS (HTTP 200)
+Browser signup on fresh web dev server = PASS (POST /api/v1/auth/signup 201; GET /dashboard 200)
+Web TypeScript check = PASS
+Scoped Prettier check = PASS after final formatting
+Scoped git diff --check = PASS
+Web production build = BLOCKED by pre-existing Next.js `useSearchParams()` prerender error in
+  `app/(public)/auth/reset-password/page.tsx`
+Web Vitest = BLOCKED by pre-existing Playwright suite loading, JSX test parse failure, and five
+  existing `OrderResultCard` test failures
+Web lint = BLOCKED by pre-existing unrelated errors in reset-password, performance, order-result,
+  identity-form, API utility, security-manager, and test setup files
+```
+
+```text
+DEV-055 = Closed — Verified for the local signup journey
+PRD_AMENDMENT = Not Required
+VS01_BOUNDARY = Preserved
+COMMITTED = NO
+```
+
+## 78. DEV-056 / AUTHENTICATED-WORKSPACE-001
+
+> **Change Unit**: `DEV-056` / `AUTHENTICATED-WORKSPACE-001`
+> **Date**: 2026-11-07
+> **Status**: In Progress
+
+User-approved deviation: use `apps/api` as the application backend and present an authenticated
+workspace at `/dashboard`. Show the signed-in account, identity onboarding, capabilities, service
+management and a separate request-review entry. Distinguish a missing identity from an API failure.
+Authentication uses locally managed accounts, password hashes and tokens in `apps/api`, as
+subsequently clarified by the user. An account is not itself a Creator; any Creator access must
+follow an explicit, persisted authorization mapping. Existing Supabase and mock accounts are not
+automatically migrated or trusted.
+The affected objects are Account, Identity, Creator Commerce Identity, Service Offering and Customer
+Request. Existing authorization, state transitions and canonical events remain authoritative.
+Verify signup, login, session refresh, identity states, request review and error handling against
+the closest available tests; record real-provider limitations separately from simulated evidence.
+
+### 78.1 Implementation And Local Evidence
+
+`apps/api` now uses PostgreSQL-backed local accounts and salted scrypt password hashes, short-lived
+access tokens and rotating, revocable refresh sessions. Signup persists a separate Creator mapping;
+it does not equate an Account ID with a Creator ID. The 0027 migration adds the local authentication
+tables; 0026 was corrected for PostgreSQL syntax on fresh databases. Existing Supabase and mock
+credentials require an explicit migration and cannot sign in automatically.
+
+The workspace shows the account email, identity initialization and commerce identity state, links
+to capabilities and offerings, and a separate request-review page. A missing identity is distinguished
+from an unavailable API, with retry. The Web client uses the formal API and refreshes sessions through
+it. Unsupported capability edit/delete and offering delete controls were removed from the lists.
+
+Local verification used `apps/api` and a separate PostgreSQL database,
+`pci_workspace_verify_20261107`. Browser checks covered signup, identity initialization and creation,
+adding a capability, creating, publishing and unpublishing a service, request submission and review
+through the pending and confirmed lists, and API failure followed by retry. A transaction-scoped
+fulfillment code repository fixes request submission against PostgreSQL. Local-auth PostgreSQL
+integration covers signup, login, password storage, token rotation and revocation, and separate
+Creator mappings (13 tests across local auth and API runtime); nine Creator Identity API tests
+also passed, including the confirmed customer result. Web TypeScript and scoped auth lint were
+checked separately.
+
+For the subsequent manual test, the local Web and `apps/api` defaults were aligned to ports 3000
+and 8080. The previous mock and duplicate development servers were stopped. The restarted API
+uses the same isolated PostgreSQL verification database; a local signup returned 201 with the
+expected CORS origin, and the Web dashboard returned HTTP 200.
+These are local implementation checks, not evidence of AT-001 through AT-013 or external acceptance.
+
+`apps/api-mock` remains in the working tree because it contains pre-existing uncommitted changes;
+it is not used by the verified runtime. The previous Supabase adapter and configuration remain for
+legacy consumers and are not used for `apps/api` authentication. Password recovery is not implemented
+by the local authentication service. Existing database migration history and existing accounts need
+separate migration review before adoption. Production build and repository-wide gates retain the
+pre-existing failures recorded under DEV-055 and require independent resolution.
+
+## 79. DEV-057 / AUTOMATIC-IDENTITY-ONBOARDING-001
+
+> **Change Unit**: `DEV-057` / `AUTOMATIC-IDENTITY-ONBOARDING-001`
+> **Status**: Closed — Verified locally
+
+User-approved deviation: local registration and login initialize the Account's formal Identity and
+Creator Commerce Identity draft automatically. Existing local sessions can retry initialization.
+The registration name is copied once to the draft display name; subsequent profile edits are
+independent. An incomplete draft may have an empty name or bio, but publication requires both.
+Existing profiles and historical membership restrictions must be preserved. Initialization failures
+remain visible and retryable rather than being represented as missing identities. No new canonical
+product event is introduced. Verify registration, existing sessions, repeat initialization, profile
+independence, publication validation, failure handling and the system health endpoint against the
+local API and PostgreSQL. This is not evidence of AT-001 through AT-013.
+
+### 79.1 Implementation And Local Evidence
+
+`apps/api` provides `/health` alongside `/api/v1/health`. Local signup and login attempt to create
+the formal Identity and a separate Creator Commerce Identity draft. Initialization is idempotent
+and does not overwrite existing commerce profile data or bypass historical membership restrictions.
+The registration name is copied into the initial commerce display name; later changes are independent.
+Publishing requires a completed commerce name and bio. Existing sessions initialize their workspace
+through the authenticated API when they enter the dashboard.
+
+Account creation and workspace initialization are not one atomic transaction. If initialization fails,
+authentication succeeds with `setupPending`, and the dashboard reports the failure and offers retry.
+The dashboard and profile edit page opt out of Next.js instant-navigation validation for their
+conditionally rendered segments.
+
+Local PostgreSQL integration tests passed for automatic initialization, retries and concurrent
+initialization, profile independence, account isolation, and publication validation. API runtime and
+Creator Identity API integration tests passed (21 tests). Web TypeScript and scoped ESLint checks
+passed. Browser verification against `apps/api` covered signup, automatic initialization, dashboard,
+and profile edit: signup returned 201, workspace initialization and identity lookup returned 200,
+and navigation to profile edit produced no console errors. `/health` returned the expected service
+status. `git diff --check` passed.
+
+The repository-wide TypeScript build check remains blocked by existing errors in legacy auth, mock,
+and Web configuration paths. These local checks do not establish AT-001 through AT-013 or external
+service acceptance. The API verification used the existing isolated PostgreSQL database
+`pci_workspace_verify_20261107`.
+
+## 80. REQUEST-TRACING-PLAN-001
+
+Status: Plan documented; implementation and acceptance not started. The project-specific request
+tracing plan is recorded in `docs/09_Engineering_Governance/111_Request_Tracing_Implementation_Plan.md`.
+It covers local authentication, correlation propagation, browser and API spans, PostgreSQL driver
+verification, collection, privacy, operational failure handling and staged evidence. This planning
+entry does not claim product, production deployment or AT-001 through AT-013 acceptance.
+
+## DEV-058 / BOUNDED-SESSION-REFRESH-001
+
+> **Change Unit**: `DEV-058` / `BOUNDED-SESSION-REFRESH-001`
+> **Status**: In Progress
+
+The user authorized implementation and acceptance of the request-tracing plan, including ending
+spans on cancellation and failure. Bound the browser's shared session refresh to 15 seconds and
+honor each caller's cancellation while it waits. A timeout or cancellation returns the existing
+transport-error shape; it does not itself clear the local session. Cancelling one caller does not
+cancel the shared refresh. This changes when a stalled request reports an error. Since refresh
+tokens rotate, the server can consume a token even if its response is lost or arrives after the
+timeout; a subsequent refresh can then be rejected and require login. This existing distributed
+failure mode cannot be eliminated by a browser timeout. Account and Creator authorization, domain
+state transitions and canonical events are unchanged. Verify timeout, independent cancellation,
+span completion, recovery and credential privacy; record actual results in section 81.
+
+## DEV-059 / SESSION-LOGOUT-RECOVERY-001
+
+> **Change Unit**: `DEV-059` / `SESSION-LOGOUT-RECOVERY-001`
+> **Status**: Verified locally
+
+Repair logout when an access token is rejected: refresh and retry when possible, and clear an
+invalid local session when refresh is rejected. Report transport failures rather than claiming
+server revocation. Protect newer or cleared sessions from an older in-flight refresh. Verify
+login, logout, refresh concurrency and tracing without changing account or Creator permissions,
+domain transitions or canonical events.
+
+Verification on 2026-11-08: Web regression and tracing tests passed 21 tests across five files;
+Web TypeScript and scoped ESLint passed. The existing `lib/api/client.ts` lint errors for explicit
+`any` remain, as does its Next navigation warning. The local-auth integration test passed against
+a separate migrated Podman PostgreSQL. In gstack browse with the formal API on 18080 and Web on
+13000, signup reached the dashboard, then an intentionally invalid access token produced logout
+401, refresh 200 and logout 200; a subsequent login returned 200 and reached the dashboard. With
+both tokens deliberately invalidated, logout and refresh returned 401 and the browser cleared its
+local session and returned to login. That case cannot establish server-side revocation. The tests
+also cover network failure, rejected retry, late refresh and newer-session preservation. The user's
+3000 and 8080 services remained available and their data was not modified. The original browser
+session and the cause of its particular 401 were not inspected.
+
+## DEV-060 / SESSION-RESTORE-FAILURE-001
+
+> **Change Unit**: `DEV-060` / `SESSION-RESTORE-FAILURE-001`
+> **Status**: Verified locally
+
+When the browser cannot refresh an expired session because the API is unavailable, preserve the
+stored session and offer a retry without presenting it as authenticated or loading the workspace.
+A rejected refresh clears the expired session. The home route waits for session restoration and
+directs authenticated users to the workspace. Account and Creator permissions, domain state
+transitions and canonical events are unchanged. Verify recovery, rejected sessions, navigation
+and the actual local API database configuration.
+
+On 2026-11-08 the running API was found connected to `pci_auth`, which had the old `accounts`,
+`refresh_tokens` and `password_resets` tables but lacked the formal API's `local_auth_sessions`.
+An invalid refresh consequently returned 500. The Drizzle migrations were applied to `pci_auth`;
+the existing legacy tables and records were retained. The documented previous manual-test API
+used `pci_workspace_verify_20261107`, so `.env.local` was corrected to point back to that database
+and the 8080 `apps/api` process restarted with tracing enabled. The temporary operations token
+remains process-only; restarting the API requires operations authentication configuration.
+
+In a separate gstack browser session against Web 3000 and API 8080, the explicitly named test
+account `restore-check-20261108@example.test` was registered and left in the local database.
+After setting its access expiry to the past, visiting `/` returned refresh 200, navigated directly
+to the dashboard, and returned 200 for workspace initialization and identity lookup. Logout and
+subsequent login returned 200. The login and dashboard console were free of errors on the final
+check. An invalid refresh returned 401. Jaeger recorded the health request's supplied trace ID and
+parent after the restart. Web TypeScript, scoped ESLint and Prettier checks passed; three focused
+test files passed 21 tests, including Strict Mode restoration, server failure and retry, rejected
+refresh, logout recovery and tracing. jsdom reports its existing unsupported navigation warnings.
+These checks do not establish production acceptance or verify the user's browser session.
+
+## 81. REQUEST-TRACING-IMPLEMENTATION-001
+
+> **Status**: In progress; local end-to-end evidence obtained, acceptance incomplete.
+
+Plan 111 with the separately registered `DEV-058` refresh timeout and cancellation behavior;
+no product object, canonical event, permission or state transition is intentionally changed.
+API tracing is disabled by default. The browser exporter and
+its bounded, origin-restricted API receiver each require an explicit switch. The receiver rebuilds
+an allowlisted payload and forwards without business credentials. Server sampling is independent of
+untrusted remote flags and trace IDs; local child spans follow their parent. Browser refresh is one
+shared span linked to its waiters; retry spans link to the original request and refresh.
+
+Local environment: Windows, Node 22, `apps/api`, `apps/web-v2`, real PostgreSQL in an isolated
+Podman container, Collector 0.112.0 and Jaeger 1.62.0. The browser test used isolated ports 13000
+and 18080, leaving the user's 3000/8080 services and existing PostgreSQL untouched. Development
+Jaeger storage is in memory and has no query authentication. See `112_Request_Tracing_Operations.md`.
+
+| Acceptance | Evidence and remaining work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1         | Partial: HTTP integration tests cover valid/invalid headers, concurrent isolation and log IDs; real Collector query worked on 18080. A read-only probe of the existing 8080 process returned 200 but echoed an invalid correlation ID and its CORS preflight allowed only authorization/content-type: this process is running old code and does not meet the tracing contract. Repeat after restarting the actual runtime with its existing authentication and database configuration preserved.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| A2         | Partial: real browser signup returned 201 and opened dashboard. Jaeger trace `82a8e3a66be1cc3f449df6ae9b86641f` contained browser client -> API server -> signup -> session -> workspace -> PostgreSQL transaction, and account-create span. A separate real PostgreSQL publish test verified the `creator_published` event retains the request correlation ID. Local in-memory traces disappear when Jaeger stops.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| A3         | Partial: real PostgreSQL tests cover signup, concurrent initialization, suspended identity and historical membership restrictions, linked failure logs and error spans. A disposable PostgreSQL role without INSERT privilege on `identities` produced SQLSTATE 42501; signup still returned 201 with `setupPending`, rolled back the membership, and recorded correlated workspace and transaction error spans without exposing the database error. After restoring INSERT, the real workspace retry returned 200, produced trace evidence and created exactly one active membership. A separately injected TCP interruption also returned `setupPending` and recovered with the same session; this is not a production database outage exercise.                                                                                                                                                                                                                                                                                                      |
+| A4         | Local browser acceptance: two concurrent requests with a genuinely expired, test-signed JWT returned 401; one shared refresh returned 200 and both retries returned 200. Jaeger confirmed both waiter links on refresh, each retry's links to its original request and refresh, and the corresponding API server children. A real rejected refresh returned 401 and produced completed client/server spans; a cancelled request produced a completed client span with status 0 and error. The harness delays the real refresh response by 300 ms to make concurrency reproducible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| A5         | Partial: server tests cover unknown paths and nested redaction; receiver rejects non-allowlisted paths and discards additional fields. Real PostgreSQL tests checked test email, password, SQL parameter, access and refresh tokens against server logs and spans; the actual signup trace also excluded test credentials. Broader injection tests across every sink remain.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| A6         | Partial: stopping the local Collector left health/readiness at 200; browser receiver returned 503 and API logged `trace_export_failed`. After restart a new trace was queryable. An HTTP receiver that accepts but never responds verified bounded timeout, queue saturation and `trace_queue_dropped`, with health/readiness still 200. Production alerting remains unverified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| A7         | Partial: `tsx` and compiled Node entries exported spans; a Podman-built API image exported a span in test configuration and handled SIGTERM. A real HTTP receiver observed a pending span flushed on immediate shutdown before the batch timer; the stalled receiver test verified bounded, idempotent shutdown. A real browser `pagehide` triggered an export in 21 ms, before the one-second batch timer; this synthetic event does not prove delivery on every browser or abrupt termination. Instrumentation is manual; production configuration remains unverified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| A8         | Partial: API contract tests and Web typecheck passed. An alternating local `/health` comparison, after five warmups and 30 sequential requests per process, measured tracing off/on mean 2.07/2.42 ms, p95 3.18/2.98 ms, and process working set 124.7/125.0 MiB. A separate isolated Node test sent 60 requests per process at concurrency 10 after five warmups: all returned 200; off/on mean 11.65/7.89 ms, p95 25.04/12.16 ms, working set 115.9/116.9 MiB. Collector queue after the run was 0/512 batches, accepted/sent 441 spans, refused/failed 0 since Collector startup. This is a small sequential comparison and not a production budget or peak queue measurement. A 300-request attempt encountered 220 responses reported as 500 after the existing 100/minute rate limit was reached: the global error handler maps the rate-limit response to an internal error. This pre-existing contract issue requires separate product/engineering review. Repository build is blocked by existing legacy auth, mock and Web TypeScript errors. |
+| A9         | Partial: log trace ID located the corresponding local trace. The local Jaeger endpoint is only loopback-bound and has no authentication; production authorization, retention, storage and responsible owner remain undefined.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+Commands executed: `pnpm exec vitest run tests/integration/api-runtime.test.ts
+adapters/observability/safe-logger.test.ts tests/integration/runtime-lifecycle.test.ts`; with
+`LOCAL_AUTH_TEST_DATABASE_URL` pointing to the isolated database, `pnpm exec vitest run
+tests/integration/request-tracing.test.ts tests/integration/automatic-identity.integration.test.ts
+tests/integration/local-auth.integration.test.ts`; `pnpm exec vitest run
+tests/integration/browser-tracing.test.ts`; in `apps/web-v2`, `pnpm exec vitest run
+lib/api/client-tracing.test.ts` and `pnpm exec tsc --noEmit`. The final combined API run passed
+42 tests across eight files; the Web tracing run passed two tests. Full
+`pnpm exec tsc -p tsconfig.build.json --noEmit` remains blocked by the pre-existing errors above.
+
+Additional evidence on 2026-11-08: `pnpm build:api` succeeded using `tsconfig.api.build.json`;
+`podman build -f deploy/Dockerfile.api -t localhost/pci-tracing-api-acceptance:local .` built the
+formal API image. The compiled process exported trace `0123456789abcdef0123456789abcdef` and the
+test-configured container exported `abcdef0123456789abcdef0123456789`, each with the injected
+parent span in Jaeger. The image handled SIGTERM and logged shutdown completion. The independent
+`tests/integration/tracing-export-failure.test.ts` exercises a stalled HTTP receiver, queue drops,
+health/readiness and bounded shutdown; `tests/integration/request-tracing.test.ts` also verifies a
+real product event, injected initialization failure and restricted identity/membership cases.
+These are isolated development results, not evidence for production readiness or the user's
+existing 8080 process.
+
+Further verification: `tests/integration/tracing-shutdown-flush.test.ts` passed with an HTTP
+receiver; the later combined API run passed 27 tests in eight files, Web tracing passed four tests,
+Web typecheck passed, and targeted ESLint and Prettier passed. Real browser refresh and retry
+traces were `41ef8db1e198c1143712989db4c0edae` and `6379ff4d75e80893dc09899c2ccec703`;
+they linked to the original 401 trace `8df8a78d8d6d28e1e5622ac5d9f4d4c0`. Jaeger in-memory
+results are transient. The 60-request comparison used two fresh `APP_ENV=test` API processes
+on ports 18081 and 18082 with identical settings except tracing and did not use the user's 8080.
+The isolation processes and Podman test containers were stopped after the run; the original 3000,
+8080 and `pci-postgres` services were retained. A recursive cleanup of the generated
+`apps/web-v2/.next-tracing` cache was rejected by the execution policy, so the cache remains.
+The new client test passes root Prettier and Web ESLint; a whole-file Prettier check of this
+execution ledger reports formatting differences, and the existing ledger was not reformatted.
+
+The browser exporter now batches up to eight spans with a bounded queue rather than sending one
+request per span. `lib/api/tracing.test.ts` verifies the 8+2 batching boundary, payload size with
+16 links per span, allowlisted data and same-origin propagation. In the isolated real browser run,
+the refresh trace `bee0ac8e09b1f03da6e764f259aae84d` linked both original 401 traces
+`2bf0e21e8a3e816e4f5c4dae258fcf9f` and `0bdbd4e99b36a0411d69771cf92a9296`; retry traces
+`c70c5b92ffd61f9581f8eb0ace75f135` and `f8849525ee2fbbba45050352da8403c9` each linked their
+own original and refresh. The rejected refresh trace `8a2a9affe9b3b36e7382bf42cc1eb6de` and
+cancelled client trace `c064686198ea5b59d996d465af4a7612` were queried in Jaeger. Export batches
+observed during the signup and refresh run did not contain the test email or password. The
+reproducible harness and isolation instructions are in the operations guide; its JWT signing key
+and database credentials are test-only. Jaeger data is transient.
+The final Web run passed five tests across `lib/api/tracing.test.ts` and
+`lib/api/client-tracing.test.ts`; `pnpm exec tsc --noEmit`, targeted ESLint for those files and
+the harness, and Prettier for the changed tracing files and operations guide also passed. Vitest
+reported its existing Vite configuration warning and jsdom navigation-not-implemented messages.
+After this run, the isolated API and Vite processes, test PostgreSQL container, Collector and
+Jaeger were stopped. The existing `pci-postgres` remained running; `http://localhost:3000/` and
+`http://localhost:8080/health` returned 200. The existing 8080 process was not restarted with
+tracing enabled, so its tracing path is still unverified. The browse stop command reported an
+inability to connect; the subsequently reported browser server PID was no longer running.
+
+Database fault verification: with `TRACING_DISPOSABLE_DATABASE_URL` and
+`LOCAL_AUTH_TEST_DATABASE_URL` pointing to a dedicated migrated local PostgreSQL database,
+`pnpm exec vitest run tests/integration/request-tracing.test.ts
+tests/integration/automatic-identity.integration.test.ts tests/integration/local-auth.integration.test.ts`
+passed 9 tests in 3 files; `pnpm build:api` and targeted Prettier also passed. The permission test
+requires the database name `pci_tracing_disposable`, a loopback host and role-creation privileges;
+it creates and removes a uniquely named restricted role. See the operations guide for setup and
+cleanup. This test does not represent a network outage or production database configuration.
+
+An additional real TCP test sent a partial JSON body to an existing API route and disconnected
+after `api_request_started`. The server emitted a completed error span with the route template and
+method and an `api_request_aborted` log containing matching trace/span IDs and monotonic duration;
+no HTTP response status is invented for a disconnected client. The targeted run of
+`request-tracing.test.ts`, `api-runtime.test.ts` and `safe-logger.test.ts` passed 18 tests, with
+four PostgreSQL-dependent cases skipped because no test database was supplied; `pnpm build:api`
+passed. This test did not use the user's 8080 process.
+
+Additional privacy checks exercised a matched public request route containing a test result token,
+query token, bearer credential and cookie. The request logs and exported server span retained the
+route template and contained none of these values. The browser telemetry receiver test also sent
+extra nested credentials and incoming authorization/cookie headers; its forwarded OTLP payload
+excluded them and used only its own content-type header. `pnpm exec vitest run
+tests/integration/request-tracing.test.ts tests/integration/browser-tracing.test.ts` passed six
+tests with four database-dependent cases skipped; targeted ESLint and Prettier checks passed.
+These controlled tests do not establish redaction across every production sink or every source of
+untrusted data.
+
+The local Podman Collector and Jaeger were restarted for continued acceptance; `pci-postgres` and
+the existing 3000/8080 processes were retained. Restarting 8080 with its existing JWT, database
+and operations settings requires a reproducible source for those settings. An attempt to read the
+running process environment was rejected by the execution environment's automated policy; the
+API was not stopped or changed. `.env.local` has database and JWT keys but does not contain the
+operations authentication keys, so it is not sufficient evidence of the current runtime settings.
+The user was asked for the configuration source without disclosing credentials. A1 on the actual
+8080 process and the corresponding 3000 browser path remain outstanding.
+
+An OTLP payload check found that an externally supplied `tracestate` value was exported unchanged,
+even though the request attributes were redacted. The API ingress now discards external
+`tracestate` while retaining a valid `traceparent` trace ID, parent span ID and flags; `baggage`
+is not extracted. This deliberately prevents propagation of vendor state from external callers;
+trusted internal integration would require a separately designed trust boundary. The shutdown
+test captured actual OTLP HTTP bytes and verified that a test `tracestate` secret, baggage,
+authorization, cookie and query token were absent while the trace and parent IDs remained.
+
+With the local Podman Collector and Jaeger running, the opt-in
+`tests/integration/tracing-collector-privacy.test.ts` started a temporary in-process HTTP API on a
+system-selected loopback port, exported a real trace, and verified the parent reference and absence
+of those markers in Jaeger and the captured API logs. The test requires explicit loopback endpoints
+and does not touch the database. The command and endpoint settings are in the operations guide.
+With those settings, the combined collector, shutdown, request tracing, browser ingestion and API
+runtime run passed 20 tests in five files, with four database-dependent tests skipped; `pnpm
+build:api` and the two changed tracing test files' ESLint checks passed. Whole-file ESLint on
+`apps/api/src/create-api-server.ts` still reports two pre-existing `any` errors at the public
+Creator Profile database dependency and its assignment, both present in the repository baseline.
+The user's 8080 process remains unchanged, so this is not acceptance of that running instance.
+
+Outbound boundary inventory: source searches for fetch, HTTP client calls and provider assembly found
+the Web business client and refresh in `apps/web-v2/lib/api/client.ts`, and its separate telemetry
+export in `lib/api/tracing.ts`. The alternative global fetch interceptor has no production caller
+and is not covered by the tracing implementation. In `apps/api`, the notification adapter logs
+locally; the PostgreSQL composition uses a local commerce simulator outside production and installs
+rejecting webhook verification and normalization. The WeChat Pay adapter delegates to an injected
+sandbox transport and is not assembled into this API. The browser telemetry receiver forwards to
+the Collector; SDK export is also telemetry traffic, not a traced business provider integration.
+The operations guide records the boundaries and conditions for future integrations. This source
+inventory does not verify external notification, payment, asynchronous queue or third-party webhook
+delivery, and no such coverage is claimed. `pnpm exec prettier --check
+docs/09_Engineering_Governance/112_Request_Tracing_Operations.md` and `git diff --check` passed;
+Git reported existing LF-to-CRLF warnings.
+
+After the inventory, the combined `tracing-collector-privacy`, `tracing-shutdown-flush`,
+`tracing-export-failure`, `request-tracing`, `browser-tracing` and `api-runtime` integration run
+passed 21 tests in six files with four database-dependent tests skipped; it used the explicitly
+configured local Podman Collector and Jaeger. `pnpm build:api` also passed. The skipped tests are
+not represented as passed by this run; the earlier dedicated PostgreSQL evidence remains separate.
+
+Browser refresh span correction: when the stored session has no refresh token, `refreshSession`
+returns false without sending HTTP and no longer creates a misleading failed HTTP span. The
+regression test also verifies a later refresh can start normally. In `apps/web-v2`, `pnpm exec
+vitest run lib/api/client-tracing.test.ts lib/api/tracing.test.ts` passed six tests and `pnpm exec
+tsc --noEmit` passed. ESLint and Prettier passed for the changed test file. Whole-file ESLint for
+`lib/api/client.ts` still reports seven existing explicit-`any` errors and the existing Next.js
+navigation warning; these are also present in the repository baseline. Vitest emitted its existing
+Vite configuration warning and jsdom navigation-not-implemented messages.
+
+Log privacy correction: the formal API's `LogNotificationAdapter` no longer writes the
+user-provided offering title, which could contain a phone number or other arbitrary private text
+that key-based redaction cannot reliably recognize. Notification contents and product behavior
+are unchanged; fixed metadata and identifiers remain available in the log. A regression test sent
+a title containing a phone-number-shaped marker and an arbitrary credential marker through the
+actual adapter and safe logger; neither appeared in its output. `pnpm exec vitest run
+adapters/notifications/notification-adapters.test.ts adapters/observability/safe-logger.test.ts
+tests/application/customer-request-use-cases.test.ts` passed 18 tests. Scoped ESLint and Prettier
+for both notification files and `pnpm build:api` passed. This narrows one actual log exposure; it
+does not establish universal redaction of arbitrary future log fields.
+
+Web V2 production build: an isolated `NEXT_DIST_DIR=.next-tracing-production-check` build with
+browser tracing enabled initially failed because `/auth/reset-password` used `useSearchParams`
+outside a Suspense boundary. The page now provides that boundary and removes an effect that
+duplicated the existing invalid-link branch. `pnpm build` subsequently completed all 24 static
+pages and targeted ESLint passed. On an isolated port 13001, the built page displayed its invalid
+link state without a token and the password form with a test token; `/browse` reported no console
+messages. The test did not submit a reset or prove that production authentication supports it.
+The isolated server was stopped, and Next.js's temporary tsconfig additions were removed. The
+generated build directory remains; no business database or existing 3000/8080 process was changed.
+This establishes a Web V2 build, not a production deployment or acceptance of the legacy Web.
+
+Browser ingestion bounds: `tests/integration/browser-tracing.test.ts` now submits 21 spans in one
+batch and a body larger than 16 KiB, verifies neither reaches the configured forwarding function,
+and sends 61 valid batches from one client to exercise the per-client one-minute limit. The test
+confirms at most 60 batches are forwarded and that accepted responses match forwarding calls. This
+uses Fastify injection and a stubbed collector, so it does not verify proxy client-IP settings or a
+distributed production rate limit. The existing global error handler can map rate-limit errors to
+500 as recorded under A8; this test does not assert a 429 response contract.
+
+Browser exporter recovery: synchronous failures while constructing the payload or starting fetch
+now release the bounded in-flight counter and report an export failure. A Web SDK regression
+test simulated 33 consecutive synchronous fetch failures and verified that a subsequent batch was
+sent after fetch recovered. In `apps/web-v2`, `pnpm exec vitest run lib/api/tracing.test.ts
+lib/api/client-tracing.test.ts` passed six tests, `pnpm exec tsc --noEmit` passed, and targeted
+ESLint and Prettier checks passed. The test does not establish delivery of failed batches.
+
+Web V2 container entry: added `deploy/Dockerfile.web-v2` using the Web V2 frozen lockfile and
+Node 22, with explicit browser API origin and tracing build arguments. A Podman build with API
+origin `http://localhost:18080` and browser tracing enabled built all 24 pages. The resulting
+image started as the `node` user on isolated host port 13002; `/auth/signup` returned HTTP 200,
+and the configured API origin appeared in a browser bundle. The test container was stopped and
+removed. This is a startup check, not a registration or production deployment acceptance.
+
+The first build exposed that the build context included the nested Web `.env.local`. That build
+was interrupted before tagging; `.dockerignore` now excludes nested `.env` and `.env.*` files,
+the identified intermediate image from that attempt was removed, and the rebuilt runtime image
+contained no `.env.local`. Other Podman caches were not inspected or removed. The existing
+production Compose and historical deployment scripts still target the legacy frontend and auth;
+the new image does not silently replace those deployment contracts.
+`git diff --check` and the operations guide's Prettier check passed. Prettier cannot infer a
+parser for the Dockerfile or `.dockerignore`; the existing execution ledger also reports a
+whole-file formatting warning and was not reformatted as part of this change.
+
+Collector privacy expansion: with the local Podman Collector and Jaeger running,
+`tests/integration/tracing-collector-privacy.test.ts` sent a matched dynamic public route with
+test path and query tokens, authorization, cookie, tracestate and baggage markers, then submitted
+a browser span with extra secret and email fields through the real API ingestion route. Jaeger
+returned the browser span and its server child, and neither its query result nor captured API
+logs contained any injected marker. The test passed with the documented loopback endpoints;
+targeted ESLint and Prettier passed. This test constructs the browser ingestion request directly,
+does not exercise a database, and does not prove privacy for all future sinks or production systems.
+
+Current Compose alignment: `deploy/compose.production.yml` now describes Web V2, the formal
+`apps/api` and local JWT authentication, with Web/API container ports 3000/8080 and host loopback
+bindings. Its configuration template is `deploy/.env.production.example`; `.gitignore` now
+allows the example to be tracked while retaining the general environment-file exclusion. The
+historical M9 Compose and example are retained separately as historical references. Their API
+Dockerfile has changed and their startup commands are not verified against current code. Existing
+historical deployment scripts were not requalified for the new Compose contract.
+
+On Podman, `compose ... config -q` passed with isolated test variables. A Compose build of the
+current API and Web V2 source completed, including API TypeScript compilation and Web V2's 24
+static pages. The first context upload logged Windows file-mode errors for nested
+`apps/api-mock/node_modules`; `.dockerignore` was extended to exclude nested `node_modules`, and
+the subsequent API context upload completed without those errors. The Compose provider was the
+installed Docker Compose CLI connected to the Podman engine; no Docker daemon was used.
+
+The newly built images were started under the isolated `pci-tracing-compose-acceptance` project
+using a fresh dedicated PostgreSQL volume, host ports 13002/18080, test-only credentials and a
+temporary private network connection to the local Collector. PostgreSQL became healthy, the
+migration exited successfully, API readiness passed, and a real browser registration returned 201
+and reached the authenticated dashboard with the newly created identity. Jaeger returned trace
+`1766a3ab78434cbc2b085576549c92f7`, with seven connected browser, API, authentication and
+PostgreSQL spans. Its response contained none of the injected test email, signup password,
+database password, JWT secret, authorization/cookie field names or SQL marker checked in this
+run. This is a bounded marker check, not proof of universal privacy. The registration page's
+prefetches for `/terms` and `/privacy` returned 404; they are an existing page gap, not evidence
+of tracing failure. Jaeger uses transient memory, so the trace ID identifies observed evidence and
+is not a durable link after cleanup.
+
+The temporary Collector network attachment, acceptance containers, dedicated volume and network,
+and the local Collector/Jaeger stack were removed after the check. The browser stop command
+reported that it could not connect. The original `pci-postgres`, 3000 and 8080 were not changed;
+the existing 8080 process still needs an authorized reproducible source for its original runtime
+configuration before it can be restarted with tracing. Prettier passed for the Compose and
+governance documents and `git diff --check` passed with existing line-ending warnings.
+
+Queue saturation visibility: the locked OpenTelemetry SDK emits its first saturation signal at
+debug level and reports the total dropped count only after its queue accepts another span. The
+diagnostic adapter now turns that exact first signal into one `trace_queue_full` warning per
+saturation episode; other debug messages are discarded. The existing `trace_queue_dropped`
+warning still reports the count when the queue resumes accepting spans. The timeout test now
+asserts that the first warning is present before recovery and is not emitted once per dropped
+span. `pnpm exec vitest run tests/integration/tracing-export-failure.test.ts
+tests/integration/tracing-shutdown-flush.test.ts` passed two tests; scoped ESLint and Prettier and
+`pnpm build:api` passed. The exact diagnostic signal is an SDK 2.0.1 implementation dependency and
+must be revalidated on upgrade. This creates a timely log signal; it does not configure or prove
+a production alerting pipeline.
+
+Database network fault: a real, migrated PostgreSQL 17 instance ran in a dedicated Podman
+container on loopback port 45506. The actual API composition connected through a loopback TCP
+proxy. A test hook interrupted connections and closed the proxy listener immediately before the
+workspace creator lookup, after account and session creation. Signup returned 201 with
+`setupPending`, the workspace error span and safe correlated log were recorded, and no membership
+existed. After the proxy reopened, retry with the same access token returned 200 and exactly one
+active membership existed. This injects the fault at a controlled point and does not simulate all
+network failure modes or a production database outage. It revealed that the driver could wait
+indefinitely during close after the interruption; PostgreSQL connection shutdown now gives active
+queries five seconds before forcing connections closed, allowing tracing shutdown to proceed.
+Queries still running after that interval can be interrupted. The combined request-tracing,
+shutdown-flush and API-runtime run passed 19 tests, with three tests requiring a separate database
+environment variable skipped. API build and scoped Prettier passed; scoped ESLint was rerun after
+documenting the intentionally bound test method. The timeout observation is specific to this
+fault injection and proxy. The isolated container was removed after testing.
+
+Deployment drill alignment: the deployment smoke now checks the Web V2 signup and login pages,
+API health, readiness and OpenAPI. The isolated deployment script uses the formal API on container
+port 8080, Web V2 on port 3000, local JWT and dedicated test credentials. CI configuration builds
+the matching Web V2 image; GitHub CI itself has not been run for this change.
+
+On Podman, API and Web V2 images were built from current source; the Web build fixed its browser
+API URL to `http://127.0.0.1:45200`. The isolated deployment script passed on host ports 45200
+and 45201: migrations, smoke, local signup, login and identity read, backup and restore with 28
+migration records, graceful API shutdown, and login and identity read after image replacement.
+The replacement used the same API image, so this was not an old-version rollback test. The
+isolated backup remains at `output/backups/m9-d61f9235.sql`. The temporary containers and network
+were removed; the existing `pci-postgres` remained running, and existing Web 3000 signup and API
+8080 health returned HTTP 200. The drill did not enable tracing and is not production acceptance.
+Scoped ESLint for the smoke script, Prettier for the smoke script, CI and both operations guides,
+and `git diff --check` passed; the latter reported existing line-ending warnings.
+
+Browser OTLP acknowledgement: the API previously treated any successful Collector HTTP response
+as full acceptance. It now checks OTLP JSON partial-success fields in camelCase or snake_case,
+returns 503 and records `trace_browser_export_failed` on rejection, HTTP failure or invalid
+response, and records `trace_browser_export_warning` for a warning without rejection. Collector
+messages are not logged. The browser exporter does not retry failed batches; a partial rejection
+may already have accepted some spans and does not guarantee delivery of the others. A real Podman
+Collector 0.112.0 returned HTTP 200 with `{"partialSuccess":{}}`; its integration test reached
+Jaeger and passed. Mocked acknowledgement tests cover rejection, warning, malformed content and
+HTTP failure, and API runtime regression passed (16 tests total). `pnpm build:api`, scoped ESLint
+for the receiver and its tests, Prettier for the touched code and operations guide, and
+`git diff --check` passed; the latter reported line-ending warnings. Full ESLint on the touched
+server composition still reports its existing `any` and unsafe assignment errors. The temporary
+Collector, Jaeger and network were removed. These checks do not establish a production alert.
+
+Client disconnect after request receipt: a real loopback HTTP request reached the readiness handler,
+which the test held open before a response. Destroying the client connection produced exactly one
+finished error server span and one `api_request_aborted` log with matching trace/span IDs while the
+handler was still held; no response status was invented. Releasing the handler did not produce a
+second finished span or completed-request log. The tracing, API runtime and safe-logger tests passed
+20 tests, with five database-dependent tests skipped because no test database was configured;
+scoped ESLint and Prettier passed. This verifies the controlled disconnect, not every streaming or
+proxy disconnect scenario. The same three test files were then rerun against a migrated dedicated
+Podman PostgreSQL 16 database on loopback port 45505: all 25 tests passed with no skips, including
+the permission and network interruption cases. The dedicated database container was removed.
+
+While checking the touched server composition, a pre-existing public profile defect was identified:
+`apps/api/src/main.ts` passes a `PostgresDatabaseConnection` wrapper as `database`, while the public
+profile route expects the nested Drizzle `ProductDatabase`. The `any` declaration in the server
+dependencies hides this mismatch and causes scoped ESLint errors. Fixing that business endpoint
+requires a separately governed product behavior change; it was not changed as part of tracing.
+
+The current `pnpm build` was rerun and still fails on legacy auth, mock and Web V2 errors. Its
+NodeNext configuration had also compiled the new Vite browser tracing test entry without its Web
+alias configuration; the test-only entry is now excluded from the root release build, removing
+those entry-specific errors. The separate API and Web V2 builds pass, but the root build is not a
+passed gate; fixing its remaining build boundaries and failures remains outstanding.
+
+Browser telemetry resource bounds: each API server instance now allows at most 16 simultaneous
+Collector exports, rejects additional batches with 503 and a safe `collector_concurrency_limit`
+warning, and reads Collector responses as streams with a 16 KiB byte limit. Completion, malformed
+responses, HTTP errors and timeouts release capacity and abort the outbound request. The existing
+two-second timeout applies to response reading as well as the request. The focused browser tracing
+suite passed seven tests, including concurrent saturation and recovery, an oversized chunked
+response, and a real loopback Collector response body stalled past the timeout; API build and scoped ESLint passed. The real Collector 0.112.0 and Jaeger integration
+test also passed with the bounded reader. The temporary Podman observability stack was removed;
+this does not establish production capacity or alert thresholds.
+
+Tracing protocol configuration: the Node and browser receiver exporters use OTLP HTTP/JSON. The
+API now validates the trace-specific or general OTLP protocol setting when either exporter is
+enabled, with the trace-specific value taking precedence, and validates the browser tracing switch
+as a boolean. Unsupported protocol values do not prevent startup when both exporters are disabled.
+The local and production templates and production Compose expose the trace-specific protocol. The
+configuration, exporter-failure and shutdown suites passed five tests; `pnpm build:api` and scoped
+ESLint passed. `podman compose --env-file deploy/.env.production.example -f
+deploy/compose.production.yml config --quiet` passed using template values, as did scoped Prettier
+and `git diff --check` (with existing line-ending warnings). This validates configuration and local
+behavior, not a production deployment.
+
+Collector downstream fault visibility: in an isolated Podman stack with Collector 0.112.0 and
+Jaeger 1.62.0, Jaeger was stopped and one synthetic OTLP span was sent. The Collector returned 200
+and `otelcol_receiver_accepted_spans` reached 1 while its log reported export retries; during retry
+`otelcol_exporter_queue_size` was 0 and no send-failure series was yet present. Jaeger was restarted
+and the same trace `1234567890abcdef1234567890abcdef` became queryable; sent spans reached 1,
+send failures were 0 and queue size remained 0. The stack was then removed. The runbook now explains
+the metric and retry limitation, use of protected end-to-end synthetic probes and application logs.
+This controlled single-span test does not establish production alerting, loss guarantees or storage
+availability objectives.
+
+Collector privacy and real database: an isolated Podman PostgreSQL 16 database was migrated and
+used with Collector 0.112.0 and Jaeger 1.62.0. The extended
+`tests/integration/tracing-collector-privacy.test.ts` passed with all three test endpoints configured.
+It verified a successful local signup, a SQL parameter stored in the disposable database, and one
+queried trace containing simulated browser, HTTP, auth, workspace and PostgreSQL spans. The complete
+Jaeger response and captured API logs did not contain the test email, password, SQL parameter,
+issued access and refresh tokens, dynamic path and query markers, authorization, cookie, baggage,
+tracestate, or additional browser payload markers. Scoped ESLint and `pnpm build:api` passed. The
+test enforces a loopback disposable database name; it does not use a real browser for the simulated
+browser span or establish production privacy controls. The test database and observability stack
+were removed, leaving the pre-existing PostgreSQL container intact.
+
+Synthetic tracing probe: `scripts/operations/tracing-probe.ts` exports a randomly identified,
+non-business span over OTLP HTTP/JSON and queries Jaeger for the exact trace and span. It bounds
+response size and total time, retries transient query failures, rejects partial or malformed OTLP
+acknowledgements, and optionally sends a Bearer token only to the query endpoint. Six focused tests
+passed, covering path prefixes, transient query failure, unauthorized queries, malformed and partial
+acknowledgements, and endpoint restrictions. Scoped ESLint and TypeScript checks, Prettier and
+`pnpm build:api` passed. Against isolated Podman Collector 0.112.0 and Jaeger 1.62.0, the CLI
+successfully queried trace `95a744c5d6f05e9af8269f35c6761e15`; stopping Collector caused exit 1,
+and stopping Jaeger caused exit 1 after the 30-second limit. The local stack was removed afterward.
+The runbook documents execution, credentials and constraints. This exercise does not establish
+production query authorization, probe scheduling, alert delivery or a production availability target.
+
+Node OTLP partial acceptance: the locked SDK's `Received Partial Success response:` diagnostic is
+mapped to `trace_export_partial_success`, without logging the Collector's response text or rejected
+count. A loopback HTTP Collector returned an OTLP partial-success response containing a private marker;
+the dedicated integration test observed exactly one warning and no marker in application logs. The
+configuration, partial-success, export-failure, shutdown-flush and probe suites passed 12 tests;
+scoped ESLint and `pnpm build:api` passed. The mapping depends on the SDK's diagnostic text and must
+be revalidated on upgrade. It is a log signal and does not establish production alerting or durability.
+
+CI tracing regression: `.github/workflows/ci.yml` now has a separate tracing job so the browser
+tracing tests are included and the focused regression can run independently of preflight. Running its
+API command locally passed 39 tests across nine files, with five database-dependent tests skipped;
+the Web V2 command passed six tests across two files. The browser runner printed jsdom navigation
+and Vite configuration warnings. Prettier passed for the workflow. GitHub Actions has not run this
+change; this focused job does not replace the full preflight or resolve its existing failures.
+
+The tracing CI job was subsequently extended with a disposable PostgreSQL 16 service and the local
+Collector/Jaeger Compose stack. It migrates the dedicated database, supplies the explicit test URLs,
+runs the real database fault and Collector privacy cases, and tears down the observability stack even
+on failure. Reproducing the expanded server command on this Windows host used Podman PostgreSQL 16
+on loopback port 45507, Collector 0.112.0 and Jaeger 1.62.0; all 48 tests across 12 files passed
+without skips. The temporary database, Collector, Jaeger and network were removed, and the existing
+`pci-postgres` remained running. The Compose provider was Docker Compose connected to Podman; no
+Docker daemon was used locally. Prettier and `git diff --check` passed for the workflow, with an
+existing line-ending warning. GitHub's Linux job has not yet run and the Collector test constructs a
+browser span rather than driving a real browser; this is not production acceptance.
+
+Repeatable local browser regression: `scripts/operations/tracing-browser-acceptance.mjs` drives
+the existing Web V2 API-client harness using gstack `/browse` and queries the local Jaeger API.
+With the formal `apps/api` on 18080, the harness on 13000, a dedicated migrated Podman PostgreSQL
+16 database, Collector 0.112.0 and Jaeger 1.62.0, the script passed. It verifies the signup span
+parent chain through auth and PostgreSQL, the two original 401s, one shared refresh, both retries
+and their Jaeger links, rejected refresh, an exported cancelled span, and absence of issued test
+credentials in the observed browser batches and queried traces. The refresh response is delayed by
+the harness to reproduce concurrency; pagehide is synthetic. The script creates and closes its
+own browser tab. It uses a Vite harness with the actual Web API client and is not a replacement for
+Next.js UI or production acceptance. GitHub Actions does not install gstack or run this test.
+The Web tracing unit suites passed six tests; Web typecheck, scoped ESLint and Prettier passed.
+The existing jsdom navigation and Vite configuration warnings remain. Setup and execution are in
+`112_Request_Tracing_Operations.md`; no product behavior was changed by this regression tool.
+After the run, the dedicated browser tab, API and Vite processes, database and observability
+containers were stopped; the existing `pci-postgres` remained running, and Web 3000 and API
+8080 health returned 200. A fresh `pnpm build` still failed on legacy auth import/type errors,
+`apps/api-mock` types and Web V2 files compiled by the root NodeNext configuration. This does not
+change the previously recorded independent `pnpm build:api` result.
+
+Do not mark TRACE-01 through TRACE-06 or A1 through A9 fully accepted until the outstanding
+evidence and production decisions are completed. The local Collector and Jaeger do not satisfy
+production access-control, retention, backup, ownership or operational alerting requirements.
+
+Tracing rollback configuration: previously an invalid OTLP URL, sampling rate or queue setting
+could prevent the API starting even when both tracing switches were off. Configuration loading now
+ignores settings for disabled collection paths while retaining validation of both switches and all
+settings used by enabled paths. A real loopback `apps/api` startup in test mode, with deliberately
+invalid unused tracing settings, served health and readiness and retained its correlation header.
+The focused configuration, startup, exporter failure, shutdown and API contract suites passed
+19 tests across five files; `pnpm build:api` and scoped ESLint passed. This startup test uses the
+in-memory test composition, not the user's database or 8080 process. The CI tracing regression now
+includes the startup test; GitHub Actions has not run the updated workflow. No product objects,
+events, permissions or business states were changed.
+
+Trace fields in structured logs: the logger previously accepted caller-provided `trace_id`,
+`span_id` and `trace_sampled` when no valid span was active, allowing stale identifiers to be
+mistaken for a real trace. These reserved top-level fields now come only from the current valid
+OpenTelemetry context; the caller's context is not mutated. The logger test verifies omission with
+no active span and replacement with the active unsampled span. `pnpm exec vitest run
+adapters/observability/safe-logger.test.ts tests/integration/request-tracing.test.ts
+tests/integration/api-runtime.test.ts` passed 21 tests across three files; five database-dependent
+tests were skipped because no isolated test database was configured for this run. Scoped ESLint,
+Prettier and `pnpm build:api` passed. `pnpm build` still fails on the previously recorded legacy
+auth, mock and Web V2 TypeScript errors. This engineering change does not establish the outstanding
+8080 or production acceptance evidence.
+
+Browser telemetry redirect boundary: browser export and the API's Collector forwarding now use
+`redirect: 'error'` so a redirect does not forward trace payloads to a different endpoint. A real
+loopback HTTP receiver returned 307; the API returned 503, the redirect target received no request,
+and a subsequent normal export returned 202. The browser exporter test asserts the same fetch
+policy. `pnpm exec vitest run tests/integration/browser-tracing.test.ts
+tests/integration/api-runtime.test.ts` passed 20 tests; the two Web tracing suites passed six tests.
+API build, scoped ESLint and Prettier passed. Web tests still report the existing jsdom navigation
+and Vite configuration warnings. The operations guide records that `Origin` is not authentication
+and per-instance limits do not establish production ingress protection. These checks do not prove
+production access controls or address the existing 8080 runtime and production acceptance gaps.
+
+Tracing-disabled PostgreSQL rollback regression: a dedicated Podman PostgreSQL 16 container on
+loopback port 45509 was migrated and used with the real `apps/api` development composition and
+local JWT. With both tracing switches off and an invalid unused OTLP address, registration, login,
+workspace initialization, identity read, health and database readiness succeeded; the signup
+correlation ID remained in the completed log without trace fields or test credentials. The new
+`tracing-disabled-startup.test.ts` case requires the explicit local disposable database name and
+passed together with the existing startup case (two tests). A separate startup test also verified
+that a valid incoming `traceparent` does not produce trace fields when collection is disabled.
+Scoped ESLint passed. The disposable container was removed; the existing business database and
+services were not changed. CI already runs this test with its disposable database, but GitHub
+Actions has not yet executed it. This is not a rollback drill on the existing 8080 process, nor a
+complete Web dashboard or production acceptance.
+
+Next.js browser tracing acceptance: a separate Next.js development server on 13000, formal
+`apps/api` on 18080, migrated disposable Podman PostgreSQL 16 database, Collector 0.112.0 and
+Jaeger 1.62.0 were used with gstack browse. The actual signup form created a local account and
+reached the dashboard via client-side navigation, where the registered email appeared. The
+repeatable `scripts/operations/tracing-next-acceptance.mjs` checked the sampled browser parent,
+HTTP server, auth signup, account creation, session, workspace and transaction span relationships
+in Jaeger, and absence of the test email, password, name and issued access and refresh tokens from
+that trace. A manually inspected signup log used the same trace and server span IDs as Jaeger.
+The initial test observer mishandled URL inputs and caused a full navigation; the observer was
+fixed and the final run explicitly checked that the same browser document survived navigation.
+The script clears the test origin's local auth session, so its fixed port must remain isolated.
+The runbook records setup and limits. This is development-mode evidence, not production build,
+production query authorization, a full privacy audit or acceptance of the existing 8080 process.
+Scoped ESLint, Prettier and `git diff --check` passed; the latter reported existing line-ending
+warnings. The isolated API, Next.js server, PostgreSQL and observability containers were stopped;
+the pre-existing `pci-postgres` remained running and Web 3000 and API 8080 health returned 200.
+Automatic command review rejected removal of the generated
+`apps/web-v2/.next-tracing-next-acceptance` directory, so it remains in the workspace. The two
+temporary Next.js type-directory entries were removed from `tsconfig.json` after stopping the server.
+
+Production Web image tracing regression on 2026-11-08: built the current Web V2 source with
+`podman build -f deploy/Dockerfile.web-v2 --build-arg NEXT_PUBLIC_API_BASE_URL=http://localhost:18080
+--build-arg NEXT_PUBLIC_OTEL_BROWSER_TRACING_ENABLED=true -t
+localhost/pci-tracing-web-v2-current-acceptance:local .`. The production Next.js build compiled,
+typechecked and generated 24 pages. The image ran on isolated port 13000 with the formal `apps/api`
+development entry on 18080, a newly migrated disposable Podman PostgreSQL database, Collector and
+Jaeger. `scripts/operations/tracing-next-acceptance.mjs` passed using gstack browse: the real signup
+form reached the dashboard through client navigation, showed the account email, and produced trace
+`56dd5dd6f85c8bc5b8d5964f3fdfc60e` with the expected browser, server, authentication and database
+parent relationships. The script checked that the queried trace excluded its test email, name,
+password and issued tokens. API start and completion logs shared that trace and server span ID.
+The test containers and temporary API process were stopped and removed; the original services and
+database were not modified. Jaeger's in-memory trace is no longer retained. This checks a production
+Web build against an isolated API, not the existing 8080 runtime or production authorization,
+retention, alerting or capacity.
+
+Dynamic result-path privacy regression: the gstack browser harness now sends a request through the
+Web V2 API client with distinct result-access and query-token markers. With isolated `apps/api`,
+PostgreSQL, Collector and Jaeger, `node scripts/operations/tracing-browser-acceptance.mjs` passed
+twice, including its existing signup, concurrent refresh, retry, rejection and cancellation checks.
+It waits for the actual browser export batch containing the request, verifies the browser wildcard
+route and the server route template are parent and child in Jaeger, and checks both markers and
+the existing test credentials are absent from the observed batch and queried traces. This augments
+the separate real Collector privacy test that checks API logs; it does not prove privacy for all
+future attributes or production sinks. The harness file passed Web V2's ESLint configuration, the
+script passed root ESLint, and scoped Prettier passed. Running root ESLint directly against the Web
+harness produced type-resolution and existing unsafe-value errors because it uses the root NodeNext
+configuration; that command remains a failing cross-project check. Isolated processes and containers
+were stopped and removed after the test.
+
+Collector probe acknowledgement validation: the operations probe now rejects responses containing
+both JSON field spellings for the same OTLP field, invalid warning types, and numeric rejected-span
+counts outside JavaScript's safe integer range. This prevents an ambiguous or malformed response
+from being reported as a successful synthetic trace probe. The probe still permits valid Collector
+warnings when no spans were rejected, and does not log the warning text. The loopback HTTP probe
+and browser receiver integration suites passed 19 tests with `pnpm exec vitest run
+tests/integration/tracing-probe.test.ts tests/integration/browser-tracing.test.ts`; scoped ESLint
+and `pnpm build:api` passed. A fresh `pnpm build` failed on the previously recorded legacy auth,
+`api-mock` and Web V2 NodeNext compilation errors. This change does not establish production
+query authorization, alert delivery, or acceptance of the existing 8080 runtime.
+
+Concurrent refresh link and browser error-log regression: every caller waiting for a shared refresh
+now has a separate `auth.refresh.wait` internal span linking its completed original HTTP span and
+the shared refresh span. The fixed operation and three outcome values are validated by the browser
+receiver; its OTLP conversion uses INTERNAL kind and forwards no HTTP or extra input fields for this
+operation. The HTTP spans retain their original response timing. The existing 16-link limit on an
+individual refresh export remains; per-waiter spans provide bounded associations beyond that limit.
+The Web tracing suites and authentication logging test passed 10 tests, including 24 concurrent
+waiters with a failed shared refresh and actual OpenTelemetry SDK batch serialization; test tokens
+were absent from the batches and captured client console logs. The browser receiver integration
+suite passed nine tests, including fixed-operation validation and OTLP forwarding. The API client,
+authentication service and session restore now log fixed error messages rather than raw exceptions;
+error return and rethrow behavior remains unchanged. Web typecheck, scoped ESLint for the receiver,
+new tests and tracing/auth modules, scoped Prettier, and `pnpm build:api` passed. The existing
+`client.ts` ESLint check still reports seven pre-existing `no-explicit-any` errors and a navigation
+warning; its existing formatting is also outside this scoped format check.
+
+An isolated Podman PostgreSQL, Collector and Jaeger plus formal `apps/api` on 18080 and the Vite
+browser harness on 13000 passed `scripts/operations/tracing-browser-acceptance.mjs` with gstack
+browse. Two real concurrent expired-token requests each produced a Jaeger internal wait span with
+`success` and `FOLLOWS_FROM` links to the original request and the shared refresh; signup, retries,
+rejected refresh, cancellation and sensitive-marker checks also passed. The 24-waiter failure test
+uses the real SDK with a simulated transport, not 24 live browser requests or production evidence.
+The new Web tests are included in the existing tracing CI job, which has not run on GitHub Actions;
+the gstack browser script remains a local acceptance check.
+Test processes and containers were removed; the existing business database and 3000/8080 services
+were left in place. The runbook records that API receiver deployment must precede the updated Web
+client, and that a compatible receiver must remain while cached clients exist during rollback.
+Existing A1 and production query, retention, alerting, capacity and ownership gaps remain open.
+
+`DEV-058` bounded refresh regression: each caller can cancel its own wait without aborting the
+shared request or other waiters. A 15-second limit covers the refresh fetch and response body;
+timeout ends the client and waiting spans, releases the shared refresh slot and does not itself
+clear the session. Late results cannot write the session. A timed-out rotation may already have
+consumed the old token on the server, so retry is not guaranteed to succeed; see the runbook.
+In `apps/web-v2`, `pnpm exec vitest run lib/api/client-tracing.test.ts
+lib/api/client-tracing-export.test.ts lib/api/tracing.test.ts lib/auth/service-logging.test.ts`
+passed 13 tests, including independent cancellation, timeout and late response/body tests;
+`pnpm exec tsc --noEmit --incremental false` and scoped test ESLint passed. Root
+`pnpm exec vitest run tests/integration/browser-tracing.test.ts tests/integration/api-runtime.test.ts
+adapters/observability/safe-logger.test.ts` passed 25 tests; `pnpm build:api` passed. These new
+failure cases use simulated browser transport; they are not a new real-browser or production
+acceptance run. Web `client.ts` ESLint still reports the seven existing `no-explicit-any` errors
+and one navigation warning. Repository build and the A1/production gaps remain as recorded above.
+
+Real-browser bounded refresh evidence: on 2026-11-08, the expanded
+`scripts/operations/tracing-browser-acceptance.mjs` passed using gstack browse, the formal API on
+18080, a migrated disposable Podman PostgreSQL 16 database, Collector 0.112.0 and Jaeger 1.62.0.
+Two expired-token requests shared one real refresh: cancellation ended one linked wait span as an
+error, while the other wait span succeeded and its retry linked to the original and refresh. A
+second real refresh completed on the server but its response was held by the test page until the
+15-second browser timeout. Jaeger contained the server child, the completed error client span and
+linked error wait span; the browser retained its original session after timeout and after releasing
+the late response. The script also checked signup, rejection, dynamic-path privacy and test secrets.
+This simulates a delayed response in browser instrumentation, not dropped network packets or a
+production outage. The first attempt failed because the asynchronous test helper returned undefined;
+it was corrected before the passing run. The real Collector privacy suite initially failed because
+its explicitly named disposable database had not been created; after creating and migrating it in
+the temporary container, `tracing-probe`, `browser-tracing` and `tracing-collector-privacy` passed
+21 tests. Both changed acceptance files passed scoped ESLint and Prettier. These results do not
+close the existing 8080 runtime or production authorization, capacity and operational gaps.
+
+Refresh HTTP status accuracy: the client previously replaced an observed refresh response status
+with zero whenever subsequent processing failed. The refresh span now retains a received status;
+an independent, allowlisted boolean carries the span error to the browser receiver, including a
+response-body timeout after HTTP 200. The receiver validates the boolean and remains compatible
+with payloads from older clients. This changes telemetry only and does not alter refresh results.
+In `apps/web-v2`, the four tracing and auth logging suites passed 14 tests, including HTTP 503 and
+body-timeout cases, and `pnpm exec tsc --noEmit --incremental false` passed. The API receiver suite
+passed 10 tests, including the OTLP status mapping and legacy payload. Scoped Web ESLint, Prettier,
+and `pnpm build:api` passed. The first receiver test run failed because its test double reused an
+already consumed response body; a fresh response per request fixed the test and the rerun passed.
+This is simulated transport evidence; the existing 8080 and production acceptance gaps remain.
+
+Real-browser response-body timeout verification: on 2026-11-08,
+`scripts/operations/tracing-browser-acceptance.mjs` passed with gstack browse, the current formal
+API on isolated port 18080, the Vite harness on 13000, a migrated disposable Podman PostgreSQL 16,
+Collector 0.112.0 and Jaeger 1.62.0. The test page let the real refresh response reach the client
+and delayed its body read until after the 15-second deadline. Jaeger trace
+`112d2c6c94b8cd930b9384f169f533cf`, browser span `a7954a95e42147f9`, contained HTTP status 200,
+the error tag and a duration of 15.0161 seconds; the script also verified its API server child,
+the linked error wait span, unchanged session and absence of the test secrets. Signup, concurrent
+refresh, retry, independent cancellation, rejected refresh and dynamic-path privacy passed in the
+same run. The delay is injected at the browser response-body boundary and does not emulate a real
+network stall. Jaeger uses temporary memory storage. Scoped ESLint and Prettier passed for the
+modified harness, script and runbook. This does not close the 8080 or production acceptance gaps.
+
+Continuation verification on 2026-11-08: the stopped `pci-tracing-acceptance-db` Podman container
+was removed. The existing `pci-postgres`, Web on 3000 and API on 8080 remained running; Web `/`
+and API `/health` returned 200. A read-only 8080 probe still echoed an invalid correlation ID and
+its CORS preflight allowed only `authorization, content-type`, confirming the old runtime remains.
+Its original operations authentication settings are not available from the local configuration;
+the prior attempt to read the process environment was rejected by automatic execution review.
+The process was therefore not restarted and A1 remains incomplete.
+
+`pnpm exec vitest run tests/integration/browser-tracing.test.ts tests/integration/api-runtime.test.ts
+adapters/observability/safe-logger.test.ts tests/integration/tracing-probe.test.ts` passed 37 tests
+in four files. In `apps/web-v2`, `pnpm exec vitest run lib/api/client-tracing.test.ts
+lib/api/client-tracing-export.test.ts lib/api/tracing.test.ts lib/auth/service-logging.test.ts`
+passed 14 tests in four files, with jsdom navigation-not-implemented messages. `pnpm build:api`
+also passed. These checks do not resolve the existing 8080 or production acceptance gaps.
+
+Environment confirmation on 2026-11-08: the user confirmed that only a local environment is
+currently available. Production tracing storage, query authorization, retention, alerting,
+capacity budgets and an operations owner therefore remain unverified; local Podman evidence
+does not establish production acceptance. The existing 8080 process remains the earlier runtime,
+and `.env.local` does not contain the operations authentication settings required by the current
+API bootstrap. Its reproducible startup configuration is still needed to restart and verify A1.
+
+Local restart attempt on 2026-11-08: the user authorized stopping the old API on 8080 and
+starting the current `apps/api`. The existing `.env.local` PostgreSQL connection was checked
+successfully without changing data. The local Podman Collector and Jaeger were started, and the
+old API process was stopped. The command to start the replacement API with a generated temporary
+operations credential was rejected by automatic execution review (`blocked by policy`); the
+reason was not more specific. Port 8080 was confirmed unoccupied afterward. Web on 3000,
+`pci-postgres`, Collector and Jaeger remain running. `.env.local` still lacks
+`OPERATIONS_ACCESS_TOKEN` and `OPERATIONS_OPERATOR_ID`. A1 remains incomplete.
+
+Local 8080 restart on 2026-11-08: at the user's request, current `apps/api` was started with
+Node `--env-file=.env.local --import tsx`, the existing PostgreSQL and JWT settings, a randomly
+generated process-only operations token, operator ID `local-operator`, and API and browser tracing
+enabled at 100% server sampling. No operations credential was written to disk. The temporary
+credential is unavailable after this process exits and does not establish the previous operations
+credential; configure persistent local operations credentials before the next restart if those
+routes are needed. Web 3000 and API 8080 returned 200; API readiness returned 200. An invalid
+correlation ID was replaced, and an allowed-origin preflight included tracing headers. A request
+with trace ID `0123456789abcdef0123456789abcdef` produced a `GET /health` server span in local
+Jaeger with the supplied parent span ID. This verifies the current 8080 runtime for these checks;
+concurrent isolation and production acceptance retain the limitations stated above.

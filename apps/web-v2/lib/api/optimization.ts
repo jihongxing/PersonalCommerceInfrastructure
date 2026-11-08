@@ -37,7 +37,9 @@ export class TokenCacheManager {
     // 如果缓存已满，删除最旧的条目
     if (this.cache.size >= this.MAX_CACHE_SIZE) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
 
     this.cache.set(key, {
@@ -85,11 +87,7 @@ export class RequestDeduplicator {
   /**
    * 执行请求（去重）
    */
-  async execute<T>(
-    url: string,
-    executor: () => Promise<T>,
-    options?: RequestInit
-  ): Promise<T> {
+  async execute<T>(url: string, executor: () => Promise<T>, options?: RequestInit): Promise<T> {
     const key = this.generateKey(url, options);
 
     // 如果已有相同请求在进行，返回现有 Promise
@@ -116,7 +114,7 @@ export class RequestDeduplicator {
       setTimeout(() => {
         this.pendingRequests.delete(key);
         reject(new Error('Request timeout'));
-      }, this.REQUEST_TIMEOUT)
+      }, this.REQUEST_TIMEOUT),
     );
 
     // 存储到待处理中

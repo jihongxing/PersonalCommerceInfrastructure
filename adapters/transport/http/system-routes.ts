@@ -16,6 +16,11 @@ export function registerSystemRoutes(
   server: FastifyInstance,
   dependencies: SystemRouteDependencies = {},
 ): void {
+  server.get('/health', { schema: { hide: true } }, () => ({
+    service: ApiServiceName,
+    status: 'ok' as const,
+    version: ApiVersion,
+  }));
   server.get(
     `${ApiBasePath}/health`,
     {

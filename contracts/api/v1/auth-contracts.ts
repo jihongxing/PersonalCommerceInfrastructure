@@ -39,7 +39,7 @@ export const AuthenticationErrorCodes = [
 export type AuthenticationErrorCode = (typeof AuthenticationErrorCodes)[number];
 
 export const AuthorizationHeaderSchema = Type.String({
-  pattern: '^Bearer\s+\S+$',
+  pattern: '^Bearer\\s+\\S+$',
   minLength: 8,
 });
 
@@ -75,6 +75,7 @@ export const AuthResponseSchema = Type.Object(
     accessToken: Type.String({ minLength: 20 }),
     refreshToken: Type.String({ minLength: 20 }),
     user: UserInfoSchema,
+    setupPending: Type.Optional(Type.Boolean()),
     expiresIn: Type.Number({ minimum: 60 }),
   },
   { additionalProperties: false }

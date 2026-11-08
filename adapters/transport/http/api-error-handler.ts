@@ -83,9 +83,9 @@ export function registerApiErrorHandling(server: FastifyInstance, logger?: SafeL
     if (applicationError.category === 'internal') {
       logger?.error('unhandled_api_error', {
         correlationId: request.id,
-        errorName: error.name,
+        errorCategory: 'internal',
         method: request.method,
-        path: request.routeOptions.url ?? request.url,
+        path: request.routeOptions.url ?? 'unmatched',
       });
     }
     sendApplicationError(applicationError, request, reply);

@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@/lib/api/client';
-import { setSession, clearSession, getBearerToken } from '@/lib/auth/session';
+import { setSession, clearSession, getSession } from '@/lib/auth/session';
 
 /**
  * 认证 API 请求的数据类型
@@ -19,7 +19,10 @@ export interface SignupResponse {
   user: {
     id: string;
     email: string;
+    name?: string;
+    createdAt?: string;
   };
+  expiresIn: number;
 }
 
 export interface LoginRequest {
@@ -33,7 +36,10 @@ export interface LoginResponse {
   user: {
     id: string;
     email: string;
+    name?: string;
+    createdAt?: string;
   };
+  expiresIn: number;
 }
 
 export interface RefreshRequest {
@@ -71,9 +77,7 @@ export class AuthService {
       });
 
       if (error) {
-        throw new Error(
-          error.message || '注册失败'
-        );
+        throw new Error(error.error?.message || error.message || '注册失败');
       }
 
       if (!data) {
@@ -87,7 +91,7 @@ export class AuthService {
 
       return response;
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('Signup error');
       throw err;
     }
   }
@@ -102,9 +106,7 @@ export class AuthService {
       });
 
       if (error) {
-        throw new Error(
-          error.message || '登陆失败'
-        );
+        throw new Error(error.error?.message || error.message || '登陆失败');
       }
 
       if (!data) {
@@ -118,7 +120,7 @@ export class AuthService {
 
       return response;
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Login error');
       throw err;
     }
   }
@@ -142,7 +144,7 @@ export class AuthService {
 
       return data as RefreshResponse;
     } catch (err) {
-      console.error('Refresh error:', err);
+      console.error('Refresh error');
       throw err;
     }
   }
@@ -152,10 +154,11 @@ export class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      // 清理会话
+      const { error, status } = await apiClient.POST('/api/v1/auth/logout');
+      if (error && (status !== 401 || getSession())) throw new Error(error.error?.message || error.message || '登出失败');
       clearSession();
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('Logout error');
       throw err;
     }
   }
@@ -164,42 +167,16 @@ export class AuthService {
    * 忘记密码 - 请求重置邮件
    */
   async forgotPassword(request: ForgotPasswordRequest): Promise<void> {
-    try {
-      const { error } = await apiClient.POST(
-        '/api/v1/auth/forgot-password',
-        {
-          body: request,
-        }
-      );
-
-      if (error) {
-        throw new Error(error.message || '请求失败');
-      }
-    } catch (err) {
-      console.error('Forgot password error:', err);
-      throw err;
-    }
+    void request;
+    throw new Error('密码找回暂不可用。');
   }
 
   /**
    * 重置密码
    */
   async resetPassword(request: ResetPasswordRequest): Promise<void> {
-    try {
-      const { error } = await apiClient.POST(
-        '/api/v1/auth/reset-password',
-        {
-          body: request,
-        }
-      );
-
-      if (error) {
-        throw new Error(error.message || '重置失败');
-      }
-    } catch (err) {
-      console.error('Reset password error:', err);
-      throw err;
-    }
+    void request;
+    throw new Error('密码重置暂不可用。');
   }
 
   /**
@@ -208,8 +185,9 @@ export class AuthService {
   private saveSession(response: SignupResponse | LoginResponse): void {
     setSession({
       accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
       userEmail: response.user.email,
-      expiresAt: Math.floor(Date.now() / 1000) + 15 * 60, // 15 分钟有效期
+      expiresAt: Math.floor(Date.now() / 1000) + response.expiresIn,
     });
   }
 }

@@ -25,7 +25,7 @@ export function createPostgresDatabase(databaseUrl: string): PostgresDatabaseCon
       await client`select 1`;
     },
     close: async () => {
-      await client.end();
+      await client.end({ timeout: 5 });
     },
   };
 }

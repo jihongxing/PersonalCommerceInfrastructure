@@ -16,6 +16,8 @@ import type {
   CapabilityRepository,
   CommerceIdentityRepository,
 } from './creator-identity-repositories.js';
+import { resolveCapabilitySelection } from '../../modules/service-policy/catalog.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 
 export interface CreateCommerceIdentityCommand {
   readonly profile: CommerceIdentityProfile;
@@ -28,12 +30,14 @@ export interface UpdateCommerceIdentityCommand {
 export interface AddCapabilityCommand {
   readonly name: string;
   readonly description: string;
+  readonly catalogItemId?: string;
 }
 
 export interface CreatorIdentityUseCaseDependencies {
   readonly identityRepository: CommerceIdentityRepository;
   readonly capabilityRepository: CapabilityRepository;
   readonly idGenerator: IdGenerator;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly unitOfWork?: UnitOfWork;
 }
 
@@ -138,11 +142,25 @@ export class AddCapabilityUseCase implements ApplicationUseCase<
       });
     }
 
+    const selection = resolveCapabilitySelection(
+      { catalogItemId: command.catalogItemId, name: command.name },
+      await this.dependencies.servicePolicyCatalogRepository.getSnapshot(),
+    );
+    if (command.catalogItemId !== undefined && selection.item === undefined) {
+      throw new ApplicationError({
+        category: 'validation',
+        code: 'capability_catalog_item_invalid',
+        message: '请选择有效的平台能力类型。',
+      });
+    }
     const capability: Capability = {
       id: this.dependencies.idGenerator.generate(),
       creatorId,
       name: command.name.trim(),
       description: command.description.trim(),
+      ...(selection.item === undefined ? {} : { catalogItemId: selection.item.id }),
+      catalogStatus: selection.status,
+      ...(selection.item === undefined ? {} : { policyVersion: selection.item.version }),
     };
 
     if (capability.name.length === 0 || capability.description.length === 0) {

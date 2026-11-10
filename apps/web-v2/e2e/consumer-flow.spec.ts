@@ -1,113 +1,68 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, api, apiBase, login, submitRequest } from './fixtures';
 
-test.describe('Consumer Complete Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // 设置测试超时和视口
-    page.setViewportSize({ width: 1280, height: 720 });
-  });
+test('anonymous visitor resolves a real homepage, submits and refreshes a request', async ({
+  page,
+  seed,
+}) => {
+  await page.goto(`/r/${seed.reference.toLowerCase()}`);
+  await expect(page.getByRole('heading', { name: '验收公开主页' })).toBeVisible();
+  await page.getByRole('link', { name: `查看服务：${seed.title}` }).click();
+  await expect(page).toHaveURL(new RegExp(`/s/${seed.offeringId}$`));
+  await page.getByRole('button', { name: '提交预约', exact: true }).click();
+  await expect(page.getByText('请输入您的姓名', { exact: true })).toBeVisible();
+  await page.getByLabel('您的姓名').fill('端到端访客');
+  await page.getByLabel('联系方式', { exact: true }).fill('visitor@example.test');
+  await page.getByLabel('预约说明', { exact: true }).fill('真实隔离 API 的预约说明');
+  await page.getByRole('button', { name: '提交预约', exact: true }).click();
+  await expect(page).toHaveURL(/\/o\/[a-f0-9-]+$/);
+  await expect(page.getByTestId('status-badge')).toHaveText('等待 Creator 回复');
+  const token = (await page.getByTestId('query-code').innerText()).trim();
+  expect(token).toBeTruthy();
+  const refresh = page.waitForResponse(
+    (r) => r.url().includes(`/public/requests/${token}`) && r.status() === 200,
+  );
+  await page.getByRole('button', { name: '手动刷新状态' }).click();
+  await refresh;
+});
 
-  test('E2E: Full consumer booking flow', async ({ page }) => {
-    // Step 1: 访问 Creator Profile 页面
-    await page.goto('/r/3479AC-DEFHJK-MNPQRT');
-    
-    // 验证页面加载
-    await expect(page.locator('h1')).toBeDefined();
-    await page.waitForLoadState('networkidle');
-    
-    // Step 2: 检查 Creator 信息显示
-    const creatorName = page.locator('[data-testid="creator-name"]');
-    await expect(creatorName).toBeVisible();
+test('invalid result and legacy service URLs have explicit outcomes', async ({ page, seed }) => {
+  await page.goto('/o/invalid-token-xyz');
+  await expect(page.getByText('查询失败', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '重试' })).toBeVisible();
+  await page.goto(`/public/${seed.offeringId}`);
+  await expect(page).toHaveURL(new RegExp(`/s/${seed.offeringId}$`));
+  await expect(page.getByRole('button', { name: '提交预约', exact: true })).toBeVisible();
+});
 
-    // Step 3: 找到第一个服务卡片并点击
-    const serviceCard = page.locator('[data-testid="service-card"]').first();
-    await expect(serviceCard).toBeVisible();
-    
-    const viewDetailButton = serviceCard.locator('button:has-text("查看详情")');
-    await viewDetailButton.click();
+test('existing result survives service unpublication and new submission is unavailable', async ({
+  page,
+  request,
+  seed,
+}) => {
+  const result = await submitRequest(request, seed, '下架前访客');
+  await api(request, 'POST', `/api/v1/creator/offerings/${seed.offeringId}/unpublish`, seed.token);
+  await page.goto(`/o/${result.resultAccessToken}`);
+  await expect(page.getByTestId('status-badge')).toHaveText('等待 Creator 回复');
+  await page.goto(`/s/${seed.offeringId}`);
+  await expect(page.getByRole('button', { name: '提交预约', exact: true })).toHaveCount(0);
 
-    // Step 4: 等待服务详情页加载
-    await page.waitForURL(/\/s\/\w+/);
-    await page.waitForLoadState('networkidle');
+  const rejected = await request.post(
+    `${apiBase}/api/v1/public/offerings/${seed.offeringId}/requests`,
+    {
+      data: {
+        contactName: '下架后访客',
+        contactMethod: 'after-unpublish@example.test',
+        requestMessage: '不应创建的请求',
+      },
+    },
+  );
+  expect(rejected.status()).toBe(422);
+  expect(await rejected.json()).toMatchObject({ error: { code: 'service_offering_unavailable' } });
 
-    // Step 5: 验证服务详情页
-    const serviceTitle = page.locator('h1');
-    await expect(serviceTitle).toBeVisible();
-    
-    // Step 6: 填写预约表单
-    await page.fill('[name="contactName"]', 'Test User');
-    await page.fill('[name="contactMethod"]', '13800138000');
-    await page.fill('[name="requestMessage"]', 'I would like to book this service');
-
-    // Step 7: 提交表单
-    const submitButton = page.locator('button:has-text("提交预约")');
-    await submitButton.click();
-
-    // Step 8: 验证自动跳转到结果页
-    await page.waitForURL(/\/o\/[\w-]+/);
-    await page.waitForLoadState('networkidle');
-
-    // Step 9: 验证订单结果页
-    const resultCard = page.locator('[data-testid="order-result-card"]');
-    await expect(resultCard).toBeVisible();
-
-    // Step 10: 检查状态徽章
-    const statusBadge = page.locator('[data-testid="status-badge"]');
-    await expect(statusBadge).toContainText('等待 Creator 回复');
-
-    // Step 11: 验证查询码显示
-    const queryCode = page.locator('[data-testid="query-code"]');
-    await expect(queryCode).toBeVisible();
-
-    // Step 12: 验证自动刷新提示
-    const autoRefreshHint = page.locator('text=自动刷新');
-    await expect(autoRefreshHint).toBeVisible();
-  });
-
-  test('E2E: Consumer can manually refresh order status', async ({ page }) => {
-    // 直接访问结果页
-    await page.goto('/o/test-token-123');
-    await page.waitForLoadState('networkidle');
-
-    // 检查手动刷新按钮
-    const refreshButton = page.locator('button:has-text("手动刷新")');
-    
-    // 如果是 submitted 状态才会有这个按钮
-    if (await refreshButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await refreshButton.click();
-      
-      // 验证请求被发送
-      await page.waitForResponse(
-        response => response.url().includes('/api/v1/public/requests')
-      );
-    }
-  });
-
-  test('E2E: Handle invalid order token', async ({ page }) => {
-    await page.goto('/o/invalid-token-xyz');
-    await page.waitForLoadState('networkidle');
-
-    // 验证错误提示
-    const errorMessage = page.locator('text=查询失败');
-    await expect(errorMessage).toBeVisible();
-
-    // 验证返回首页按钮
-    const backButton = page.locator('button:has-text("返回首页")');
-    await expect(backButton).toBeVisible();
-  });
-
-  test('E2E: Responsive design on mobile', async ({ page }) => {
-    // 设置手机视口
-    await page.setViewportSize({ width: 375, height: 667 });
-
-    await page.goto('/r/3479AC-DEFHJK-MNPQRT');
-    await page.waitForLoadState('networkidle');
-
-    // 验证页面在手机上可见
-    const mainContent = page.locator('main');
-    await expect(mainContent).toBeVisible();
-
-    // 验证响应式类应用
-    const contentWrapper = page.locator('[class*="container"]');
-    await expect(contentWrapper).toBeVisible();
-  });
+  await login(page, seed);
+  const existing = page.getByTestId('request-card').filter({ hasText: '下架前访客' });
+  await existing.getByRole('button', { name: '确认预约', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('已确认预约');
+  await page.goto(`/o/${result.resultAccessToken}`);
+  await expect(page.getByTestId('status-badge')).toHaveText('已确认');
 });

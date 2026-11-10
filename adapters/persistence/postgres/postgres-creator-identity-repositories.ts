@@ -1,4 +1,5 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { ApplicationError } from '../../../applications/core/application-error.js';
 
 import type {
   CapabilityRepository,
@@ -51,6 +52,9 @@ function toCapability(row: typeof creatorCapabilities.$inferSelect): Capability 
     creatorId: row.creatorId,
     name: row.name,
     description: row.description,
+    ...(row.catalogItemId === null ? {} : { catalogItemId: row.catalogItemId }),
+    catalogStatus: row.catalogStatus as Capability['catalogStatus'],
+    ...(row.policyVersion === null ? {} : { policyVersion: row.policyVersion }),
   };
 }
 
@@ -59,6 +63,7 @@ function toOffering(row: typeof serviceOfferings.$inferSelect): Offering {
     id: row.id,
     creatorId: row.creatorId,
     capabilityIds: row.capabilityIds,
+    ...(row.templateId === null ? {} : { templateId: row.templateId }),
     title: row.title,
     description: row.description,
     ...(row.availabilityDescription === null
@@ -67,6 +72,9 @@ function toOffering(row: typeof serviceOfferings.$inferSelect): Offering {
     ...(row.appearance === null ? {} : { appearance: row.appearance }),
     requestInstructions: row.requestInstructions,
     state: row.state as Offering['state'],
+    policyStatus: row.policyStatus as Offering['policyStatus'],
+    ...(row.policyReason === null ? {} : { policyReason: row.policyReason }),
+    ...(row.policyVersion === null ? {} : { policyVersion: row.policyVersion }),
   };
 }
 
@@ -74,13 +82,16 @@ export class PostgresCommerceIdentityRepository implements CommerceIdentityRepos
   public constructor(private readonly database: ProductDatabase) {}
 
   public async createIfAbsent(entity: CommerceIdentity): Promise<void> {
-    await this.database.insert(commerceIdentities).values({
-      creatorId: entity.creatorId,
-      displayName: entity.profile.displayName,
-      bio: entity.profile.bio,
-      socialLinks: [...entity.profile.socialLinks],
-      state: entity.state,
-    }).onConflictDoNothing();
+    await this.database
+      .insert(commerceIdentities)
+      .values({
+        creatorId: entity.creatorId,
+        displayName: entity.profile.displayName,
+        bio: entity.profile.bio,
+        socialLinks: [...entity.profile.socialLinks],
+        state: entity.state,
+      })
+      .onConflictDoNothing();
   }
 
   public async findById(id: string): Promise<CommerceIdentity | undefined> {
@@ -149,6 +160,67 @@ export class PostgresCapabilityRepository implements CapabilityRepository {
       creatorId: entity.creatorId,
       name: entity.name,
       description: entity.description,
+      catalogItemId: entity.catalogItemId ?? null,
+      catalogStatus: entity.catalogStatus ?? 'custom_request',
+      policyVersion: entity.policyVersion ?? null,
+    });
+  }
+}
+
+export class PostgresCapabilityManagementRepository {
+  public constructor(private readonly database: ProductDatabase) {}
+
+  public async updateOwned(
+    creatorId: string,
+    id: string,
+    input: {
+      readonly name: string;
+      readonly description: string;
+      readonly catalogItemId?: string;
+      readonly catalogStatus?: Capability['catalogStatus'];
+      readonly policyVersion?: string;
+    },
+  ): Promise<Capability | undefined> {
+    const rows = await this.database
+      .update(creatorCapabilities)
+      .set({
+        name: input.name,
+        description: input.description,
+        ...(input.catalogItemId === undefined ? {} : { catalogItemId: input.catalogItemId }),
+        ...(input.catalogStatus === undefined ? {} : { catalogStatus: input.catalogStatus }),
+        ...(input.policyVersion === undefined ? {} : { policyVersion: input.policyVersion }),
+      })
+      .where(and(eq(creatorCapabilities.id, id), eq(creatorCapabilities.creatorId, creatorId)))
+      .returning();
+    return rows[0] ? toCapability(rows[0]) : undefined;
+  }
+
+  public async deleteOwnedIfUnused(
+    creatorId: string,
+    id: string,
+  ): Promise<'deleted' | 'not_found' | 'in_use'> {
+    return this.database.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${creatorId}, 0))`);
+      const capability = await tx
+        .select()
+        .from(creatorCapabilities)
+        .where(and(eq(creatorCapabilities.id, id), eq(creatorCapabilities.creatorId, creatorId)));
+      if (!capability.length) return 'not_found';
+      const references = await tx
+        .select({ id: serviceOfferings.id })
+        .from(serviceOfferings)
+        .where(
+          and(
+            eq(serviceOfferings.creatorId, creatorId),
+            sql`${serviceOfferings.capabilityIds} @> ${JSON.stringify([id])}::jsonb`,
+          ),
+        )
+        .limit(1);
+      if (references.length) return 'in_use';
+      await tx
+        .delete(creatorCapabilities)
+        .where(and(eq(creatorCapabilities.id, id), eq(creatorCapabilities.creatorId, creatorId)));
+      return 'deleted';
     });
   }
 }
@@ -174,32 +246,60 @@ export class PostgresOfferingRepository implements OfferingRepository {
   }
 
   public async save(entity: Offering): Promise<void> {
-    await this.database
-      .insert(serviceOfferings)
-      .values({
-        id: entity.id,
-        creatorId: entity.creatorId,
-        capabilityIds: [...entity.capabilityIds],
-        title: entity.title,
-        description: entity.description,
-        availabilityDescription: entity.availability?.description ?? null,
-        appearance: entity.appearance ?? null,
-        requestInstructions: entity.requestInstructions,
-        state: entity.state,
-      })
-      .onConflictDoUpdate({
-        target: serviceOfferings.id,
-        set: {
+    await this.database.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${entity.creatorId}, 0))`);
+      if (entity.capabilityIds.length) {
+        const capabilities = await tx
+          .select({ id: creatorCapabilities.id })
+          .from(creatorCapabilities)
+          .where(
+            and(
+              eq(creatorCapabilities.creatorId, entity.creatorId),
+              inArray(creatorCapabilities.id, [...entity.capabilityIds]),
+            ),
+          );
+        if (capabilities.length !== new Set(entity.capabilityIds).size)
+          throw new ApplicationError({
+            category: 'validation',
+            code: 'service_offering_capability_invalid',
+            message: 'Service Offering capabilities must belong to the authenticated Creator.',
+          });
+      }
+      await tx
+        .insert(serviceOfferings)
+        .values({
+          id: entity.id,
+          creatorId: entity.creatorId,
           capabilityIds: [...entity.capabilityIds],
+          templateId: entity.templateId ?? null,
           title: entity.title,
           description: entity.description,
           availabilityDescription: entity.availability?.description ?? null,
           appearance: entity.appearance ?? null,
           requestInstructions: entity.requestInstructions,
           state: entity.state,
-          updatedAt: new Date().toISOString(),
-        },
-      });
+          policyStatus: entity.policyStatus ?? 'not_checked',
+          policyReason: entity.policyReason ?? null,
+          policyVersion: entity.policyVersion ?? null,
+        })
+        .onConflictDoUpdate({
+          target: serviceOfferings.id,
+          set: {
+            capabilityIds: [...entity.capabilityIds],
+            templateId: entity.templateId ?? null,
+            title: entity.title,
+            description: entity.description,
+            availabilityDescription: entity.availability?.description ?? null,
+            appearance: entity.appearance ?? null,
+            requestInstructions: entity.requestInstructions,
+            state: entity.state,
+            policyStatus: entity.policyStatus ?? 'not_checked',
+            policyReason: entity.policyReason ?? null,
+            policyVersion: entity.policyVersion ?? null,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+    });
   }
 }
 
@@ -211,6 +311,22 @@ export class PostgresDistributionAssetRepository implements DistributionAssetRep
       .select()
       .from(distributionAssets)
       .where(eq(distributionAssets.offeringId, id));
+    const row = rows[0];
+    return row === undefined
+      ? undefined
+      : {
+          offeringId: row.offeringId,
+          publicUrl: row.publicUrl,
+          state: row.state as DistributionAsset['state'],
+        };
+  }
+
+  public async findByIdForUpdate(id: string): Promise<DistributionAsset | undefined> {
+    const rows = await this.database
+      .select()
+      .from(distributionAssets)
+      .where(eq(distributionAssets.offeringId, id))
+      .for('update');
     const row = rows[0];
     return row === undefined
       ? undefined

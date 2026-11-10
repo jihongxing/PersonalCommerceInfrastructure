@@ -1,5 +1,8 @@
 import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
-import { confirmFulfillmentUseCase, type ConfirmFulfillmentResult } from '../fulfillment/confirm-fulfillment-use-case.js';
+import {
+  confirmFulfillmentUseCase,
+  type ConfirmFulfillmentResult,
+} from '../fulfillment/confirm-fulfillment-use-case.js';
 import type { CanonicalEventRecorder } from '../core/canonical-event-recorder.js';
 import type { IdGenerator } from '../core/ports/id-generator.js';
 import type { NotificationPort } from '../core/ports/notification-port.js';
@@ -30,6 +33,7 @@ import {
 } from './customer-request-use-cases.js';
 import type { ActorContext } from '../core/actor-context.js';
 import type { ContractRepository } from '../contract-commerce/contract-repositories.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 
 export interface CustomerRequestService {
   getPublicOffering(
@@ -65,6 +69,7 @@ export function createCustomerRequestService(dependencies: {
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly contractRepository?: ContractRepository;
 }): CustomerRequestService {
   const getPublicOffering = new GetPublicOfferingUseCase(dependencies);

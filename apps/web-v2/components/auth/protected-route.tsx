@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { currentReturnDestination, safeReturnDestination } from '@/lib/auth/return-destination';
 
 export function SessionRestoreError() {
   const { retryRestore } = useAuth();
@@ -36,7 +37,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     // 如果未认证，重定向到登陆页面
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      const destination = safeReturnDestination(
+        `${window.location.pathname}${window.location.search}${window.location.hash}`,
+      );
+      router.replace(`/auth/login?${new URLSearchParams({ returnTo: destination })}`);
     }
   }, [isLoading, isAuthenticated, restoreError, router]);
 
@@ -78,7 +82,7 @@ export function UnauthenticatedRoute({ children }: { children: React.ReactNode }
 
     // 如果已认证，重定向到仪表板
     if (isAuthenticated) {
-      router.push('/dashboard');
+      router.replace(currentReturnDestination());
     }
   }, [isLoading, isAuthenticated, restoreError, router]);
 

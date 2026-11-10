@@ -57,10 +57,10 @@ export class XSSProtectionManager {
   /**
    * 安全的 JSON 解析
    */
-  static safeJSONParse(jsonString: string): any {
+  static safeJSONParse<T = unknown>(jsonString: string): T | null {
     try {
       // 使用 JSON.parse 的内置保护
-      return JSON.parse(jsonString);
+      return JSON.parse(jsonString) as T;
     } catch (error) {
       console.error('Invalid JSON:', error);
       return null;
@@ -82,9 +82,7 @@ export class CSRFProtectionManager {
     // 生成随机的 64 字符 token
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
-      ''
-    );
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
   /**

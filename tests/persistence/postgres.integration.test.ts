@@ -16,6 +16,7 @@ import { FixedClock } from '../../adapters/in-memory/fixed-clock.js';
 import { SequentialIdGenerator } from '../../adapters/in-memory/sequential-id-generator.js';
 import { PostgresProviderWebhookReceiptStore } from '../../adapters/persistence/postgres/postgres-provider-webhook-receipt-store.js';
 import { PostgresProviderFactReceiptGuard } from '../../adapters/persistence/postgres/postgres-provider-fact-receipt-guard.js';
+import { PostgresServicePolicyCatalogRepository } from '../../adapters/persistence/postgres/postgres-service-policy-catalog-repository.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeWithDatabase = databaseUrl === undefined ? describe.skip : describe;
@@ -115,6 +116,9 @@ describeWithDatabase('PostgreSQL persistence integration', () => {
     const service = createCreatorIdentityService({
       identityRepository: new PostgresCommerceIdentityRepository(connection.database),
       capabilityRepository: new PostgresCapabilityRepository(connection.database),
+      servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(
+        connection.database,
+      ),
       idGenerator: new SequentialIdGenerator('capability'),
       unitOfWork: new PostgresUnitOfWork(connection.database),
     });

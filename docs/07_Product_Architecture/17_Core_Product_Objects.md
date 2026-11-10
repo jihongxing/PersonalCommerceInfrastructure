@@ -680,3 +680,53 @@ Creator
 2. `19 MVP Product Specification`：定义页面、状态、动作与结果；
 3. 构建 VS-01 Controlled Prototype；
 4. 在实现后记录 Product Usability / Behavioral Feedback。
+
+## DEV-082 Amendment — 受控能力目录与服务模板
+
+> 批准日期：2026-11-10；依据 [34 — 受控能力目录与服务发布决策](./34_Controlled_Capability_Service_Publishing_Decision.md)
+> 本节优先于上文关于 Creator 可自由定义能力类别和平台不预设行业目录的表述；其他对象、归属、生命周期和事件语义不变。
+
+### A. Capability 的目录边界
+
+`Capability` 仍是 Creator 对自身能力的声明，仍不等于认证、评级或可交易商品。新增
+`Capability` 必须引用平台维护的有效能力目录项。能力目录项是版本化的政策参考数据，
+不是 Creator 可以任意创建的新产品对象。
+
+Creator 可以补充经验、作品、风格和自我证明，但不能把任意文本注册为公开能力类别。
+找不到匹配目录项时只能提交新增类型申请；申请获批前只能保存为草稿或进入审核。
+
+### B. Offering 的模板和发布资格
+
+`Offering` 仍是 Creator 将 Capability 表达为具体商业供给的产品对象。一个 Offering
+必须引用与其 Capability 匹配的服务模板。模板定义最小结构化字段、允许的履约上下文、
+风险等级和发布范围；补充说明不能替代模板要求。
+
+Offering 的业务生命周期仍为：
+
+```text
+Draft → Published → Unpublished → Archived
+```
+
+另有独立的政策状态：
+
+```text
+NotChecked → AutoApproved / ReviewRequired → Approved / Rejected
+```
+
+只有业务状态为 `Published` 且政策状态为 `Approved` 的 Offering 才能公开展示或接受
+新的 Commerce Action。政策状态不是 Offering 的业务生命周期，不产生新的 Canonical Event。
+
+### C. 新增稳定不变量
+
+1. Creator 不能通过 Capability 名称或 Offering 标题创建未登记的公开服务类别；
+2. 自定义目录申请在批准前不得作为公开供给；
+3. Offering 的关键服务字段发生变化时必须重新执行政策检查；
+4. 公开 Commerce Identity 只聚合已发布且政策批准的 Offering；
+5. 目录可以初始化多个垂直领域，但 VS-01 当前只启用其批准的服务模板；
+6. 现有对象迁移时不得静默删除归属、历史请求或商业事实。
+
+## DEV-083 Amendment — 数据库目录生命周期
+
+能力目录和服务模板是数据库管理的政策配置；JSON 仅用于初始化、恢复和审查。运行时使用
+当前已发布版本，目录项通过 `draft`、`active`、`paused`、`retired` 及选择/发布开关控制
+生命周期。暂停、退休或紧急下架不删除既有对象和历史事实，但会阻止新的选择、发布和公开请求。

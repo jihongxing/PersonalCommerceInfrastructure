@@ -14,6 +14,8 @@ import {
 import type { Offering } from '../../modules/service-offering/offering.js';
 import type { CanonicalEvent } from '../../modules/product-facts/canonical-events.js';
 import type { DistributionAsset } from '../../modules/distribution/distribution-asset.js';
+import { InMemoryServicePolicyCatalogRepository } from '../../adapters/in-memory/in-memory-service-policy-catalog-repository.js';
+import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
 
 async function createFixture() {
   const identityRepository = new TestCollectionRepository<CommerceIdentity>(
@@ -32,6 +34,9 @@ async function createFixture() {
     (asset) => asset.offeringId,
   );
   const productEventStore = new TestProductEventStore();
+  const servicePolicyCatalogRepository = new InMemoryServicePolicyCatalogRepository(
+    initialServicePolicyCatalog,
+  );
   await identityRepository.save(
     createDraftCommerceIdentity('creator-1', {
       displayName: 'Dancer One',
@@ -59,6 +64,7 @@ async function createFixture() {
       idGenerator: {
         generate: () => 'offering-1',
       },
+      servicePolicyCatalogRepository,
       publicOfferingUrlGenerator: {
         generate: (offeringId) => `https://commerce.example/public/${offeringId}`,
       },
@@ -200,6 +206,37 @@ describe('Service Offering application use cases', () => {
     });
   });
 
+  it('clears an old policy reason after an edit passes policy checks', async () => {
+    const { context, service } = await createFixture();
+    const created = await service.create(
+      {
+        capabilityIds: ['capability-1'],
+        templateId: 'template-commercial-appearance',
+        title: 'Dance lesson',
+        description: 'One-on-one instruction.',
+        availabilityDescription: 'Weekends by request.',
+        requestInstructions: 'Share your availability.',
+      },
+      context,
+    );
+    expect(created).toMatchObject({ policyStatus: 'rejected' });
+
+    const updated = await service.update(
+      {
+        offeringId: created.id,
+        capabilityIds: ['capability-1'],
+        templateId: 'template-dance-private-lesson',
+        title: 'Dance lesson',
+        description: 'One-on-one instruction.',
+        availabilityDescription: 'Weekends by request.',
+        requestInstructions: 'Share your availability.',
+      },
+      context,
+    );
+    expect(updated).toMatchObject({ policyStatus: 'auto_approved' });
+    expect(updated.policyReason).toBeUndefined();
+  });
+
   it('rejects an Offering associated with another Creator capability', async () => {
     const { context, service } = await createFixture();
 
@@ -295,6 +332,9 @@ describe('Service Offering application use cases', () => {
     const published = await service.publish({ offeringId: 'offering-1' }, context);
 
     expect(published.distributionAsset.state).toBe('generated');
+    await expect(
+      service.getDistributionAsset({ offeringId: 'offering-1' }, context),
+    ).resolves.toMatchObject({ state: 'generated' });
     expect(await productEventStore.list()).toHaveLength(1);
 
     const distributed = await service.recordExternalDistribution(
@@ -303,6 +343,9 @@ describe('Service Offering application use cases', () => {
     );
 
     expect(distributed.state).toBe('distributed');
+    await expect(
+      service.getDistributionAsset({ offeringId: 'offering-1' }, context),
+    ).resolves.toMatchObject({ state: 'distributed' });
     expect(await productEventStore.list()).toEqual([
       expect.objectContaining({ name: 'creator_published' }),
       expect.objectContaining({

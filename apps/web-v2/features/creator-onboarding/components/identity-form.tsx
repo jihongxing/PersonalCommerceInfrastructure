@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -28,9 +28,14 @@ import { ApiError } from '@/lib/api/client';
 export function IdentityForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isNew, setIsNew] = useState(false);
-
-  const { data: identity, isLoading: isLoadingIdentity, error: identityError, refetch } = useCreatorIdentity();
+  const {
+    data: identity,
+    isLoading: isLoadingIdentity,
+    error: identityError,
+    refetch,
+  } = useCreatorIdentity();
+  const isNew =
+    identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found';
   const createMutation = useCreateIdentity();
   const updateMutation = useUpdateIdentity();
 
@@ -47,13 +52,15 @@ export function IdentityForm() {
 
   // 当数据加载完成，如果没有身份则标记为新建
   useEffect(() => {
-    if (identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found') {
-      setIsNew(true);
-    } else if (identity) {
-      setIsNew(false);
-      form.reset({ ...identity.profile, socialLinks: (identity.profile.socialLinks || []).map((item) => typeof item === 'string' ? { platform: 'link', url: item } : item) });
+    if (identity) {
+      form.reset({
+        ...identity.profile,
+        socialLinks: (identity.profile.socialLinks || []).map((item) =>
+          typeof item === 'string' ? { platform: 'link', url: item } : item,
+        ),
+      });
     }
-  }, [identityError, identity, form]);
+  }, [identity, form]);
 
   async function onSubmit(data: IdentityFormData) {
     try {
@@ -76,27 +83,33 @@ export function IdentityForm() {
     } catch (error) {
       toast({
         title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
+        description: error instanceof Error ? error.message : '操作失败，请重试',
         variant: 'destructive',
       });
     }
   }
 
-  const isLoading =
-    isLoadingIdentity || createMutation.isPending || updateMutation.isPending;
+  const isLoading = isLoadingIdentity || createMutation.isPending || updateMutation.isPending;
 
-  if (identityError && !(identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found')) {
-    return <div role="alert"><p>商业身份加载失败</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>;
+  if (
+    identityError &&
+    !(identityError instanceof ApiError && identityError.code === 'commerce_identity_not_found')
+  ) {
+    return (
+      <div role="alert">
+        <p>商业身份加载失败</p>
+        <Button variant="outline" onClick={() => refetch()}>
+          重试
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>
-            {isNew ? '创建商业身份' : '编辑商业身份'}
-          </CardTitle>
+          <CardTitle>{isNew ? '创建商业身份' : '编辑商业身份'}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -111,16 +124,10 @@ export function IdentityForm() {
                       您的名字 <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="例如: 李老师"
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <Input placeholder="例如: 李老师" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      最多 120 字符
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">最多 120 字符</p>
                   </FormItem>
                 )}
               />
@@ -178,11 +185,7 @@ export function IdentityForm() {
                   <FormItem>
                     <FormLabel>所在地 (可选)</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="例如: 北京市"
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <Input placeholder="例如: 北京市" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -191,11 +194,7 @@ export function IdentityForm() {
 
               {/* 提交按钮 */}
               <div className="flex gap-3 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={isLoading} className="flex-1">
                   {isLoading ? '保存中...' : '保存'}
                 </Button>
                 <Button

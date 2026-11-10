@@ -1,5 +1,5 @@
 import React, { StrictMode } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider } from './context';
 import { clearSession, getSession, setSession } from './session';
@@ -70,7 +70,7 @@ describe('session restoration', () => {
     expect(navigation.push).not.toHaveBeenCalled();
   });
 
-  it('sends a restored user directly from home to the dashboard', async () => {
+  it('keeps public lookup available and offers the dashboard after session restoration', async () => {
     setSession(expired);
     vi.stubGlobal(
       'fetch',
@@ -87,7 +87,11 @@ describe('session restoration', () => {
         <Home />
       </AuthProvider>,
     );
-    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('/dashboard'));
-    expect(navigation.replace).not.toHaveBeenCalledWith('/auth/login');
+    expect(await screen.findByRole('link', { name: '进入工作台' })).toHaveAttribute(
+      'href',
+      '/dashboard',
+    );
+    expect(screen.getByRole('textbox', { name: 'C 号' })).toBeInTheDocument();
+    expect(navigation.replace).not.toHaveBeenCalled();
   });
 });

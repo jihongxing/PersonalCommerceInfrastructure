@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -17,14 +17,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import {
-  useCreatorCapabilities,
-} from '../api/use-creator-capabilities';
+import { useCreatorCapabilities } from '../api/use-creator-capabilities';
 import {
   useCreateService,
   useUpdateService,
   useServiceOffering,
 } from '../api/use-creator-services';
+import { useServiceCatalog } from '../api/use-service-catalog';
 import { ServiceFormSchema, ServiceFormData } from '../lib/validation';
 
 interface ServiceFormProps {
@@ -36,18 +35,27 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   const { toast } = useToast();
   const isEdit = !!serviceId;
 
-  const { data: capabilities, isLoading: capabilitiesLoading, isError: capabilitiesError, refetch: refetchCapabilities } =
-    useCreatorCapabilities();
-  const { data: existingService, isLoading: serviceLoading, isError: serviceError, refetch: refetchService } = useServiceOffering(
-    serviceId || ''
-  );
+  const {
+    data: capabilities,
+    isLoading: capabilitiesLoading,
+    isError: capabilitiesError,
+    refetch: refetchCapabilities,
+  } = useCreatorCapabilities();
+  const {
+    data: existingService,
+    isLoading: serviceLoading,
+    isError: serviceError,
+    refetch: refetchService,
+  } = useServiceOffering(serviceId || '');
   const createMutation = useCreateService();
   const updateMutation = useUpdateService(serviceId || '');
+  const catalog = useServiceCatalog();
 
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(ServiceFormSchema),
     defaultValues: {
       capabilityIds: [],
+      templateId: '',
       title: '',
       description: '',
       availabilityDescription: '',
@@ -61,6 +69,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     if (isEdit && existingService) {
       form.reset({
         capabilityIds: existingService.capabilityIds,
+        templateId: existingService.templateId ?? '',
         title: existingService.title,
         description: existingService.description,
         availabilityDescription: existingService.availabilityDescription,
@@ -91,8 +100,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     } catch (error) {
       toast({
         title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
+        description: error instanceof Error ? error.message : '操作失败，请重试',
         variant: 'destructive',
       });
     }
@@ -101,11 +109,25 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   const isLoading =
     capabilitiesLoading ||
     serviceLoading ||
+    catalog.isLoading ||
     createMutation.isPending ||
     updateMutation.isPending;
 
   if (capabilitiesError || (isEdit && serviceError)) {
-    return <div className="max-w-2xl mx-auto space-y-3"><p>加载服务信息失败，请重试。</p><Button variant="outline" onClick={() => { if (capabilitiesError) refetchCapabilities(); if (serviceError) refetchService(); }}>重试</Button></div>;
+    return (
+      <div className="max-w-2xl mx-auto space-y-3">
+        <p>加载服务信息失败，请重试。</p>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (capabilitiesError) refetchCapabilities();
+            if (serviceError) refetchService();
+          }}
+        >
+          重试
+        </Button>
+      </div>
+    );
   }
 
   if (isEdit && !serviceLoading && !existingService) {
@@ -113,12 +135,10 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>
-            {isEdit ? '编辑服务' : '创建新服务'}
-          </CardTitle>
+          <CardTitle>{isEdit ? '编辑服务' : '创建新服务'}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -134,25 +154,18 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     </FormLabel>
                     {capabilities && capabilities.length > 0 ? (
                       <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          选择相关能力，可多选
-                        </p>
+                        <p className="text-sm text-muted-foreground">选择相关能力，可多选</p>
                         <div className="flex flex-wrap gap-2">
                           {capabilities.map((cap) => (
                             <Button
                               key={cap.id}
                               type="button"
-                              variant={
-                                field.value.includes(cap.id)
-                                  ? 'default'
-                                  : 'outline'
-                              }
+                              aria-pressed={field.value.includes(cap.id)}
+                              variant={field.value.includes(cap.id) ? 'default' : 'outline'}
                               size="sm"
                               onClick={() => {
                                 if (field.value.includes(cap.id)) {
-                                  field.onChange(
-                                    field.value.filter((id) => id !== cap.id)
-                                  );
+                                  field.onChange(field.value.filter((id) => id !== cap.id));
                                 } else {
                                   field.onChange([...field.value, cap.id]);
                                 }
@@ -167,7 +180,10 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         请先{' '}
-                        <a href="/capabilities" className="underline">
+                        <a
+                          href="/capabilities"
+                          className="inline-flex min-h-11 items-center px-1 underline underline-offset-4"
+                        >
                           添加能力
                         </a>
                         ，然后再创建服务
@@ -176,6 +192,50 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="templateId"
+                render={({ field }) => {
+                  const selectedCapabilityId = form.watch('capabilityIds')[0];
+                  const selectedCapability = capabilities?.find(
+                    (capability) => capability.id === selectedCapabilityId,
+                  );
+                  const catalogItemId = selectedCapability?.catalogItemId;
+                  const templates =
+                    catalog.data?.templates.filter(
+                      (template) =>
+                        template.capabilityCatalogItemId === catalogItemId &&
+                        template.status === 'active',
+                    ) ?? [];
+                  return (
+                    <FormItem>
+                      <FormLabel>
+                        服务模板 <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          disabled={isLoading || !catalogItemId}
+                          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="">请选择匹配的服务模板</option>
+                          {templates.map((template) => (
+                            <option key={template.id} value={template.id}>
+                              {template.name} ·{' '}
+                              {template.riskTier === 'low' ? '自动检查' : '需审核'}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        服务必须使用与能力匹配的模板；审核中的模板不会直接公开。
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               {/* 服务名称 */}
@@ -283,16 +343,13 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
 
               {/* 提交按钮 */}
               <div className="flex gap-3 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={isLoading} className="min-h-11 flex-1">
                   {isLoading ? '保存中...' : isEdit ? '更新服务' : '创建服务'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
+                  className="min-h-11"
                   onClick={() => router.back()}
                   disabled={isLoading}
                 >

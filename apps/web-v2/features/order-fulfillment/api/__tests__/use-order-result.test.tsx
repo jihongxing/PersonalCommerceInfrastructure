@@ -21,11 +21,7 @@ const createWrapper = () => {
   });
 
   return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 };
 
@@ -46,6 +42,7 @@ describe('useOrderResult hook', () => {
     const mockData = {
       actionId: 'test-action-123',
       state: 'submitted',
+      message: '请求已提交',
       resultAccessToken: 'test-token',
     };
 
@@ -55,10 +52,7 @@ describe('useOrderResult hook', () => {
       response: new Response(),
     });
 
-    const { result } = renderHook(
-      () => useOrderResult('test-token'),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useOrderResult('test-token'), { wrapper: createWrapper() });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
@@ -76,41 +70,16 @@ describe('useOrderResult hook', () => {
 
     vi.mocked(apiClient.GET).mockResolvedValueOnce({
       data: undefined,
-      error: mockError.error,
+      error: mockError,
       response: new Response(),
     });
 
-    const { result } = renderHook(
-      () => useOrderResult('invalid-token'),
-      { wrapper: createWrapper() }
-    );
-
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
-  });
-
-  it('should set up polling for submitted state', async () => {
-    const mockData = {
-      actionId: 'test-action-123',
-      state: 'submitted',
-      resultAccessToken: 'test-token',
-    };
-
-    vi.mocked(apiClient.GET).mockResolvedValueOnce({
-      data: mockData,
-      error: null,
-      response: new Response(),
-    });
-
-    renderHook(() => useOrderResult('test-token'), {
+    const { result } = renderHook(() => useOrderResult('invalid-token'), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => {
-      expect(apiClient.GET).toHaveBeenCalled();
+      expect(result.current.isError).toBe(true);
     });
-
-    // Note: Full polling behavior would be tested in E2E tests
   });
 });

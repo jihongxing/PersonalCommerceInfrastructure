@@ -155,7 +155,8 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       const { error, status } = await apiClient.POST('/api/v1/auth/logout');
-      if (error && (status !== 401 || getSession())) throw new Error(error.error?.message || error.message || '登出失败');
+      if (error && (status !== 401 || getSession()))
+        throw new Error(error.error?.message || error.message || '登出失败');
       clearSession();
     } catch (err) {
       console.error('Logout error');
@@ -167,16 +168,19 @@ export class AuthService {
    * 忘记密码 - 请求重置邮件
    */
   async forgotPassword(request: ForgotPasswordRequest): Promise<void> {
-    void request;
-    throw new Error('密码找回暂不可用。');
+    const { error } = await apiClient.POST('/api/v1/auth/forgot-password', { body: request });
+    if (error) throw new Error(error.error?.message || '密码找回暂不可用，请稍后重试。');
   }
 
   /**
    * 重置密码
    */
   async resetPassword(request: ResetPasswordRequest): Promise<void> {
-    void request;
-    throw new Error('密码重置暂不可用。');
+    const { error } = await apiClient.POST('/api/v1/auth/reset-password', {
+      body: { token: request.token, newPassword: request.newPassword },
+    });
+    if (error) throw new Error(error.error?.message || '密码重置失败，请稍后重试。');
+    clearSession();
   }
 
   /**

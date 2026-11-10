@@ -25,6 +25,9 @@ export const creatorCapabilities = pgTable('creator_capabilities', {
   creatorId: varchar('creator_id', { length: 128 }).notNull(),
   name: varchar('name', { length: 120 }).notNull(),
   description: varchar('description', { length: 1_000 }).notNull(),
+  catalogItemId: varchar('catalog_item_id', { length: 128 }),
+  catalogStatus: varchar('catalog_status', { length: 32 }).notNull().default('custom_request'),
+  policyVersion: varchar('policy_version', { length: 32 }),
   createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -34,6 +37,7 @@ export const serviceOfferings = pgTable(
     id: varchar('id', { length: 128 }).primaryKey(),
     creatorId: varchar('creator_id', { length: 128 }).notNull(),
     capabilityIds: jsonb('capability_ids').$type<string[]>().notNull().default([]),
+    templateId: varchar('template_id', { length: 128 }),
     title: varchar('title', { length: 160 }).notNull(),
     description: varchar('description', { length: 2_000 }).notNull(),
     availabilityDescription: varchar('availability_description', { length: 1_000 }),
@@ -50,6 +54,9 @@ export const serviceOfferings = pgTable(
     }>(),
     requestInstructions: varchar('request_instructions', { length: 1_000 }).notNull(),
     state: varchar('state', { length: 32 }).notNull().default('draft'),
+    policyStatus: varchar('policy_status', { length: 32 }).notNull().default('not_checked'),
+    policyReason: varchar('policy_reason', { length: 1_000 }),
+    policyVersion: varchar('policy_version', { length: 32 }),
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true })
       .notNull()
       .defaultNow(),

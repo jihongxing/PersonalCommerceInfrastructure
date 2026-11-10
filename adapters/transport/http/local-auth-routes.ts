@@ -16,14 +16,17 @@ export function registerLocalAuthRoutes(server: FastifyInstance, service: LocalA
     '/api/v1/auth/signup',
     { schema: { body: credentials }, config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (request, reply) =>
-      reply
-        .status(201)
-        .send(await service.signup(request.body.email, request.body.password, request.body.name, { correlationId: request.id })),
+      reply.status(201).send(
+        await service.signup(request.body.email, request.body.password, request.body.name, {
+          correlationId: request.id,
+        }),
+      ),
   );
   server.post<{ Body: { email: string; password: string } }>(
     '/api/v1/auth/login',
     { schema: { body: credentials }, config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
-    async (request) => service.login(request.body.email, request.body.password, { correlationId: request.id }),
+    async (request) =>
+      service.login(request.body.email, request.body.password, { correlationId: request.id }),
   );
   server.post<{ Body: { refreshToken: string } }>(
     '/api/v1/auth/refresh',
@@ -37,12 +40,49 @@ export function registerLocalAuthRoutes(server: FastifyInstance, service: LocalA
     },
     async (request) => service.refresh(request.body.refreshToken),
   );
+  server.post<{ Body: { email: string } }>(
+    '/api/v1/auth/forgot-password',
+    {
+      schema: {
+        body: Type.Object(
+          { email: Type.String({ minLength: 3, maxLength: 255 }) },
+          { additionalProperties: false },
+        ),
+      },
+      config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+    },
+    async (request) => {
+      await service.forgotPassword(request.body.email);
+      return { ok: true };
+    },
+  );
+  server.post<{ Body: { token: string; newPassword: string } }>(
+    '/api/v1/auth/reset-password',
+    {
+      schema: {
+        body: Type.Object(
+          {
+            token: Type.String({ minLength: 1, maxLength: 512 }),
+            newPassword: Type.String({ minLength: 8, maxLength: 128 }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+    },
+    async (request) => {
+      await service.resetPassword(request.body.token, request.body.newPassword);
+      return { ok: true };
+    },
+  );
   server.post('/api/v1/auth/logout', async (request) => {
     await service.logout(extractBearerToken(request.headers.authorization));
     return { ok: true };
   });
   server.post('/api/v1/auth/workspace/initialize', async (request) => {
-    await service.ensureWorkspace(extractBearerToken(request.headers.authorization), { correlationId: request.id });
+    await service.ensureWorkspace(extractBearerToken(request.headers.authorization), {
+      correlationId: request.id,
+    });
     return { ok: true };
   });
 }

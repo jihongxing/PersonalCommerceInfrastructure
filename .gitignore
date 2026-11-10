@@ -6,6 +6,8 @@ coverage/
 apps/web/.next/
 output/playwright/
 output/backups/
+apps/web-v2/playwright-report/
+apps/web-v2/test-results/
 tests/acceptance/browser/fixtures/auth-state.json
 .env
 .env.*

@@ -1,14 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.E2E_WEB_BASE_URL || 'http://localhost:3102';
+
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: false,
+  timeout: 120_000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
   },
 
@@ -39,9 +42,11 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'pnpm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: process.env.E2E_WEB_BASE_URL
+    ? undefined
+    : {
+        command: 'pnpm run dev --port 3102',
+        url: baseURL,
+        reuseExistingServer: false,
+      },
 });

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { PublicHomepage } from '@/lib/public-homepage';
 import { finishRequestSpan, injectRequestTrace, startRequestSpan } from '@/lib/api/tracing';
@@ -12,6 +13,15 @@ type Result =
   | { kind: 'error' }
   | { kind: 'success'; data: PublicHomepage };
 
+function newViewId(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export function PublicHomepageClient({ reference }: { reference: string | null }) {
   const view = useRef<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -19,7 +29,7 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
   useEffect(() => {
     if (!reference) return;
     const controller = new AbortController();
-    view.current ??= crypto.randomUUID();
+    view.current ??= newViewId();
     const origin = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
     const url = `${origin}/api/v1/public/homepages/${encodeURIComponent(reference)}?viewId=${view.current}`;
     const span = startRequestSpan('GET', '/api/v1/public/homepages/{reference}');
@@ -41,7 +51,7 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
   }, [reference, attempt]);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
+    <div className="public-homepage">
       {!reference ? (
         <>
           <h2 className="text-xl font-semibold">C 号格式错误</h2>
@@ -71,36 +81,49 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
         </>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">商业主页</p>
-          <h2 className="mt-2 text-3xl font-semibold">{result.data.displayName}</h2>
-          <p className="mt-3 font-mono text-sm text-muted-foreground">
-            C 号：{result.data.commerceReference}
-          </p>
-          <section className="mt-10 border-t pt-6">
-            <h3 className="text-xl font-semibold">服务</h3>
+          <header className="public-homepage-intro">
+            <p className="text-sm text-muted-foreground">创作者主页</p>
+            <h1>{result.data.displayName}</h1>
+            <p className="mt-3 break-all font-mono text-sm text-muted-foreground">
+              C 号 {result.data.commerceReference}
+            </p>
+          </header>
+          <section className="public-homepage-services">
+            <h2 className="text-xl font-semibold">可预约服务</h2>
+            <p className="mt-2 text-sm text-muted-foreground">查看服务详情并提交您的需求</p>
             {result.data.offerings.length === 0 ? (
               <p className="mt-4 text-sm text-muted-foreground">尚无服务</p>
             ) : (
               <div className="mt-4 divide-y border-y">
                 {result.data.offerings.map((offering) => (
-                  <article key={offering.id} className="py-5">
+                  <article key={offering.id} className="public-homepage-service">
+                    <div className="min-w-0">
+                      <h3 className="font-medium break-words">{offering.title}</h3>
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                        {offering.description}
+                      </p>
+                    </div>
                     <Link
-                      className="font-medium underline-offset-4 hover:underline"
+                      className="public-service-link"
                       href={`/s/${encodeURIComponent(offering.id)}`}
+                      aria-label={`查看服务：${offering.title}`}
                     >
-                      {offering.title}
+                      查看服务 <ArrowRight size={16} aria-hidden="true" />
                     </Link>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
-                      {offering.description}
-                    </p>
                   </article>
                 ))}
               </div>
             )}
           </section>
+          <p className="mt-6 text-sm text-muted-foreground">
+            C 号是公开定位标识，不作为身份凭证、资质认证或平台担保。
+          </p>
         </>
       )}
-      <Link href="/" className="mt-8 inline-block text-sm underline underline-offset-4">
+      <Link
+        href="/"
+        className="mt-8 inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+      >
         返回查询
       </Link>
     </div>

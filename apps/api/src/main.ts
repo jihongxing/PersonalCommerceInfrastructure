@@ -14,11 +14,13 @@ import {
 } from '../../../adapters/persistence/postgres/postgres-creator-identity-composition.js';
 import { InMemoryAuthContextProvider } from '../../../adapters/auth/testing/in-memory-auth-context-provider.js';
 import { LogNotificationAdapter } from '../../../adapters/notifications/log-notification-adapter.js';
+import { ResendPasswordResetDelivery } from '../../../adapters/notifications/resend-password-reset-delivery.js';
 import { createSafeLogger } from '../../../adapters/observability/safe-logger.js';
 import { createPerformanceMonitor } from '../../../adapters/observability/performance-monitor.js';
 import { loadTracingConfiguration, startTracing } from '../../../adapters/observability/tracing.js';
 import { createApiServer } from './create-api-server.js';
 import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js';
+import { startPasswordRecoveryWorker } from './password-recovery-worker.js';
 
 function loadApiConfiguration() {
   const development = (process.env.APP_ENV ?? 'development') === 'development';
@@ -34,6 +36,17 @@ function loadApiConfiguration() {
 export async function startApi(): Promise<ApiRuntime> {
   const configuration = loadApiConfiguration();
   const tracingConfiguration = loadTracingConfiguration();
+  const rateLimitOverride = process.env.API_RATE_LIMIT_MAX;
+  if (rateLimitOverride !== undefined && configuration.environment === 'production') {
+    throw new Error('API_RATE_LIMIT_MAX cannot be overridden in production.');
+  }
+  const rateLimitMax = rateLimitOverride === undefined ? undefined : Number(rateLimitOverride);
+  if (
+    rateLimitMax !== undefined &&
+    (!Number.isInteger(rateLimitMax) || rateLimitMax < 1 || rateLimitMax > 10_000)
+  ) {
+    throw new Error('API_RATE_LIMIT_MAX must be an integer from 1 to 10000.');
+  }
   const browserTracingEndpoint = tracingConfiguration.browserEnabled
     ? tracingConfiguration.endpoint
     : undefined;
@@ -54,14 +67,26 @@ export async function startApi(): Promise<ApiRuntime> {
   });
   let composition: ReturnType<typeof createPostgresCreatorIdentityComposition> | undefined;
   let server: Awaited<ReturnType<typeof createApiServer>> | undefined;
+  let passwordRecoveryWorker: ReturnType<typeof startPasswordRecoveryWorker> | undefined;
   const tracing = startTracing(tracingConfiguration, logger);
   try {
+    const mailKey = process.env.PASSWORD_RESET_RESEND_API_KEY;
+    const mailFrom = process.env.PASSWORD_RESET_FROM;
+    if (Boolean(mailKey) !== Boolean(mailFrom))
+      throw new Error('Password recovery mail configuration is incomplete.');
+    const passwordResetDelivery =
+      mailKey && mailFrom
+        ? new ResendPasswordResetDelivery(mailKey, mailFrom, configuration.webReferenceClientOrigin)
+        : undefined;
     composition =
       configuration.environment === 'test' && !usePostgresTestComposition
         ? undefined
         : createPostgresCreatorIdentityComposition(
             loadDatabaseConfiguration() satisfies CreatorIdentityDatabaseConfiguration,
-            { localAuthSecret: process.env.JWT_SECRET ?? '' },
+            {
+              localAuthSecret: process.env.JWT_SECRET ?? '',
+              ...(passwordResetDelivery ? { passwordResetDelivery } : {}),
+            },
             configuration.webReferenceClientOrigin,
             new LogNotificationAdapter(logger),
             loadOperationsAuthConfiguration(),
@@ -81,6 +106,7 @@ export async function startApi(): Promise<ApiRuntime> {
             corsAllowedOrigins: [configuration.webReferenceClientOrigin],
             publicOrigin: configuration.webReferenceClientOrigin,
             logger,
+            ...(rateLimitMax === undefined ? {} : { rateLimitMax }),
             ...(browserTracingEndpoint === undefined ? {} : { browserTracingEndpoint }),
           }
         : {
@@ -117,6 +143,8 @@ export async function startApi(): Promise<ApiRuntime> {
             commercialPilotOperationsService: composition.commercialPilotOperationsService,
             reservationService: composition.reservationService,
             contractService: composition.contractService,
+            servicePolicyCatalogRepository: composition.servicePolicyCatalogRepository,
+            servicePolicyAdminService: composition.servicePolicyAdminService,
             currentUserIdentityService: composition.currentUserIdentityService,
             selfServiceIdentityInitializationService:
               composition.selfServiceIdentityInitializationService,
@@ -131,6 +159,7 @@ export async function startApi(): Promise<ApiRuntime> {
             checkReadiness: composition.database.checkReadiness.bind(composition.database),
             corsAllowedOrigins: [configuration.webReferenceClientOrigin],
             logger,
+            ...(rateLimitMax === undefined ? {} : { rateLimitMax }),
             performanceMonitor,
             publicOrigin: configuration.webReferenceClientOrigin,
             ...(browserTracingEndpoint === undefined ? {} : { browserTracingEndpoint }),
@@ -141,6 +170,13 @@ export async function startApi(): Promise<ApiRuntime> {
       host: configuration.apiHost,
       port: configuration.apiPort,
     });
+    if (composition?.localAuthService && !usePostgresTestComposition) {
+      passwordRecoveryWorker = startPasswordRecoveryWorker(
+        composition.localAuthService,
+        () => logger.error('password_recovery_worker_failed', { errorCategory: 'worker_failed' }),
+        passwordResetDelivery ? 2_000 : 30_000,
+      );
+    }
     logger.info('api_started', {
       environment: configuration.environment,
       host: configuration.apiHost,
@@ -151,6 +187,7 @@ export async function startApi(): Promise<ApiRuntime> {
       if (server !== undefined) await server.close();
     } finally {
       try {
+        if (passwordRecoveryWorker !== undefined) await passwordRecoveryWorker.stop();
         if (composition !== undefined) await composition.database.close();
       } finally {
         await tracing.shutdown();
@@ -170,6 +207,7 @@ export async function startApi(): Promise<ApiRuntime> {
           try {
             await runningServer.close();
           } finally {
+            if (passwordRecoveryWorker !== undefined) await passwordRecoveryWorker.stop();
             if (runningComposition !== undefined) await runningComposition.database.close();
           }
         } finally {

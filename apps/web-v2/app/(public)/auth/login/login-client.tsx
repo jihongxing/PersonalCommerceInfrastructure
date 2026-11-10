@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth/context';
 import { UnauthenticatedRoute } from '@/components/auth/protected-route';
+import { currentReturnDestination } from '@/lib/auth/return-destination';
 
 function LoginContent() {
   const router = useRouter();
@@ -38,8 +39,7 @@ function LoginContent() {
 
     try {
       await login(email, password);
-      // 登陆成功，重定向到仪表板
-      router.push('/dashboard');
+      router.replace(currentReturnDestination());
     } catch (err) {
       // 错误已在 hook 中处理
       console.error('Login failed:', err);
@@ -51,14 +51,14 @@ function LoginContent() {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="auth-surface">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">欢迎回来</h1>
           <p className="mt-2 text-slate-600">登陆您的商业账户</p>
         </div>
 
-        <Card>
+        <Card className="auth-panel">
           <CardHeader>
             <CardTitle>登陆</CardTitle>
             <CardDescription>使用您的邮箱和密码登陆</CardDescription>
@@ -68,7 +68,7 @@ function LoginContent() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 错误提示 */}
               {displayError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-600">{displayError}</p>
                 </div>
               )}
@@ -81,6 +81,7 @@ function LoginContent() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -105,6 +106,7 @@ function LoginContent() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -145,7 +147,7 @@ function LoginContent() {
         </Card>
 
         {/* 底部提示 */}
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-slate-600">
           登陆即代表您同意我们的{' '}
           <Link href="/terms" className="text-slate-600 hover:text-slate-700 underline">
             服务条款

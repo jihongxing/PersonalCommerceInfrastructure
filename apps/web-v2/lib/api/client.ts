@@ -57,8 +57,18 @@ export function refreshSession(waiter?: SpanContext): Promise<boolean> {
     const data = await response.json();
     if (controller.signal.aborted) throw new Error('刷新登录状态超时，请重试');
     const current = getSession();
-    if (!current || current.accessToken !== session.accessToken || current.refreshToken !== session.refreshToken) return false;
-    setSession({ ...session, accessToken: data.accessToken, refreshToken: data.refreshToken, expiresAt: Math.floor(Date.now() / 1000) + data.expiresIn });
+    if (
+      !current ||
+      current.accessToken !== session.accessToken ||
+      current.refreshToken !== session.refreshToken
+    )
+      return false;
+    setSession({
+      ...session,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      expiresAt: Math.floor(Date.now() / 1000) + data.expiresIn,
+    });
     return true;
   })();
   refreshInFlight = Promise.race([operation, timeout])
@@ -97,6 +107,18 @@ function waitForRefresh(refresh: Promise<boolean>, signal?: AbortSignal): Promis
   });
 }
 
+type ApiRequestOptions = {
+  headers?: HeadersInit;
+  body?: unknown;
+  signal?: AbortSignal;
+  params?: { path?: Record<string, unknown>; [key: string]: unknown };
+};
+type ApiResponse<T> = {
+  data: T | null;
+  error: { error?: { message?: string; code?: string }; message?: string } | null;
+  status: number;
+};
+
 class SimpleApiClient {
   private baseUrl: string;
 
@@ -104,8 +126,16 @@ class SimpleApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request(method: string, path: string, options: any = {}, retried = false, links: SpanContext[] = []): Promise<any> {
-    const resolvedPath = path.replace(/\{([^}]+)\}/g, (_match, key: string) => encodeURIComponent(String(options.params?.path?.[key] ?? '')));
+  private async request<T = unknown>(
+    method: string,
+    path: string,
+    options: ApiRequestOptions = {},
+    retried = false,
+    links: SpanContext[] = [],
+  ): Promise<ApiResponse<T>> {
+    const resolvedPath = path.replace(/\{([^}]+)\}/g, (_match, key: string) =>
+      encodeURIComponent(String(options.params?.path?.[key] ?? '')),
+    );
     const url = `${this.baseUrl}${resolvedPath}`;
     const anonymous = path.startsWith('/api/v1/public/');
     const token = anonymous ? null : getBearerToken();
@@ -136,18 +166,33 @@ class SimpleApiClient {
       status = response.status;
       finishRequestSpan(span, status);
 
-      const data = await response.json();
+      const data = response.status === 204 ? null : await response.json();
 
-      if (!anonymous && response.status === 401 && data?.error?.code !== 'creator_actor_not_mapped' && (!path.startsWith('/api/v1/auth/') || path === '/api/v1/auth/workspace/initialize' || path === '/api/v1/auth/logout') && !retried) {
+      if (
+        !anonymous &&
+        response.status === 401 &&
+        data?.error?.code !== 'creator_actor_not_mapped' &&
+        (!path.startsWith('/api/v1/auth/') ||
+          path === '/api/v1/auth/workspace/initialize' ||
+          path === '/api/v1/auth/logout') &&
+        !retried
+      ) {
         if (options.signal?.aborted) throw new DOMException('请求已取消', 'AbortError');
         if (token && getBearerToken() && getBearerToken() !== token) {
-          return this.request(method, path, options, true, [span?.spanContext()].filter((value): value is SpanContext => value !== undefined));
+          return this.request(
+            method,
+            path,
+            options,
+            true,
+            [span?.spanContext()].filter((value): value is SpanContext => value !== undefined),
+          );
         }
         const refresh = refreshSession(span?.spanContext());
         const refreshContext = refreshSpan?.spanContext();
-        const waitSpan = refreshContext && span
-          ? startRefreshWaitSpan([span.spanContext(), refreshContext])
-          : undefined;
+        const waitSpan =
+          refreshContext && span
+            ? startRefreshWaitSpan([span.spanContext(), refreshContext])
+            : undefined;
         let refreshed: boolean;
         try {
           refreshed = await waitForRefresh(refresh, options.signal);
@@ -157,7 +202,15 @@ class SimpleApiClient {
           throw error;
         }
         if (refreshed) {
-          return this.request(method, path, options, true, [span?.spanContext(), refreshContext].filter((value): value is SpanContext => value !== undefined));
+          return this.request(
+            method,
+            path,
+            options,
+            true,
+            [span?.spanContext(), refreshContext].filter(
+              (value): value is SpanContext => value !== undefined,
+            ),
+          );
         }
 
         if (getBearerToken() === token) {
@@ -169,7 +222,7 @@ class SimpleApiClient {
       }
 
       return {
-        data: response.ok ? data : null,
+        data: response.ok ? (data as T) : null,
         error: response.ok ? null : data,
         status: response.status,
       };
@@ -184,24 +237,24 @@ class SimpleApiClient {
     }
   }
 
-  async GET(path: string, options?: any) {
-    return this.request('GET', path, options);
+  async GET<T = unknown>(path: string, options?: ApiRequestOptions) {
+    return this.request<T>('GET', path, options);
   }
 
-  async POST(path: string, options?: any) {
-    return this.request('POST', path, options);
+  async POST<T = unknown>(path: string, options?: ApiRequestOptions) {
+    return this.request<T>('POST', path, options);
   }
 
-  async PUT(path: string, options?: any) {
-    return this.request('PUT', path, options);
+  async PUT<T = unknown>(path: string, options?: ApiRequestOptions) {
+    return this.request<T>('PUT', path, options);
   }
 
-  async PATCH(path: string, options?: any) {
-    return this.request('PATCH', path, options);
+  async PATCH<T = unknown>(path: string, options?: ApiRequestOptions) {
+    return this.request<T>('PATCH', path, options);
   }
 
-  async DELETE(path: string, options?: any) {
-    return this.request('DELETE', path, options);
+  async DELETE<T = unknown>(path: string, options?: ApiRequestOptions) {
+    return this.request<T>('DELETE', path, options);
   }
 }
 

@@ -5,11 +5,15 @@ export interface Capability {
   id: string;
   name: string;
   description: string;
+  catalogItemId?: string;
+  catalogStatus?: 'active' | 'custom_request' | 'retired';
+  policyVersion?: string;
 }
 
 export interface CreateCapabilityRequest {
   name: string;
   description: string;
+  catalogItemId?: string;
 }
 
 /**
@@ -19,19 +23,17 @@ export function useCreatorCapabilities() {
   return useQuery({
     queryKey: ['creator-capabilities'],
     queryFn: async (): Promise<Capability[]> => {
-      const { data, error } = await apiClient.GET(
+      const { data, error } = await apiClient.GET<{ capabilities?: Capability[] }>(
         '/api/v1/creator/identity',
         {
           params: {
             header: {},
           },
-        }
+        },
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load capabilities'
-        );
+        throw new Error(error.error?.message || 'Failed to load capabilities');
       }
 
       if (!data) {
@@ -52,17 +54,12 @@ export function useCreateCapability() {
 
   return useMutation({
     mutationFn: async (request: CreateCapabilityRequest) => {
-      const { data, error } = await apiClient.POST(
-        '/api/v1/creator/identity/capabilities',
-        {
-          body: request,
-        }
-      );
+      const { data, error } = await apiClient.POST('/api/v1/creator/identity/capabilities', {
+        body: request,
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to create capability'
-        );
+        throw new Error(error.error?.message || 'Failed to create capability');
       }
 
       if (!data) {
@@ -91,19 +88,17 @@ export function useDeleteCapability() {
 
   return useMutation({
     mutationFn: async (capabilityId: string) => {
-      const { data, error } = await apiClient.DELETE(
+      const { error } = await apiClient.DELETE(
         '/api/v1/creator/identity/capabilities/{capabilityId}',
         {
           params: {
             path: { capabilityId },
           },
-        }
+        },
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to delete capability'
-        );
+        throw new Error(error.error?.message || 'Failed to delete capability');
       }
 
       return true;

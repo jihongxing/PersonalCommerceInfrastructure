@@ -870,3 +870,62 @@ Creator 应通过 Offering 的 Requestable Availability 表达暂不可请求或
 - 对 17、18、19 的引用关系。
 
 完成 20 后，进入 Codex Build，不再自动新增产品架构文档。
+
+## DEV-082 Amendment — Creator 选择、服务模板与政策状态
+
+> 批准日期：2026-11-10；依据 [34 — 受控能力目录与服务发布决策](./34_Controlled_Capability_Service_Publishing_Decision.md)
+> 本节优先于上文允许任意输入能力名称和自由构造服务类型的界面描述；VS-01 的请求、确认、拒绝和结果表面不变。
+
+### A. Commerce Identity Editor
+
+Capability 创建区域必须展示平台能力目录。Creator 选择目录项后，填写自己的经验、作品、
+风格和补充说明；页面不得提供可立即公开的任意能力名称输入框。找不到匹配项时显示
+“申请新增能力类型”，申请本身不产生公开 Capability。
+
+### B. Create / Edit Service Offering
+
+服务创建先选择与 Capability 匹配的服务模板，再填写：
+
+- 服务目标和适合人群；
+- 服务形式、时长或交付范围；
+- 地点或线上方式；
+- 参与人数和前置条件；
+- 可预约时间和请求说明；
+- 模板允许的补充描述。
+
+页面必须显示当前政策状态、检查结果和下一步：
+
+| Policy status    | Creator sees       | Allowed action           |
+| ---------------- | ------------------ | ------------------------ |
+| `NotChecked`     | 尚未检查           | 保存草稿、运行检查       |
+| `AutoApproved`   | 自动检查通过       | 进入发布前确认           |
+| `ReviewRequired` | 需要人工审核及原因 | 保存、提交审核，不能公开 |
+| `Approved`       | 已通过发布审核     | Publish / Unpublish      |
+| `Rejected`       | 拒绝原因和申诉入口 | 修改后重新检查           |
+
+VS-01 当前只把批准的 `1 对 1 舞蹈私教` 作为首期发布模板。多垂直目录和未来模板可在
+目录中展示为“后续开放”或供后台初始化，但不能绕过范围门禁直接公开。
+
+### C. Offering Management and Public Surface
+
+Offering Management 在 `ReviewRequired` 或 `Rejected` 时禁用对外分享和 Publish；公开
+Commerce Identity 与 Service Offering Page 只展示业务状态为 `Published` 且政策状态为
+`Approved` 的 Offering。复制链接、二维码和系统分享不改变政策状态，也不产生新的规范事件。
+
+### D. Acceptance Additions
+
+- 任意能力名称不能直接成为公开目录项；
+- Offering 必须选择有效能力和匹配模板；
+- 缺少模板必填字段不能 Publish；
+- 低风险模板可自动批准，中风险或未来模板进入审核，禁止类型被拒绝；
+- 编辑关键服务字段会重新检查；
+- 拒绝、审核、恢复和申诉原因对 Creator 可解释；
+- 公开主页过滤掉未批准 Offering；
+- 既有请求和历史商业事实在审核或下架后仍可追溯。
+
+## DEV-083 Amendment — Catalog Operations Surface
+
+产品实现不得把能力和服务模板作为前端硬编码数据源。Creator 页面使用目录 API；Operations
+页面/API 管理 `creatorSelectable`、`publishEnabled`、风险等级和发布版本，并可查询审计。
+JSON 是幂等导入和恢复工具，不是运行时配置。暂停、退休和紧急下架必须在新发布与公开请求门禁
+中可观察并可测试。

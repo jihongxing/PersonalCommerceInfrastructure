@@ -614,7 +614,8 @@ export class PostgresPublicHomepageRepository
       SELECT COALESCE((SELECT jsonb_agg(jsonb_build_object('id', o.id, 'title', o.title, 'description', o.description)
         ORDER BY o.created_at, o.id) FROM service_offerings o
         JOIN commerce_identities ci ON ci.creator_id = o.creator_id
-        WHERE o.creator_id = ${creatorId} AND o.state = 'published' AND ci.state = 'published'), '[]'::jsonb) AS offerings`;
+        WHERE o.creator_id = ${creatorId} AND o.state = 'published'
+          AND o.policy_status = 'approved' AND ci.state = 'published'), '[]'::jsonb) AS offerings`;
     return {
       creatorId,
       homepage: {

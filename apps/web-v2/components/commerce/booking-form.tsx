@@ -52,7 +52,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
     try {
       const result = await submitBooking.mutateAsync(values);
       setIsSubmitted(true);
-      
+
       // 跳转到结果页面
       router.push(`/o/${result.resultAccessToken}`);
     } catch (error) {
@@ -69,16 +69,12 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
           <CardTitle>预约请求已提交</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {submitBooking.data.message}
-          </p>
+          <p className="text-sm text-muted-foreground">{submitBooking.data.message}</p>
           <div className="p-4 bg-muted rounded-md">
             <p className="text-sm font-medium mb-1">查询码（请保存）：</p>
             <p className="font-mono text-sm">{submitBooking.data.resultAccessToken}</p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            您可以使用此查询码查看 Creator 的回复
-          </p>
+          <p className="text-xs text-muted-foreground">您可以使用此查询码查看 Creator 的回复</p>
         </CardContent>
         <CardFooter>
           <Button
@@ -129,14 +125,9 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
                 <FormItem>
                   <FormLabel>联系方式</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="微信号、手机号或其他联系方式" 
-                      {...field} 
-                    />
+                    <Input placeholder="微信号、手机号或其他联系方式" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Creator 将通过此方式与您联系
-                  </FormDescription>
+                  <FormDescription>Creator 将通过此方式与您联系</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -149,30 +140,24 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
                 <FormItem>
                   <FormLabel>预约说明</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="请描述您的需求、时间、地点等信息"
                       className="min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    最多 2000 字符
-                  </FormDescription>
+                  <FormDescription>最多 2000 字符</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={submitBooking.isPending}
-            >
+            <Button type="submit" className="min-h-11 w-full" disabled={submitBooking.isPending}>
               {submitBooking.isPending ? '提交中...' : '提交预约'}
             </Button>
 
             {submitBooking.error && (
-              <div className="text-sm text-destructive mt-2">
+              <div role="alert" className="text-sm text-destructive mt-2">
                 提交失败：{submitBooking.error.message}
               </div>
             )}

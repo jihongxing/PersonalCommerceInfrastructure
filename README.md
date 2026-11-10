@@ -11,7 +11,7 @@ Integration Readiness 和 VS-02E Local Commercial Simulation。VS-02C 微信支�
 
 **PCI 解决方案**：通过 Commerce Reference（C号）—— 一个平台无法封禁的商业标识 —— 让 Creator 能在任何平台引流到自己的独立商业页面。
 
-当前版本：`0.1.0`  
+当前版本：`0.2.0`  
 当前交付状态：`VS-02E Local Commercial Simulation COMPLETE / No Real Money Evidence`
 
 ```text

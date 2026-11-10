@@ -564,3 +564,56 @@ Asset: Generated
 它应将本 Flow 逐页翻译为 Screen、Component、Action、State、Rule、Notification、Empty State、Error State 与 Acceptance Criteria。
 
 不得重新定义对象，不得再扩展 Product Philosophy；正式 PRD 应引用 17、18、19，而不是重复它们。
+
+## DEV-082 Amendment — 受控创建与发布门禁
+
+> 批准日期：2026-11-10；依据 [34 — 受控能力目录与服务发布决策](./34_Controlled_Capability_Service_Publishing_Decision.md)
+> 本节把目录、模板和政策检查插入既有 VS-01 Flow，不新增支付、结算、Marketplace、CRM 或新的 Canonical Event。
+
+### A. Creator-side Flow
+
+VS-01 的 Creator-side Flow 更新为：
+
+```text
+Complete Commerce Identity
+→ choose a Capability Catalog Item
+→ add Creator Capability proof / description
+→ choose a matching Service Offering Template
+→ fill required structured service conditions
+→ save Offering Draft
+→ run policy check
+→ AutoApprove or ReviewRequired / Rejected
+→ Publish only when policy Approved
+→ generate Distribution Asset
+→ share externally
+```
+
+现有 `Request → Confirm / Decline` 主路径保持不变。政策检查失败时 Offering 保持原有
+业务状态，不生成 Distribution Asset，不发布 Commerce Identity，也不产生 Canonical Event。
+
+### B. Catalog and Template Rules
+
+1. Capability 只能引用有效、未退休的能力目录项；
+2. Offering 只能引用与其 Capability 匹配的服务模板；
+3. 低风险且当前范围启用的模板可以自动通过检查；
+4. 中风险、未来范围或上下文不明确的模板进入 `ReviewRequired`；
+5. 禁止类型或命中禁止规则的服务进入 `Rejected`；
+6. 没有模板的“其他服务”不能直接发布；
+7. 模板或关键服务字段修改后重新检查；
+8. 目录数据可以覆盖多个垂直领域，但 VS-01 只允许当前已批准的发布范围。
+
+## DEV-083 Amendment — 运行时目录来源
+
+上述目录和模板由数据库发布版本提供，Creator 读取当前快照；Operations 可在不改代码的情况下
+暂停、恢复、退休或紧急关闭条目。每次状态和开关变化都必须带原因并写入审计记录，发布、请求
+和公开展示重新读取快照后立即生效。
+
+### C. Existing Flow Stop Boundary
+
+政策审核是 Publish 前的资格判断，不改变以下 VS-01 终点：
+
+```text
+Submitted → Confirmed / Declined → STOP
+```
+
+审核记录属于可审计的政策事实，不新增规范事件名称，也不能被解释为支付、履约或平台担保。

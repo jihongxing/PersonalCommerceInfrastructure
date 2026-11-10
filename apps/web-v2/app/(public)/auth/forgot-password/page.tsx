@@ -36,9 +36,8 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(email);
       setIsSubmitted(true);
-    } catch (err) {
-      // 错误已在 hook 中处理
-      console.error('Forgot password failed:', err);
+    } catch {
+      // The authentication context exposes the error to the form.
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +47,7 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="auth-surface">
         <div className="w-full max-w-md">
           <Card>
             <CardHeader>
@@ -93,28 +92,24 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="auth-surface">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">重置密码</h1>
-          <p className="mt-2 text-slate-600">
-            输入您的邮箱地址，我们将发送重置链接
-          </p>
+          <p className="mt-2 text-slate-600">输入您的邮箱地址，我们将发送重置链接</p>
         </div>
 
-        <Card>
+        <Card className="auth-panel">
           <CardHeader>
             <CardTitle>忘记密码</CardTitle>
-            <CardDescription>
-              我们会将重置链接发送到您的邮箱
-            </CardDescription>
+            <CardDescription>我们会将重置链接发送到您的邮箱</CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 错误提示 */}
               {displayError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-600">{displayError}</p>
                 </div>
               )}
@@ -127,6 +122,7 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -136,20 +132,13 @@ export default function ForgotPasswordPage() {
               </div>
 
               {/* 提交按钮 */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? '发送中...' : '发送重置链接'}
               </Button>
 
               {/* 返回登陆 */}
               <div className="text-center">
-                <Link
-                  href="/auth/login"
-                  className="text-sm text-blue-600 hover:text-blue-700"
-                >
+                <Link href="/auth/login" className="text-sm text-blue-600 hover:text-blue-700">
                   返回登陆
                 </Link>
               </div>

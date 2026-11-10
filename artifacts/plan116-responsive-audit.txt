@@ -1,0 +1,358 @@
+Local authenticated browse audit: 2026-11-10T01:38:17.3591242+08:00
+Navigated to http://localhost:3002/ (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["查找创作者"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["查找创作者"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["查找创作者"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["查找创作者"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["查找创作者"]}
+Navigated to http://localhost:3002/dashboard (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/dashboard","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["工作台"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/dashboard","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["工作台"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/dashboard","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["工作台"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/dashboard","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["工作台"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/dashboard","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["工作台"]}
+Navigated to http://localhost:3002/profile (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/profile","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/profile","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/profile","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/profile","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/profile","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+Navigated to http://localhost:3002/profile?tab=public (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/profile?tab=public","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/profile?tab=public","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/profile?tab=public","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/profile?tab=public","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/profile?tab=public","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+Navigated to http://localhost:3002/profile/edit (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/profile/edit","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["编辑个人资料"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/profile/edit","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["编辑个人资料"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/profile/edit","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["编辑个人资料"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/profile/edit","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["编辑个人资料"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/profile/edit","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["编辑个人资料"]}
+Navigated to http://localhost:3002/capabilities (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/capabilities","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["能力"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/capabilities","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["能力"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/capabilities","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["能力"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/capabilities","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["能力"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/capabilities","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["能力"]}
+Navigated to http://localhost:3002/capabilities/new (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/capabilities/new","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["添加能力"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/capabilities/new","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["添加能力"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/capabilities/new","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["添加能力"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/capabilities/new","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["添加能力"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/capabilities/new","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["添加能力"]}
+Navigated to http://localhost:3002/capabilities/example/edit (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/capabilities/example/edit","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["编辑能力"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/capabilities/example/edit","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["编辑能力"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/capabilities/example/edit","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["编辑能力"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/capabilities/example/edit","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["编辑能力"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/capabilities/example/edit","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["编辑能力"]}
+Navigated to http://localhost:3002/services (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/services","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["服务"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/services","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["服务"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/services","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["服务"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/services","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["服务"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/services","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["服务"]}
+Navigated to http://localhost:3002/services/new (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/services/new","width":320,"scroll":320,"overflow":false,"smallTargets":[{"name":"添加能力","height":18,"width":56}],"headings":["创建服务"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/services/new","width":375,"scroll":375,"overflow":false,"smallTargets":[{"name":"添加能力","height":18,"width":56}],"headings":["创建服务"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/services/new","width":768,"scroll":768,"overflow":false,"smallTargets":[{"name":"添加能力","height":18,"width":56}],"headings":["创建服务"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/services/new","width":1280,"scroll":1280,"overflow":false,"smallTargets":[{"name":"添加能力","height":18,"width":56}],"headings":["创建服务"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/services/new","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["创建服务"]}
+Navigated to http://localhost:3002/services/eb387398-bfac-421d-a636-4261eb2dc51e (200)
+Operation timed out: locator.waitFor: Timeout 15000ms exceeded.
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":[]}
+Navigated to http://localhost:3002/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit","width":320,"scroll":320,"overflow":false,"smallTargets":[{"name":"添加能力","height":18,"width":56}],"headings":["编辑服务"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["编辑服务"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["编辑服务"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["编辑服务"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/services/eb387398-bfac-421d-a636-4261eb2dc51e/edit","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["编辑服务"]}
+Navigated to http://localhost:3002/requests (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/requests","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["访客请求"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/requests","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["访客请求"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/requests","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["访客请求"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/requests","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["访客请求"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/requests","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["访客请求"]}
+Navigated to http://localhost:3002/onboarding (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/profile","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/profile","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/profile","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/profile","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/profile","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["个人资料"]}
+Navigated to http://localhost:3002/onboarding/welcome (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/onboarding/welcome","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["开始创建您的主页"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/onboarding/welcome","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["开始创建您的主页"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/onboarding/welcome","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["开始创建您的主页"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/onboarding/welcome","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["开始创建您的主页"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/onboarding/welcome","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["开始创建您的主页"]}
+Navigated to http://localhost:3002/r/KWKM47REPE9HVWEKCX (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/r/KWKM47REPE9HVWEKCX","width":320,"scroll":320,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":["测试公开资料"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/r/KWKM47REPE9HVWEKCX","width":375,"scroll":375,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":["测试公开资料"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/r/KWKM47REPE9HVWEKCX","width":768,"scroll":768,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":["测试公开资料"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/r/KWKM47REPE9HVWEKCX","width":1280,"scroll":1280,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":["测试公开资料"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/r/KWKM47REPE9HVWEKCX","width":1600,"scroll":1600,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":["测试公开资料"]}
+Navigated to http://localhost:3002/s/eb387398-bfac-421d-a636-4261eb2dc51e (200)
+Element h1 appeared
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/s/eb387398-bfac-421d-a636-4261eb2dc51e","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":["测试创作者"]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/s/eb387398-bfac-421d-a636-4261eb2dc51e","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":["测试创作者"]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/s/eb387398-bfac-421d-a636-4261eb2dc51e","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":["测试创作者"]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/s/eb387398-bfac-421d-a636-4261eb2dc51e","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":["测试创作者"]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/s/eb387398-bfac-421d-a636-4261eb2dc51e","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":["测试创作者"]}
+Navigated to http://localhost:3002/o/8e92066e-5e7b-4d38-80d9-f2361fe01284 (200)
+Operation timed out: locator.waitFor: Timeout 15000ms exceeded.
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/o/8e92066e-5e7b-4d38-80d9-f2361fe01284","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/o/8e92066e-5e7b-4d38-80d9-f2361fe01284","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/o/8e92066e-5e7b-4d38-80d9-f2361fe01284","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/o/8e92066e-5e7b-4d38-80d9-f2361fe01284","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/o/8e92066e-5e7b-4d38-80d9-f2361fe01284","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":[]}
+Navigated to http://localhost:3002/r/INVALID (200)
+Operation timed out: locator.waitFor: Timeout 15000ms exceeded.
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/r/INVALID","width":320,"scroll":320,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":[]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/r/INVALID","width":375,"scroll":375,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":[]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/r/INVALID","width":768,"scroll":768,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":[]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/r/INVALID","width":1280,"scroll":1280,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":[]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/r/INVALID","width":1600,"scroll":1600,"overflow":false,"smallTargets":[{"name":"返回查询","height":20,"width":56}],"headings":[]}
+Navigated to http://localhost:3002/s/missing (200)
+Operation timed out: locator.waitFor: Timeout 15000ms exceeded.
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/s/missing","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/s/missing","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/s/missing","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/s/missing","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/s/missing","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":[]}
+Navigated to http://localhost:3002/o/missing (200)
+Operation timed out: locator.waitFor: Timeout 15000ms exceeded.
+[viewport] Viewport set to 320x900
+
+[eval] {"route":"/o/missing","width":320,"scroll":320,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 375x900
+
+[eval] {"route":"/o/missing","width":375,"scroll":375,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 768x900
+
+[eval] {"route":"/o/missing","width":768,"scroll":768,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1280x900
+
+[eval] {"route":"/o/missing","width":1280,"scroll":1280,"overflow":false,"smallTargets":[],"headings":[]}
+[viewport] Viewport set to 1600x900
+
+[eval] {"route":"/o/missing","width":1600,"scroll":1600,"overflow":false,"smallTargets":[],"headings":[]}

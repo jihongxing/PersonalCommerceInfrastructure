@@ -4,13 +4,13 @@ export const instant = false;
 
 export default function EditProfilePage() {
   return (
-    <div className="py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">编辑个人资料</h1>
-        <p className="text-muted-foreground mt-2">
-          更新您的商业身份信息
-        </p>
-      </div>
+    <div className="creator-list-page">
+      <header className="creator-page-heading">
+        <div>
+          <h1>编辑个人资料</h1>
+          <p>更新您的商业身份信息</p>
+        </div>
+      </header>
 
       <IdentityForm />
     </div>

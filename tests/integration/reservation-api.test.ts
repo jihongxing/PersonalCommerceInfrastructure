@@ -32,7 +32,11 @@ describe('Reservation Commerce API', () => {
       method: 'POST',
       url: '/api/v1/creator/identity/capabilities',
       headers: creatorHeaders,
-      payload: { name: 'Portrait photography', description: '60-minute portrait sessions.' },
+      payload: {
+        catalogItemId: 'capability-portrait-photography',
+        name: 'Portrait photography',
+        description: '60-minute portrait sessions.',
+      },
     });
     expect(capability.statusCode).toBe(201);
     const capabilityId = capability.json<{ capabilityIds: readonly string[] }>().capabilityIds[0];
@@ -42,6 +46,7 @@ describe('Reservation Commerce API', () => {
       headers: creatorHeaders,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-portrait-session',
         title: '60-minute portrait session',
         description: 'A one-hour portrait session.',
         availabilityDescription: 'Choose one published time.',

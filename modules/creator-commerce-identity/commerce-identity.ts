@@ -1,4 +1,5 @@
 import { DomainTransitionError } from '../shared/domain-error.js';
+import type { CapabilityCatalogStatus } from '../service-policy/catalog.js';
 
 export type CommerceIdentityState = 'draft' | 'published' | 'unpublished';
 
@@ -15,6 +16,10 @@ export interface Capability {
   readonly creatorId: string;
   readonly name: string;
   readonly description: string;
+  /** Platform catalog reference; absent only on legacy records awaiting mapping. */
+  readonly catalogItemId?: string;
+  readonly catalogStatus?: CapabilityCatalogStatus;
+  readonly policyVersion?: string;
 }
 
 export interface CommerceIdentity {
@@ -38,7 +43,10 @@ export function createDraftCommerceIdentity(
   };
 }
 
-export function createInitialCommerceIdentity(creatorId: string, displayName: string): CommerceIdentity {
+export function createInitialCommerceIdentity(
+  creatorId: string,
+  displayName: string,
+): CommerceIdentity {
   return {
     creatorId,
     profile: { displayName: displayName.trim(), bio: '', socialLinks: [] },

@@ -1,4 +1,5 @@
 import { DomainTransitionError } from '../shared/domain-error.js';
+import type { PolicyStatus } from '../service-policy/catalog.js';
 
 export type OfferingState = 'draft' | 'published' | 'unpublished' | 'archived';
 
@@ -27,16 +28,21 @@ export interface Offering {
   readonly id: string;
   readonly creatorId: string;
   readonly capabilityIds: readonly string[];
+  readonly templateId?: string;
   readonly title: string;
   readonly description: string;
   readonly availability?: RequestableAvailability;
   readonly appearance?: AppearanceOfferingMetadata;
   readonly requestInstructions: string;
   readonly state: OfferingState;
+  readonly policyStatus?: PolicyStatus;
+  readonly policyReason?: string;
+  readonly policyVersion?: string;
 }
 
 export interface OfferingDraftInput {
   readonly capabilityIds: readonly string[];
+  readonly templateId?: string;
   readonly title: string;
   readonly description: string;
   readonly availabilityDescription?: string;
@@ -56,6 +62,7 @@ export function createDraftOffering(
     id,
     creatorId,
     capabilityIds: uniqueNonEmptyValues(input.capabilityIds),
+    ...(input.templateId === undefined ? {} : { templateId: input.templateId.trim() }),
     title: input.title.trim(),
     description: input.description.trim(),
     ...(input.availabilityDescription?.trim() === undefined ||
@@ -79,6 +86,11 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
     id: offering.id,
     creatorId: offering.creatorId,
     capabilityIds: uniqueNonEmptyValues(input.capabilityIds),
+    ...(input.templateId === undefined
+      ? offering.templateId === undefined
+        ? {}
+        : { templateId: offering.templateId }
+      : { templateId: input.templateId.trim() }),
     title: input.title.trim(),
     description: input.description.trim(),
     requestInstructions: input.requestInstructions.trim(),
@@ -90,11 +102,15 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
       id: updatedOffering.id,
       creatorId: updatedOffering.creatorId,
       capabilityIds: updatedOffering.capabilityIds,
+      ...('templateId' in updatedOffering ? { templateId: updatedOffering.templateId } : {}),
       title: updatedOffering.title,
       description: updatedOffering.description,
       ...appearance,
       requestInstructions: updatedOffering.requestInstructions,
       state: updatedOffering.state,
+      ...(offering.policyStatus === undefined ? {} : { policyStatus: offering.policyStatus }),
+      ...(offering.policyReason === undefined ? {} : { policyReason: offering.policyReason }),
+      ...(offering.policyVersion === undefined ? {} : { policyVersion: offering.policyVersion }),
     };
   }
 
@@ -102,6 +118,9 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
     ...updatedOffering,
     availability: { description: availabilityDescription },
     ...appearance,
+    ...(offering.policyStatus === undefined ? {} : { policyStatus: offering.policyStatus }),
+    ...(offering.policyReason === undefined ? {} : { policyReason: offering.policyReason }),
+    ...(offering.policyVersion === undefined ? {} : { policyVersion: offering.policyVersion }),
   };
 }
 

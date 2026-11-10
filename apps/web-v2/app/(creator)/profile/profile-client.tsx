@@ -53,9 +53,9 @@ function ProfileDetails() {
             <p className="mb-4 text-muted-foreground">
               您还没有创建商业身份。立即创建以开始销售服务。
             </p>
-            <Link href="/profile/edit">
-              <Button>创建身份</Button>
-            </Link>
+            <Button asChild className="min-h-11">
+              <Link href="/profile/edit">创建身份</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -65,11 +65,11 @@ function ProfileDetails() {
   return (
     <div className="max-w-2xl space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
           <CardTitle>个人资料</CardTitle>
-          <Link href="/profile/edit">
-            <Button variant="outline">编辑</Button>
-          </Link>
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/profile/edit">编辑</Link>
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -77,11 +77,11 @@ function ProfileDetails() {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-muted-foreground">名字</p>
-                <p className="font-medium">{identity.profile.displayName}</p>
+                <p className="break-words font-medium">{identity.profile.displayName}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">简介</p>
-                <p className="whitespace-pre-wrap">{identity.profile.bio}</p>
+                <p className="whitespace-pre-wrap break-words">{identity.profile.bio}</p>
               </div>
               {identity.profile.location && (
                 <div>
@@ -110,12 +110,12 @@ function ProfileDetails() {
             继续设置您的能力和服务，以便消费者发现您。
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/capabilities">
-              <Button variant="outline">管理能力</Button>
-            </Link>
-            <Link href="/services">
-              <Button>创建服务</Button>
-            </Link>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href="/capabilities">管理能力</Link>
+            </Button>
+            <Button asChild className="min-h-11">
+              <Link href="/services">创建服务</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -141,9 +141,13 @@ function ProfileContent() {
 
   return (
     <Tabs value={activeTab} onValueChange={changeTab} className="space-y-6">
-      <TabsList aria-label="个人资料设置">
-        <TabsTrigger value="profile">资料</TabsTrigger>
-        <TabsTrigger value="public">对外主页</TabsTrigger>
+      <TabsList aria-label="个人资料设置" className="h-auto">
+        <TabsTrigger value="profile" className="min-h-11">
+          资料
+        </TabsTrigger>
+        <TabsTrigger value="public" className="min-h-11">
+          对外主页
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
         <ProfileDetails />
@@ -157,11 +161,13 @@ function ProfileContent() {
 
 export default function ProfileClient() {
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">个人资料</h1>
-        <p className="mt-2 text-muted-foreground">管理您的商业身份信息和对外主页</p>
-      </div>
+    <div className="creator-list-page">
+      <header className="creator-page-heading">
+        <div>
+          <h1>个人资料</h1>
+          <p>管理您的商业身份信息和对外主页</p>
+        </div>
+      </header>
 
       <Suspense
         fallback={

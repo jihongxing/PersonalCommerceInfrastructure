@@ -12,6 +12,9 @@ import { InMemoryReservationRepository } from '../../adapters/in-memory/in-memor
 import { InMemoryUnitOfWork } from '../../adapters/in-memory/in-memory-unit-of-work.js';
 import { SequentialIdGenerator } from '../../adapters/in-memory/sequential-id-generator.js';
 import type { Offering } from '../../modules/service-offering/offering.js';
+import type { Capability } from '../../modules/creator-commerce-identity/commerce-identity.js';
+import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
+import { InMemoryServicePolicyCatalogRepository } from '../../adapters/in-memory/in-memory-service-policy-catalog-repository.js';
 
 class MutableClock implements Clock {
   public constructor(private current: string) {}
@@ -28,6 +31,10 @@ async function fixture() {
     (offering) => offering.id,
     (offering) => offering.creatorId,
   );
+  const capabilityRepository = new InMemoryEntityCollectionRepository<Capability>(
+    (capability) => capability.id,
+    (capability) => capability.creatorId,
+  );
   const customerRepository = new InMemoryCustomerRepository();
   const reservationRepository = new InMemoryReservationRepository();
   const paidCommerceRepository = new InMemoryPaidCommerceRepository();
@@ -36,6 +43,7 @@ async function fixture() {
   const unitOfWork = new InMemoryUnitOfWork(
     [
       offeringRepository,
+      capabilityRepository,
       customerRepository,
       reservationRepository,
       paidCommerceRepository,
@@ -51,8 +59,13 @@ async function fixture() {
     },
   );
   const clock = new MutableClock('2026-08-17T10:00:00.000Z');
+  const servicePolicyCatalogRepository = new InMemoryServicePolicyCatalogRepository(
+    initialServicePolicyCatalog,
+  );
   const service = createReservationService({
     offeringRepository,
+    capabilityRepository,
+    servicePolicyCatalogRepository,
     customerRepository,
     reservationRepository,
     paidCommerceRepository,
@@ -75,6 +88,12 @@ async function fixture() {
     availability: { description: 'Choose a published time.' },
     requestInstructions: 'Choose one available time.',
     state: 'published',
+  });
+  await capabilityRepository.save({
+    id: 'capability-1',
+    creatorId: 'creator-1',
+    name: 'Portrait photography',
+    description: 'A portrait photography capability.',
   });
   const creator = {
     actor: { kind: 'creator' as const, creatorId: 'creator-1' },

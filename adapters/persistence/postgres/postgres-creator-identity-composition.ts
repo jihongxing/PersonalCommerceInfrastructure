@@ -79,6 +79,7 @@ import { QrCodeGeneratorImpl } from '../../image-generation/qr-code-generator.js
 import { PostgresFulfillmentCodeRepository } from './postgres-fulfillment-code-repository.js';
 import {
   PostgresCapabilityRepository,
+  PostgresCapabilityManagementRepository,
   PostgresCommerceActionRepository,
   PostgresCommerceIdentityRepository,
   PostgresCustomerRepository,
@@ -137,6 +138,12 @@ import {
   createContractService,
   type ContractService,
 } from '../../../applications/contract-commerce/contract-service.js';
+import { PostgresServicePolicyCatalogRepository } from './postgres-service-policy-catalog-repository.js';
+import {
+  createServicePolicyAdminService,
+  type ServicePolicyAdminService,
+} from '../../../applications/service-policy/service-policy-admin-service.js';
+import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
 
 export interface CreatorIdentityDatabaseConfiguration {
   readonly databaseUrl: string;
@@ -187,11 +194,18 @@ export interface PostgresCreatorIdentityComposition {
   readonly contractService: ContractService;
   readonly providerWebhookRuntime: ProviderWebhookRuntime;
   readonly database: PostgresDatabaseConnection;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly servicePolicyAdminService: ServicePolicyAdminService;
 }
 
 export function createPostgresCreatorIdentityComposition(
   databaseConfiguration: CreatorIdentityDatabaseConfiguration,
-  authConfiguration: CreatorIdentityAuthConfiguration | { readonly localAuthSecret: string },
+  authConfiguration:
+    | CreatorIdentityAuthConfiguration
+    | {
+        readonly localAuthSecret: string;
+        readonly passwordResetDelivery?: import('../../../applications/account-identity-membership/local-auth-service.js').PasswordResetDelivery;
+      },
   publicOrigin: string,
   notificationPort: NotificationPort,
   operationsConfiguration: OperationsConfiguration,
@@ -234,6 +248,9 @@ export function createPostgresCreatorIdentityComposition(
   const paidCommerceRepository = new PostgresPaidCommerceRepository(database.database);
   const reservationRepository = new PostgresReservationRepository(database.database);
   const contractRepository = new PostgresContractRepository(database.database);
+  const servicePolicyCatalogRepository = new PostgresServicePolicyCatalogRepository(
+    database.database,
+  );
   const idGenerator = new UuidIdGenerator();
   const unitOfWork = new PostgresUnitOfWork(database.database);
   const accountIdentityMembershipService = createAccountIdentityMembershipService({
@@ -292,7 +309,10 @@ export function createPostgresCreatorIdentityComposition(
                 correlationId: requestContext.correlationId,
                 errorCategory: 'initialization_failed',
               }),
+            passwordResetDeliveryFailure: () =>
+              logger?.error('password_reset_delivery_failed', { errorCategory: 'delivery_failed' }),
           },
+          authConfiguration.passwordResetDelivery,
         )
       : undefined;
   const identityProfileAuthorizationPolicy = createIdentityProfileAuthorizationPolicy({
@@ -404,6 +424,8 @@ export function createPostgresCreatorIdentityComposition(
         });
   const reservationService = createReservationService({
     offeringRepository,
+    capabilityRepository,
+    servicePolicyCatalogRepository,
     customerRepository,
     reservationRepository,
     paidCommerceRepository,
@@ -473,7 +495,9 @@ export function createPostgresCreatorIdentityComposition(
     service: createCreatorIdentityService({
       identityRepository,
       capabilityRepository,
+      capabilityManagement: new PostgresCapabilityManagementRepository(database.database),
       idGenerator,
+      servicePolicyCatalogRepository,
       unitOfWork,
     }),
     offeringService: createServiceOfferingService({
@@ -481,6 +505,7 @@ export function createPostgresCreatorIdentityComposition(
       capabilityRepository,
       offeringRepository,
       idGenerator,
+      servicePolicyCatalogRepository,
       distributionAssetRepository,
       publicOfferingUrlGenerator: new StaticPublicOfferingUrlGenerator(publicOrigin),
       canonicalEventRecorder,
@@ -496,6 +521,7 @@ export function createPostgresCreatorIdentityComposition(
       idGenerator,
       canonicalEventRecorder,
       notificationPort,
+      servicePolicyCatalogRepository,
       unitOfWork,
       contractRepository,
     }),
@@ -521,6 +547,10 @@ export function createPostgresCreatorIdentityComposition(
       receiptStore: new PostgresProviderWebhookReceiptStore(database.database),
       applicationPolicy: providerFactApplicationPolicy,
       activationGuard: new RealMoneyActivationGuard(realMoneyRuntimeConfiguration),
+    }),
+    servicePolicyCatalogRepository,
+    servicePolicyAdminService: createServicePolicyAdminService({
+      repository: servicePolicyCatalogRepository,
     }),
   };
 }

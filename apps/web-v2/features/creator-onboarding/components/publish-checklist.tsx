@@ -3,18 +3,26 @@
 import { Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { ServiceOffering } from '../api/use-creator-services';
 
 interface PublishChecklistProps {
   service: ServiceOffering;
+  identityReady: boolean;
 }
 
 /**
  * 发布前验证清单组件
  * 检查服务是否满足发布条件
  */
-export function PublishChecklist({ service }: PublishChecklistProps) {
+export function PublishChecklist({ service, identityReady }: PublishChecklistProps) {
   const checks = [
+    {
+      id: 'identity',
+      label: '商业身份',
+      description: '需要填写商业身份的名称和简介',
+      passed: identityReady,
+    },
     {
       id: 'title',
       label: '服务名称',
@@ -44,6 +52,18 @@ export function PublishChecklist({ service }: PublishChecklistProps) {
       label: '请求说明',
       description: '需要说明消费者如何请求此服务',
       passed: !!service.requestInstructions && service.requestInstructions.length > 0,
+    },
+    {
+      id: 'template',
+      label: '服务模板',
+      description: '需要选择与能力匹配的平台服务模板',
+      passed: !!service.templateId,
+    },
+    {
+      id: 'policy',
+      label: '政策检查',
+      description: service.policyReason ?? '需要通过自动检查或人工审核',
+      passed: service.policyStatus === 'auto_approved' || service.policyStatus === 'approved',
     },
   ];
 
@@ -80,9 +100,15 @@ export function PublishChecklist({ service }: PublishChecklistProps) {
               </div>
               <div className="flex-1">
                 <p className="font-medium text-sm">{check.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {check.description}
-                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">{check.description}</p>
+                {check.id === 'identity' && !check.passed && (
+                  <Link
+                    className="inline-block min-h-11 pt-2 text-sm underline"
+                    href="/profile/edit"
+                  >
+                    完善商业身份
+                  </Link>
+                )}
               </div>
             </div>
           ))}

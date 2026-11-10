@@ -6,9 +6,7 @@ import type { ProductDatabase } from '../../persistence/postgres/postgres-databa
 import { commerceReferences } from '../../../database/schema/commerce-reference.js';
 import { commerceProfiles } from '../../../database/schema/commerce-profile.js';
 import { serviceOfferings } from '../../../database/schema/creator-identity.js';
-import {
-  PublicCreatorProfileResponseSchema,
-} from '../../../contracts/api/v1/public-creator-profile-contracts.js';
+import { PublicCreatorProfileResponseSchema } from '../../../contracts/api/v1/public-creator-profile-contracts.js';
 import { ApiErrorEnvelopeSchema } from '../../../contracts/api/v1/system-contracts.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
 
@@ -27,7 +25,7 @@ export function registerPublicCreatorProfileRoutes(
 ): void {
   /**
    * GET /api/v1/public/creator-profile/:commerceRef
-   * 
+   *
    * 通过 C号 获取 Creator Profile 和其公开的 Offerings
    */
   server.get(
@@ -102,8 +100,9 @@ export function registerPublicCreatorProfileRoutes(
         .where(
           and(
             eq(serviceOfferings.creatorId, commerceProfileId),
-            eq(serviceOfferings.state, 'published')
-          )
+            eq(serviceOfferings.state, 'published'),
+            eq(serviceOfferings.policyStatus, 'approved'),
+          ),
         );
 
       const offerings = offeringRows.map((row) => ({

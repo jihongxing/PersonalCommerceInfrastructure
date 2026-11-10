@@ -5,9 +5,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { StableSharingTools } from '@/components/commerce/stable-sharing-tools';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/context';
 import { homepageUrl } from '@/lib/public-homepage';
+import { copyText } from '@/lib/copy-text';
 
 type ApiErrorResponse = { error?: { message?: string } };
 type ApiResponse<T> = { data: T | null; error: ApiErrorResponse | null };
@@ -78,7 +80,7 @@ function HomepageSummaryCard({ reference }: { reference?: string }) {
   const profile = query.data?.configuration.commerceProfile;
 
   return (
-    <section className="border-y py-6" aria-labelledby="homepage-summary-heading">
+    <section className="dashboard-panel" aria-labelledby="homepage-summary-heading">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">当前对外状态</p>
@@ -142,10 +144,9 @@ function HomepageSummaryCard({ reference }: { reference?: string }) {
               <Button
                 variant="outline"
                 onClick={() =>
-                  void navigator.clipboard
-                    .writeText(url)
-                    .then(() => setMessage('链接已复制'))
-                    .catch(() => setMessage('复制失败，请手动复制链接'))
+                  void copyText(url).then((copied) =>
+                    setMessage(copied ? '链接已复制' : '复制失败，请手动复制链接'),
+                  )
                 }
               >
                 复制链接
@@ -178,7 +179,7 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-10 space-y-10">
+    <div className="container mx-auto max-w-5xl px-4 py-8 space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">Creator Studio</p>
         <h1 className="mt-2 text-3xl font-semibold">工作台</h1>
@@ -201,7 +202,8 @@ export default function DashboardPage() {
         )}
       </div>
       <HomepageSummaryCard reference={reference.data} />
-      <section className="border-t pt-6" aria-labelledby="start-heading">
+      <StableSharingTools reference={reference.data} />
+      <section className="dashboard-panel" aria-labelledby="start-heading">
         <h2 id="start-heading" className="text-xl font-semibold">
           开始使用
         </h2>
@@ -262,7 +264,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
-      <section className="border-t pt-6" aria-labelledby="requests-heading">
+      <section className="dashboard-panel" aria-labelledby="requests-heading">
         <h2 id="requests-heading" className="text-xl font-semibold">
           预约审核
         </h2>

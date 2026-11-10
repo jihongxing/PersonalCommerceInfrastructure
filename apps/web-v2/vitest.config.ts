@@ -11,15 +11,10 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'vitest.setup.ts',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/dist/**',
-      ],
+      exclude: ['node_modules/', 'vitest.setup.ts', '**/*.d.ts', '**/*.config.*', '**/dist/**'],
     },
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/.next/**'],
   },
   resolve: {
     alias: {

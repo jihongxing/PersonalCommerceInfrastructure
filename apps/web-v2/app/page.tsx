@@ -15,21 +15,21 @@ export default function Home() {
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12 sm:py-20">
-      <nav className="flex items-center justify-between gap-4 border-b pb-5">
-        <span className="font-semibold">Personal Commerce</span>
-        <Link
-          className="text-sm underline underline-offset-4"
-          href={isAuthenticated ? '/dashboard' : '/auth/login'}
-        >
+    <div className="public-shell">
+      <nav className="public-header">
+        <Link href="/" className="creator-brand">
+          <span className="creator-brand-mark">C</span>
+          <span>创作者主页</span>
+        </Link>
+        <Link className="public-login" href={isAuthenticated ? '/dashboard' : '/auth/login'}>
           {isAuthenticated ? '进入工作台' : '创作者登录'}
         </Link>
       </nav>
-      <section className="py-12">
-        <h1 className="text-2xl font-semibold">查找商业主页</h1>
-        <p className="mt-3 text-sm text-muted-foreground">输入创作者分享的 C 号</p>
+      <main className="lookup-main">
+        <h1 className="text-2xl font-semibold">查找创作者</h1>
+        <p className="mt-3 text-sm text-muted-foreground">通过 C 号访问创作者的公开主页</p>
         <form
-          className="mt-6 flex flex-wrap gap-3"
+          className="mt-6 grid gap-3"
           onSubmit={(event) => {
             event.preventDefault();
             const reference = normalizeReference(value);
@@ -40,12 +40,12 @@ export default function Home() {
             router.push(`/r/${reference}`);
           }}
         >
-          <label htmlFor="reference" className="sr-only">
+          <label htmlFor="reference" className="text-sm font-medium">
             C 号
           </label>
           <Input
             id="reference"
-            className="min-w-0 flex-1 font-mono"
+            className="min-w-0 font-mono"
             value={value}
             onChange={(event) => {
               setValue(event.target.value);
@@ -57,7 +57,7 @@ export default function Home() {
           />
           <Button type="submit">
             <Search className="mr-2 h-4 w-4" />
-            查找
+            查找主页
           </Button>
         </form>
         {error && (
@@ -65,7 +65,10 @@ export default function Home() {
             C 号格式不正确，请检查后重试。
           </p>
         )}
-      </section>
-    </main>
+        <p className="mt-4 text-sm text-muted-foreground">
+          C 号是公开定位标识，不代表身份或资质认证。
+        </p>
+      </main>
+    </div>
   );
 }

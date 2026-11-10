@@ -1,160 +1,149 @@
-import { test, expect } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
+import { test, expect, api, apiBase, login, submitRequest } from './fixtures';
 
-test.describe('Creator Dashboard Flow', () => {
-  const CREATOR_TOKEN = process.env.CREATOR_TOKEN || 'test-creator-token';
+test('Creator confirms a real request and verifies the visitor fulfillment code', async ({
+  page,
+  request,
+  seed,
+}) => {
+  const result = await submitRequest(request, seed, '确认测试访客');
+  await login(page, seed);
+  const card = page.getByTestId('request-card').filter({ hasText: '确认测试访客' });
+  await card.getByRole('button', { name: '确认预约', exact: true }).click();
+  await expect(card).toHaveCount(0);
+  await page.getByRole('tab', { name: /已确认/ }).click();
+  const confirmed = page.getByTestId('request-card').filter({ hasText: '确认测试访客' });
+  const submitted = await api(
+    request,
+    'GET',
+    `/api/v1/public/requests/${result.resultAccessToken}`,
+  );
+  const invalidCode =
+    submitted.fulfillmentCode.code === 'FC-00000000' ? 'FC-11111111' : 'FC-00000000';
+  await confirmed.getByLabel('访客提供的履约码').fill(invalidCode);
+  const failedFulfillment = page.waitForResponse(
+    (response) =>
+      response.url().includes('/confirm-fulfillment') && response.request().method() === 'POST',
+  );
+  await confirmed.getByRole('button', { name: '确认履约', exact: true }).click();
+  expect((await failedFulfillment).ok()).toBe(false);
+  await expect(page.getByRole('status')).not.toHaveText('已确认履约');
+  const afterFailure = await api(
+    request,
+    'GET',
+    `/api/v1/public/requests/${result.resultAccessToken}`,
+  );
+  expect(afterFailure.fulfillmentCode.status).toBe('pending');
+  await confirmed.getByLabel('访客提供的履约码').fill(submitted.fulfillmentCode.code);
+  await confirmed.getByRole('button', { name: '确认履约', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('已确认履约');
+  const outcome = await api(request, 'GET', `/api/v1/public/requests/${result.resultAccessToken}`);
+  expect(outcome.state).toBe('confirmed');
+  expect(outcome.fulfillmentCode.status).toBe('fulfilled');
+  await page.goto(`/o/${result.resultAccessToken}`);
+  await expect(page.getByText('已使用', { exact: true })).toBeVisible();
+});
 
-  test.beforeEach(async ({ page }) => {
-    page.setViewportSize({ width: 1280, height: 720 });
+test('Creator rejects a real request and logout protects the deep link', async ({
+  page,
+  request,
+  seed,
+}) => {
+  const result = await submitRequest(request, seed, '拒绝测试访客');
+  await login(page, seed);
+  await page
+    .getByTestId('request-card')
+    .filter({ hasText: '拒绝测试访客' })
+    .getByRole('button', { name: '拒绝预约' })
+    .click();
+  await expect(page.getByTestId('request-card')).toHaveCount(0);
+  expect(
+    (await api(request, 'GET', `/api/v1/public/requests/${result.resultAccessToken}`)).state,
+  ).toBe('declined');
+  await page.goto(`/o/${result.resultAccessToken}`);
+  await expect(page.getByTestId('status-badge')).toHaveText('已拒绝');
+  await expect(
+    page.getByText('很抱歉，Creator 无法接受此预约。您可以尝试调整需求后重新提交。'),
+  ).toBeVisible();
+  await page.goto('/requests');
+  await page.getByRole('button', { name: '退出登录' }).click();
+  await page.goto('/requests');
+  await expect(page).toHaveURL(/\/auth\/login/);
+});
+
+test('another Creator and a repeated decision cannot change the request', async ({
+  page,
+  request,
+  seed,
+}) => {
+  const result = await submitRequest(request, seed, '权限测试访客');
+  const submitted = await api(
+    request,
+    'GET',
+    `/api/v1/public/requests/${result.resultAccessToken}`,
+  );
+  const other = await api(request, 'POST', '/api/v1/auth/signup', undefined, {
+    email: `plan116-other-${randomUUID()}@example.test`,
+    password: 'Plan116-Acceptance9!',
+    name: '另一个创作者',
   });
-
-  test('E2E: Creator dashboard displays submitted requests', async ({ page }) => {
-    // Step 1: 访问 Creator 仪表板
-    await page.goto(`/dashboard?token=${CREATOR_TOKEN}`);
-    await page.waitForLoadState('networkidle');
-
-    // Step 2: 验证仪表板标题
-    const title = page.locator('h1:has-text("Creator 仪表板")');
-    await expect(title).toBeVisible();
-
-    // Step 3: 验证标签页存在
-    const submittedTab = page.locator('[role="tab"]:has-text("待处理")');
-    const confirmedTab = page.locator('[role="tab"]:has-text("已确认")');
-    
-    await expect(submittedTab).toBeVisible();
-    await expect(confirmedTab).toBeVisible();
-
-    // Step 4: 验证请求卡片显示
-    const requestCards = page.locator('[data-testid="request-card"]');
-    const cardCount = await requestCards.count();
-    
-    if (cardCount > 0) {
-      await expect(requestCards.first()).toBeVisible();
-    }
+  const path = `${apiBase}/api/v1/creator/requests/${submitted.actionId}`;
+  const unauthorized = await request.post(`${path}/confirm`, {
+    headers: { authorization: `Bearer ${other.accessToken}` },
   });
+  expect(unauthorized.status()).toBe(403);
+  expect(
+    (await api(request, 'GET', `/api/v1/public/requests/${result.resultAccessToken}`)).state,
+  ).toBe('submitted');
 
-  test('E2E: Creator can confirm a request', async ({ page }) => {
-    await page.goto(`/dashboard?token=${CREATOR_TOKEN}`);
-    await page.waitForLoadState('networkidle');
-
-    // 查找待处理的请求卡片
-    const requestCard = page.locator('[data-testid="request-card"]').first();
-    
-    // 检查是否有待处理的请求
-    const hasSubmittedState = await requestCard
-      .locator('text=待处理')
-      .isVisible()
-      .catch(() => false);
-
-    if (hasSubmittedState) {
-      // 点击确认按钮
-      const confirmButton = requestCard.locator('button:has-text("确认预约")');
-      await confirmButton.click();
-
-      // 验证按钮变为禁用
-      await expect(confirmButton).toBeDisabled();
-
-      // 等待请求完成
-      await page.waitForResponse(
-        response => 
-          response.url().includes('/confirm') && response.status() === 200
-      ).catch(() => {});
-
-      // 等待页面刷新
-      await page.waitForTimeout(1000);
-    }
+  await login(page, seed);
+  await page
+    .getByTestId('request-card')
+    .filter({ hasText: '权限测试访客' })
+    .getByRole('button', { name: '确认预约' })
+    .click();
+  await expect(page.getByRole('status')).toHaveText('已确认预约');
+  const repeated = await request.post(`${path}/decline`, {
+    headers: { authorization: `Bearer ${seed.token}` },
   });
+  expect(repeated.status()).toBe(409);
+  await page.goto(`/o/${result.resultAccessToken}`);
+  await expect(page.getByTestId('status-badge')).toHaveText('已确认');
+});
 
-  test('E2E: Creator can decline a request', async ({ page }) => {
-    await page.goto(`/dashboard?token=${CREATOR_TOKEN}`);
-    await page.waitForLoadState('networkidle');
-
-    // 查找待处理的请求卡片
-    const requestCard = page.locator('[data-testid="request-card"]').first();
-
-    // 检查是否有待处理的请求
-    const hasSubmittedState = await requestCard
-      .locator('text=待处理')
-      .isVisible()
-      .catch(() => false);
-
-    if (hasSubmittedState) {
-      // 点击拒绝按钮
-      const declineButton = requestCard.locator('button:has-text("拒绝预约")');
-      await declineButton.click();
-
-      // 验证按钮变为禁用
-      await expect(declineButton).toBeDisabled();
-
-      // 等待请求完成
-      await page.waitForResponse(
-        response => 
-          response.url().includes('/decline') && response.status() === 200
-      ).catch(() => {});
-    }
+test('expired session without a refresh token returns to login with its destination', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'pci.auth.session',
+      JSON.stringify({ accessToken: 'expired', userEmail: 'expired@example.test', expiresAt: 1 }),
+    );
   });
+  await page.goto('/profile?tab=public');
+  await expect(page).toHaveURL(/\/auth\/login\?/);
+  await expect(page.getByLabel('邮箱地址')).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/profile?tab=public');
+  expect(await page.evaluate(() => localStorage.getItem('pci.auth.session'))).toBeNull();
+});
 
-  test('E2E: Creator can confirm fulfillment', async ({ page }) => {
-    await page.goto(`/dashboard?token=${CREATOR_TOKEN}`);
-    await page.waitForLoadState('networkidle');
-
-    // 点击已确认标签页
-    const confirmedTab = page.locator('[role="tab"]:has-text("已确认")');
-    await confirmedTab.click();
-
-    await page.waitForLoadState('networkidle');
-
-    // 查找已确认的请求卡片
-    const requestCard = page.locator('[data-testid="request-card"]').first();
-
-    // 检查是否有履约码
-    const fulfillmentCode = requestCard
-      .locator('[data-testid="fulfillment-code"]');
-    
-    if (await fulfillmentCode.isVisible().catch(() => false)) {
-      // 验证履约码显示
-      await expect(fulfillmentCode).toContainText('FC-');
-
-      // 查找确认履约按钮
-      const confirmButton = requestCard.locator('button:has-text("确认履约")');
-      
-      if (await confirmButton.isVisible().catch(() => false)) {
-        await confirmButton.click();
-
-        // 验证请求完成
-        await page.waitForResponse(
-          response => 
-            response.url().includes('/confirm-fulfillment') && response.status() === 200
-        ).catch(() => {});
-      }
-    }
-  });
-
-  test('E2E: Tab switching works correctly', async ({ page }) => {
-    await page.goto(`/dashboard?token=${CREATOR_TOKEN}`);
-    await page.waitForLoadState('networkidle');
-
-    // 点击已确认标签页
-    const confirmedTab = page.locator('[role="tab"]:has-text("已确认")');
-    await confirmedTab.click();
-
-    // 验证内容切换
-    const tabPanel = page.locator('[role="tabpanel"]');
-    await expect(tabPanel).toContainText('已确认');
-
-    // 点击回到待处理
-    const submittedTab = page.locator('[role="tab"]:has-text("待处理")');
-    await submittedTab.click();
-
-    // 验证内容切换回去
-    await expect(tabPanel).not.toContainText('已确认');
-  });
-
-  test('E2E: Unauthenticated user sees auth error', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    // 验证需要认证的提示
-    const authError = page.locator('text=需要认证');
-    await expect(authError).toBeVisible();
-  });
+test('dashboard and homepage management expose the same stable sharing URL', async ({
+  page,
+  seed,
+}) => {
+  await login(page, seed, '/dashboard');
+  const sharing = page.getByRole('region', { name: '对外稳定分享工具' });
+  await expect(sharing.getByRole('img', { name: '对外主页地址二维码' })).toBeVisible();
+  const url = await sharing.locator('.stable-sharing-url').innerText();
+  expect(new URL(url).pathname).toBe(`/r/${seed.reference}`);
+  const image = sharing.getByRole('img', { name: '对外主页地址二维码' });
+  const qr = await image.getAttribute('src');
+  await page.goto('/profile?tab=public');
+  await expect(sharing.locator('.stable-sharing-url')).toHaveText(url);
+  await expect(image).toHaveAttribute('src', qr!);
+  await expect(sharing.getByRole('link', { name: '下载二维码' })).toHaveAttribute(
+    'download',
+    'commerce-homepage.png',
+  );
 });

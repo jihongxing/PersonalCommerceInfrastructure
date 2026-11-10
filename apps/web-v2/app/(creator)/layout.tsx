@@ -1,92 +1,100 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/auth/context';
+import { usePathname, useRouter } from 'next/navigation';
+import { Award, BriefcaseBusiness, Home, Inbox, LogOut, UserRound } from 'lucide-react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { useAuth } from '@/lib/auth/context';
 
-function CreatorHeader() {
+const navigation = [
+  { href: '/dashboard', label: '工作台', icon: Home },
+  { href: '/profile', label: '资料', icon: UserRound },
+  { href: '/capabilities', label: '能力', icon: Award },
+  { href: '/services', label: '服务', icon: BriefcaseBusiness },
+  { href: '/requests', label: '请求', icon: Inbox },
+];
+
+function CreatorShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const router = useRouter();
   const { user, logout, error } = useAuth();
 
-  const handleLogout = async () => {
+  async function handleLogout() {
     try {
       await logout();
       router.push('/auth/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
+    } catch {
+      // The authentication context exposes the error to the user.
     }
-  };
+  }
+
+  const links = navigation.map(({ href, label, icon: Icon }) => {
+    const active = pathname === href || pathname.startsWith(`${href}/`);
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={active ? 'active' : undefined}
+        aria-current={active ? 'page' : undefined}
+      >
+        <Icon size={20} aria-hidden="true" />
+        <span>{label}</span>
+      </Link>
+    );
+  });
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">Creator Studio</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {user?.email && `欢迎, ${user.email}`}
+    <div className="creator-shell">
+      <aside className="creator-sidebar">
+        <Link className="creator-brand" href="/dashboard">
+          <span className="creator-brand-mark">C</span>
+          <span>
+            创作者工作台<small>CREATOR WORKSPACE</small>
+          </span>
+        </Link>
+        <nav className="creator-side-nav" aria-label="创作者导航">
+          {links}
+        </nav>
+        <Link className="creator-home-link" href="/">
+          返回公开查找
+        </Link>
+      </aside>
+      <div className="creator-content">
+        <header className="creator-topbar">
+          <span>创作者工作台</span>
+          <div className="creator-account">
+            <Link href="/profile" className="creator-account-name" title={user?.email}>
+              {user?.email || '个人资料'}
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="creator-logout"
+              title="退出登录"
+              aria-label="退出登录"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        </header>
+        {error && (
+          <p role="alert" className="creator-auth-error">
+            退出登录失败：{error}
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/">
-            <Button variant="ghost">返回首页</Button>
-          </Link>
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-          >
-            登出
-          </Button>
-        </div>
+        )}
+        <main className="creator-main">{children}</main>
       </div>
-      {error && <p role="alert" className="container mx-auto px-4 pb-3 text-sm text-red-700">登出失败：{error}</p>}
-    </header>
+      <nav className="creator-mobile-nav" aria-label="创作者导航">
+        {links}
+      </nav>
+    </div>
   );
 }
 
-export default function CreatorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CreatorLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
-        {/* Creator 专用页头 */}
-        <CreatorHeader />
-
-        {/* Creator 导航菜单 */}
-        <nav className="border-b bg-muted/30">
-          <div className="container mx-auto px-4 flex gap-8 overflow-x-auto whitespace-nowrap text-sm">
-            <Link href="/dashboard" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              工作台
-            </Link>
-            <Link href="/profile" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              个人资料
-            </Link>
-            <Link href="/capabilities" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              能力
-            </Link>
-            <Link href="/services" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              服务
-            </Link>
-            <Link href="/requests" className="py-3 px-2 border-b-2 border-transparent hover:border-foreground transition-colors">
-              预约审核
-            </Link>
-          </div>
-        </nav>
-
-        {/* 主内容区 */}
-        <main>{children}</main>
-
-        {/* 页脚 */}
-        <footer className="border-t mt-16">
-          <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-            <p>Personal Commerce - Creator Dashboard</p>
-          </div>
-        </footer>
-      </div>
+      <CreatorShell>{children}</CreatorShell>
     </ProtectedRoute>
   );
 }

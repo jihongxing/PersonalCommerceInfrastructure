@@ -1,24 +1,23 @@
 import { EditCapabilityForm } from '@/features/creator-onboarding/components/edit-capability-form';
 
 interface EditCapabilityPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function EditCapabilityPage({
-  params,
-}: EditCapabilityPageProps) {
+export default async function EditCapabilityPage({ params }: EditCapabilityPageProps) {
+  const { id } = await params;
   return (
-    <div className="py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">编辑能力</h1>
-        <p className="text-muted-foreground mt-2">
-          更新您的能力信息
-        </p>
-      </div>
+    <div className="creator-list-page">
+      <header className="creator-page-heading">
+        <div>
+          <h1>编辑能力</h1>
+          <p>更新您的能力信息</p>
+        </div>
+      </header>
 
-      <EditCapabilityForm capabilityId={params.id} />
+      <EditCapabilityForm capabilityId={id} />
     </div>
   );
 }

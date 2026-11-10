@@ -2,42 +2,68 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { useCreatorIdentity } from '@/features/creator-onboarding/api/use-creator-identity';
 import {
   useServiceOffering,
   usePublishService,
   useUnpublishService,
+  useDistributionAsset,
+  useRecordDistribution,
 } from '@/features/creator-onboarding/api/use-creator-services';
 import { FileText, Edit2, AlertCircle } from 'lucide-react';
 import { PublishChecklist } from '@/features/creator-onboarding/components/publish-checklist';
 
 export default function ServiceDetailPage() {
   const params = useParams<{ id: string }>();
-  const { toast } = useToast();
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null,
+  );
   const { data: service, isLoading, isError, refetch } = useServiceOffering(params.id);
+  const identity = useCreatorIdentity();
   const publishMutation = usePublishService(params.id);
   const unpublishMutation = useUnpublishService(params.id);
+  const asset = useDistributionAsset(params.id, service?.state === 'published');
+  const distributionMutation = useRecordDistribution(params.id);
+
+  async function handleDistribution() {
+    if (!confirm('请确认您已经在外部渠道实际分发了此服务。确定记录吗？')) return;
+    setFeedback(null);
+    try {
+      await distributionMutation.mutateAsync();
+      setFeedback({ type: 'success', message: '已记录实际对外分发' });
+    } catch (error) {
+      setFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '记录失败，请重试',
+      });
+    }
+  }
 
   // 检查发布前的条件
+  const identityReady = Boolean(
+    identity.data?.profile.displayName.trim() && identity.data?.profile.bio.trim(),
+  );
   const canPublish =
+    !identity.isPending &&
+    !identity.isError &&
+    identityReady &&
     !!service?.title &&
     !!service?.description &&
     service?.capabilityIds &&
     service.capabilityIds.length > 0 &&
     !!service?.availabilityDescription &&
-    !!service?.requestInstructions;
+    !!service?.requestInstructions &&
+    !!service?.templateId &&
+    (service.policyStatus === 'auto_approved' || service.policyStatus === 'approved');
 
   async function handlePublish() {
     if (!canPublish) {
-      toast({
-        title: '错误',
-        description: '请完成所有必填项后再发布',
-        variant: 'destructive',
-      });
+      setFeedback({ type: 'error', message: '请完成所有必填项后再发布' });
       return;
     }
 
@@ -45,18 +71,14 @@ export default function ServiceDetailPage() {
       return;
     }
 
+    setFeedback(null);
     try {
       await publishMutation.mutateAsync();
-      toast({
-        title: '成功',
-        description: '服务已发布',
-      });
+      setFeedback({ type: 'success', message: '服务已发布' });
     } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '发布失败，请重试',
-        variant: 'destructive',
+      setFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '发布失败，请重试',
       });
     }
   }
@@ -66,18 +88,14 @@ export default function ServiceDetailPage() {
       return;
     }
 
+    setFeedback(null);
     try {
       await unpublishMutation.mutateAsync();
-      toast({
-        title: '成功',
-        description: '服务已下架',
-      });
+      setFeedback({ type: 'success', message: '服务已下架' });
     } catch (error) {
-      toast({
-        title: '错误',
-        description:
-          error instanceof Error ? error.message : '下架失败，请重试',
-        variant: 'destructive',
+      setFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '下架失败，请重试',
       });
     }
   }
@@ -96,7 +114,14 @@ export default function ServiceDetailPage() {
   }
 
   if (isError) {
-    return <div role="alert" className="py-8 space-y-3"><p>服务加载失败，请重试。</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>;
+    return (
+      <div role="alert" className="py-8 space-y-3">
+        <p>服务加载失败，请重试。</p>
+        <Button variant="outline" onClick={() => refetch()}>
+          重试
+        </Button>
+      </div>
+    );
   }
 
   if (!service) {
@@ -115,11 +140,20 @@ export default function ServiceDetailPage() {
   }
 
   return (
-    <div className="py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{service.title}</h1>
-          <Badge className="mt-2" variant={service.state === 'published' ? 'default' : service.state === 'draft' ? 'secondary' : 'outline'}>
+    <div className="creator-list-page">
+      <div className="creator-page-heading">
+        <div className="min-w-0">
+          <h1 className="break-words">{service.title}</h1>
+          <Badge
+            className="mt-2"
+            variant={
+              service.state === 'published'
+                ? 'default'
+                : service.state === 'draft'
+                  ? 'secondary'
+                  : 'outline'
+            }
+          >
             {service.state === 'published'
               ? '已发布'
               : service.state === 'draft'
@@ -128,12 +162,12 @@ export default function ServiceDetailPage() {
           </Badge>
         </div>
         <div className="flex gap-2">
-          <Link href={`/services/${service.id}/edit`}>
-            <Button variant="outline">
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href={`/services/${service.id}/edit`}>
               <Edit2 className="w-4 h-4 mr-2" />
               编辑
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -146,21 +180,19 @@ export default function ServiceDetailPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">服务描述</p>
-              <p className="whitespace-pre-wrap mt-1">{service.description}</p>
+              <p className="whitespace-pre-wrap break-words mt-1">{service.description}</p>
             </div>
 
             <div>
               <p className="text-sm text-muted-foreground">可用性</p>
-              <p className="whitespace-pre-wrap mt-1">
+              <p className="whitespace-pre-wrap break-words mt-1">
                 {service.availabilityDescription}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-muted-foreground">预约要求</p>
-              <p className="whitespace-pre-wrap mt-1">
-                {service.requestInstructions}
-              </p>
+              <p className="whitespace-pre-wrap break-words mt-1">{service.requestInstructions}</p>
             </div>
 
             {service.appearance?.priceRangeMin !== undefined && (
@@ -183,11 +215,35 @@ export default function ServiceDetailPage() {
                 ))}
               </div>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">政策检查</p>
+              <p className="mt-1">
+                {service.policyStatus === 'approved' || service.policyStatus === 'auto_approved'
+                  ? '已通过'
+                  : service.policyStatus === 'review_required'
+                    ? `等待平台审核${service.policyReason ? `：${service.policyReason}` : ''}`
+                    : service.policyStatus === 'rejected'
+                      ? `未通过${service.policyReason ? `：${service.policyReason}` : ''}`
+                      : '待检查'}
+              </p>
+            </div>
           </CardContent>
         </Card>
 
         {/* 发布前检查清单 */}
-        {(service.state === 'draft' || service.state === 'unpublished') && <PublishChecklist service={service} />}
+        {(service.state === 'draft' || service.state === 'unpublished') &&
+          (identity.isPending ? (
+            <p role="status">正在检查商业身份...</p>
+          ) : identity.isError ? (
+            <div role="alert" className="space-y-2">
+              <p>无法检查商业身份，请重试。</p>
+              <Button variant="outline" onClick={() => identity.refetch()}>
+                重试
+              </Button>
+            </div>
+          ) : (
+            <PublishChecklist service={service} identityReady={identityReady} />
+          ))}
 
         {/* 发布状态和操作 */}
         <Card>
@@ -196,6 +252,9 @@ export default function ServiceDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {feedback && (
+                <p role={feedback.type === 'error' ? 'alert' : 'status'}>{feedback.message}</p>
+              )}
               {(service.state === 'draft' || service.state === 'unpublished') && (
                 <>
                   <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
@@ -224,6 +283,46 @@ export default function ServiceDetailPage() {
 
               {service.state === 'published' && (
                 <>
+                  <section aria-label="服务分发" className="space-y-3">
+                    <h2 className="font-medium">服务分发</h2>
+                    {asset.isPending ? (
+                      <p role="status">正在加载分发状态...</p>
+                    ) : asset.isError ? (
+                      <div role="alert">
+                        <p>无法加载分发状态。</p>
+                        <Button variant="outline" onClick={() => asset.refetch()}>
+                          重试
+                        </Button>
+                      </div>
+                    ) : asset.data ? (
+                      <>
+                        <a
+                          className="break-all underline"
+                          href={asset.data.publicUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {asset.data.publicUrl}
+                        </a>
+                        <p>
+                          {asset.data.state === 'distributed'
+                            ? '已记录实际对外分发'
+                            : '分享资产已生成，尚未记录实际对外分发'}
+                        </p>
+                        {asset.data.state === 'generated' && (
+                          <Button
+                            variant="outline"
+                            onClick={handleDistribution}
+                            disabled={distributionMutation.isPending}
+                          >
+                            {distributionMutation.isPending ? '记录中...' : '确认已实际对外分发'}
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <p>未找到此服务的分发资产，请联系支持。</p>
+                    )}
+                  </section>
                   <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded">
                     <div className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5">✓</div>
                     <p className="text-sm text-green-700">
@@ -235,7 +334,7 @@ export default function ServiceDetailPage() {
                     variant="outline"
                     onClick={handleUnpublish}
                     disabled={unpublishMutation.isPending}
-                    className="w-full text-destructive"
+                    className="w-full text-red-800"
                   >
                     {unpublishMutation.isPending ? '下架中...' : '下架服务'}
                   </Button>
@@ -256,9 +355,9 @@ export default function ServiceDetailPage() {
 
         {/* 返回按钮 */}
         <div>
-          <Link href="/services">
-            <Button variant="outline">返回服务列表</Button>
-          </Link>
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/services">返回服务列表</Link>
+          </Button>
         </div>
       </div>
     </div>

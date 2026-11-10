@@ -30,6 +30,11 @@ import type {
   CommerceIdentityRepository,
 } from '../creator-identity/creator-identity-repositories.js';
 import type { OfferingRepository } from './offering-repositories.js';
+import {
+  evaluateOfferingPolicy,
+  isPolicyPublishable,
+} from '../../modules/service-policy/catalog.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 
 export type CreateServiceOfferingCommand = OfferingDraftInput;
 
@@ -51,6 +56,7 @@ export interface ServiceOfferingUseCaseDependencies {
   readonly capabilityRepository: CapabilityRepository;
   readonly offeringRepository: OfferingRepository;
   readonly idGenerator: IdGenerator;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly publicOfferingUrlGenerator?: PublicOfferingUrlGenerator;
   readonly canonicalEventRecorder?: CanonicalEventRecorder;
@@ -75,8 +81,9 @@ export class CreateServiceOfferingUseCase implements ApplicationUseCase<
       creatorId,
       command,
     );
-    await this.dependencies.offeringRepository.save(offering);
-    return offering;
+    const evaluated = await evaluatePolicy(offering, this.dependencies);
+    await this.dependencies.offeringRepository.save(evaluated);
+    return evaluated;
   }
 }
 
@@ -112,8 +119,9 @@ export class UpdateServiceOfferingUseCase implements ApplicationUseCase<
     await assertCreatorCanSaveOffering(creatorId, command.capabilityIds, this.dependencies);
 
     const offering = updateOffering(existing, command);
-    await this.dependencies.offeringRepository.save(offering);
-    return offering;
+    const evaluated = await evaluatePolicy(offering, this.dependencies);
+    await this.dependencies.offeringRepository.save(evaluated);
+    return evaluated;
   }
 }
 
@@ -122,6 +130,29 @@ export class GetCreatorOfferingsUseCase implements ApplicationUseCase<void, read
 
   public execute(_command: void, context: ActorContext): Promise<readonly Offering[]> {
     return this.dependencies.offeringRepository.findByOwnerId(creatorIdFromContext(context));
+  }
+}
+
+export class GetCreatorDistributionAssetUseCase implements ApplicationUseCase<
+  OfferingCommand,
+  DistributionAsset | undefined
+> {
+  public constructor(private readonly dependencies: ServiceOfferingUseCaseDependencies) {}
+
+  public async execute(
+    command: OfferingCommand,
+    context: ActorContext,
+  ): Promise<DistributionAsset | undefined> {
+    const creatorId = creatorIdFromContext(context);
+    const offering = await requireOwnedOffering(
+      command.offeringId,
+      creatorId,
+      this.dependencies.offeringRepository,
+    );
+    return requireM4Dependency(
+      this.dependencies.distributionAssetRepository,
+      'Distribution Asset repository',
+    ).findById(offering.id);
   }
 }
 
@@ -158,6 +189,19 @@ export class PublishServiceOfferingUseCase implements ApplicationUseCase<
       });
     }
 
+    const evaluated = await evaluatePolicy(offering, this.dependencies);
+    if (!isPolicyPublishable(evaluated.policyStatus)) {
+      await this.dependencies.offeringRepository.save(evaluated);
+      throw new ApplicationError({
+        category: evaluated.policyStatus === 'rejected' ? 'validation' : 'conflict',
+        code:
+          evaluated.policyStatus === 'rejected'
+            ? 'service_offering_policy_rejected'
+            : 'service_offering_policy_review_required',
+        message: evaluated.policyReason ?? '服务需要通过平台政策检查后才能发布。',
+      });
+    }
+
     const distributionAssetRepository = requireM4Dependency(
       this.dependencies.distributionAssetRepository,
       'Distribution Asset repository',
@@ -187,7 +231,13 @@ export class PublishServiceOfferingUseCase implements ApplicationUseCase<
           message: '请先完善商业资料中的名称和简介。',
         });
       }
-      const publishedOffering = publishOffering(offering);
+      const publishedOffering = {
+        ...publishOffering(evaluated),
+        // Auto approval becomes the durable Approved state at publication.
+        ...(evaluated.policyStatus === 'auto_approved'
+          ? { policyStatus: 'approved' as const }
+          : {}),
+      };
       const existingAsset = await scopedAssetRepository.findById(offering.id);
       const distributionAsset =
         existingAsset ??
@@ -287,26 +337,25 @@ export class RecordExternalDistributionUseCase implements ApplicationUseCase<
       'Canonical Event recorder',
     );
     const unitOfWork = requireM4Dependency(this.dependencies.unitOfWork, 'Unit of Work');
-    const asset = await distributionAssetRepository.findById(offering.id);
-
-    if (asset === undefined) {
-      throw new ApplicationError({
-        category: 'not_found',
-        code: 'distribution_asset_not_found',
-        message: 'Distribution Asset not found.',
-      });
-    }
-    if (asset.state === 'distributed') {
-      throw new ApplicationError({
-        category: 'conflict',
-        code: 'distribution_asset_already_distributed',
-        message: 'External distribution has already been recorded for this Distribution Asset.',
-      });
-    }
-
     return unitOfWork.execute(async (scope) => {
       const scopedAssetRepository =
         scope.distributionAssetRepository ?? distributionAssetRepository;
+      const asset = await (scopedAssetRepository.findByIdForUpdate?.(offering.id) ??
+        scopedAssetRepository.findById(offering.id));
+      if (asset === undefined) {
+        throw new ApplicationError({
+          category: 'not_found',
+          code: 'distribution_asset_not_found',
+          message: 'Distribution Asset not found.',
+        });
+      }
+      if (asset.state === 'distributed') {
+        throw new ApplicationError({
+          category: 'conflict',
+          code: 'distribution_asset_already_distributed',
+          message: 'External distribution has already been recorded for this Distribution Asset.',
+        });
+      }
       const distributedAsset = recordExternalDistribution(asset);
       await scopedAssetRepository.save(distributedAsset);
       await canonicalEventRecorder.record(
@@ -360,6 +409,41 @@ async function assertCreatorCanSaveOffering(
       message: 'Service Offering capabilities must belong to the authenticated Creator.',
     });
   }
+}
+
+async function evaluatePolicy(
+  offering: Offering,
+  dependencies: ServiceOfferingUseCaseDependencies,
+): Promise<Offering> {
+  const catalog = await dependencies.servicePolicyCatalogRepository.getSnapshot();
+  const capabilities = await Promise.all(
+    offering.capabilityIds.map((capabilityId) =>
+      dependencies.capabilityRepository.findById(capabilityId),
+    ),
+  );
+  const evaluation = evaluateOfferingPolicy({
+    catalog,
+    title: offering.title,
+    description: offering.description,
+    requestInstructions: offering.requestInstructions,
+    availabilityDescription: offering.availability?.description,
+    appearanceText:
+      offering.appearance === undefined ? undefined : JSON.stringify(offering.appearance),
+    capabilityNames: capabilities
+      .filter((capability) => capability !== undefined)
+      .map((capability) => capability.name),
+    capabilityCatalogItemIds: capabilities.map((capability) => capability?.catalogItemId),
+    capabilityStatuses: capabilities.map((capability) => capability?.catalogStatus),
+    templateId: offering.templateId,
+    appearance: offering.appearance !== undefined,
+  });
+  return {
+    ...offering,
+    ...(evaluation.template === undefined ? {} : { templateId: evaluation.template.id }),
+    policyStatus: evaluation.status,
+    policyReason: evaluation.reason,
+    policyVersion: evaluation.policyVersion,
+  };
 }
 
 async function requireOwnedOffering(

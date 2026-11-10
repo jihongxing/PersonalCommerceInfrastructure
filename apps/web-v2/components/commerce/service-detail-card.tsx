@@ -1,7 +1,10 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import type { ServiceOfferingDetail, ServiceOfferingAppearance } from '@/features/service-booking/api/use-service-offering';
+import type {
+  ServiceOfferingDetail,
+  ServiceOfferingAppearance,
+} from '@/features/service-booking/api/use-service-offering';
 
 interface ServiceDetailCardProps {
   offering: ServiceOfferingDetail;
@@ -58,9 +61,9 @@ function AppearanceInfo({ appearance }: { appearance: ServiceOfferingAppearance 
       {appearance.externalUrl && (
         <div>
           <p className="text-sm font-medium mb-1">相关链接</p>
-          <a 
-            href={appearance.externalUrl} 
-            target="_blank" 
+          <a
+            href={appearance.externalUrl}
+            target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-primary hover:underline"
           >
@@ -76,14 +79,20 @@ export function ServiceDetailCard({ offering }: ServiceDetailCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{offering.title}</CardTitle>
-        <CardDescription>{offering.description}</CardDescription>
+        <CardTitle role="heading" aria-level={2}>
+          {offering.title}
+        </CardTitle>
+        <CardDescription className="whitespace-pre-wrap break-words">
+          {offering.description}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* 可用性说明 */}
         <div>
           <p className="text-sm font-medium mb-2">可用时间</p>
-          <p className="text-sm text-muted-foreground">{offering.availabilityDescription}</p>
+          <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+            {offering.availabilityDescription}
+          </p>
         </div>
 
         {/* 活动详情（如果是 Appearance 类型） */}

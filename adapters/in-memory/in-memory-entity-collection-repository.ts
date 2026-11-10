@@ -30,6 +30,11 @@ export class InMemoryEntityCollectionRepository<Entity>
     return Promise.resolve();
   }
 
+  public delete(id: string): Promise<void> {
+    this.entities.delete(id);
+    return Promise.resolve();
+  }
+
   public createSnapshot(): unknown {
     return structuredClone(this.entities);
   }

@@ -1,213 +1,135 @@
 'use client';
 
-import { useMemo } from 'react';
 import Link from 'next/link';
+import { ArrowRight, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCreatorServices,
-  ServiceOffering,
+  type ServiceOffering,
 } from '@/features/creator-onboarding/api/use-creator-services';
-import { Plus, Edit2, Eye } from 'lucide-react';
+
+function ServiceList({ services, empty }: { services: ServiceOffering[]; empty: string }) {
+  if (!services.length) return <p className="py-6 text-sm text-muted-foreground">{empty}</p>;
+  return (
+    <ul className="creator-list-rows">
+      {services.map((service) => (
+        <li key={service.id} className="creator-service-row">
+          <div className="min-w-0">
+            <h3>{service.title}</h3>
+            <p>{service.description}</p>
+            {service.policyStatus &&
+              service.policyStatus !== 'auto_approved' &&
+              service.policyStatus !== 'approved' && (
+                <p className="mt-1 text-xs text-amber-700">
+                  {service.policyStatus === 'review_required'
+                    ? '等待平台审核'
+                    : service.policyStatus === 'rejected'
+                      ? '未通过政策检查'
+                      : '待检查'}
+                  {service.policyReason ? `：${service.policyReason}` : ''}
+                </p>
+              )}
+          </div>
+          <div className="creator-service-actions">
+            <Button asChild variant="ghost" size="icon" className="min-h-11 min-w-11">
+              <Link
+                href={`/services/${service.id}/edit`}
+                aria-label={`编辑${service.title}`}
+                title="编辑服务"
+              >
+                <Pencil aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="min-h-11 min-w-11">
+              <Link
+                href={`/services/${service.id}`}
+                aria-label={`查看${service.title}`}
+                title="查看服务"
+              >
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function ServicesPage() {
-  const { data: services, isLoading, isError, refetch } = useCreatorServices();
-
-  // 使用 useMemo 优化分类计算
-  const { draftServices, publishedServices, archivedServices } = useMemo(() => {
-    return {
-      draftServices: services?.filter((s) => s.state === 'draft') || [],
-      publishedServices: services?.filter((s) => s.state === 'published') || [],
-      archivedServices:
-        services?.filter((s) => s.state === 'archived' || s.state === 'unpublished') || [],
-    };
-  }, [services]);
-
-  if (isLoading) {
-    return (
-      <div className="py-8">
-        <div className="mb-6">
-          <Skeleton className="h-8 w-48" />
-        </div>
-        <div className="max-w-4xl mx-auto space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </div>
-    );
-  }
-
-  const isEmpty = !services || services.length === 0;
-
-  const ServiceCard = ({ service }: { service: ServiceOffering }) => (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="font-semibold text-lg mb-1">{service.title}</h3>
-            <Badge
-              variant={
-                service.state === 'published'
-                  ? 'default'
-                  : service.state === 'draft'
-                    ? 'secondary'
-                    : 'outline'
-              }
-            >
-              {service.state === 'published'
-                ? '已发布'
-                : service.state === 'draft'
-                  ? '草稿'
-                  : '已下架'}
-            </Badge>
-          </div>
-            <Link href={`/services/${service.id}`}>
-              <Button variant="ghost" size="sm" aria-label="查看服务" title="查看服务">
-                <Eye className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href={`/services/${service.id}/edit`}>
-              <Button variant="ghost" size="sm" aria-label="编辑服务" title="编辑服务">
-                <Edit2 className="w-4 h-4" />
-              </Button>
-            </Link>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-          {service.description}
-        </p>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {service.capabilityIds?.map((id: string) => (
-            <Badge key={id} variant="outline" className="text-xs">
-              能力 {id.substring(0, 8)}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="flex gap-2 text-xs text-muted-foreground">
-          {service.state === 'draft' && (
-            <span className="text-xs text-muted-foreground">
-              编辑后可发布
-            </span>
-          )}
-          {service.state === 'published' && (
-            <span className="text-xs text-green-600">
-              ✓ 已发布
-            </span>
-          )}
-          {service.state === 'archived' && (
-            <span className="text-xs text-gray-500">
-              已下架
-            </span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+  const { data, isLoading, isError, refetch } = useCreatorServices();
+  const services = data ?? [];
+  const drafts = services.filter((service) => service.state === 'draft');
+  const published = services.filter((service) => service.state === 'published');
+  const archived = services.filter(
+    (service) => service.state === 'archived' || service.state === 'unpublished',
   );
 
   return (
-    <div className="py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="creator-list-page">
+      <header className="creator-page-heading">
         <div>
-          <h1 className="text-3xl font-bold">服务管理</h1>
-          <p className="text-muted-foreground mt-2">
-            创建和管理您提供的服务
-          </p>
+          <h1>服务</h1>
+          <p>管理可向访客提供的服务</p>
         </div>
-        <Link href="/services/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
+        <Button asChild className="min-h-11">
+          <Link href="/services/new">
+            <Plus aria-hidden="true" />
             创建服务
-          </Button>
-        </Link>
-      </div>
-
-      {isError ? (
-        <div role="alert" className="space-y-3"><p>服务加载失败，请重试。</p><Button variant="outline" onClick={() => refetch()}>重试</Button></div>
-      ) : isEmpty ? (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground mb-4">
-              还没有创建任何服务。创建服务来让消费者发现和预约。
-            </p>
-            <Link href="/services/new">
-              <Button variant="outline">创建第一个服务</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      ) : (
-        <Tabs defaultValue="draft" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="draft">
-              草稿 <Badge className="ml-2" variant="secondary">{draftServices.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="published">
-              已发布 <Badge className="ml-2">{publishedServices.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="archived">
-              已下架 <Badge className="ml-2" variant="outline">{archivedServices.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="draft" className="mt-6">
-            {draftServices.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground">
-                    还没有草稿服务。
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {draftServices.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="published" className="mt-6">
-            {publishedServices.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground">
-                    还没有已发布的服务。
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {publishedServices.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="archived" className="mt-6">
-            {archivedServices.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground">
-                    还没有已下架的服务。
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {archivedServices.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      )}
+          </Link>
+        </Button>
+      </header>
+      <section className="creator-list-surface" aria-labelledby="services-heading">
+        <div className="creator-list-heading">
+          <h2 id="services-heading">我的服务</h2>
+          {!isLoading && !isError && <span>{services.length} 项</span>}
+        </div>
+        {isLoading ? (
+          <div className="space-y-4 py-5" aria-label="正在加载服务">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+        ) : isError ? (
+          <div role="alert" className="space-y-3 py-5">
+            <p>服务加载失败，请重试。</p>
+            <Button variant="outline" onClick={() => void refetch()}>
+              重试
+            </Button>
+          </div>
+        ) : !services.length ? (
+          <div className="space-y-4 py-5">
+            <p className="text-sm text-muted-foreground">还没有创建服务。</p>
+            <Button asChild variant="outline">
+              <Link href="/services/new">创建第一个服务</Link>
+            </Button>
+          </div>
+        ) : (
+          <Tabs defaultValue="draft" className="mt-5">
+            <TabsList className="grid h-auto w-full max-w-md grid-cols-3">
+              <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="draft">
+                草稿 ({drafts.length})
+              </TabsTrigger>
+              <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="published">
+                已发布 ({published.length})
+              </TabsTrigger>
+              <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="archived">
+                已下架 ({archived.length})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="draft">
+              <ServiceList services={drafts} empty="还没有草稿服务。" />
+            </TabsContent>
+            <TabsContent value="published">
+              <ServiceList services={published} empty="还没有已发布的服务。" />
+            </TabsContent>
+            <TabsContent value="archived">
+              <ServiceList services={archived} empty="还没有已下架的服务。" />
+            </TabsContent>
+          </Tabs>
+        )}
+      </section>
     </div>
   );
 }

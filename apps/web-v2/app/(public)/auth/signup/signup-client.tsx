@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth/context';
-import { UnauthenticatedRoute } from '@/components/auth/protected-route';
 
 /**
  * 密码强度检查
@@ -149,14 +148,14 @@ export default function SignupPage() {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="auth-surface">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">开始使用</h1>
           <p className="mt-2 text-slate-600">创建您的商业账户</p>
         </div>
 
-        <Card>
+        <Card className="auth-panel">
           <CardHeader>
             <CardTitle>创建账户</CardTitle>
             <CardDescription>注册以管理您的服务和能力</CardDescription>
@@ -166,7 +165,7 @@ export default function SignupPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 错误提示 */}
               {displayError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-600">{displayError}</p>
                 </div>
               )}
@@ -179,6 +178,7 @@ export default function SignupPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -195,6 +195,7 @@ export default function SignupPage() {
                 <Input
                   id="name"
                   type="text"
+                  autoComplete="name"
                   placeholder="你的名称"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -211,6 +212,7 @@ export default function SignupPage() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -231,6 +233,7 @@ export default function SignupPage() {
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -274,7 +277,7 @@ export default function SignupPage() {
         </Card>
 
         {/* 底部提示 */}
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-slate-600">
           注册即代表您同意我们的{' '}
           <Link href="/terms" className="text-slate-600 hover:text-slate-700 underline">
             服务条款

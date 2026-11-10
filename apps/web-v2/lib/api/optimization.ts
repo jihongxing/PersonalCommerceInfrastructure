@@ -2,7 +2,7 @@
  * Token 缓存和请求去重策略
  */
 
-import { getSession, AuthSession } from '@/lib/auth/session';
+import { getSession } from '@/lib/auth/session';
 
 /**
  * Token 缓存管理
@@ -72,7 +72,7 @@ export class TokenCacheManager {
  * 防止重复提交相同请求
  */
 export class RequestDeduplicator {
-  private pendingRequests: Map<string, Promise<any>> = new Map();
+  private pendingRequests: Map<string, Promise<unknown>> = new Map();
   private readonly REQUEST_TIMEOUT = 30 * 1000; // 30 秒
 
   /**
@@ -93,7 +93,7 @@ export class RequestDeduplicator {
     // 如果已有相同请求在进行，返回现有 Promise
     const existing = this.pendingRequests.get(key);
     if (existing) {
-      return existing;
+      return existing as Promise<T>;
     }
 
     // 创建新请求的 Promise
@@ -110,7 +110,7 @@ export class RequestDeduplicator {
       });
 
     // 设置超时，防止请求永远挂起
-    const timeoutPromise = new Promise((_, reject) =>
+    const timeoutPromise = new Promise<T>((_, reject) =>
       setTimeout(() => {
         this.pendingRequests.delete(key);
         reject(new Error('Request timeout'));
@@ -118,9 +118,9 @@ export class RequestDeduplicator {
     );
 
     // 存储到待处理中
-    this.pendingRequests.set(key, Promise.race([promise, timeoutPromise]));
-
-    return this.pendingRequests.get(key)!;
+    const pending = Promise.race([promise, timeoutPromise]);
+    this.pendingRequests.set(key, pending);
+    return pending;
   }
 
   /**

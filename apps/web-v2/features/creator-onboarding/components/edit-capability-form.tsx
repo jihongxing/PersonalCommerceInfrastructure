@@ -28,7 +28,13 @@ interface EditCapabilityFormProps {
 export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const { data: capability, isLoading: capabilityLoading } = useCapability(capabilityId);
+  const {
+    data: capability,
+    isLoading: capabilityLoading,
+    isError,
+    error,
+    refetch,
+  } = useCapability(capabilityId);
   const updateMutation = useUpdateCapability(capabilityId);
 
   const form = useForm<CapabilityFormData>({
@@ -36,6 +42,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
     defaultValues: {
       name: '',
       description: '',
+      catalogItemId: '',
     },
   });
 
@@ -62,8 +69,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
     } catch (error) {
       toast({
         title: '错误',
-        description:
-          error instanceof Error ? error.message : '操作失败，请重试',
+        description: error instanceof Error ? error.message : '操作失败，请重试',
         variant: 'destructive',
       });
     }
@@ -73,7 +79,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
 
   if (capabilityLoading) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl" role="status" aria-label="正在加载能力">
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-32" />
@@ -88,17 +94,29 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="max-w-2xl space-y-4">
+        <p role="alert" className="text-destructive">
+          {error instanceof Error ? error.message : '加载能力失败，请重试'}
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={() => void refetch()}>重试</Button>
+          <Button variant="outline" onClick={() => router.push('/capabilities')}>
+            返回能力列表
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!capability) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl">
         <Card>
           <CardContent className="pt-6">
             <p className="text-muted-foreground">能力未找到</p>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/capabilities')}
-              className="mt-4"
-            >
+            <Button variant="outline" onClick={() => router.push('/capabilities')} className="mt-4">
               返回能力列表
             </Button>
           </CardContent>
@@ -108,7 +126,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl">
       <Card>
         <CardHeader>
           <CardTitle>编辑能力</CardTitle>
@@ -126,16 +144,10 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
                       能力名称 <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="例如: 英语口语教学"
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <Input placeholder="例如: 英语口语教学" {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      最多 100 字符
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">最多 100 字符</p>
                   </FormItem>
                 )}
               />
@@ -167,11 +179,7 @@ export function EditCapabilityForm({ capabilityId }: EditCapabilityFormProps) {
 
               {/* 提交按钮 */}
               <div className="flex gap-3 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={isLoading} className="flex-1">
                   {isLoading ? '保存中...' : '保存更改'}
                 </Button>
                 <Button

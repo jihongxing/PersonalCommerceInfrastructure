@@ -23,6 +23,8 @@ import type {
   CommerceIdentityRepository,
 } from '../creator-identity/creator-identity-repositories.js';
 import type { OfferingRepository } from '../service-offering/offering-repositories.js';
+import { isOfferingPolicyCurrentlyPublishable, isPolicyPublishable } from '../../modules/service-policy/catalog.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 import type { AppearanceOfferingMetadata } from '../../modules/service-offering/offering.js';
 import { assertCreatorOwnership } from '../../modules/shared/actors.js';
 import { DomainTransitionError } from '../../modules/shared/domain-error.js';
@@ -67,6 +69,7 @@ export interface CustomerRequestUseCaseDependencies {
   readonly canonicalEventRecorder: CanonicalEventRecorder;
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly contractRepository?: ContractRepository;
 }
 
@@ -115,10 +118,7 @@ export class GetPublicOfferingUseCase {
     offeringId: string,
     context: PublicRequestContext,
   ): Promise<PublicOfferingDetails> {
-    const offering = await requireRequestableOffering(
-      offeringId,
-      this.dependencies.offeringRepository,
-    );
+    const offering = await requireRequestableOffering(offeringId, this.dependencies);
     const identity = await this.dependencies.identityRepository.findById(offering.creatorId);
 
     if (identity === undefined || identity.state !== 'published') {
@@ -166,10 +166,7 @@ export class SubmitCustomerRequestUseCase {
     context: PublicRequestContext,
   ): Promise<CommerceAction> {
     const input = normalizeRequestInput(command);
-    const offering = await requireRequestableOffering(
-      command.offeringId,
-      this.dependencies.offeringRepository,
-    );
+    const offering = await requireRequestableOffering(command.offeringId, this.dependencies);
 
     const action = await this.dependencies.unitOfWork.execute(async (scope) => {
       const customerRepository = scope.customerRepository ?? this.dependencies.customerRepository;
@@ -208,13 +205,13 @@ export class SubmitCustomerRequestUseCase {
         await customerRepository.save(customer);
       }
       await commerceActionRepository.save(action);
-      
+
       // Generate fulfillment code for offline service verification
       const fulfillmentCode = FulfillmentCode.generate(action.id);
       await (scope.fulfillmentCodeRepository ?? this.dependencies.fulfillmentCodeRepository).save(
         fulfillmentCode,
       );
-      
+
       await this.dependencies.canonicalEventRecorder.record(
         {
           actorId: customer.id,
@@ -442,9 +439,10 @@ export class GetCustomerRequestResultUseCase {
         ? {
             fulfillmentCode: {
               code: fulfillmentCode.getCode(),
-              status: fulfillmentCode.getStatus() === 'pending' && fulfillmentCode.isExpired()
-                ? 'expired' as const
-                : fulfillmentCode.getStatus(),
+              status:
+                fulfillmentCode.getStatus() === 'pending' && fulfillmentCode.isExpired()
+                  ? ('expired' as const)
+                  : fulfillmentCode.getStatus(),
               expiresAt: fulfillmentCode.getExpiresAt().toISOString(),
               ...(fulfillmentCode.getFulfilledAt() === undefined
                 ? {}
@@ -492,13 +490,42 @@ function normalizeRequestInput(command: SubmitCustomerRequestCommand): CustomerR
 
 async function requireRequestableOffering(
   offeringId: string,
-  offeringRepository: OfferingRepository,
+  dependencies: CustomerRequestUseCaseDependencies,
 ) {
-  const offering = await offeringRepository.findById(offeringId);
+  const offering = await dependencies.offeringRepository.findById(offeringId);
 
-  if (offering === undefined || offering.state !== 'published') {
+  if (
+    offering === undefined ||
+    offering.state !== 'published' ||
+    (offering.policyStatus !== undefined && !isPolicyPublishable(offering.policyStatus))
+  ) {
     throw unavailableOffering();
   }
+
+  const capabilities = await Promise.all(
+    offering.capabilityIds.map((capabilityId) =>
+      dependencies.capabilityRepository.findById(capabilityId),
+    ),
+  );
+  const allowed = isOfferingPolicyCurrentlyPublishable(
+    {
+      title: offering.title,
+      description: offering.description,
+      requestInstructions: offering.requestInstructions,
+      availabilityDescription: offering.availability?.description,
+      appearanceText:
+        offering.appearance === undefined ? undefined : JSON.stringify(offering.appearance),
+      capabilityNames: capabilities
+        .filter((capability) => capability !== undefined)
+        .map((capability) => capability.name),
+      capabilityCatalogItemIds: capabilities.map((capability) => capability?.catalogItemId),
+      capabilityStatuses: capabilities.map((capability) => capability?.catalogStatus),
+      templateId: offering.templateId,
+      appearance: offering.appearance !== undefined,
+    },
+    await dependencies.servicePolicyCatalogRepository.getSnapshot(),
+  );
+  if (!allowed) throw unavailableOffering();
 
   return offering;
 }

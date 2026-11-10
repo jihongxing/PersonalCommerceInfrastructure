@@ -1,6 +1,6 @@
 {
   "name": "personal-commerce-infrastructure",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.22.0",
@@ -19,6 +19,7 @@
     "db:generate": "drizzle-kit generate",
     "db:check": "pnpm build && node scripts/database/check-migrations.mjs",
     "db:migrate": "tsx scripts/database/migrate.ts",
+    "db:seed:service-policy": "tsx scripts/database/import-service-policy-catalog.ts",
     "db:integration:check": "pnpm db:check && tsx scripts/database/check-integration-environment.ts",
     "check:openapi": "pnpm build && node scripts/contracts/check-openapi-compatibility.mjs",
     "smoke:deployment": "node scripts/operations/deployment-smoke.mjs",

@@ -34,6 +34,7 @@ import type { PrivateCommerceRelationshipService } from '../../../applications/p
 import type { PrivateSelfDeclaredExternalRelationshipService } from '../../../applications/private-external-platform-relationship/private-self-declared-external-relationship-service.js';
 import { registerCustomerRequestRoutes } from '../../../adapters/transport/http/customer-request-routes.js';
 import { registerServiceOfferingRoutes } from '../../../adapters/transport/http/service-offering-routes.js';
+import { registerServicePolicyRoutes } from '../../../adapters/transport/http/service-policy-routes.js';
 import { registerSystemRoutes } from '../../../adapters/transport/http/system-routes.js';
 import type { AuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
 import type { CreatorIdentityService } from '../../../applications/creator-identity/creator-identity-service.js';
@@ -65,6 +66,9 @@ import { registerPublicCommerceHomepageRoutes } from '../../../adapters/transpor
 import type { PublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { createPublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
+import type { PostgresDatabaseConnection } from '../../../adapters/persistence/postgres/postgres-database.js';
+import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
+import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 
 export interface ApiServerDependencies {
   readonly publicHomepageService?: PublicHomepageService;
@@ -90,13 +94,16 @@ export interface ApiServerDependencies {
   readonly commercialPilotOperationsService?: CommercialPilotOperationsService;
   readonly reservationService?: ReservationService;
   readonly contractService?: ContractService;
-  readonly database?: any; // ProductDatabase，用于公开 API
+  readonly database?: PostgresDatabaseConnection; // 用于公开 API
   readonly corsAllowedOrigins?: readonly string[];
   readonly publicOrigin?: string;
   readonly checkReadiness?: () => Promise<void>;
   readonly logger?: SafeLogger;
   readonly performanceMonitor?: PerformanceMonitor;
   readonly browserTracingEndpoint?: string;
+  readonly rateLimitMax?: number;
+  readonly servicePolicyCatalogRepository?: ServicePolicyCatalogRepository;
+  readonly servicePolicyAdminService?: ServicePolicyAdminService;
 }
 
 export async function createApiServer(
@@ -130,7 +137,13 @@ export async function createApiServer(
     dependencies.commercialPilotOperationsService !== undefined ||
     dependencies.reservationService !== undefined ||
     dependencies.contractService !== undefined ||
-    dependencies.providerWebhookRuntime !== undefined;
+    dependencies.providerWebhookRuntime !== undefined ||
+    dependencies.servicePolicyCatalogRepository !== undefined ||
+    dependencies.servicePolicyAdminService !== undefined;
+  const servicePolicyCatalogRepository =
+    dependencies.servicePolicyCatalogRepository ?? composition.servicePolicyCatalogRepository;
+  const servicePolicyAdminService =
+    dependencies.servicePolicyAdminService ?? composition.servicePolicyAdminService;
 
   const requests = new WeakMap<object, { span: Span; context: Context; started: bigint }>();
   server.addHook('onRequest', (request, reply, done) => {
@@ -220,7 +233,7 @@ export async function createApiServer(
         'authorization, content-type, traceparent, tracestate, x-correlation-id',
       );
       reply.header('access-control-expose-headers', 'x-correlation-id');
-      reply.header('access-control-allow-methods', 'GET, POST, PATCH, OPTIONS');
+      reply.header('access-control-allow-methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     }
 
     if (request.method === 'OPTIONS') {
@@ -232,7 +245,7 @@ export async function createApiServer(
 
   // Register rate limiting before routes
   await server.register(rateLimit, {
-    max: 100, // 每个 IP 每分钟 100 次请求
+    max: dependencies.rateLimitMax ?? 100, // 每个 IP 每分钟 100 次请求，隔离测试环境可覆盖
     timeWindow: '1 minute',
     skipOnError: false,
     errorResponseBuilder: (_request, context) => ({
@@ -262,6 +275,7 @@ export async function createApiServer(
           description: 'Authenticated Commerce Reference viewing.',
         },
         { name: 'service-offering', description: 'Creator Service Offerings.' },
+        { name: 'service-policy', description: 'Controlled capability and service catalog.' },
         { name: 'customer-request', description: 'Public Storefront and Customer Requests.' },
         { name: 'external-observation', description: 'Pilot Operations external facts.' },
         { name: 'paid-commerce', description: 'VS-02 controlled paid-service earnings flow.' },
@@ -276,11 +290,13 @@ export async function createApiServer(
 
   registerApiErrorHandling(server, dependencies.logger);
   const homepageUnavailable = (): Promise<never> =>
-    Promise.reject(new ApplicationError({
-      category: 'internal',
-      code: 'homepage_storage_unavailable',
-      message: 'Homepage storage is unavailable.',
-    }));
+    Promise.reject(
+      new ApplicationError({
+        category: 'internal',
+        code: 'homepage_storage_unavailable',
+        message: 'Homepage storage is unavailable.',
+      }),
+    );
   registerPublicCommerceHomepageRoutes(server, {
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     service:
@@ -356,6 +372,13 @@ export async function createApiServer(
   registerServiceOfferingRoutes(server, {
     authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
     service: dependencies.serviceOfferingService ?? composition.offeringService,
+  });
+  registerServicePolicyRoutes(server, {
+    authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    operationsAuthContextProvider:
+      dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
+    catalogRepository: servicePolicyCatalogRepository,
+    adminService: servicePolicyAdminService,
   });
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,

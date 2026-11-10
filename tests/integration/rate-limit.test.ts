@@ -28,38 +28,15 @@ describe('API Rate Limiting', () => {
     });
   });
 
-  it('verifies rate limit plugin is registered', async () => {
-    // 创建新的 server 实例
-    const testServer = await createApiServer();
-
+  it('uses an explicit limit for an isolated API instance', async () => {
+    const testServer = await createApiServer({ rateLimitMax: 2 });
     try {
-      const responses: Map<number, number> = new Map();
-
-      // 发送 110 个请求
-      for (let i = 0; i < 110; i++) {
-        const response = await testServer.inject({
-          method: 'GET',
-          url: '/api/v1/health',
-        });
-        const count = responses.get(response.statusCode) ?? 0;
-        responses.set(response.statusCode, count + 1);
-      }
-
-      // 验证插件已注册（即使 inject() 下行为可能不同）
-      // 至少应该看到所有请求都得到了处理
-      let totalResponses = 0;
-      for (const count of responses.values()) {
-        totalResponses += count;
-      }
-      
-      expect(totalResponses).toBe(110);
-      
-      // 如果看到 429，说明限流工作正常
-      const has429 = responses.has(429);
-      
-      // 记录结果以便调试
-      console.log('Response distribution:', Object.fromEntries(responses));
-      console.log('Rate limiting active:', has429);
+      const first = await testServer.inject({ method: 'GET', url: '/api/v1/health' });
+      const second = await testServer.inject({ method: 'GET', url: '/api/v1/health' });
+      const limited = await testServer.inject({ method: 'GET', url: '/api/v1/health' });
+      expect(first.statusCode).toBe(200);
+      expect(second.statusCode).toBe(200);
+      expect(limited.statusCode).toBe(429);
     } finally {
       await testServer.close();
     }
@@ -81,12 +58,13 @@ describe('API Rate Limiting', () => {
         url: '/api/v1/health',
       });
 
-      if (response.statusCode === 429) {
-        const body = response.json();
-        expect(body).toHaveProperty('error', 'TOO_MANY_REQUESTS');
-        expect(body).toHaveProperty('message');
-        expect(body.message).toMatch(/Rate limit exceeded/u);
+      expect(response.statusCode).toBe(429);
+      const body: unknown = response.json();
+      expect(body).toHaveProperty('error', 'TOO_MANY_REQUESTS');
+      if (body === null || typeof body !== 'object' || !('message' in body)) {
+        throw new Error('Rate-limit response has no message.');
       }
+      expect(body.message).toMatch(/Rate limit exceeded/u);
     } finally {
       await testServer.close();
     }

@@ -5,6 +5,7 @@ export interface ServiceOffering {
   id: string;
   creatorId: string;
   capabilityIds: string[];
+  templateId?: string;
   title: string;
   description: string;
   availabilityDescription: string;
@@ -15,12 +16,57 @@ export interface ServiceOffering {
   };
   requestInstructions: string;
   state: 'draft' | 'published' | 'unpublished' | 'archived';
+  policyStatus?: 'not_checked' | 'auto_approved' | 'review_required' | 'approved' | 'rejected';
+  policyReason?: string;
+  policyVersion?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface DistributionAsset {
+  offeringId: string;
+  publicUrl: string;
+  state: 'generated' | 'distributed';
+}
+
+export function useDistributionAsset(offeringId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['distribution-asset', offeringId],
+    enabled: !!offeringId && enabled,
+    queryFn: async (): Promise<DistributionAsset | null> => {
+      const { data, error } = await apiClient.GET(
+        '/api/v1/creator/offerings/{offeringId}/distribution',
+        {
+          params: { path: { offeringId } },
+        },
+      );
+      if (error) throw new Error(error.error?.message || '无法加载分发状态');
+      return data as DistributionAsset | null;
+    },
+  });
+}
+
+export function useRecordDistribution(offeringId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await apiClient.POST(
+        '/api/v1/creator/offerings/{offeringId}/distribution',
+        {
+          params: { path: { offeringId } },
+        },
+      );
+      if (error) throw new Error(error.error?.message || '记录分发失败');
+      return data as DistributionAsset;
+    },
+    onSuccess: (asset) => queryClient.setQueryData(['distribution-asset', offeringId], asset),
+    onError: () => queryClient.invalidateQueries({ queryKey: ['distribution-asset', offeringId] }),
+  });
+}
+
 export interface CreateServiceOfferingRequest {
   capabilityIds: string[];
+  templateId?: string;
   title: string;
   description: string;
   availabilityDescription: string;
@@ -34,6 +80,7 @@ export interface CreateServiceOfferingRequest {
 
 export interface UpdateServiceOfferingRequest {
   capabilityIds?: string[];
+  templateId?: string;
   title?: string;
   description?: string;
   availabilityDescription?: string;
@@ -52,19 +99,17 @@ export function useCreatorServices() {
   return useQuery({
     queryKey: ['creator-services'],
     queryFn: async (): Promise<ServiceOffering[]> => {
-      const { data, error } = await apiClient.GET(
+      const { data, error } = await apiClient.GET<{ offerings?: ServiceOffering[] }>(
         '/api/v1/creator/offerings',
         {
           params: {
             header: {},
           },
-        }
+        },
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load services'
-        );
+        throw new Error(error.error?.message || 'Failed to load services');
       }
 
       if (!data) {
@@ -84,19 +129,21 @@ export function useServiceOffering(offeringId: string) {
   return useQuery({
     queryKey: ['creator-service', offeringId],
     queryFn: async (): Promise<ServiceOffering | null> => {
-      const { data, error } = await apiClient.GET('/api/v1/creator/offerings');
+      const { data, error } = await apiClient.GET<{ offerings: ServiceOffering[] }>(
+        '/api/v1/creator/offerings',
+      );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load service offering'
-        );
+        throw new Error(error.error?.message || 'Failed to load service offering');
       }
 
       if (!data) {
         throw new Error('No data returned from API');
       }
 
-      return (data.offerings as ServiceOffering[]).find((offering) => offering.id === offeringId) ?? null;
+      return (
+        (data.offerings as ServiceOffering[]).find((offering) => offering.id === offeringId) ?? null
+      );
     },
     enabled: !!offeringId,
     retry: 1,
@@ -111,17 +158,12 @@ export function useCreateService() {
 
   return useMutation({
     mutationFn: async (request: CreateServiceOfferingRequest) => {
-      const { data, error } = await apiClient.POST(
-        '/api/v1/creator/offerings',
-        {
-          body: request,
-        }
-      );
+      const { data, error } = await apiClient.POST('/api/v1/creator/offerings', {
+        body: request,
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to create service'
-        );
+        throw new Error(error.error?.message || 'Failed to create service');
       }
 
       if (!data) {
@@ -146,20 +188,15 @@ export function useUpdateService(offeringId: string) {
 
   return useMutation({
     mutationFn: async (request: UpdateServiceOfferingRequest) => {
-      const { data, error } = await apiClient.PATCH(
-        '/api/v1/creator/offerings/{offeringId}',
-        {
-          params: {
-            path: { offeringId },
-          },
-          body: request,
-        }
-      );
+      const { data, error } = await apiClient.PATCH('/api/v1/creator/offerings/{offeringId}', {
+        params: {
+          path: { offeringId },
+        },
+        body: request,
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to update service'
-        );
+        throw new Error(error.error?.message || 'Failed to update service');
       }
 
       if (!data) {
@@ -193,13 +230,11 @@ export function usePublishService(offeringId: string) {
           params: {
             path: { offeringId },
           },
-        }
+        },
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to publish service'
-        );
+        throw new Error(error.error?.message || 'Failed to publish service');
       }
 
       if (!data) {
@@ -233,13 +268,11 @@ export function useUnpublishService(offeringId: string) {
           params: {
             path: { offeringId },
           },
-        }
+        },
       );
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to unpublish service'
-        );
+        throw new Error(error.error?.message || 'Failed to unpublish service');
       }
 
       if (!data) {
@@ -267,19 +300,14 @@ export function useDeleteService(offeringId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await apiClient.DELETE(
-        '/api/v1/creator/offerings/{offeringId}',
-        {
-          params: {
-            path: { offeringId },
-          },
-        }
-      );
+      const { error } = await apiClient.DELETE('/api/v1/creator/offerings/{offeringId}', {
+        params: {
+          path: { offeringId },
+        },
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to delete service'
-        );
+        throw new Error(error.error?.message || 'Failed to delete service');
       }
 
       return true;

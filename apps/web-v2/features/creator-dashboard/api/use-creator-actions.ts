@@ -19,28 +19,23 @@ export function useConfirmRequest(accessToken?: string) {
         throw new Error('Access token required');
       }
 
-      const { data, error } = await apiClient.POST(
-        '/api/v1/creator/requests/{actionId}/confirm',
-        {
-          params: {
-            path: { actionId },
-          },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      
+      const { data, error } = await apiClient.POST('/api/v1/creator/requests/{actionId}/confirm', {
+        params: {
+          path: { actionId },
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to confirm request'
-        );
+        throw new Error(error.error?.message || 'Failed to confirm request');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return data as CreatorDecisionResponse;
     },
     onSuccess: () => {
@@ -63,28 +58,23 @@ export function useDeclineRequest(accessToken?: string) {
         throw new Error('Access token required');
       }
 
-      const { data, error } = await apiClient.POST(
-        '/api/v1/creator/requests/{actionId}/decline',
-        {
-          params: {
-            path: { actionId },
-          },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      
+      const { data, error } = await apiClient.POST('/api/v1/creator/requests/{actionId}/decline', {
+        params: {
+          path: { actionId },
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to decline request'
-        );
+        throw new Error(error.error?.message || 'Failed to decline request');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return data as CreatorDecisionResponse;
     },
     onSuccess: () => {
@@ -101,7 +91,13 @@ export function useConfirmFulfillment(accessToken?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (actionId: string): Promise<CreatorDecisionResponse> => {
+    mutationFn: async ({
+      actionId,
+      fulfillmentCode,
+    }: {
+      actionId: string;
+      fulfillmentCode: string;
+    }) => {
       if (!accessToken) {
         throw new Error('Access token required');
       }
@@ -112,23 +108,22 @@ export function useConfirmFulfillment(accessToken?: string) {
           params: {
             path: { actionId },
           },
+          body: { fulfillmentCode },
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
-      
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to confirm fulfillment'
-        );
+        throw new Error(error.error?.message || 'Failed to confirm fulfillment');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
-      return data as CreatorDecisionResponse;
+
+      return data;
     },
     onSuccess: () => {
       // 刷新已确认列表

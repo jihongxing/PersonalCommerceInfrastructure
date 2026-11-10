@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { InMemoryFulfillmentCodeRepository } from '../../adapters/in-memory/in-memory-fulfillment-code-repository.js';
+import { InMemoryServicePolicyCatalogRepository } from '../../adapters/in-memory/in-memory-service-policy-catalog-repository.js';
 
 import { InMemoryCommerceActionRepository } from '../../adapters/in-memory/in-memory-commerce-action-repository.js';
 import { InMemoryCustomerRepository } from '../../adapters/in-memory/in-memory-customer-repository.js';
@@ -24,6 +25,7 @@ import {
   type CommerceIdentity,
 } from '../../modules/creator-commerce-identity/commerce-identity.js';
 import { unpublishOffering, type Offering } from '../../modules/service-offering/offering.js';
+import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
 
 async function createFixture() {
   const identityRepository = new InMemoryEntityCollectionRepository<CommerceIdentity>(
@@ -103,6 +105,9 @@ async function createFixture() {
     canonicalEventRecorder,
     notificationPort: notificationAdapter,
     unitOfWork,
+    servicePolicyCatalogRepository: new InMemoryServicePolicyCatalogRepository(
+      initialServicePolicyCatalog,
+    ),
   };
   return {
     getPublicOffering: new GetPublicOfferingUseCase(dependencies),
@@ -426,6 +431,9 @@ describe('Customer Request application use cases', () => {
         deliver: () => Promise.reject(new Error('simulated notification failure')),
       },
       unitOfWork: fixture.unitOfWork,
+      servicePolicyCatalogRepository: new InMemoryServicePolicyCatalogRepository(
+        initialServicePolicyCatalog,
+      ),
     };
     const submit = new SubmitCustomerRequestUseCase(failingDependencies);
     const confirm = new DecideCustomerRequestUseCase(failingDependencies, 'confirm');

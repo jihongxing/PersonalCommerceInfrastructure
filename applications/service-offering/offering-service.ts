@@ -13,6 +13,7 @@ import type { DistributionAsset } from '../../modules/distribution/distribution-
 import {
   CreateServiceOfferingUseCase,
   GetCreatorOfferingsUseCase,
+  GetCreatorDistributionAssetUseCase,
   PublishServiceOfferingUseCase,
   RecordExternalDistributionUseCase,
   UnpublishServiceOfferingUseCase,
@@ -24,6 +25,7 @@ import {
   type UpdateServiceOfferingCommand,
 } from './offering-use-cases.js';
 import type { OfferingRepository } from './offering-repositories.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 
 export interface ServiceOfferingService {
   create(command: CreateServiceOfferingCommand, context: ActorContext): Promise<Offering>;
@@ -35,6 +37,10 @@ export interface ServiceOfferingService {
     command: OfferingCommand,
     context: ActorContext,
   ): Promise<DistributionAsset>;
+  getDistributionAsset(
+    command: OfferingCommand,
+    context: ActorContext,
+  ): Promise<DistributionAsset | undefined>;
 }
 
 export function createServiceOfferingService(dependencies: {
@@ -42,6 +48,7 @@ export function createServiceOfferingService(dependencies: {
   readonly capabilityRepository: CapabilityRepository;
   readonly offeringRepository: OfferingRepository;
   readonly idGenerator: IdGenerator;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly publicOfferingUrlGenerator?: PublicOfferingUrlGenerator;
   readonly canonicalEventRecorder?: CanonicalEventRecorder;
@@ -54,6 +61,7 @@ export function createServiceOfferingService(dependencies: {
   const publish = new PublishServiceOfferingUseCase(useCaseDependencies);
   const unpublish = new UnpublishServiceOfferingUseCase(useCaseDependencies);
   const recordExternalDistribution = new RecordExternalDistributionUseCase(useCaseDependencies);
+  const getDistributionAsset = new GetCreatorDistributionAssetUseCase(useCaseDependencies);
 
   return {
     create: (command, context) => create.execute(command, context),
@@ -63,5 +71,6 @@ export function createServiceOfferingService(dependencies: {
     unpublish: (command, context) => unpublish.execute(command, context),
     recordExternalDistribution: (command, context) =>
       recordExternalDistribution.execute(command, context),
+    getDistributionAsset: (command, context) => getDistributionAsset.execute(command, context),
   };
 }

@@ -1,84 +1,53 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { OrderResultCard } from '@/components/commerce/order-result-card';
 import type { OrderResult } from '@/features/order-fulfillment/api/use-order-result';
 
-describe('OrderResultCard Component', () => {
-  const mockOrderSubmitted: OrderResult = {
-    actionId: 'action-123',
-    state: 'submitted',
-    resultAccessToken: 'token-123',
-    customerId: 'customer-123',
-    customer: {
-      id: 'customer-123',
-      contactName: 'John Doe',
-      contactMethod: '13800138000',
-    },
-    offering: {
-      id: 'offering-123',
-      title: 'Taichi Class',
-    },
-  };
+const submitted: OrderResult = {
+  actionId: 'action-123',
+  state: 'submitted',
+  resultAccessToken: 'token-123',
+  message: '请求已提交',
+};
 
-  const mockOrderConfirmed: OrderResult = {
-    ...mockOrderSubmitted,
-    state: 'confirmed',
-    fulfillmentCode: {
-      code: 'FC-ABCD1234',
-      status: 'pending',
-      expiresAt: new Date(Date.now() + 3600000).toISOString(),
-    },
-  };
-
-  const mockOrderDeclined: OrderResult = {
-    ...mockOrderSubmitted,
-    state: 'declined',
-  };
-
-  it('should display submitted state', () => {
-    render(<OrderResultCard order={mockOrderSubmitted} />);
-
-    expect(screen.getByText(/等待 Creator 回复/i)).toBeInTheDocument();
-    expect(screen.getByText(/自动刷新/i)).toBeInTheDocument();
+describe('OrderResultCard', () => {
+  it('shows the submitted state, message and query token', () => {
+    render(<OrderResultCard result={submitted} />);
+    expect(screen.getByTestId('status-badge')).toHaveTextContent('等待 Creator 回复');
+    expect(screen.getByText('请求已提交')).toBeInTheDocument();
+    expect(screen.getByTestId('query-code')).toHaveTextContent('token-123');
+    expect(screen.getByText(/页面将自动刷新/)).toBeInTheDocument();
   });
 
-  it('should display confirmed state with fulfillment code', () => {
-    render(<OrderResultCard order={mockOrderConfirmed} />);
-
-    expect(screen.getByText(/已确认/i)).toBeInTheDocument();
-    expect(screen.getByText('FC-ABCD1234')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /确认履约/i })).toBeInTheDocument();
-  });
-
-  it('should display declined state', () => {
-    render(<OrderResultCard order={mockOrderDeclined} />);
-
-    expect(screen.getByText(/已拒绝/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/很抱歉.*无法接受此预约/i)
-    ).toBeInTheDocument();
-  });
-
-  it('should handle refresh button click for submitted state', async () => {
-    const handleRefresh = vi.fn();
+  it('shows the fulfillment code and explains how it is used', () => {
     render(
       <OrderResultCard
-        order={mockOrderSubmitted}
-        onRefresh={handleRefresh}
-      />
+        result={{
+          ...submitted,
+          state: 'confirmed',
+          fulfillmentCode: {
+            code: 'FC-ABCD1234',
+            status: 'pending',
+            expiresAt: '2030-01-01T00:00:00Z',
+          },
+        }}
+      />,
     );
-
-    const refreshButton = screen.getByRole('button', { name: /手动刷新/i });
-    await userEvent.click(refreshButton);
-
-    expect(handleRefresh).toHaveBeenCalledOnce();
+    expect(screen.getByTestId('status-badge')).toHaveTextContent('已确认');
+    expect(screen.getByText('FC-ABCD1234')).toBeInTheDocument();
+    expect(screen.getByText('待使用')).toBeInTheDocument();
+    expect(screen.getByText(/本地时间/).closest('time')).toHaveAttribute(
+      'dateTime',
+      '2030-01-01T00:00:00Z',
+    );
+    expect(screen.getByText(/本地时间/)).not.toHaveTextContent('刚刚');
+    expect(screen.getByText(/由 Creator 确认履约/)).toBeInTheDocument();
   });
 
-  it('should display customer information', () => {
-    render(<OrderResultCard order={mockOrderSubmitted} />);
-
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('13800138000')).toBeInTheDocument();
+  it('shows the declined state without a fulfillment code', () => {
+    render(<OrderResultCard result={{ ...submitted, state: 'declined' }} />);
+    expect(screen.getByTestId('status-badge')).toHaveTextContent('已拒绝');
+    expect(screen.getByText(/无法接受此预约/)).toBeInTheDocument();
+    expect(screen.queryByText('履约码')).not.toBeInTheDocument();
   });
 });

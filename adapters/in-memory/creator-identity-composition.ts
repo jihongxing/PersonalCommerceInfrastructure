@@ -124,6 +124,13 @@ import {
   type ContractService,
 } from '../../applications/contract-commerce/contract-service.js';
 import { InMemoryContractRepository } from './in-memory-contract-repository.js';
+import { InMemoryServicePolicyCatalogRepository } from './in-memory-service-policy-catalog-repository.js';
+import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
+import {
+  createServicePolicyAdminService,
+  type ServicePolicyAdminService,
+} from '../../applications/service-policy/service-policy-admin-service.js';
+import type { ServicePolicyCatalogRepository } from '../../applications/service-policy/service-policy-repositories.js';
 
 export interface CreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
@@ -150,6 +157,8 @@ export interface CreatorIdentityComposition {
   readonly commercialPilotOperationsService: CommercialPilotOperationsService;
   readonly providerWebhookRuntime: ProviderWebhookRuntime;
   readonly notificationAdapter: InMemoryNotificationAdapter;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly servicePolicyAdminService: ServicePolicyAdminService;
 }
 
 export function createInMemoryCreatorIdentityComposition(
@@ -196,6 +205,9 @@ export function createInMemoryCreatorIdentityComposition(
   const paidCommerceRepository = new InMemoryPaidCommerceRepository();
   const reservationRepository = new InMemoryReservationRepository();
   const contractRepository = new InMemoryContractRepository();
+  const servicePolicyCatalogRepository = new InMemoryServicePolicyCatalogRepository(
+    initialServicePolicyCatalog,
+  );
   const productEventStore = new InMemoryProductEventStore();
   const unitOfWork = new InMemoryUnitOfWork(
     [
@@ -355,6 +367,8 @@ export function createInMemoryCreatorIdentityComposition(
   });
   const reservationService = createReservationService({
     offeringRepository,
+    capabilityRepository,
+    servicePolicyCatalogRepository,
     customerRepository,
     reservationRepository,
     paidCommerceRepository,
@@ -414,13 +428,33 @@ export function createInMemoryCreatorIdentityComposition(
     service: createCreatorIdentityService({
       identityRepository,
       capabilityRepository,
+      capabilityManagement: {
+        async updateOwned(creatorId, id, input) {
+          const capability = await capabilityRepository.findById(id);
+          if (!capability || capability.creatorId !== creatorId) return undefined;
+          const updated = { ...capability, ...input };
+          await capabilityRepository.save(updated);
+          return updated;
+        },
+        async deleteOwnedIfUnused(creatorId, id) {
+          const capability = await capabilityRepository.findById(id);
+          if (!capability || capability.creatorId !== creatorId) return 'not_found';
+          const offerings = await offeringRepository.findByOwnerId(creatorId);
+          if (offerings.some((offering) => offering.capabilityIds.includes(id))) return 'in_use';
+          await capabilityRepository.delete(id);
+          return 'deleted';
+        },
+      },
       idGenerator: new SequentialIdGenerator('capability'),
+      servicePolicyCatalogRepository,
+      unitOfWork,
     }),
     offeringService: createServiceOfferingService({
       identityRepository,
       capabilityRepository,
       offeringRepository,
       idGenerator,
+      servicePolicyCatalogRepository,
       distributionAssetRepository,
       publicOfferingUrlGenerator: new StaticPublicOfferingUrlGenerator(publicOrigin),
       canonicalEventRecorder,
@@ -436,6 +470,7 @@ export function createInMemoryCreatorIdentityComposition(
       idGenerator,
       canonicalEventRecorder,
       notificationPort: notificationAdapter,
+      servicePolicyCatalogRepository,
       unitOfWork,
       contractRepository,
     }),
@@ -467,5 +502,9 @@ export function createInMemoryCreatorIdentityComposition(
       }),
     }),
     notificationAdapter,
+    servicePolicyCatalogRepository,
+    servicePolicyAdminService: createServicePolicyAdminService({
+      repository: servicePolicyCatalogRepository,
+    }),
   };
 }

@@ -72,16 +72,16 @@ function ServiceOffering({ params }: { params: Promise<{ offeringId: string }> }
     .slice(0, 2);
 
   return (
-    <div className="container mx-auto py-8 space-y-8 max-w-4xl">
+    <div className="public-service-page">
       {/* Creator 信息 */}
-      <Card>
+      <Card className="public-service-creator">
         <CardContent className="py-6">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-12 w-12">
               <AvatarFallback className="text-lg font-semibold">{initials}</AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <h2 className="text-xl font-semibold">{creator.displayName}</h2>
+            <div className="min-w-0 flex-1">
+              <h1 className="break-words text-xl font-semibold">{creator.displayName}</h1>
               <div className="flex flex-wrap gap-2 mt-1">
                 {creator.capabilityNames.map((capability) => (
                   <Badge key={capability} variant="secondary" className="text-xs">
@@ -95,11 +95,10 @@ function ServiceOffering({ params }: { params: Promise<{ offeringId: string }> }
         </CardContent>
       </Card>
 
-      {/* 服务详情 */}
-      <ServiceDetailCard offering={offering} />
-
-      {/* 预约表单 */}
-      <BookingForm offeringId={offering.id} requestInstructions={offering.requestInstructions} />
+      <div className="public-service-layout">
+        <ServiceDetailCard offering={offering} />
+        <BookingForm offeringId={offering.id} requestInstructions={offering.requestInstructions} />
+      </div>
     </div>
   );
 }

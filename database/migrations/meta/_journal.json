@@ -218,6 +218,41 @@
       "when": 1794259200000,
       "tag": "0030_time_scheduled_public_homepages",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1794345600000,
+      "tag": "0031_local_password_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794432000000,
+      "tag": "0032_password_recovery_queue",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794518400000,
+      "tag": "0033_controlled_service_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794604800000,
+      "tag": "0034_database_managed_service_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794691200000,
+      "tag": "0035_service_policy_versioned_keys",
+      "breakpoints": true
     }
   ]
 }

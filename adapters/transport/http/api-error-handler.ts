@@ -79,6 +79,16 @@ export function registerApiErrorHandling(server: FastifyInstance, logger?: SafeL
       return;
     }
 
+    const rateLimitResponse = error as FastifyError & { error?: string };
+    if (rateLimitResponse.statusCode === 429 && rateLimitResponse.error === 'TOO_MANY_REQUESTS') {
+      void reply.status(429).send({
+        error: 'TOO_MANY_REQUESTS',
+        message: rateLimitResponse.message,
+        statusCode: 429,
+      });
+      return;
+    }
+
     const applicationError = applicationErrorFromFastify(error);
     if (applicationError.category === 'internal') {
       logger?.error('unhandled_api_error', {

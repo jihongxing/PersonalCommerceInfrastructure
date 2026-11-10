@@ -25,6 +25,11 @@ export const CommerceIdentityProfileSchema = Type.Object(
 export const CapabilitySchema = Type.Object(
   {
     id: Type.String({ minLength: 1 }),
+    catalogItemId: Type.Optional(Type.String({ minLength: 1, maxLength: 128 })),
+    catalogStatus: Type.Optional(
+      Type.Union([Type.Literal('active'), Type.Literal('custom_request'), Type.Literal('retired')]),
+    ),
+    policyVersion: Type.Optional(Type.String({ maxLength: 32 })),
     name: Type.String({ minLength: 1, maxLength: 120 }),
     description: Type.String({ minLength: 1, maxLength: 1_000 }),
   },
@@ -57,6 +62,7 @@ export const UpdateCommerceIdentityRequestSchema = CreateCommerceIdentityRequest
 
 export const AddCapabilityRequestSchema = Type.Object(
   {
+    catalogItemId: Type.Optional(Type.String({ minLength: 1, maxLength: 128 })),
     name: Type.String({ minLength: 1, maxLength: 120 }),
     description: Type.String({ minLength: 1, maxLength: 1_000 }),
   },

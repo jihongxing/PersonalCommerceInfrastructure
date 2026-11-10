@@ -125,6 +125,6 @@ export function initializeFetchInterceptor() {
 
   // 替换全局 fetch（仅在客户端）
   if (typeof window !== 'undefined') {
-    (globalThis as any).fetch = interceptedFetch;
+    globalThis.fetch = interceptedFetch;
   }
 }

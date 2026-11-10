@@ -78,6 +78,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
         description: 'One-on-one dance instruction',
       },
     });
@@ -129,6 +130,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
         description: 'One-on-one dance instruction',
       },
     });
@@ -144,6 +146,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Private Dance Lesson',
         description: 'One hour of one-on-one dance instruction.',
         availabilityDescription: 'Weekends by request.',
@@ -155,6 +158,7 @@ describe('Creator Identity API', () => {
     expect(created.json()).toMatchObject({
       creatorId: 'creator-test-1',
       capabilityIds: [capabilityId],
+      templateId: 'template-dance-private-lesson',
       state: 'draft',
       availabilityDescription: 'Weekends by request.',
       missingPublishConditions: [],
@@ -178,6 +182,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Updated Private Dance Lesson',
         description: 'Updated service description.',
         availabilityDescription: 'Weekday evenings by request.',
@@ -252,7 +257,7 @@ describe('Creator Identity API', () => {
     });
   });
 
-  it('persists Appearance metadata on the existing Offering and exposes it as public Upcoming data', async () => {
+  it('persists Appearance metadata and keeps review-required services private', async () => {
     const server = await createTestApiServer();
     const headers = { authorization: 'Bearer test-creator-token' };
 
@@ -268,6 +273,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Convention Appearance',
+        catalogItemId: 'capability-commercial-appearance',
         description: 'Guest appearances for conventions and brands.',
       },
     });
@@ -280,6 +286,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-commercial-appearance',
         title: 'Shanghai Convention Guest Appearance',
         description: 'Convention guest and brand appearance.',
         availabilityDescription: 'Date and scope require Creator confirmation.',
@@ -313,23 +320,13 @@ describe('Creator Identity API', () => {
           headers,
         })
       ).statusCode,
-    ).toBe(200);
+    ).toBe(409);
 
     const publicOffering = await server.inject({
       method: 'GET',
       url: `/api/v1/public/offerings/${offeringId}`,
     });
-    expect(publicOffering.statusCode).toBe(200);
-    expect(publicOffering.json()).toMatchObject({
-      offering: {
-        id: offeringId,
-        title: 'Shanghai Convention Guest Appearance',
-        appearance: {
-          upcomingTitle: 'Shanghai Convention guest appearance',
-          locationDescription: 'Shanghai New International Expo Centre',
-        },
-      },
-    });
+    expect(publicOffering.statusCode).toBe(422);
   });
 
   it('publishes an eligible Offering and distinguishes generated from distributed Asset', async () => {
@@ -350,6 +347,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
         description: 'One-on-one dance instruction',
       },
     });
@@ -361,6 +359,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Private Dance Lesson',
         description: 'One hour of one-on-one dance instruction.',
         availabilityDescription: 'Weekends by request.',
@@ -424,6 +423,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
         description: 'One-on-one dance instruction',
       },
     });
@@ -435,6 +435,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Private Dance Lesson',
         description: 'One hour of one-on-one dance instruction.',
         availabilityDescription: 'Weekends by request.',
@@ -539,6 +540,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
         description: 'One-on-one dance instruction',
       },
     });
@@ -550,6 +552,7 @@ describe('Creator Identity API', () => {
       headers,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Private Dance Lesson',
         description: 'One hour of one-on-one dance instruction.',
         availabilityDescription: 'Weekends by request.',
@@ -752,7 +755,11 @@ describe('Creator Identity API', () => {
       method: 'POST',
       url: '/api/v1/creator/identity/capabilities',
       headers: creatorHeaders,
-      payload: { name: 'Private Lesson', description: 'One-on-one instruction' },
+      payload: {
+        name: 'Private Dance Lesson',
+        catalogItemId: 'capability-dance-teaching',
+        description: 'One-on-one instruction',
+      },
     });
     const capabilityId = responseJson<{ readonly capabilityIds: readonly string[] }>(capability)
       .capabilityIds[0];
@@ -762,7 +769,8 @@ describe('Creator Identity API', () => {
       headers: creatorHeaders,
       payload: {
         capabilityIds: [capabilityId],
-        title: 'Private Lesson',
+        templateId: 'template-dance-private-lesson',
+        title: '1 对 1 舞蹈私教',
         description: 'One-on-one instruction',
         availabilityDescription: 'Weekends',
         requestInstructions: 'Share preferred time',

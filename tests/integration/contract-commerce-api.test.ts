@@ -263,8 +263,9 @@ async function createContractFixture(
     url: '/api/v1/creator/identity/capabilities',
     headers: creatorHeaders,
     payload: {
-      name: `Commercial performance ${suffix}`,
-      description: 'Brand appearance.',
+      catalogItemId: 'capability-dance-teaching',
+      name: `Dance teaching ${suffix}`,
+      description: 'One-to-one dance instruction.',
     },
   });
   expect(capability.statusCode).toBe(201);
@@ -282,10 +283,11 @@ async function createContractFixture(
     headers: creatorHeaders,
     payload: {
       capabilityIds: [capabilityId],
-      title: `Commercial appearance ${suffix}`,
-      description: 'One commercial performance engagement.',
+      templateId: 'template-dance-private-lesson',
+      title: `Dance teaching engagement ${suffix}`,
+      description: 'One controlled dance teaching engagement.',
       availabilityDescription: 'Subject to a confirmed scope.',
-      requestInstructions: 'Describe the commercial appearance request.',
+      requestInstructions: 'Describe the teaching request.',
     },
   });
   expect(offering.statusCode).toBe(201);

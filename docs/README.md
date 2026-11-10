@@ -160,6 +160,9 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
 - [29 — Identity 持有 C 号的产品决策](./07_Product_Architecture/29_Identity_Owned_Commerce_Reference_Decision.md)：一个 Identity 一个终身不变的 C 号，以及迁移和注册边界。
 - [30 — C 号公开商业主页产品决策](./07_Product_Architecture/30_Public_Commerce_Homepage_Decision.md)：公开查询、稳定主页、资料选择、分享及发布控制的已确认方向与合同闭合事项。
 - [31 — 按日期和时间切换公开商业主页](./07_Product_Architecture/31_Time_Scheduled_Public_Homepages_Decision.md)：一个 Identity 多主页版本、默认主页和同一时间唯一激活主页的产品决策。
+- [32 — Creator 工作台与个人资料界面结构](./07_Product_Architecture/32_Creator_Workspace_Profile_Surface_Decision.md)：Creator 工作台、资料管理和公开主页管理的界面边界。
+- [33 — 稳定分享工具界面](./07_Product_Architecture/33_Stable_Sharing_Tool_Surface_Decision.md)：稳定主页地址、二维码、复制和系统分享的产品界面决策。
+- [34 — 受控能力目录与服务发布](./07_Product_Architecture/34_Controlled_Capability_Service_Publishing_Decision.md)：平台能力目录、服务模板、风险分级和发布审核门禁。
 
 ### Execution
 

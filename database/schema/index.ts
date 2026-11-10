@@ -38,3 +38,9 @@ export {
   distributionAssets,
   serviceOfferings,
 } from './creator-identity.js';
+export {
+  servicePolicyAudits,
+  servicePolicyCapabilities,
+  servicePolicyReleases,
+  servicePolicyTemplates,
+} from './service-policy.js';

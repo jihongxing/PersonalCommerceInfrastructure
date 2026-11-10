@@ -493,7 +493,11 @@ describe('Paid Commerce API', () => {
       method: 'POST',
       url: '/api/v1/creator/identity/capabilities',
       headers: creatorHeaders,
-      payload: { name: 'Private Dance Lesson', description: 'One-on-one instruction.' },
+      payload: {
+        catalogItemId: 'capability-dance-teaching',
+        name: 'Private Dance Lesson',
+        description: 'One-on-one instruction.',
+      },
     });
     const capabilityId = capability.json<{ capabilityIds: readonly string[] }>().capabilityIds[0];
     const offering = await server.inject({
@@ -502,6 +506,7 @@ describe('Paid Commerce API', () => {
       headers: creatorHeaders,
       payload: {
         capabilityIds: [capabilityId],
+        templateId: 'template-dance-private-lesson',
         title: 'Private Dance Lesson',
         description: 'One hour of dance instruction.',
         availabilityDescription: 'Weekends by request.',
@@ -656,7 +661,11 @@ describe('Paid Commerce API', () => {
       method: 'POST',
       url: '/api/v1/creator/identity/capabilities',
       headers: creatorHeaders,
-      payload: { name: 'Dance Lesson', description: 'One-to-one lesson.' },
+      payload: {
+        catalogItemId: 'capability-dance-teaching',
+        name: 'Dance Lesson',
+        description: 'One-to-one lesson.',
+      },
     });
     const offering = await server.inject({
       method: 'POST',
@@ -664,6 +673,7 @@ describe('Paid Commerce API', () => {
       headers: creatorHeaders,
       payload: {
         capabilityIds: [capability.json<{ capabilityIds: string[] }>().capabilityIds.at(-1)],
+        templateId: 'template-dance-private-lesson',
         title: 'Failure path lesson',
         description: 'Controlled failure path.',
         availabilityDescription: 'By request.',
@@ -1021,7 +1031,11 @@ async function createConfirmedOrder(
     method: 'POST',
     url: '/api/v1/creator/identity/capabilities',
     headers: creatorHeaders,
-    payload: { name: `Private Dance Lesson ${suffix}`, description: 'One-on-one instruction.' },
+    payload: {
+      catalogItemId: 'capability-dance-teaching',
+      name: `Private Dance Lesson ${suffix}`,
+      description: 'One-on-one instruction.',
+    },
   });
   const capabilityId = capability.json<{ capabilityIds: readonly string[] }>().capabilityIds[0];
   const offering = await server.inject({
@@ -1030,6 +1044,7 @@ async function createConfirmedOrder(
     headers: creatorHeaders,
     payload: {
       capabilityIds: [capabilityId],
+      templateId: 'template-dance-private-lesson',
       title: `Private Dance Lesson ${suffix}`,
       description: 'One hour of dance instruction.',
       availabilityDescription: 'Weekends by request.',

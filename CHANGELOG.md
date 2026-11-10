@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0 — 2026-11-11
+
+### Added
+
+- Responsive web-v2 Creator and public surfaces with stable sharing tools, QR sharing, copy actions, and mobile-first layouts.
+- Configurable local password recovery flow with queue processing and provider-backed delivery integration.
+- Controlled capability and service-template catalog across eight verticals, including database-backed policy versions and Operations lifecycle controls.
+
+### Changed
+
+- Creator capabilities and service offerings now use catalog and template policy gates instead of unrestricted public free text.
+- Catalog policy data is read from PostgreSQL at runtime; JSON remains an idempotent bootstrap and recovery snapshot.
+- Added audit records, pause/resume/retire/emergency-disable controls, and version-preserving catalog migrations.
+
+### Verified
+
+- Root build, migration checks, OpenAPI compatibility, focused policy/admin/API tests, and responsive web-v2 verification passed locally.
+- No production migration, external mail delivery, or public deployment was performed.
+
 ## 0.1.0 — 2026-08-12
 
 ### Added

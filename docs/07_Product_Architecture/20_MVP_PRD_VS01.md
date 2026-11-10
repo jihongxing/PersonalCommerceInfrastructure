@@ -691,3 +691,83 @@ Offering 和可请求条件。资料归档或失去归属时不得继续公开�
 本修订登记产品行为变化，不表示 DEV-064 已实现。实施步骤、迁移、接口和验证证据记录在
 [114 — 按日期和时间切换公开商业主页实施计划](../09_Engineering_Governance/114_Time_Scheduled_Public_Homepages_Implementation_Plan.md)
 和 [执行台账 DEV-064](../08_Execution/21_Prototype_Execution.md#dev-064--time-scheduled-public-homepages)。
+
+## DEV-082 Amendment — 受控能力目录与服务发布合同
+
+> 批准日期：2026-11-10；依据 [34 — 受控能力目录与服务发布决策](./34_Controlled_Capability_Service_Publishing_Decision.md)
+> Founder 已批准在实现前将 Capability、Service Offering 和 Publish 改为目录、模板和政策门禁模型。
+> 本节优先于上文允许任意能力名称和自由服务类别的表述；未被本节修改的 VS-01 规则继续有效。
+
+### A. Contract Scope
+
+VS-01 继续只实现 `Service Offering / Request`。本次增量加入发布前的受控资格：
+
+```text
+Capability Catalog Item
+→ Creator Capability
+→ Service Offering Template
+→ Structured Offering Draft
+→ Policy Check
+→ Approved Publish
+→ Distribution / Request
+```
+
+能力目录项和服务模板是平台政策配置，不自动成为 Creator、Offering 或 Marketplace 对象。
+目录初始化覆盖多个安全垂直领域；VS-01 首期可公开发布的模板仍为 `1 对 1 舞蹈私教`，
+已有独立决策的既有垂直兼容项须按其单独合同处理，未来模板不能越过范围门禁发布。
+
+### B. Object and State Amendments
+
+1. `Capability` 必须引用有效、未退休的能力目录项；Creator 可编辑自己的经验、作品和描述。
+2. `Offering` 必须引用与其 Capability 匹配的服务模板；自由文本不能替代模板类型和必填条件。
+3. `Offering` 的业务状态仍为 `Draft / Published / Unpublished / Archived`。
+4. `Offering` 增加独立政策状态：`NotChecked / AutoApproved / ReviewRequired / Approved / Rejected`。
+5. 只有业务状态 `Published` 且政策状态 `Approved` 的 Offering 才能公开展示、生成可请求入口或接收新的 Request。
+6. 政策状态变化不新增 Canonical Event；拒绝、审核、暂停和申诉必须可审计。
+7. Offering 关键字段修改后必须重新执行政策检查；历史 Commerce Action 不因检查状态变化而删除或改写。
+
+### C. Functional Requirement Amendments
+
+- **FR-003**：系统必须允许 Creator 选择并创建至少一个引用有效能力目录项的 Creator Capability；任意自定义类别不能直接公开。
+- **FR-003A**：系统必须提供当前可用能力目录和每项允许关联的服务模板；目录项状态为 `retired` 时不得新建关联。
+- **FR-006**：系统必须允许 Creator 从与其 Capability 匹配的服务模板创建 Service Offering Draft。
+- **FR-006A**：系统必须允许 Creator 保存服务模板要求的结构化条件和有限补充说明；没有模板的“其他服务”不能直接发布。
+- **FR-011**：系统必须在 Offering 缺少业务条件、模板条件或政策批准时阻止 Publish，并明确显示缺失或拒绝原因。
+- **FR-013A**：系统必须向 Creator 区分 Offering 业务状态与政策审核状态。
+- **FR-014**：系统只有在既有 Minimum Publish Conditions 满足且政策状态为 `Approved` 时才允许 Publish。
+- **FR-024**：Public Commerce Identity 只展示业务状态为 `Published` 且政策状态为 `Approved` 的 Capability / Offering 表达。
+- **FR-027**：Offering 处于 `ReviewRequired`、`Rejected`、`Unpublished`、`Archived` 或不可请求时，公开入口不得接收新的 Request。
+
+### D. Policy Rules
+
+1. Low 风险且当前范围启用的模板可以自动检查通过；
+2. Review 风险、未来范围或上下文不明确的服务必须进入 `ReviewRequired`；
+3. Prohibited 类型和命中禁止规则的服务必须进入 `Rejected`；
+4. 自动分类或语言模型只能辅助，不能作为高风险拒绝的唯一政策依据；
+5. Creator 可以修改后重新检查或提交申诉；
+6. 服务端必须执行目录、模板、归属、字段和政策状态检查，前端隐藏控件不构成门禁；
+7. 已有自由文本数据必须在迁移时映射到目录或进入人工复核，不得静默宣称为已批准。
+
+### E. Acceptance Additions
+
+- [ ] 任意能力名称不能绕过目录直接公开；
+- [ ] Offering 必须绑定有效 Capability 和匹配 Service Offering Template；
+- [ ] 模板必填条件缺失时 Publish 被阻止；
+- [ ] Low、Review、Prohibited 三类内容分别得到自动通过、进入审核和拒绝结果；
+- [ ] 关键编辑会重新检查；
+- [ ] 未批准 Offering 不出现在公开主页和服务页；
+- [ ] 拒绝、审核、恢复、举报和申诉结果可追溯；
+- [ ] 现有请求、分发事实和 Canonical Event 不因迁移或政策审核被静默删除；
+- [ ] VS-01 的 Request、Confirm / Decline、Distribution 和 Non-goal 边界继续通过原 AT-001–AT-013 相关路径。
+
+本节批准产品合同修订。代码、迁移、初始化数据和聚焦测试已完成；产品验收状态与剩余证据
+继续记录在 [执行台账 DEV-082](../08_Execution/21_Prototype_Execution.md#dev-082--controlled-capability-and-service-publishing)。
+
+## DEV-083 Amendment — Database-Managed Catalog Contract
+
+能力目录、服务模板及发布版本必须持久化在数据库中；运行时禁止依赖硬编码目录数组。目录项的
+`draft`、`active`、`paused`、`retired` 状态以及 `creatorSelectable`、`publishEnabled` 开关是
+可审计的运营配置。Operations 角色可通过受保护管理接口进行暂停、恢复、退休、紧急下架和版本
+发布；Creator 只能读取当前发布快照。JSON 初始化数据通过幂等导入命令写入数据库，不覆盖运营
+状态和审计历史。目录状态变化必须重新约束 Publish、公开服务和新 Request，既有请求与事件保持
+可追溯。

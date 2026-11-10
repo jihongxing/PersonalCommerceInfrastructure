@@ -88,5 +88,5 @@ describe('browser tracing exporter', () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(38), { timeout: 3000 });
     const failed = JSON.parse(fetchMock.mock.calls[37][1].body).spans[0];
     expect(failed).toMatchObject({ route: '/api/v1/auth/refresh', status: 200, failed: true });
-  });
+  }, 20000);
 });

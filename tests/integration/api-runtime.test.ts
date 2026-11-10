@@ -112,6 +112,21 @@ describe('API runtime skeleton', () => {
     expect(response.headers['access-control-allow-origin']).toBe('http://127.0.0.1:43125');
     expect(response.headers['access-control-allow-methods']).toContain('POST');
 
+    const disableWindowPreflight = await server.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/private/homepage-windows/window-1',
+      headers: {
+        origin: 'http://127.0.0.1:43125',
+        'access-control-request-method': 'DELETE',
+        'access-control-request-headers': 'authorization',
+      },
+    });
+    expect(disableWindowPreflight.statusCode).toBe(204);
+    expect(disableWindowPreflight.headers['access-control-allow-origin']).toBe(
+      'http://127.0.0.1:43125',
+    );
+    expect(disableWindowPreflight.headers['access-control-allow-methods']).toContain('DELETE');
+
     await server.close();
   });
 
@@ -146,6 +161,7 @@ describe('API runtime skeleton', () => {
       '/api/v1/readiness',
       '/api/v1/creator/identity',
       '/api/v1/creator/identity/capabilities',
+      '/api/v1/creator/identity/capabilities/{capabilityId}',
       '/api/v1/private/onboarding/initialize',
       '/api/v1/private/identity',
       '/api/v1/private/profiles',
@@ -165,6 +181,12 @@ describe('API runtime skeleton', () => {
       '/api/v1/creator/offerings/{offeringId}/publish',
       '/api/v1/creator/offerings/{offeringId}/unpublish',
       '/api/v1/creator/offerings/{offeringId}/distribution',
+      '/api/v1/creator/service-catalog',
+      '/api/v1/operations/service-policy/workspace',
+      '/api/v1/operations/service-policy/audit',
+      '/api/v1/operations/service-policy/capabilities/{id}',
+      '/api/v1/operations/service-policy/templates/{id}',
+      '/api/v1/operations/service-policy/releases',
       '/api/v1/public/offerings/{offeringId}',
       '/api/v1/public/offerings/{offeringId}/requests',
       '/api/v1/public/requests/{resultAccessToken}',

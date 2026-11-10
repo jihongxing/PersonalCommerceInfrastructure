@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { InMemoryEntityCollectionRepository } from '../../adapters/in-memory/in-memory-entity-collection-repository.js';
+import { InMemoryServicePolicyCatalogRepository } from '../../adapters/in-memory/in-memory-service-policy-catalog-repository.js';
 import { SequentialIdGenerator } from '../../adapters/in-memory/sequential-id-generator.js';
 import { ApplicationError } from '../../applications/core/application-error.js';
 import { createActorContext } from '../../applications/core/actor-context.js';
@@ -14,6 +15,7 @@ import type {
   Capability,
   CommerceIdentity,
 } from '../../modules/creator-commerce-identity/commerce-identity.js';
+import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
 
 function setup() {
   const identityRepository = new InMemoryEntityCollectionRepository<CommerceIdentity>(
@@ -28,6 +30,9 @@ function setup() {
     identityRepository,
     capabilityRepository,
     idGenerator: new SequentialIdGenerator('capability'),
+    servicePolicyCatalogRepository: new InMemoryServicePolicyCatalogRepository(
+      initialServicePolicyCatalog,
+    ),
   };
   const creatorContext = createActorContext({
     actor: { kind: 'creator', creatorId: 'creator-1' },

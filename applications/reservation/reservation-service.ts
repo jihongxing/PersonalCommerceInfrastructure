@@ -25,6 +25,9 @@ import type { UnitOfWork } from '../core/ports/unit-of-work.js';
 import type { CustomerRepository } from '../customer-request/customer-request-repositories.js';
 import type { PaidCommerceRepository } from '../paid-commerce/paid-commerce-repositories.js';
 import type { OfferingRepository } from '../service-offering/offering-repositories.js';
+import { isOfferingPolicyCurrentlyPublishable, isPolicyPublishable } from '../../modules/service-policy/catalog.js';
+import type { CapabilityRepository } from '../creator-identity/creator-identity-repositories.js';
+import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 import type { ReservationRepository } from './reservation-repositories.js';
 
 export interface CreateAvailabilitySlotCommand {
@@ -74,6 +77,8 @@ export interface ReservationService {
 
 export function createReservationService(dependencies: {
   readonly offeringRepository: OfferingRepository;
+  readonly capabilityRepository: CapabilityRepository;
+  readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly customerRepository: CustomerRepository;
   readonly reservationRepository: ReservationRepository;
   readonly paidCommerceRepository: PaidCommerceRepository;
@@ -113,7 +118,7 @@ export function createReservationService(dependencies: {
 
     listPublicAvailabilitySlots: async (offeringId) => {
       const offering = await dependencies.offeringRepository.findById(offeringId);
-      if (offering === undefined || offering.state !== 'published') {
+      if (offering === undefined || !(await policyAllowsPublicOffering(offering, dependencies))) {
         throw notFound('reservation_offering_not_found', 'Published Offering was not found.');
       }
       const slots =
@@ -144,7 +149,7 @@ export function createReservationService(dependencies: {
           scope.reservationRepository ?? dependencies.reservationRepository;
         await reservationRepository.lockAvailabilitySlots([command.availabilitySlotId]);
         const offering = await offeringRepository.findById(command.offeringId);
-        if (offering === undefined || offering.state !== 'published') {
+        if (offering === undefined || !(await policyAllowsPublicOffering(offering, dependencies))) {
           throw notFound('reservation_offering_not_found', 'Published Offering was not found.');
         }
         const slot = await reservationRepository.findAvailabilitySlotById(
@@ -598,6 +603,39 @@ function requireCreator(context: ActorContext): string {
     });
   }
   return context.actor.creatorId;
+}
+
+async function policyAllowsPublicOffering(
+  offering: NonNullable<Awaited<ReturnType<OfferingRepository['findById']>>>,
+  dependencies: Parameters<typeof createReservationService>[0],
+): Promise<boolean> {
+  if (
+    offering.state !== 'published' ||
+    (offering.policyStatus !== undefined && !isPolicyPublishable(offering.policyStatus))
+  ) {
+    return false;
+  }
+  const capabilities = await Promise.all(
+    offering.capabilityIds.map((capabilityId) => dependencies.capabilityRepository.findById(capabilityId)),
+  );
+  return isOfferingPolicyCurrentlyPublishable(
+    {
+      title: offering.title,
+      description: offering.description,
+      requestInstructions: offering.requestInstructions,
+      availabilityDescription: offering.availability?.description,
+      appearanceText:
+        offering.appearance === undefined ? undefined : JSON.stringify(offering.appearance),
+      capabilityNames: capabilities
+        .filter((capability) => capability !== undefined)
+        .map((capability) => capability.name),
+      capabilityCatalogItemIds: capabilities.map((capability) => capability?.catalogItemId),
+      capabilityStatuses: capabilities.map((capability) => capability?.catalogStatus),
+      templateId: offering.templateId,
+      appearance: offering.appearance !== undefined,
+    },
+    await dependencies.servicePolicyCatalogRepository.getSnapshot(),
+  );
 }
 
 function notFound(code: string, message: string): ApplicationError {

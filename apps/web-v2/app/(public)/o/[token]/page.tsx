@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, use } from 'react';
+import Link from 'next/link';
 import { useOrderResult } from '@/features/order-fulfillment/api/use-order-result';
 import { OrderResultCard } from '@/components/commerce/order-result-card';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,7 +64,12 @@ function OrderResult({ params }: { params: Promise<{ token: string }> }) {
       {/* 手动刷新按钮 */}
       {data.state === 'submitted' && (
         <div className="text-center">
-          <Button onClick={() => refetch()} variant="outline" disabled={isRefetching}>
+          <Button
+            onClick={() => refetch()}
+            variant="outline"
+            className="min-h-11"
+            disabled={isRefetching}
+          >
             {isRefetching ? '刷新中...' : '手动刷新状态'}
           </Button>
           <p className="text-xs text-muted-foreground mt-2">页面会自动每 10 秒刷新一次</p>
@@ -72,8 +78,8 @@ function OrderResult({ params }: { params: Promise<{ token: string }> }) {
 
       {/* 返回首页 */}
       <div className="text-center pt-4">
-        <Button onClick={() => (window.location.href = '/')} variant="ghost">
-          返回首页
+        <Button asChild variant="ghost" className="min-h-11">
+          <Link href="/">返回首页</Link>
         </Button>
       </div>
     </div>

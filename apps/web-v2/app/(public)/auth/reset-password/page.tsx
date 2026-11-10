@@ -1,7 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +55,14 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 
   const { score, feedback } = getPasswordStrength(password);
   const strengthLabels = ['', '弱', '中等', '强', '非常强', '极强'];
-  const strengthColors = ['', 'bg-red-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 'bg-green-600'];
+  const strengthColors = [
+    '',
+    'bg-red-500',
+    'bg-yellow-500',
+    'bg-lime-500',
+    'bg-green-500',
+    'bg-green-600',
+  ];
 
   return (
     <div className="space-y-2">
@@ -67,9 +73,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
             style={{ width: `${(score / 5) * 100}%` }}
           />
         </div>
-        <span className="text-xs font-medium text-slate-600">
-          {strengthLabels[score]}
-        </span>
+        <span className="text-xs font-medium text-slate-600">{strengthLabels[score]}</span>
       </div>
 
       {feedback.length > 0 && (
@@ -87,10 +91,19 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 }
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
   const { resetPassword, error, clearError } = useAuth();
-
-  const token = searchParams.get('token');
+  const [token, setToken] = useState<string | null>(null);
+  const [linkLoaded, setLinkLoaded] = useState(false);
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.hash.slice(1)).get('token');
+    if (value) {
+      // The fragment is only available after hydration and must be removed from the address bar.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setToken(value);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    setLinkLoaded(true);
+  }, []);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -132,9 +145,8 @@ function ResetPasswordForm() {
     try {
       await resetPassword(token, password, confirmPassword);
       setIsSuccess(true);
-    } catch (err) {
-      // 错误已在 hook 中处理
-      console.error('Reset password failed:', err);
+    } catch {
+      // The authentication context exposes the failure to the form.
     } finally {
       setIsLoading(false);
     }
@@ -142,9 +154,11 @@ function ResetPasswordForm() {
 
   const displayError = localError || error;
 
+  if (!linkLoaded) return null;
+
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="auth-surface">
         <div className="w-full max-w-md">
           <Card>
             <CardHeader>
@@ -152,15 +166,11 @@ function ResetPasswordForm() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <p className="text-sm text-slate-600">
-                重置链接无效或已过期。请重新请求密码重置。
-              </p>
+              <p className="text-sm text-slate-600">重置链接无效或已过期。请重新请求密码重置。</p>
 
               <div className="flex gap-3">
                 <Link href="/auth/forgot-password" className="flex-1">
-                  <Button className="w-full">
-                    重新请求
-                  </Button>
+                  <Button className="w-full">重新请求</Button>
                 </Link>
                 <Link href="/auth/login" className="flex-1">
                   <Button variant="outline" className="w-full">
@@ -177,7 +187,7 @@ function ResetPasswordForm() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="auth-surface">
         <div className="w-full max-w-md">
           <Card>
             <CardHeader>
@@ -186,15 +196,11 @@ function ResetPasswordForm() {
 
             <CardContent className="space-y-4">
               <div className="rounded-lg bg-green-50 p-4">
-                <p className="text-sm text-green-900">
-                  您的密码已成功重置。请使用新密码登陆。
-                </p>
+                <p className="text-sm text-green-900">您的密码已成功重置。请使用新密码登陆。</p>
               </div>
 
               <Link href="/auth/login">
-                <Button className="w-full">
-                  返回登陆
-                </Button>
+                <Button className="w-full">返回登陆</Button>
               </Link>
             </CardContent>
           </Card>
@@ -204,28 +210,24 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="auth-surface">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">重置密码</h1>
-          <p className="mt-2 text-slate-600">
-            输入您的新密码
-          </p>
+          <p className="mt-2 text-slate-600">输入您的新密码</p>
         </div>
 
-        <Card>
+        <Card className="auth-panel">
           <CardHeader>
             <CardTitle>创建新密码</CardTitle>
-            <CardDescription>
-              输入一个强密码以保护您的账户
-            </CardDescription>
+            <CardDescription>输入一个强密码以保护您的账户</CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 错误提示 */}
               {displayError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-600">{displayError}</p>
                 </div>
               )}
@@ -238,6 +240,7 @@ function ResetPasswordForm() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -249,12 +252,16 @@ function ResetPasswordForm() {
 
               {/* 确认密码 */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   确认密码
                 </label>
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -267,20 +274,13 @@ function ResetPasswordForm() {
               </div>
 
               {/* 提交按钮 */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !isPasswordStrong}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading || !isPasswordStrong}>
                 {isLoading ? '重置中...' : '重置密码'}
               </Button>
 
               {/* 返回登陆 */}
               <div className="text-center">
-                <Link
-                  href="/auth/login"
-                  className="text-sm text-blue-600 hover:text-blue-700"
-                >
+                <Link href="/auth/login" className="text-sm text-blue-600 hover:text-blue-700">
                   返回登陆
                 </Link>
               </div>
@@ -293,9 +293,5 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={null}>
-      <ResetPasswordForm />
-    </Suspense>
-  );
+  return <ResetPasswordForm />;
 }

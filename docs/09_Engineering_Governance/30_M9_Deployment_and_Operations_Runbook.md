@@ -11,11 +11,11 @@
 ## 1. Build
 
 ```powershell
-podman build -f deploy/Dockerfile.api -t personal-commerce-api:0.1.0 .
+podman build -f deploy/Dockerfile.api -t personal-commerce-api:0.2.0 .
 podman build `
   --build-arg NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3000 `
   -f deploy/Dockerfile.web `
-  -t personal-commerce-web:0.1.0 .
+  -t personal-commerce-web:0.2.0 .
 ```
 
 镜像构建不得注入运行时 Secret。`NEXT_PUBLIC_API_BASE_URL` 是公开客户端配置，不属于 Secret。

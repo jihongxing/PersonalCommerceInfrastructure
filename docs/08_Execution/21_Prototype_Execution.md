@@ -8,7 +8,7 @@
 > **Source of Truth**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
 > **Upstream Product Definitions**：[17 Core Product Objects](../07_Product_Architecture/17_Core_Product_Objects.md)、[18 MVP Product Flow](../07_Product_Architecture/18_MVP_Product_Flow.md)、[19 MVP Product Specification](../07_Product_Architecture/19_MVP_Product_Specification.md)  
 > **Document Type**：Living execution record; implementation status, deviations, blockers, testing evidence and handoff only  
-> **Last Updated**：2026-11-09
+> **Last Updated**：2026-11-10
 
 ## 1. Purpose
 
@@ -7909,30 +7909,30 @@ local-auth case and a Supabase-mapped case with no local-auth row.
 
 2026-11-09 verification evidence (the database URL and credentials were supplied outside this ledger):
 
-| Command | Result |
-| --- | --- |
-| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:migrate` | PASS; migration journal applied through `0030_time_scheduled_public_homepages.sql` |
-| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:integration:check` | PASS; isolated PostgreSQL preflight and schema checks completed |
-| `$env:LOCAL_AUTH_TEST_DATABASE_URL='<isolated PostgreSQL URL>'; $env:DEV062_INTEGRATION_DATABASE_URL=$env:LOCAL_AUTH_TEST_DATABASE_URL; pnpm exec vitest run tests/persistence/public-homepage-migration.integration.test.ts tests/integration/public-homepage-postgres.integration.test.ts tests/integration/public-homepage-api.test.ts tests/application/public-commerce-homepage.test.ts modules/public-commerce-homepage/scheduling.test.ts` | PASS; 5 files and 16 tests passed |
-| `pnpm --filter web-v2 exec tsc --noEmit` | PASS |
-| `pnpm --filter web-v2 build` | PASS; production build generated all 25 routes |
-| `pnpm check:openapi` | PASS |
-| `pnpm exec prettier --check adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts` | PASS |
-| `pnpm exec eslint adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts` | PASS |
-| `git diff --check` | PASS |
+| Command                                                                                                                                                                                                                                                                                                                                                                                                                                           | Result                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:migrate`                                                                                                                                                                                                                                                                                                                                               | PASS; migration journal applied through `0030_time_scheduled_public_homepages.sql` |
+| `$env:DATABASE_URL='<isolated PostgreSQL URL>'; $env:PCI_INTEGRATION_DATABASE='1'; pnpm db:integration:check`                                                                                                                                                                                                                                                                                                                                     | PASS; isolated PostgreSQL preflight and schema checks completed                    |
+| `$env:LOCAL_AUTH_TEST_DATABASE_URL='<isolated PostgreSQL URL>'; $env:DEV062_INTEGRATION_DATABASE_URL=$env:LOCAL_AUTH_TEST_DATABASE_URL; pnpm exec vitest run tests/persistence/public-homepage-migration.integration.test.ts tests/integration/public-homepage-postgres.integration.test.ts tests/integration/public-homepage-api.test.ts tests/application/public-commerce-homepage.test.ts modules/public-commerce-homepage/scheduling.test.ts` | PASS; 5 files and 16 tests passed                                                  |
+| `pnpm --filter web-v2 exec tsc --noEmit`                                                                                                                                                                                                                                                                                                                                                                                                          | PASS                                                                               |
+| `pnpm --filter web-v2 build`                                                                                                                                                                                                                                                                                                                                                                                                                      | PASS; production build generated all 25 routes                                     |
+| `pnpm check:openapi`                                                                                                                                                                                                                                                                                                                                                                                                                              | PASS                                                                               |
+| `pnpm exec prettier --check adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts`                                                                                                                                                                                                           | PASS                                                                               |
+| `pnpm exec eslint adapters/persistence/postgres/postgres-public-homepage-repository.ts adapters/persistence/postgres/postgres-creator-identity-composition.ts tests/integration/public-homepage-postgres.integration.test.ts`                                                                                                                                                                                                                     | PASS                                                                               |
+| `git diff --check`                                                                                                                                                                                                                                                                                                                                                                                                                                | PASS                                                                               |
 
 Acceptance evidence mapping:
 
-| Acceptance | Evidence | Status |
-| --- | --- | --- |
-| `AT-SCH-001` multi-version selection | Scheduling tests, application/API tests, and PostgreSQL repository integration | PASS (local) |
-| `AT-SCH-002` non-overlapping windows | Application validation plus PostgreSQL exclusion-constraint and migration checks | PASS (local) |
-| `AT-SCH-003` published-default fallback | Scheduling boundary/fallback tests and repository resolution | PASS (local) |
-| `AT-SCH-004` time-zone boundaries | Valid wall-clock conversion plus nonexistent and ambiguous DST rejection tests | PASS (local) |
-| `AT-SCH-005` concurrent conflict handling | PostgreSQL overlap constraint was exercised; separate concurrent-writer stress was not run | PARTIAL (local) |
-| `AT-SCH-006` stable C number | Migration preservation and PostgreSQL public resolution retain the existing commerce reference | PASS (local) |
-| `AT-SCH-007` public resolution cannot select a version | Public API contract and repository resolver accept only the server-selected version | PASS (local) |
-| `AT-SCH-008` migration regression | Real PostgreSQL migration test covers legacy migration, constraints, audit rows, and rollback | PASS (local) |
+| Acceptance                                             | Evidence                                                                                       | Status          |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | --------------- |
+| `AT-SCH-001` multi-version selection                   | Scheduling tests, application/API tests, and PostgreSQL repository integration                 | PASS (local)    |
+| `AT-SCH-002` non-overlapping windows                   | Application validation plus PostgreSQL exclusion-constraint and migration checks               | PASS (local)    |
+| `AT-SCH-003` published-default fallback                | Scheduling boundary/fallback tests and repository resolution                                   | PASS (local)    |
+| `AT-SCH-004` time-zone boundaries                      | Valid wall-clock conversion plus nonexistent and ambiguous DST rejection tests                 | PASS (local)    |
+| `AT-SCH-005` concurrent conflict handling              | PostgreSQL overlap constraint was exercised; separate concurrent-writer stress was not run     | PARTIAL (local) |
+| `AT-SCH-006` stable C number                           | Migration preservation and PostgreSQL public resolution retain the existing commerce reference | PASS (local)    |
+| `AT-SCH-007` public resolution cannot select a version | Public API contract and repository resolver accept only the server-selected version            | PASS (local)    |
+| `AT-SCH-008` migration regression                      | Real PostgreSQL migration test covers legacy migration, constraints, audit rows, and rollback  | PASS (local)    |
 
 The Supabase-mapped public homepage fix is verified only against the isolated local PostgreSQL environment. Hosted
 Supabase credentials, production deployment, public internet access, real mobile QR scanning, and external
@@ -7940,17 +7940,17 @@ observability remain unverified; this record does not claim production acceptanc
 
 ## DEV-065 / CREATOR-WORKSPACE-PROFILE-SURFACE
 
-| Field | Record |
-| --- | --- |
-| Date | 2026-11-09 |
-| Change Unit | `DEV-065` / `CREATOR-WORKSPACE-PROFILE-SURFACE` |
-| Product Decision | [32 — Creator 工作台与个人资料界面结构决策](../07_Product_Architecture/32_Creator_Workspace_Profile_Surface_Decision.md) |
-| Implementation Plan | [115 — Creator 工作台与个人资料界面重构实施计划](../09_Engineering_Governance/115_Creator_Workspace_Profile_Surface_Implementation_Plan.md) |
-| Product Change | Move complete public homepage management from the Creator dashboard into a two-tab Profile surface, while keeping the dashboard as a lightweight operations summary. |
-| Status | **IMPLEMENTED; LOCAL ACCEPTANCE PASSED** |
-| Scope | `apps/web-v2` information architecture, navigation, progressive disclosure, dashboard summary, and Profile deep link `/profile?tab=public`. |
-| Non-goals | No API, database, domain state, canonical event, C-number, public resolution, service publication, authentication, or permission changes. |
-| Evidence | Decision 32 and implementation plan 115 record the approved structure, invariants, error-state rules, affected files, phased work, rollback, and acceptance checks. The complete homepage manager now lives under the Profile surface; the dashboard keeps an independent summary and `/profile?tab=public` deep link. |
+| Field               | Record                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date                | 2026-11-09                                                                                                                                                                                                                                                                                                             |
+| Change Unit         | `DEV-065` / `CREATOR-WORKSPACE-PROFILE-SURFACE`                                                                                                                                                                                                                                                                        |
+| Product Decision    | [32 — Creator 工作台与个人资料界面结构决策](../07_Product_Architecture/32_Creator_Workspace_Profile_Surface_Decision.md)                                                                                                                                                                                               |
+| Implementation Plan | [115 — Creator 工作台与个人资料界面重构实施计划](../09_Engineering_Governance/115_Creator_Workspace_Profile_Surface_Implementation_Plan.md)                                                                                                                                                                            |
+| Product Change      | Move complete public homepage management from the Creator dashboard into a two-tab Profile surface, while keeping the dashboard as a lightweight operations summary.                                                                                                                                                   |
+| Status              | **IMPLEMENTED; LOCAL ACCEPTANCE PASSED**                                                                                                                                                                                                                                                                               |
+| Scope               | `apps/web-v2` information architecture, navigation, progressive disclosure, dashboard summary, and Profile deep link `/profile?tab=public`.                                                                                                                                                                            |
+| Non-goals           | No API, database, domain state, canonical event, C-number, public resolution, service publication, authentication, or permission changes.                                                                                                                                                                              |
+| Evidence            | Decision 32 and implementation plan 115 record the approved structure, invariants, error-state rules, affected files, phased work, rollback, and acceptance checks. The complete homepage manager now lives under the Profile surface; the dashboard keeps an independent summary and `/profile?tab=public` deep link. |
 
 This change is an interface-only restructuring. The existing homepage management operations, stable `/r/{C号}`
 address, one-active-homepage rule, empty-service behavior, and distinction between normal empty state and API failure
@@ -7961,3 +7961,787 @@ OpenAPI compatibility, scoped Prettier, scoped ESLint, `git diff --check`, and b
 3000/8080 services. Responsive evidence is recorded in `artifacts/profile-surface-mobile.png`,
 `artifacts/profile-surface-tablet.png`, and `artifacts/profile-surface-desktop.png`. Production deployment, public
 internet access, real mobile QR scanning, and external observability remain outside this local acceptance.
+
+### 2026-11-09 Stitch design prototype revision
+
+Revised the `stitch/web` and `stitch/mobile` HTML design prototypes against the existing `apps/web-v2` routes,
+booking fields, public homepage projection, request and fulfillment states, and DEV-064/DEV-065 homepage rules.
+The design-only change adds mobile-first page coverage and shared responsive styles; it does not change the running
+application, API, product state transitions, canonical events, or external integrations. The prototypes use sample
+data and local interactions and must not be treated as evidence of backend behavior or VS-01 acceptance. The old
+`screen.png` files are pre-revision screenshots, as documented in `stitch/README.md`.
+
+Verification: JavaScript syntax check and 44 generated entry point existence checks; local browser review of the
+375px dashboard, 320px request page, desktop service form, and the mobile booking submission flow. The original
+HTML was backed up outside the repository before replacement. Real-device, screen-reader, PWA installation and
+external service validation were not performed.
+
+2026-11-09 Stitch sharing-tool follow-up: added a visible stable sharing module to the dashboard and public-homepage
+management prototypes for desktop and mobile. It presents a sample C number, sample stable address and generated QR
+code, with copy, download and system-share interactions. The module states that access depends on publication status
+and that a C number does not establish identity or qualifications. This is a design-only prototype using example.com;
+it does not change `apps/web-v2` behavior or establish product acceptance.
+
+Verification: JavaScript syntax and scoped Prettier checks passed; local browser checks covered desktop and 320px and
+375px layouts, QR image loading, copy/share failure guidance, and pausing and republishing a homepage version. The QR
+was generated from the displayed sample URL. Real-device QR scanning and native system sharing were not tested.
+
+### 2026-11-09 Web V2 responsive redesign plan
+
+Created [plan 116](../09_Engineering_Governance/116_Web_V2_Responsive_Redesign_Implementation_Plan.md) for
+replacing the `apps/web-v2` interface with the approved mobile-first Stitch design. It records route coverage,
+preserved business capabilities, staged implementation, verification and acceptance, and the conflict between the
+approved dashboard sharing module and decision 32 / DEV-065. The plan requires that conflict to be registered and
+resolved before the affected implementation. Status: **PLANNED; NOT IMPLEMENTED OR ACCEPTED**. This entry does not
+change product behavior, approve a new product decision, or claim test evidence for the future implementation.
+
+## DEV-066 / STABLE-SHARING-TOOL-SURFACE
+
+| Field         | Record                                                                                                                                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date          | 2026-11-09                                                                                                                                                                                                                        |
+| Authorization | User approved the responsive Stitch designs and implementation plan 116.                                                                                                                                                          |
+| Decision      | [33 — 稳定分享工具界面决策](../07_Product_Architecture/33_Stable_Sharing_Tool_Surface_Decision.md), superseding decision 32's dashboard QR restriction.                                                                           |
+| Impact        | Dashboard and homepage management share the canonical C-number URL and QR; full homepage configuration remains in Profile. FR-018–020, FR-023–024, AT-003–004 and DEV-062–065 are relevant.                                       |
+| Invariants    | No domain state, canonical event, API, database or permission change. Copy, download and system share do not establish actual distribution or emit `creator_distributed`; existing PRD amendment already states this distinction. |
+| Status        | **APPROVED; IMPLEMENTATION IN PROGRESS; NOT ACCEPTED**                                                                                                                                                                            |
+
+Plan 116 baseline: branch `master`; existing uncommitted ledger, plan and `stitch/` preserved; Node v22.23.2 and
+pnpm 10.22.0. `pnpm --filter web-v2 exec tsc --noEmit` and `pnpm --filter web-v2 build` passed before edits.
+`pnpm --filter web-v2 exec vitest run` failed before edits: 7 files failed, 7 passed; 7 tests failed, 33 passed.
+The collection included three Playwright specs, an order-result hook suite failed to collect, five order-result card
+tests used an incompatible fixture, tracing timed out and session restoration had an outdated expectation. This is a
+baseline result, not redesign acceptance. No real-device or external service verification has occurred.
+
+## DEV-067 / ONBOARDING-ENTRY-ROUTE-CORRECTION
+
+Plan 116 identifies the existing `/onboarding` redirect to the nonexistent `/creator/onboarding/welcome` as a
+defect. The approved correction routes an identity-not-found response to `/onboarding/welcome` and presents other
+request failures with retry instead of treating them as a missing identity. This affects navigation and error
+presentation only; identity creation, authentication, permissions, domain states and canonical events are unchanged.
+Affected acceptance includes the new-user identity path in AT-001 and plan 116 sections 5.0 and 5.5. Status:
+**IMPLEMENTATION IN PROGRESS; NOT ACCEPTED**. Focused regression evidence will be recorded after execution.
+
+2026-11-09 initial implementation evidence: responsive Creator navigation and public shell, dashboard sharing,
+shared QR/copy/download/system-share component, and initial authentication and lookup surfaces are in progress.
+The shared component uses `homepageUrl` and does not call a distribution mutation. The onboarding redirect correction
+distinguishes a 404 from other API failures. `pnpm --filter web-v2 exec tsc --noEmit` and `pnpm --filter web-v2 build`
+passed; focused Vitest for sharing, onboarding and Profile tabs passed (3 files, 7 tests). `/browse` inspected the
+375px lookup and login surfaces; screenshots are `artifacts/plan116-lookup-mobile-theme.png` and
+`artifacts/plan116-login-mobile-updated.png`. Browser inspection also exposed the existing Tailwind theme configuration
+not being loaded; adding `@config` restored semantic colors. These checks do not cover authenticated business flows,
+QR decoding, real devices, external services or the remaining plan routes, and are not overall acceptance.
+
+## DEV-068 / AUTHENTICATION-RETURN-DESTINATION
+
+Plan 116 requires a protected deep link, including `/profile?tab=public`, to survive authentication. The existing
+guard and login page discard it and navigate to the dashboard. Preserve the requested internal Creator route and its
+query when an unauthenticated visitor is sent to login, and return to it after login or successful session restoration.
+Accept only recognized Creator paths and reject external or malformed destinations; absent or invalid destinations
+fall back to `/dashboard`. This changes navigation only: authentication, permissions, domain objects, states and
+canonical events are unchanged. Relevant acceptance: plan 116 sections 5.1, 5.5 and 8. Status: **IN PROGRESS;
+NOT ACCEPTED**. Test results will be recorded after verification.
+
+2026-11-09 progress: the protected route now carries an internal Creator destination through login, including its
+query and fragment. Both login completion and session restoration validate that destination; invalid or external
+values fall back to `/dashboard`. Focused Vitest passed (10 tests), including the login form, restored session and
+unsafe destinations; `pnpm --filter web-v2 exec tsc --noEmit` and scoped ESLint passed. These are component-level
+checks, not real authentication or overall acceptance. DEV-068 remains in progress pending browser and full-flow checks.
+
+Stable sharing follow-up: status messages are tied to the displayed URL, and cancellation is recognized across
+JavaScript realms. Focused tests cover URL changes, clipboard failure, unsupported sharing and cancellation; combined
+with the authentication tests, 2 files / 16 tests passed. QR decoding, a real device and external service remain
+unverified. Scoped ESLint reports the existing Next image-optimization warning for the locally generated QR image.
+
+## DEV-069 / CREATOR-REQUEST-FEEDBACK-AND-FULFILLMENT
+
+Plan 116 stage 3 uncovered an existing contract mismatch: the confirmed-request response does not contain a
+fulfillment code, while `POST /api/v1/creator/requests/{actionId}/confirm-fulfillment` requires the code in its
+request body. Existing request mutations also do not surface failures. Provide an explicit code input for confirmed
+requests, submit it to the existing authenticated endpoint, and show decision and fulfillment errors. This restores
+the existing API workflow; it does not change authorization, the domain state machine, canonical events or the API.
+Relevant acceptance includes AT-008–011 and plan 116 sections 5.3, 7 and 8. Status: **IN PROGRESS; NOT ACCEPTED**.
+
+Implementation now submits the visitor-provided fulfillment code, removes the nonexistent list response field, and
+shows request decision and fulfillment feedback. On 2026-11-09, focused web-v2 Vitest passed (3 files, 3 tests),
+including the request body, input validation and decision failure/retry feedback; root `tests/fulfillment-code.test.ts`
+passed (14 tests). Web-v2 `tsc --noEmit`, scoped ESLint and `git diff --check` passed; Git reported line-ending
+warnings. These are component/mocked API and domain tests, not a live API or device acceptance. Actual authorized
+request, incorrect/expired code, repeated action and permission paths remain to be verified against an isolated API.
+
+Plan 116 stage 3 capability list: migrated the existing read/create-entry surface to the approved responsive list
+structure, preserving loading, empty, error and retry states and the real identity query. On 2026-11-09, focused
+Vitest passed (1 file, 2 tests), web-v2 typecheck and scoped ESLint passed. The tests use a mocked query. Responsive
+browser and real authenticated API verification remain outstanding. Capability edit/delete endpoints remain absent
+from the formal API and have not been represented as working operations.
+
+Plan 116 stage 3 service list: migrated the list to the responsive surface, retaining existing draft, published and
+unpublished/archived groupings, create, detail and edit routes, and error retry. On 2026-11-09, focused capability and
+service component Vitest passed (2 files, 4 tests), web-v2 typecheck and scoped ESLint passed. One initial test failed
+because a synthetic click omitted the Radix pointer interaction; it passed using the user-event pointer sequence.
+The tests mock the query; authenticated browser, API and responsive verification remain outstanding.
+
+Plan 116 stage 3 request list: applied the shared responsive page heading and spacing, increased tab targets and
+allowed long contact details to wrap; request data and actions remain connected to existing queries and mutations.
+On 2026-11-10, focused request Vitest passed (3 files, 3 tests), web-v2 typecheck and scoped ESLint passed. The
+authenticated API workflow and responsive browser checks remain outstanding.
+
+Plan 116 stage 3 create/edit forms: adjusted capability creation and service creation/editing page spacing and button
+targets, and exposed the existing capability selection as pressed state to assistive technology. On 2026-11-10,
+web-v2 typecheck and scoped ESLint passed after removing an unused import. Form submission, selection and responsive
+layout still require browser and authenticated API verification; no form behavior or API contract was changed.
+
+Plan 116 stage 4 public homepage: updated the real public projection's heading, service list and reference explanation
+to match the responsive design. On 2026-11-10, focused Vitest passed (1 file, 2 tests), covering mocked success,
+service link, 503 retry and 404, and web-v2 typecheck and scoped ESLint passed. Live public resolution, visual
+viewports and accessibility remain to be checked; no new public data fields were added.
+
+Plan 116 stage 4 public service: arranged existing creator, service and request form content into responsive desktop
+columns and a mobile stack, preserved line breaks in descriptions, enlarged the submit target and announced submit
+errors. On 2026-11-10, booking component Vitest passed (1 file, 2 tests) for required fields, mocked submission,
+result navigation and error announcement; web-v2 typecheck and scoped ESLint passed. Actual API submission, failure,
+duplicate prevention and responsive browser verification remain outstanding.
+
+Stage 0 discovery: the formal Creator identity API currently exposes capability creation and identity retrieval,
+but no capability GET-by-id, PATCH or DELETE route. The existing web-v2 edit/delete hooks call nonexistent routes;
+plan 116's capability edit/delete goal therefore cannot be accepted as implemented without a product and API
+decision. The Creator submitted/confirmed request list endpoints do exist; the mismatch is the fulfillment body and
+the assumption that the confirmed list supplies the code. This is source inspection, not a runtime acceptance result.
+
+Plan 116 stage 4 result page: adjusted long token wrapping, fulfillment instructions, refresh target size and the
+home navigation link. On 2026-11-10, focused Vitest passed (2 files, 5 tests) for submitted, confirmed and declined
+results, manual refresh and query-error retry; web-v2 typecheck and scoped ESLint passed. The previous result-card
+tests used obsolete props and customer fields and were updated to the current result contract. The first page-test
+run failed while React's asynchronous route parameters were suspended; awaiting the render resolved the test setup.
+These checks use mocked queries. Polling, expired tokens, the live API and responsive browser layout remain unverified.
+
+Plan 116 stages 2 and 3 profile/service surfaces: aligned profile, profile edit and service detail page spacing with
+the Creator shell, increased profile tab and link targets, corrected nested interactive links, and enabled long text
+wrapping. On 2026-11-10, profile and service-list Vitest passed (2 files, 4 tests), web-v2 typecheck and scoped
+ESLint passed. Those tests mock queries and do not cover profile submission or service detail actions; authenticated
+API, browser navigation, long content and responsive behavior remain to be verified.
+
+Plan 116 test baseline follow-up: separated Playwright's e2e specs from Vitest collection, corrected the result-query
+test extension and error fixture, and updated the session-restoration expectation to the existing public lookup behavior
+(confirmed against HEAD). The tracing exporter test has multiple scheduled waits and received a test-specific 20-second
+timeout after it passed individually but timed out under concurrent execution. On 2026-11-10 `pnpm --filter web-v2
+exec vitest run` passed (22 files, 72 tests); typecheck and scoped ESLint passed before the tracing timeout adjustment.
+The run emitted Vite config and jsdom navigation warnings. This does not execute Playwright, verify actual navigation,
+external services or meet overall acceptance; existing e2e specs still require controlled data and repair.
+
+Plan 116 stage 5 welcome page: replaced unsupported absolute privacy, permanence and transaction-safety claims with
+the approved profile-setup surface, preserving profile setup and home navigation. On 2026-11-10 the onboarding-entry
+Vitest passed (1 file, 2 tests), web-v2 typecheck and scoped ESLint passed. The test covers the entry redirect, not the
+new welcome page in a browser or a real new-user registration and profile submission; those remain outstanding.
+
+Plan 116 stage 0 route inventory: `docs/09_Engineering_Governance/116_Web_V2_Route_Inventory.md` maps each current
+route to its implementation, data and known test ownership, with outstanding verification. Source inspection also
+confirms forgot-password and reset-password explicitly return unavailable in `auth/service.ts`; no real reset has been
+proven. The inventory is a starting point, not a completed state-by-state or environment audit, and stage 0 remains
+in progress pending controlled data, API reconciliation and reproducible acceptance evidence.
+
+Plan 116 stage 5 mobile authentication: `/browse` at 320 x 700 found the login inputs and submit button were 36px
+high. Authentication inputs, buttons and form links now have a 44px minimum target; error summaries use `role=alert`
+and fields have appropriate autocomplete attributes. On 2026-11-10, the isolated local Next development server on
+port 3002 showed 44px targets and no horizontal overflow on login; the lookup page also had no horizontal overflow
+and showed an error for an empty C number. Authentication component tests passed (2 files, 13 tests), web-v2
+typecheck passed, and scoped ESLint had no errors. These are local browser and mocked component checks, not real
+authentication, device, all-viewport or overall acceptance. The separate server uses a temporary Next build directory;
+Next's automatic additions to tsconfig were removed after startup.
+
+## DEV-070 / HOMEPAGE-MANAGEMENT-ACTION-CONTEXT
+
+Plan 116 review found that homepage management shows the active homepage above controls that actually operate on the
+selected version, and a previously loaded preview can remain after selecting another version or a failed preview.
+Display the selected version next to those controls, clear stale previews when changing selection or requesting a new
+preview, and keep selection fixed while an action is pending. This corrects interface feedback; homepage lifecycle,
+scheduling, authorization, API contracts and canonical events remain unchanged. Relevant acceptance: DEV-064,
+AT-SCH-001–008 and plan 116 sections 5.2 and 7. Status: **IN PROGRESS; NOT ACCEPTED** pending verification.
+
+2026-11-10 progress: the action target is named explicitly, version selection is disabled while an operation is
+pending, and previews are cleared when changing version or starting another preview. A focused Vitest component
+test passed for selection, preview replacement and failure using mocked API responses; web-v2 typecheck and scoped
+ESLint passed. Scheduling, action authorization and the full homepage workflow still require isolated API and browser
+verification; DEV-070 and stage 2 remain in progress.
+
+Plan 116 isolated runtime progress, 2026-11-10: started a new PostgreSQL 17 Podman container
+`pci-plan116-20261110` on loopback port 45477 and successfully ran `pnpm db:migrate`. The local API runs on 8081
+with local authentication and real-money runtime disabled; the isolated web-v2 development instance on 3002 points
+to it. An initial API startup lacked the required operations configuration and exited; startup succeeded after adding
+test-only values. With `/browse` at 320 x 700, a new test account registered, received an assigned C number, created
+a public profile and homepage version, published it, saw it become default and active, and previewed its empty service
+list. Both dashboard and homepage management displayed the same local canonical URL; navigating that URL resolved the
+published profile and its empty-service state. The generated dashboard QR image had natural width 1024; decoding was
+not performed. The homepage management and public homepage had no document-level horizontal overflow at that viewport.
+This is a local isolated database and API, not external authentication, real-device, public-internet or production
+evidence. Other widths, accessibility, URL/QR decoding, schedule and end-to-end request workflows remain outstanding.
+
+## DEV-071 / SERVICE-PUBLISH-READINESS-FEEDBACK
+
+Plan 116 local API verification found the service checklist reports all conditions complete even when the Creator's
+Commerce Identity has an empty display name or bio; the publish use case rejects that state. Show this existing
+condition and a route to edit identity, distinguish identity lookup failure from an incomplete identity, and show
+publish/unpublish outcomes within the page. The existing toast also calls `window.alert`; an earlier browser-only
+observation that the error appeared only in the console was incorrect because browser automation dismisses dialogs.
+This changes feedback and client-side readiness only, not the service or identity lifecycle, authorization, API,
+distribution semantics or canonical events. Relevant acceptance: AT-001–004 and plan 116 section 5.3.
+Status: **IN PROGRESS; NOT ACCEPTED** pending tests and local API verification.
+
+2026-11-10 DEV-071 progress: focused service-detail tests passed (1 file, 3 tests) for incomplete identity, identity
+lookup failure/retry and publish rejection; typecheck, scoped ESLint and `git diff --check` passed. In the isolated
+local API/browser, the incomplete identity showed 5/6 and disabled publication, identity edit saved successfully,
+and publication then succeeded with an inline success message and updated published state. The published service
+appeared on the stable public homepage; a visitor request was submitted and appeared in the Creator pending list,
+where confirmation moved it to the confirmed list. These are local database/API checks, not external-service or
+device acceptance. The public result shows a fulfillment code at submission, matching existing generation semantics;
+the earlier concern that this was premature was resolved by inspecting the use case and existing domain behavior.
+
+## DEV-072 / FULFILLMENT-EXPIRY-DATE-FEEDBACK
+
+Plan 116 live local result rendering showed a future fulfillment-code expiration as "刚刚" because the relative-time
+helper handles only past dates. Render the expiration as an absolute date with an explicit time zone using the
+existing date formatter. No code generation, expiry, request states, permissions or events change. Related to
+existing fulfillment display and plan 116 sections 5.4 and 7. Status: **IN PROGRESS; NOT ACCEPTED** pending verification.
+
+2026-11-10 DEV-072 verification: the focused result-card suite passed (3 tests). The isolated local request was
+confirmed and its fulfillment code was successfully verified; the public result API returned state `confirmed`
+and code status `fulfilled` with a confirmation timestamp. This uses the local API and isolated PostgreSQL, not
+an external service. Expiry is displayed using the existing formatter with an explicit local-time label.
+
+## DEV-073 / RESPONSIVE-CONTROLS-CAPABILITY-ERRORS
+
+Plan 116 rendered-page review found shared controls below the intended 44px touch target, and the existing
+capability edit route reads Next.js dynamic params synchronously and treats API failure as a missing capability.
+Use the approved responsive shell on that route, await params, distinguish request failure with retry, and bring
+shared button/input targets to 44px (including icon width). Preserve capability fields and the existing API;
+GET/PATCH/DELETE capability support remains an explicit backend gap, not a successful CRUD claim. No domain
+objects, transitions, permissions or canonical events change. Acceptance: plan 116 sections 5.1, 5.3 and 7;
+AT-001–004 where applicable. Status: IN PROGRESS pending checks.
+
+## DEV-074 / HOMEPAGE-WINDOW-DELETE-CORS
+
+Plan 116 real-browser scheduling verification found that the existing homepage-window disable route uses DELETE,
+but the API CORS preflight response advertises only GET, POST and PATCH. A separately hosted web-v2 browser client
+therefore blocks the existing disable operation before it reaches the API. Add DELETE to the allowed methods for
+configured origins and test the preflight contract. This restores an existing authorized operation; no homepage
+state rule, API route, permission, product object or canonical event changes. Acceptance: DEV-064 scheduling,
+AT-SCH-001–008 where applicable, and plan 116 sections 5.2 and 7. Status: IN PROGRESS pending verification.
+
+## DEV-075 / EMPTY-SUCCESS-API-RESPONSE
+
+After DEV-074 allowed the browser DELETE, the existing API client attempted JSON parsing on the route's valid
+204 No Content response and reported a false failure. Treat 204 as a successful empty response in the shared
+client, preserving existing error handling for non-success responses. This fixes browser feedback for an existing
+homepage-window disable operation and any other valid 204 route; it does not change API contracts, permissions,
+domain state, or canonical events. Acceptance: plan 116 sections 5.2 and 7, DEV-064 scheduling, and AT-SCH-001–008
+where applicable. Status: IN PROGRESS pending unit and browser verification.
+
+2026-11-10 Plan 116 verification continuation: DEV-074 CORS preflight is covered by
+`pnpm exec vitest run tests/integration/api-runtime.test.ts --testTimeout=60000` (12 passed).
+DEV-075 is covered by `apps/web-v2/lib/api/client-empty-response.test.ts` in the web-v2 suite
+(26 files / 79 passed). The existing window disable operation completed in Chromium and Firefox against
+the local API and isolated PostgreSQL, including its cross-origin DELETE and 204 response. These findings
+verify the specific fixes locally; they do not establish overall schedule, production or external acceptance.
+
+Plan 116 local regression on 2026-11-10: `pnpm --filter web-v2 build`,
+`pnpm --filter web-v2 exec tsc --noEmit`, `pnpm --filter web-v2 exec vitest run`,
+`pnpm check:openapi`, scoped Prettier and scoped ESLint for the new test files passed; `git diff --check`
+passed with CRLF warnings. The shared API client has existing `any` lint violations in HEAD, and the API
+server has an existing `database?: any` violation in HEAD. A full changed-file ESLint pass is not claimed.
+The build used a separate `.next-plan116-build` directory and its generated tsconfig includes were removed.
+
+Playwright used `E2E_WEB_BASE_URL=http://localhost:3002`, `E2E_API_BASE_URL=http://127.0.0.1:8081`,
+`E2E_ISOLATED_API=1` with local authentication and isolated PostgreSQL. Chromium passed consumer (3),
+Creator (3), homepage management (1), and performance/error recovery (2), in separate runs. Firefox passed
+consumer (3), Creator (3), and homepage management (1), in separate successful runs. The homepage test verifies
+Asia/Shanghai conversion, time preview, overlap rejection, disabled-window fallback, edit/re-enable, pause and
+archive. Firefox Creator initially failed 3 during fixture setup with API 500 and passed on a later retry;
+Firefox homepage management and two performance tests in a subsequent batch also failed with API 500, and
+homepage management passed in isolation later. Existing API limit is 100 requests per IP per minute and the
+logs show internal errors at failure; this is consistent with limit exhaustion but is not a definitive diagnosis.
+Firefox performance and other browser projects remain unverified. No failed batch is counted as a pass.
+
+Overall Plan 116 remains IN PROGRESS / NOT ACCEPTED: real mobile scan and native share, external authentication,
+full successful-state visual and accessibility checks, all browser projects and applicable AT-001–013 evidence
+remain outstanding. Formal capability GET-by-id/PATCH/DELETE routes and password reset are existing gaps; a
+product/API decision and usable authentication provider are needed before those behaviors can be accepted.
+
+2026-11-10 additional local runs: Firefox performance (2) passed separately after the failed batch. WebKit
+consumer (3), Creator (3), homepage management (1), and performance (2) passed in separate runs. Mobile Chrome
+consumer (3), Creator (3), homepage management (1), and performance (2) passed in separate runs; its first
+consumer run had two fixture failures with API 500. Mobile Safari consumer (3) and Creator (3) passed; its
+homepage-management fixture failed with API 500 before page actions and requires a later rerun. Mobile browser
+projects emulate devices and do not establish actual phone, native share, scan, keyboard or safe-area behavior.
+The current Creator flow also submits an incorrect fulfillment code, asserts API failure and unchanged pending
+code status, then successfully fulfills; this additional assertion passed in Mobile Chrome and Mobile Safari.
+
+`pnpm exec vitest run tests/acceptance/vs01.acceptance.test.ts tests/governance/import-boundaries.test.ts
+tests/application/public-commerce-homepage.test.ts tests/integration/public-homepage-api.test.ts --testTimeout=60000`
+passed 4 files / 27 tests. The VS-01 acceptance file checks that named acceptance entry points exist in source;
+it does not itself execute the AT-001–013 browser scenarios. `/browse` at 320 x 700 on login showed a visible
+keyboard focus outline and no document overflow for the first focused link; full keyboard/zoom audit is pending.
+
+Further local reruns: Mobile Safari homepage management (1) and performance (2) passed independently after
+the homepage fixture's initial API 500. Each of the five Playwright projects has now passed all four specs in
+separate batches; the incorrect-code assertion was added after the desktop runs and passed in both mobile emulations.
+The failed attempts remain part of the record. Browser emulation cannot establish real phone behavior. A browser
+zoom shortcut did not change the headless browser's reported viewport or device pixel ratio, so 200% zoom is not
+claimed as tested. The temporary generated bundled QR decoding script was removed after its earlier local result.
+
+Additional Chromium local API/browser test on 2026-11-10: a separately registered Creator received 403 attempting
+to confirm another Creator's request; the result stayed submitted. The owner confirmed in web-v2, a repeated decline
+received 409, and the public result showed confirmed. The initial test reached the final assertion but expected the
+wrong display text (`Creator 已确认` instead of `已确认`); after correcting that test assertion, the isolated test
+passed. This covers that local permission/state path, not every authorization or expired-session case.
+
+Chromium local browser verification: an expired stored session without a refresh token was cleared and the
+protected `/profile?tab=public` deep link redirected to login with its `returnTo` preserved. This does not prove
+refresh-token expiration, network failure during refresh, or behavior of any external authentication provider.
+
+2026-11-10 Plan 116 acceptance traceability review: the route inventory now maps AT-001 through AT-013 to
+specific web-v2 evidence and missing assertions. Existing root browser acceptance uses the older `/creator`
+client and does not by itself verify web-v2. In particular AT-004 has a web-v2 coverage gap: the existing
+distribution POST is not exposed by the current or HEAD web-v2 service page. The publish response carries an
+asset, but the creator offering-list contract does not expose its persisted distribution state. The old client
+holds the publish response only in page state, so it does not prove recovery after refresh. Stable homepage URL,
+QR, copy and native share are not evidence of actual external distribution. Product / API decisions and the
+required DEV registration must precede any new behavior. This review is documentation only; no AT is newly
+marked passed and overall Plan 116 remains IN PROGRESS / NOT ACCEPTED.
+
+2026-11-10 additional local acceptance evidence: `pnpm exec vitest run
+tests/application/external-observation-use-cases.test.ts --testTimeout=60000` passed 4 tests using in-memory
+fixtures, covering external observation recording, permissions, prerequisites and idempotency. It does not
+establish real external payment or fulfillment. Chromium `consumer-flow.spec.ts -g 'existing result survives'`
+passed against the local API and isolated database: after unpublishing, a direct request returned 422 with
+`service_offering_unavailable`, the owner confirmed the existing request in web-v2, and its result showed
+confirmed. The first run failed because the new assertion incorrectly expected 409; the existing API contract
+and integration test specify 422, and the corrected assertion and error code passed. Scoped ESLint passed.
+These results add partial AT-011 / AT-012 evidence, not full AT or production acceptance.
+
+The Chromium `creator-flow.spec.ts -g 'Creator rejects'` local API / isolated-database run also passed after
+adding assertions for the visitor's declined result and explanatory text. It does not assert canonical events
+or external-service behavior, and it is not a complete AT-009 acceptance result.
+
+## DEV-076 / CREATOR-CAPABILITY-MANAGEMENT
+
+Status: In Progress. On 2026-11-10 the user approved adding the missing backend capability edit and delete
+operations to Plan 116. A Creator may read and edit only their own capability. Deletion is rejected while any
+service references it, including draft or unpublished services; the Creator must first remove the association.
+This protects existing services and request history. The API, client, persistence and authorization behavior
+must be verified together, including concurrent association/deletion. This extends Creator management without
+adding a new canonical event or changing request, payment or fulfillment states.
+
+## DEV-077 / LOCAL-PASSWORD-RECOVERY
+
+Status: In Progress. On 2026-11-10 the user approved adding local account password recovery and reset to
+Plan 116. Recovery must use an actually configured delivery provider, generic responses for known and unknown
+accounts, expiring single-use reset credentials stored only as digests, and atomic password replacement and
+session revocation. No reset secret may be logged. Missing delivery configuration must be reported as unavailable
+instead of claiming that mail was sent. Local test delivery is not evidence of real external delivery; production
+provider configuration and real-device acceptance remain separate verification requirements.
+
+2026-11-10 DEV-077 progress: a local PostgreSQL migration adds hashed, expiring reset tokens. The reset operation
+atomically consumes a token, changes the password and revokes sessions; session creation verifies the password
+hash under the same account lock. A configurable Resend adapter requires an HTTPS web origin, and reset links
+use a URL fragment that the web client removes from browser history. `tests/integration/local-auth.integration.test.ts`
+and `tests/integration/password-reset-delivery.test.ts` passed 5 tests against the isolated local database and a
+stubbed sender, including concurrent token use, expiry, old session invalidation and generic unknown-account
+responses. Root build and web-v2 typecheck passed. No real provider, real mailbox or phone has been tested.
+The user confirmed no real mail test address is currently available. DEV-077 remains in progress pending
+browser, failure-path and full contract verification.
+
+2026-11-10 DEV-077 security follow-up: recovery requests will be persisted uniformly before account lookup,
+and a background worker will handle token issuance and delivery. The queue must survive a process restart,
+use bounded retries and leases, delete completed or expired email addresses, and avoid storing reset tokens
+in plaintext. Delivery remains at least once; concurrent or repeated requests may invalidate older links.
+The change requires a migration, isolated PostgreSQL tests, runtime shutdown verification and an updated
+deployment procedure before the timing risk can be considered mitigated.
+
+2026-11-10 DEV-077 queue implementation: both known and unknown addresses use the same database insert before
+the generic response. A PostgreSQL lease and bounded retry worker performs lookup and delivery outside the
+request, removes processed or expired addresses, and resumes abandoned leases. The reset token is derived
+from the random request identifier and a domain-separated JWT secret; only its digest is stored in the reset
+table, and provider retries use an idempotency key derived from that digest. Issued links are not reissued after
+consumption or replacement. Multiple API replicas must share a stable JWT secret. This removes the direct
+provider-latency account enumeration signal; it is not proof of constant-time behavior or protection against all
+enumeration and abuse. The provider, deliverability and real mailbox remain unverified. Apply migration 0032
+before running this API version; rollback requires stopping upgraded API replicas before reverting the API image.
+Queued requests may expire or be lost on rollback. An unconfigured worker only purges expired queue records.
+
+2026-11-10 DEV-076 progress: the capability management API integration test passed its ownership,
+validation, editing, deletion and referenced-service checks; an isolated PostgreSQL concurrency test passed
+for deletion racing service association. The web-v2 capability list component tests passed 3 tests after
+correcting an ambiguous accessible-text query. The first OpenAPI compatibility run failed because the new
+manifest entries were out of sorted order; after correcting the order, the check passed. Web-v2 typecheck
+also passed. Browser verification and broader regression checks remain outstanding.
+
+## DEV-078 / CREATOR-DISTRIBUTION-ASSET-READ
+
+Status: In Progress. Plan 116 requires preserving the existing Creator operation for recording actual
+external distribution (FR-019, FR-020, AT-004). The web-v2 service detail will expose this explicit
+confirmation and read the persisted offering distribution asset through an owner-authorized API so its
+state survives navigation and reload. Publishing generates the asset; copying, QR download and system
+sharing do not record distribution. The confirmation uses the existing distribution transition and canonical
+event, with no new product object, event, payment or fulfillment behavior. Verify ownership, generated and
+distributed states, reload, errors and canonical event behavior before considering this deviation complete.
+
+2026-11-10 DEV-078 progress: the owner-authorized API reads the stored asset and the service detail offers
+an explicit confirmation of actual external distribution. Local API tests passed for absent, generated and
+distributed states, cross-owner denial and repeat conflict. Application tests passed for state and canonical
+event behavior; component tests passed for cancel and confirm. OpenAPI compatibility and root build passed.
+Reload, concurrent distribution, browser and real external distribution remain unverified. The password
+recovery implementation also has an outstanding account-enumeration timing risk: known accounts await the
+delivery provider while unknown accounts return immediately; production readiness requires a durable,
+uniform delivery strategy and verification. No provider or device acceptance is claimed.
+
+2026-11-10 DEV-078 concurrency review: distribution state was previously read before entering the unit of work.
+Simultaneous confirmations could therefore both observe `generated` and record duplicate canonical events.
+The implementation is being changed to read and lock the asset within the transaction and to test concurrent
+confirmations. This preserves the existing one-time transition and event contract.
+
+2026-11-10 continuation evidence: `pnpm --filter web-v2 exec vitest run` passed 27 files / 83 tests
+(jsdom reported unsupported document navigation); web-v2 production build passed. Root build, `pnpm db:check`,
+scoped ESLint and scoped Prettier passed. Seven root test files passed 46 tests with the isolated PostgreSQL URL,
+including local authentication, controlled mail delivery, capability concurrency, API runtime, offering use cases,
+governance and the source-level VS-01 acceptance check. That check does not execute all AT-001–013 workflows.
+
+After moving the distribution read into the unit of work and locking the PostgreSQL row, the focused application
+and integration run passed 11 tests, including simultaneous confirmations in memory and PostgreSQL; the latter
+asserted one success, one conflict and exactly one `creator_distributed` event. `/browse` against a separate local
+API and isolated PostgreSQL confirmed generated state, explicit confirmation, distributed state after reload,
+capability editing and reload, and the referenced-capability delete conflict. At widths 320 and 1280 the capability
+list had no document-level horizontal overflow. Forgot-password displayed unavailable with no provider configured.
+An initial test setup sent a bodyless PowerShell POST to onboarding and received 500; the retry with an explicit
+empty JSON object succeeded. No real external distribution was performed by these tests.
+
+Plan 116 remains IN PROGRESS / NOT ACCEPTED. Outstanding items include real-phone scan, native share, keyboard
+and safe-area checks; full zoom, accessibility and cross-page successful-state audit; complete AT-001–013 evidence;
+real external email delivery and the documented password-recovery timing risk. The user confirmed no real email
+test address is currently available. Controlled senders and desktop mobile emulation do not satisfy those gates.
+
+2026-11-10 continuation: the durable recovery queue described above supersedes the earlier direct-delivery
+timing-risk statement: both known and unknown email requests are queued before the response, while lookup and
+delivery run in the worker. This mitigates the identified provider-latency difference but does not prove constant
+response times or prevent all account enumeration. The isolated PostgreSQL tests cover concurrent queue claims,
+expired leases, retry with the same token, superseded links, and cleanup of expired or exhausted requests.
+`pnpm exec vitest run tests/integration/password-recovery-worker.test.ts tests/integration/password-reset-delivery.test.ts --testTimeout=60000`
+passed 2 files / 3 tests in a subsequent run. `pnpm --filter web-v2 exec tsc --noEmit`,
+`pnpm --filter web-v2 exec vitest run` (27 files / 83 tests), and `pnpm check:openapi` passed;
+the web tests emitted jsdom navigation warnings. `git diff --check` passed with CRLF warnings.
+The user is performing real-phone checks against the isolated local HTTP instance at port 3004. HTTP on a LAN
+is not a secure browser context, so native share and clipboard availability there cannot establish their HTTPS
+behavior. No phone result or external mail delivery is claimed until observed and recorded.
+The execution ledger fails `prettier --check`; the HEAD version also fails when checked via stdin, so this
+historical formatting baseline was not rewritten. The added ledger text passes `git diff --check`.
+
+2026-11-10 LAN test continuation: the user reported that the public lookup page loaded on a phone at port
+3004, but creator login remained loading. The same login skeleton was reproduced with `/browse`; the Next.js
+development log reported blocked LAN `/_next/hmr` requests. Following the user's request, the prior project
+Web and API processes were stopped and an isolated PostgreSQL test database, API on 8080 and Web on 3000 were
+started. `NEXT_ALLOWED_DEV_ORIGINS` now configures Next.js development origins from a comma-separated list;
+the LAN host was explicitly allowed. A desktop `/browse` session at the LAN address displayed the login and
+signup forms, registered a new account, initialized its workspace and loaded its stable sharing URL and QR
+download control. API logs recorded signup 201 and initialization / identity / reference requests 200. These
+results establish local LAN browser connectivity only. The replacement database requires a new test account;
+phone results, scanning, system sharing, keyboard and safe-area checks remain pending. This HTTP environment
+cannot establish secure-context behavior. Plan 116 remains IN PROGRESS / NOT ACCEPTED.
+
+The LAN development configuration passed `pnpm exec prettier --check apps/web-v2/next.config.ts`,
+`pnpm --filter web-v2 exec eslint next.config.ts` and `pnpm --filter web-v2 exec tsc --noEmit`.
+Scoped `git diff --check` passed with CRLF warnings. In the desktop LAN browser, the generated QR image
+was present and the share button reported that system sharing was unavailable; the browser reported an
+insecure context with neither Web Share nor Clipboard API. This is an HTTP fallback check, not proof of
+the native share, clipboard, QR scanning or phone layout acceptance criteria.
+
+## DEV-079 / COPY-COMMERCE-REFERENCE
+
+Date: 2026-11-10. Type: UX / scope clarification. Related: Plan 116 section 6 and DEV-061 through DEV-065.
+The user requested a direct copy action for the assigned C number in the stable sharing tools after iPhone
+testing. Keeping selection-only behavior makes this common sharing action harder; revising the frozen PRD is
+unnecessary for this presentation-only action. Product decision: approved by the user. Add an explicitly
+labelled action that copies the displayed assigned C number at both existing sharing-tool entry points, and
+offer a clear manual fallback when browser copying is unavailable. This does not change the C number, access
+permissions, public URL, state transitions or canonical events, and copying does not record distribution.
+Implementation status: In Progress. Verify successful and failed copy, both entry points, narrow viewport,
+and real iPhone behavior separately; browser mocks do not establish real-device success.
+
+2026-11-10 iPhone 14 Pro / Safari feedback: registration and login worked. The user reported a public
+homepage error, unavailable password recovery in this environment, and failed link copying. The web log
+identified `crypto.randomUUID is not a function` on the public homepage in the LAN HTTP context. A UUID v4
+fallback using `crypto.getRandomValues` preserves the view identifier contract and retry identity; `/browse`
+then loaded the user's published homepage on the same LAN URL and the API returned 200. This is desktop
+browser evidence; phone retest is pending. Password recovery is implemented under DEV-077 but intentionally
+unavailable without the configured delivery provider; real delivery remains unverified.
+
+DEV-079 implementation adds C-number copying to the shared tool and a common clipboard helper used by both
+link-copy locations. It tries the Clipboard API and a user-initiated selection fallback, reporting failure
+when neither succeeds. Focus is restored after the fallback. Focused Vitest: 3 files / 11 tests passed,
+covering missing `randomUUID`, retry stability, copying both values, failure and fallback focus. Scoped
+TypeScript and ESLint passed; ESLint retained the existing Next.js `no-img-element` warning on the generated
+QR image. At 375px `/browse` displayed the new control without document overflow and its fallback returned
+success on LAN HTTP. Phone clipboard contents, scan, system sharing, keyboard and safe area remain pending;
+the fallback is browser-dependent and cannot establish HTTPS or iOS behavior by itself.
+
+2026-11-10 real-device retest: the user reported that all requested checks passed on iPhone 14 Pro
+with Safari at `http://192.168.0.176:3000`: the published homepage opened; copying the link and
+C number and pasting their contents worked; QR scanning, sharing, the soft keyboard and bottom safe
+area passed. This is user-reported acceptance of the local HTTP test environment, not verification of
+production HTTPS or external email delivery. Following the fixes, `pnpm --filter web-v2 exec vitest run`
+passed 28 files / 86 tests (with jsdom navigation warnings), `pnpm --filter web-v2 exec tsc --noEmit`
+passed, and `git diff --check` passed with CRLF warnings. DEV-079's local device checks are complete;
+Plan 116 remains IN PROGRESS / NOT ACCEPTED pending the other acceptance evidence and external conditions
+recorded above.
+
+The subsequent web-v2 production build in a separate build directory and `pnpm check:openapi` passed.
+`pnpm exec prettier --check` passed for the homepage and copy changes. The application-level customer request,
+service offering and external observation tests passed 3 files / 23 tests; these include controlled checks of
+`storefront_viewed`, request submission and notification, and generated distribution state. They supplement,
+but do not replace, the end-to-end event and external-service evidence still listed in the route inventory.
+
+2026-11-10 full web-v2 creator journey: `e2e/full-creator-journey.spec.ts` passed on Chromium using
+the local LAN web and API on ports 3000 / 8080 and the isolated PostgreSQL database. It registers through
+the UI, saves identity, creates a capability and a service draft, checks the draft is not publicly accessible,
+publishes, verifies persisted `generated` distribution state after reload, submits a visitor request and
+confirms it through the Creator UI, then checks the visitor result. No external distribution was performed.
+The first run at `localhost` failed at signup with `Failed to fetch` under the LAN-configured environment;
+the LAN rerun first found an ambiguous test selector, and the next run found the service name lacked heading
+semantics. The public service title now has heading level 2 and the complete test passed after that change.
+Scoped ESLint and Prettier passed. This adds local browser evidence for parts of AT-001, AT-003, AT-005,
+AT-006 and AT-008; it does not independently prove canonical event persistence, actual distribution, other
+browsers, accessibility across all pages or production acceptance.
+
+2026-11-10 cross-browser continuation: the full creator journey passed with the local LAN web and API
+and isolated PostgreSQL in Mobile Safari emulation (1 test), followed by Firefox, WebKit and Mobile Chrome
+emulation (3 tests). Together with the prior Chromium run, these cover the same local journey on all five
+configured projects; emulation is separate from the user's iPhone 14 Pro Safari report above. Two Mobile
+Safari attempts before this pass timed out before signup because a required input had been cleared after
+automated entry; no signup request was sent. The test now waits for the initial network to settle and checks
+all four input values before submitting. This makes that test failure explicit but does not establish the
+root cause of the cleared input or prove that early user input can never be lost during hydration. Scoped
+Prettier and ESLint passed. The actual external distribution, real mail provider, comprehensive page-state,
+accessibility and AT evidence noted in the route inventory remain outstanding. Plan 116 remains IN PROGRESS /
+NOT ACCEPTED.
+
+2026-11-10 responsive success-state continuation: `e2e/responsive-success.spec.ts` uses a real local API
+and isolated PostgreSQL fixture to open 16 Creator and public routes, wait for representative populated
+content, and check document overflow at 320, 375, 768, 1280 and 1600 px. Chromium, Firefox, WebKit,
+Mobile Chrome and Mobile Safari emulation each passed the focused test. The service list selects the
+published tab before measurement; edit forms assert their loaded values and the result page asserts its
+submitted state. The first Chromium runs exposed incorrect test locators and were corrected. A combined
+Chromium / WebKit run failed on WebKit's capability edit page with an API error; an isolated WebKit rerun
+passed. The intermittent API failure was not conclusively diagnosed, and the five project passes were
+not one clean full-suite run. This check proves document width for these populated states, not 200% zoom,
+all error states, visual fidelity, accessibility, or physical-device behavior. Plan 116 remains IN PROGRESS /
+NOT ACCEPTED.
+
+## DEV-080 / API-RATE-LIMIT-ERROR-STATUS
+
+Date: 2026-11-10. Type: API runtime bug fix. Related: Plan 116 regression testing. The API's configured
+per-IP limit is 100 requests per minute and its response builder specifies HTTP 429, but the shared error
+handler wraps the plugin's plain response object as an internal HTTP 500. This masks throttling as a server
+failure and causes later browser acceptance requests to show misleading errors. Restore the existing 429
+transport contract and retry guidance without changing the limit, product states, permissions or events.
+The regression test reproduced HTTP 500 on the 101st request, then passed with HTTP 429 after the handler
+fix (`tests/integration/rate-limit.test.ts`, 4 passed); root `pnpm build` passed. The first full Chromium
+web-v2 browser run was 8 passed / 5 failed: later requests received the old running API's 500, including
+three fixture initialization requests, while a request-list test timed out on the error view. The running
+API at port 8080 predates the fix. This suite remains failed; targeted earlier passes do not replace it.
+
+2026-11-10 DEV-080 regression continuation: the Podman machine had stopped, so the original 8080 API
+readiness returned 503. Restarting only the task-owned pci-plan116-phone-3000 PostgreSQL container restored
+the isolated plan116 database on loopback port 45478; migrations were applied and readiness returned 200.
+The old 8080 API still returned misleading 500 responses under load. A separate API on 8081 used the same
+isolated database and the new handler; its non-production global rate limit was explicitly set to 1000
+requests/minute, while the production default remains 100. A separate web-v2 dev instance ran on 3102.
+The first complete Chromium run against the new pair was 12 passed / 1 failed: the auth signup route's
+separate 10/minute limit correctly returned 429 while preparing a fixture. The fixture now honors the
+Retry-After header with bounded waits; it does not disable the auth limit. The subsequent full Chromium
+run passed 13/13, and a serial run of Firefox, WebKit, Mobile Chrome and Mobile Safari passed 52/52.
+These are local browser and emulation results using isolated PostgreSQL, not physical-device, external
+mail, public HTTPS or real external distribution acceptance. Earlier failed runs remain recorded above.
+Follow-up gates: `pnpm --filter web-v2 exec vitest run` passed 28 files / 86 tests (jsdom emitted
+navigation warnings), `pnpm --filter web-v2 exec tsc --noEmit` passed, `pnpm check:openapi` passed,
+and a separate web-v2 production build generated all 25 static/partial pages. The rate-limit
+integration file passed 4 tests; root `pnpm build`, scoped ESLint, and `git diff --check` passed.
+The execution ledger's pre-existing Prettier baseline remains unchanged.
+
+2026-11-10 final local verification update: against the task-owned isolated plan116 PostgreSQL container,
+six focused integration and application files passed 32 tests, including capability management and
+password recovery. The migration check passed through 0032. Governance tests initially timed out while
+running alongside a build; the isolated rerun passed 6/6. Root build and scoped API ESLint passed. The
+web-v2 production build generated all 25 routes; its unit suite passed 28 files / 86 tests, and the five
+browser projects passed 65/65 total with the local API and isolated database.
+
+The required browse inspection at 375 and 1280 px found the lookup and dashboard navigation, stable
+sharing controls, QR image, C number and URL visible with no browser console errors. At 375 px the
+dashboard document width equalled the viewport. A 200% root-font-size stress check at 375 px also had
+no document overflow and the bottom actions remained reachable by scrolling. Browser zoom shortcuts
+did not change the browser zoom or CSS viewport, so actual 200% browser zoom is NOT VERIFIED. This
+inspection samples the lookup and dashboard, not every loaded/error state or an accessibility audit.
+The user-reported iPhone 14 Pro Safari check remains separate evidence. External mail delivery,
+public HTTPS, actual external distribution and full AT-001 through AT-013 evidence remain unverified;
+Plan 116 is still IN PROGRESS / NOT ACCEPTED.
+
+The browse accessibility spot-check on the mobile dashboard exposed a level-1 page heading, labelled
+sharing region, named QR image and labelled actions. The five visible bottom-navigation links measured
+75 by 60 CSS pixels each at a 375 px viewport; the hidden desktop links measured zero. This is a
+sampled semantic and touch-target check, not a full keyboard, contrast or accessibility audit. Plan 116
+stages 0–4 are recorded as internally complete; stages 5–6 and overall acceptance remain open.
+
+2026-11-10 final test and lint boundary: root pnpm test passed 925 tests with 64 skipped across 147 files;
+skipped tests are not VS-01 acceptance evidence. Full web-v2 ESLint reported 11 errors and 5 warnings.
+All reported error sites predate this change in HEAD: the identity form's synchronous effect update,
+dynamic any types in the API client and untouched interceptor, optimization and security modules.
+The API client was modified for response/session handling, but its any declarations are inherited.
+The changed API runtime files passed scoped ESLint. Root pnpm lint exited 134 after Node exhausted its
+approximately 4 GB heap; it did not pass. No lint suppression or unrelated type refactor was introduced.
+The web-v2 production build, TypeScript check, OpenAPI check, migration check, focused integration tests,
+65 browser tests and git diff --check passed as recorded above. Next.js development also emitted an
+instant-navigation validation warning for the requests page; the production build and browser request
+flows passed, so that warning remains a development experience follow-up rather than a proven flow failure.
+The worktree still contains the redesign, migrations, documentation, Stitch source and local test artifacts
+as uncommitted changes. No production deployment or external mail delivery was performed. The isolated
+database has migrations 0031 and 0032; production rollout and rollback must follow the migration order and
+API shutdown sequence documented under DEV-077. Overall Plan 116 remains IN PROGRESS / NOT ACCEPTED.
+
+## DEV-081 / WEB-V2-ACCESSIBILITY-FEEDBACK
+
+Date: 2026-11-10. Type: presentation and accessibility correction under Plan 116 section 7.
+Automated WCAG A/AA scans found insufficient contrast on lookup and authentication guidance,
+the service unpublish action, and a public service link whose accessible name omitted its visible
+text. Darken the affected secondary and destructive text and include the visible link text in its
+accessible name. No product object, permission, state transition, canonical event or API changes.
+Keep the first failing scan as evidence and rerun the populated routes after the corrections.
+
+2026-11-10 follow-up: added `@axe-core/playwright` and
+`apps/web-v2/e2e/accessibility.spec.ts` for populated public and Creator routes. The first
+automated WCAG A/AA scan identified four issues: low contrast in lookup and authentication
+guidance, low contrast for the service unpublish action, and a public service link whose
+accessible name omitted its visible text. The affected secondary and destructive text was
+darkened; the link name now includes the visible service title. Chromium rerun passed 2/2;
+Mobile Chrome and Mobile Safari reruns passed 4/4. The affected visitor browser flow passed
+3/3; web-v2 unit tests passed 86/86; TypeScript and the production build passed. These are
+automated checks in local browser environments, not complete manual keyboard, screen reader,
+200% browser zoom or production HTTPS accessibility acceptance. Plan 116 remains in progress.
+
+2026-11-10 local event-evidence follow-up: created a separate `plan116_integration` database inside
+the task-owned PostgreSQL container on loopback port 45478 and applied migrations through 0032.
+Four focused application and integration files passed 25/25 tests against that isolated setup:
+`customer-request-use-cases.test.ts`, `service-offering-use-cases.test.ts`,
+`public-homepage-postgres.integration.test.ts`, and `capability-management.test.ts`. These include
+incomplete publish and invalid request no-event assertions, unauthorized/repeated terminal decision
+no-event assertions, notification failure preserving canonical events, storefront view deduplication,
+distribution state persistence and one `creator_distributed` event under concurrent confirmation.
+The application tests use in-memory collaborators; the two PostgreSQL files use the new integration
+database. They strengthen AT-001–AT-011 local evidence but do not establish the complete browser-to-event
+chain or actual external distribution. No user or production database was modified. Plan 116 remains
+IN PROGRESS / NOT ACCEPTED.
+
+2026-11-10 browser-to-event follow-up: added `apps/web-v2/e2e/canonical-events.spec.ts` with an
+explicit `E2E_DATABASE_URL` gate that accepts only a dedicated integration database. Against the
+separate `plan116_integration` PostgreSQL database, a temporary API on 8081 and web-v2 on 3102,
+Chromium and Mobile Safari emulation each passed 1/1. The visitor opened the published homepage,
+submitted through the service page, and the Creator confirmed through the request page. Database
+queries by that request's Action ID found exactly one `commerce_action_submitted` and one
+`commerce_confirmed`, with no `commerce_declined`. A repeat decline after confirmation returned HTTP
+409 and still created no declined event; Chromium and Mobile Safari emulation each passed 1/1 again.
+The temporary 8081/3102 services were stopped;
+existing 3000/8080 services were left running. This proves one local browser-to-event path, not
+all AT-001–AT-013 paths or external distribution. Plan 116 remains IN PROGRESS / NOT ACCEPTED.
+
+2026-11-10 web-v2 lint and identity-form follow-up: ESLint's default ignore covered only `.next/**`,
+while 17 isolated `.next-*` build directories caused an unproductive high-memory scan. The web-v2
+ESLint configuration now ignores these generated directories. Existing explicit `any` errors were
+replaced with request/response types, typed helpers and a typed image mock; the identity form now
+derives its create/edit state from the query result rather than synchronously setting React state
+inside an effect. Full web-v2 ESLint passed with zero errors and four warnings; TypeScript passed,
+the web-v2 unit suite passed 28 files / 86 tests, and the production build generated 25 routes.
+The updated complete Creator browser journey passed 1/1 in Chromium against the temporary 8081/3102
+services and isolated PostgreSQL. The four remaining lint warnings concern the QR `<img>` element
+and hard navigation during session recovery; root lint's earlier OOM is not reclassified as pass.
+No product object, state, event, permission or API contract changed in this lint cleanup. The
+temporary services were stopped and the existing 3000/8080 services were left running. Plan 116
+remains IN PROGRESS / NOT ACCEPTED.
+
+2026-11-10 repository lint follow-up: root `eslint.config.js` now ignores generated web-v2
+`.next*` directories and Playwright report directories. With those generated files excluded,
+`pnpm lint` completed instead of exhausting the roughly 4 GB Node heap, but exited 1 with
+2,413 errors across the repository. This is a failed repository-wide gate; the errors have
+not been classified as pre-existing or introduced by Plan 116. The separate full web-v2
+ESLint command passed with zero errors and four warnings as recorded above. No broad lint
+suppression or unrelated source rewrite was applied. Plan 116 remains IN PROGRESS / NOT ACCEPTED.
+
+2026-11-10 Plan 116 scope sequencing: the user requested functional completion first and deferred real
+acceptance of Plan 116 and the wider project. Existing route, unit, integration and isolated-browser
+evidence supports local implementation of stages 0–5, including configurable password recovery;
+without a mail provider, the UI reports unavailability instead of claiming delivery. Stage 5 is now
+marked internally complete for functionality. Stage 6 and the original section 11 acceptance definition
+remain open for a later phase. This is a scheduling and reporting change, not a product behavior change;
+no new DEV deviation is required. No external acceptance, deployment, server startup or broad test
+command was performed for this scope update. Root lint remains failed as recorded above.
+
+## DEV-082 / CONTROLLED-CAPABILITY-AND-SERVICE-PUBLISHING
+
+> **Status**：Implementation complete — product acceptance pending
+> **Change Unit**：`DEV-082`
+> **Decision Date**：2026-11-10
+> **Decision Document**：[34 — 受控能力目录与服务发布决策](../07_Product_Architecture/34_Controlled_Capability_Service_Publishing_Decision.md)
+
+The Founder approved replacing unrestricted Creator-defined capability and service publication
+with a platform-controlled capability catalog, capability-linked service templates, risk-tiered
+publication and a separate policy review state. Creator-authored experience, proof, style and
+allowed service parameters remain supported, but arbitrary capability categories and an
+unstructured `other service` publication path are not allowed.
+
+The initial VS-01 implementation boundary is intentionally narrow: the publishable catalog item
+is `舞蹈教学` and the publishable service template is `1 对 1 舞蹈私教`. Small-group classes,
+choreography guidance, performances, content collaborations and other verticals require separate
+product and policy decisions. Catalog items and service templates are policy configuration, not
+new public commerce objects unless a later PRD explicitly promotes them.
+
+This is a product-impact deviation affecting Capability creation, Service Offering creation and
+Offering Publish. The four product contracts now define the controlled catalog, template and
+policy-state behavior. The server enforces catalog references, template matching, prohibited
+terms, review-required states, edit re-checks and public filtering. Migration `0033` preserves
+legacy records and marks them for re-check; the checked-in seed contains ten capability types and
+ten matching service templates across multiple verticals. The creator API exposes
+`GET /api/v1/creator/service-catalog`, and web-v2 now uses catalog and template selectors.
+
+Focused evidence: `pnpm build`; `pnpm db:check` through migration `0033`; OpenAPI compatibility
+check; ten focused policy, creator identity, capability management, service offering, customer
+request, reservation, API runtime, contract-commerce and paid-commerce integration files (71 passed,
+2 conditional skips); and the full web-v2 unit suite (28 files / 86 tests passed). The explicit
+catalog-selection regression was fixed so customized Creator
+labels resolve the selected catalog item by ID; policy re-checks also clear stale review reasons.
+The contract fixtures now use the VS-01 auto-approved
+dance template; review-risk commercial appearance remains covered by the review-required path.
+No canonical event, payment, settlement, marketplace, discovery, full credential verification or
+AI-only moderation was added.
+
+`DEV-082` remains open for final product acceptance and migration rehearsal. Implementation is no
+longer pending; the remaining gate is confirmation of the revised contract behavior and the migration
+runbook against the target environment. The initialization snapshot is
+`database/seeds/capability-service-catalog.json`; it covers ten capability types and ten matching
+templates across multiple verticals while keeping only the VS-01 dance template publishable by default.
+
+## DEV-083 / DATABASE-MANAGED-CAPABILITY-AND-SERVICE-CATALOG
+
+> Date: 2026-11-11. Status: implementation complete; focused verification recorded below.
+> Decision: [35 — Database-Managed Capability and Service Catalog](../07_Product_Architecture/35_Database_Managed_Capability_Service_Catalog_Decision.md)
+
+The Founder approved moving the controlled capability and service-template catalog from runtime
+configuration into database-managed policy records. Migrations `0034` and `0035` create release,
+capability, template and audit tables with version-preserving composite keys and idempotently seed ten capabilities and ten service templates. The
+Creator catalog endpoint now reads the published database snapshot. Operations endpoints support
+status changes, creator/publish switches, risk-tier changes, version publication and audit queries.
+The in-memory composition uses the same repository contract and JSON only as a bootstrap snapshot.
+
+The idempotent importer is `pnpm db:seed:service-policy`; it updates catalog metadata while preserving
+operational switches and audit history. Runtime publication and public request checks re-read the
+current snapshot, so `paused`, `retired` and `publishEnabled=false` are effective without a code or
+frontend deployment. No payment, Marketplace, CRM, AI-only review or new Canonical Event was added.
+
+Focused evidence so far: `pnpm build` passed; `pnpm check:openapi` passed after registering the five
+service-policy Operations endpoints; service-offering, reservation and policy unit tests passed 17/17.
+Database migration execution and PostgreSQL admin lifecycle tests remain the next verification step;
+no production migration or real project acceptance was performed.

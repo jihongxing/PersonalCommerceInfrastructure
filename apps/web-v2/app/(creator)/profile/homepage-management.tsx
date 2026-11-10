@@ -3,8 +3,8 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Copy, Download, ExternalLink, QrCode, RotateCw, Trash2 } from 'lucide-react';
-import QRCode from 'qrcode';
+import { Check, ExternalLink, RotateCw, Trash2 } from 'lucide-react';
+import { StableSharingTools } from '@/components/commerce/stable-sharing-tools';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient } from '@/lib/api/client';
@@ -134,7 +134,6 @@ export function HomepageManagement({ reference }: { reference?: string }) {
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<PublicHomepage | null>(null);
   const [previewAt, setPreviewAt] = useState('');
-  const [qr, setQr] = useState('');
   const [editingWindowId, setEditingWindowId] = useState<string | null>(null);
   const data = query.data;
   const url = homepageUrl(data?.reference ?? reference ?? '');
@@ -156,6 +155,8 @@ export function HomepageManagement({ reference }: { reference?: string }) {
 
   function selectVersion(homepageId: string) {
     setSelectedId(homepageId);
+    setPreview(null);
+    setMessage('');
     setEditingWindowId(null);
     setStart('');
     setEnd('');
@@ -230,6 +231,7 @@ export function HomepageManagement({ reference }: { reference?: string }) {
 
   async function previewHomepage(at?: string) {
     if (!selected) return;
+    setPreview(null);
     const query = at ? `?at=${encodeURIComponent(at)}` : '';
     const value = await action<PublicHomepage>(
       `/api/v1/private/homepages/${selected.homepageId}/preview${query}`,
@@ -241,6 +243,7 @@ export function HomepageManagement({ reference }: { reference?: string }) {
   async function previewScheduledHomepage(event: FormEvent) {
     event.preventDefault();
     if (!previewAt) return;
+    setPreview(null);
     const value = await action<PublicHomepage>(
       `/api/v1/private/homepages/resolve-preview?at=${encodeURIComponent(previewAt)}`,
       'GET',
@@ -311,7 +314,12 @@ export function HomepageManagement({ reference }: { reference?: string }) {
                 )}
               </div>
             </div>
-            <div className="mt-5 flex flex-wrap gap-2">
+            {selected && (
+              <p className="mt-5 text-sm font-medium">
+                管理的方案：{selected.commerceProfile?.displayName || '未选择资料'}
+              </p>
+            )}
+            <div className="mt-2 flex flex-wrap gap-2">
               {selected && (
                 <>
                   <Button
@@ -419,6 +427,8 @@ export function HomepageManagement({ reference }: { reference?: string }) {
                   <button
                     type="button"
                     key={version.homepageId}
+                    disabled={busy}
+                    aria-pressed={selected?.homepageId === version.homepageId}
                     className={`flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left ${selected?.homepageId === version.homepageId ? 'bg-muted/50' : ''}`}
                     onClick={() => selectVersion(version.homepageId)}
                   >
@@ -452,7 +462,7 @@ export function HomepageManagement({ reference }: { reference?: string }) {
             </label>
             <select
               id="homepage-profile"
-              className="h-10 min-w-48 rounded-md border bg-background px-3 text-sm"
+              className="h-11 min-w-48 rounded-md border bg-background px-3 text-sm"
               value={profileId}
               onChange={(event) => setProfileId(event.target.value)}
             >
@@ -562,7 +572,7 @@ export function HomepageManagement({ reference }: { reference?: string }) {
                 />
                 <select
                   aria-label="窗口状态"
-                  className="h-10 rounded-md border bg-background px-3 text-sm"
+                  className="h-11 rounded-md border bg-background px-3 text-sm"
                   value={windowState}
                   onChange={(event) => setWindowState(event.target.value as 'ENABLED' | 'DISABLED')}
                   disabled={!editingWindowId}
@@ -652,56 +662,7 @@ export function HomepageManagement({ reference }: { reference?: string }) {
               </p>
             </div>
           )}
-          {url && (
-            <section className="space-y-3" aria-labelledby="sharing-heading">
-              <div>
-                <h3 id="sharing-heading" className="text-base font-semibold">
-                  分享工具
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  C 号和这个地址保持不变，主页内容可以继续更新。
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    void navigator.clipboard
-                      .writeText(url)
-                      .then(() => setMessage('链接已复制'))
-                      .catch(() => setMessage('复制失败，请手动复制链接'))
-                  }
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  复制链接
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    void QRCode.toDataURL(url, { width: 256, margin: 2 })
-                      .then(setQr)
-                      .catch(() => setMessage('二维码生成失败，请重试'))
-                  }
-                >
-                  <QrCode className="mr-2 h-4 w-4" />
-                  显示二维码
-                </Button>
-              </div>
-              {qr && (
-                <div>
-                  <img src={qr} alt="商业主页二维码" width={192} height={192} />
-                  <a
-                    className="mt-2 inline-flex items-center text-sm underline"
-                    href={qr}
-                    download="commerce-homepage.png"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    下载二维码
-                  </a>
-                </div>
-              )}
-            </section>
-          )}
+          <StableSharingTools reference={data.reference} />
           {message && (
             <p role="status" className="text-sm">
               {message}

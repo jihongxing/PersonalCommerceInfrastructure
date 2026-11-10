@@ -10,6 +10,7 @@ import type { CreateServiceOfferingCommand } from '../../../applications/service
 import {
   CreateServiceOfferingRequestSchema,
   DistributionAssetResponseSchema,
+  OptionalDistributionAssetResponseSchema,
   PublishServiceOfferingResponseSchema,
   ServiceOfferingListResponseSchema,
   ServiceOfferingResponseSchema,
@@ -47,6 +48,7 @@ function offeringResponse(offering: Offering) {
     id: offering.id,
     creatorId: offering.creatorId,
     capabilityIds: [...offering.capabilityIds],
+    ...(offering.templateId === undefined ? {} : { templateId: offering.templateId }),
     title: offering.title,
     description: offering.description,
     ...(offering.availability === undefined
@@ -55,6 +57,9 @@ function offeringResponse(offering: Offering) {
     ...(offering.appearance === undefined ? {} : { appearance: offering.appearance }),
     requestInstructions: offering.requestInstructions,
     state: offering.state,
+    policyStatus: offering.policyStatus ?? 'not_checked',
+    ...(offering.policyReason === undefined ? {} : { policyReason: offering.policyReason }),
+    ...(offering.policyVersion === undefined ? {} : { policyVersion: offering.policyVersion }),
     missingPublishConditions: missingPublishConditions(offering),
   };
 }
@@ -225,6 +230,33 @@ export function registerServiceOfferingRoutes(
       return dependencies.service.recordExternalDistribution(
         { offeringId },
         requireContext(request),
+      );
+    },
+  );
+
+  server.get(
+    '/api/v1/creator/offerings/:offeringId/distribution',
+    {
+      schema: {
+        operationId: 'getCreatorExternalDistribution',
+        params: Type.Object({ offeringId: Type.String({ minLength: 1 }) }),
+        response: {
+          200: OptionalDistributionAssetResponseSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['service-offering'],
+      },
+      preHandler: authenticate,
+    },
+    async (request) => {
+      const { offeringId } = request.params as { readonly offeringId: string };
+      return (
+        (await dependencies.service.getDistributionAsset(
+          { offeringId },
+          requireContext(request),
+        )) ?? null
       );
     },
   );

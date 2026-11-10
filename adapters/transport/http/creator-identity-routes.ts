@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { Type } from 'typebox';
 
 import { extractBearerToken } from '../../auth/transport/bearer-token.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
@@ -7,6 +8,7 @@ import type { ActorContext } from '../../../applications/core/actor-context.js';
 import type { CreatorIdentityService } from '../../../applications/creator-identity/creator-identity-service.js';
 import {
   AddCapabilityRequestSchema,
+  CapabilitySchema,
   CommerceIdentityResponseSchema,
   CreateCommerceIdentityRequestSchema,
   UpdateCommerceIdentityRequestSchema,
@@ -151,6 +153,76 @@ export function registerCreatorIdentityRoutes(
       );
       const current = await dependencies.service.get(requireContext(request));
       return reply.status(201).send(identityResponse({ ...current, ...identity }));
+    },
+  );
+
+  const capabilityParams = Type.Object({
+    capabilityId: Type.String({ minLength: 1, maxLength: 128 }),
+  });
+  server.get<{ Params: { capabilityId: string } }>(
+    '/api/v1/creator/identity/capabilities/:capabilityId',
+    {
+      schema: {
+        operationId: 'getCreatorCapability',
+        params: capabilityParams,
+        response: {
+          200: CapabilitySchema,
+          401: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['creator-identity'],
+      },
+      preHandler: authenticate,
+    },
+    async (request) =>
+      dependencies.service.getCapability(request.params.capabilityId, requireContext(request)),
+  );
+  server.patch<{ Params: { capabilityId: string }; Body: AddCapabilityCommand }>(
+    '/api/v1/creator/identity/capabilities/:capabilityId',
+    {
+      schema: {
+        operationId: 'updateCreatorCapability',
+        params: capabilityParams,
+        body: AddCapabilityRequestSchema,
+        response: {
+          200: CapabilitySchema,
+          400: ApiErrorEnvelopeSchema,
+          401: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['creator-identity'],
+      },
+      preHandler: authenticate,
+    },
+    async (request) =>
+      dependencies.service.updateCapability(
+        request.params.capabilityId,
+        request.body,
+        requireContext(request),
+      ),
+  );
+  server.delete<{ Params: { capabilityId: string } }>(
+    '/api/v1/creator/identity/capabilities/:capabilityId',
+    {
+      schema: {
+        operationId: 'deleteCreatorCapability',
+        params: capabilityParams,
+        response: {
+          204: Type.Null(),
+          401: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+          409: ApiErrorEnvelopeSchema,
+        },
+        tags: ['creator-identity'],
+      },
+      preHandler: authenticate,
+    },
+    async (request, reply) => {
+      await dependencies.service.deleteCapability(
+        request.params.capabilityId,
+        requireContext(request),
+      );
+      return reply.status(204).send();
     },
   );
 }

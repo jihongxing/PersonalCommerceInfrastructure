@@ -37,12 +37,6 @@ export interface CreatorConfirmedRequest {
   offering: {
     title: string;
   };
-  fulfillmentCode?: {
-    code: string;
-    status: 'pending' | 'fulfilled' | 'expired';
-    expiresAt: string;
-    confirmedAt?: string;
-  };
 }
 
 /**
@@ -61,17 +55,15 @@ export function useCreatorRequests(accessToken?: string) {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load creator requests'
-        );
+        throw new Error(error.error?.message || 'Failed to load creator requests');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return (data as { requests: CreatorRequest[] }).requests;
     },
     enabled: !!accessToken,
@@ -96,17 +88,15 @@ export function useCreatorConfirmedRequests(accessToken?: string) {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load confirmed requests'
-        );
+        throw new Error(error.error?.message || 'Failed to load confirmed requests');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return (data as { requests: CreatorConfirmedRequest[] }).requests;
     },
     enabled: !!accessToken,

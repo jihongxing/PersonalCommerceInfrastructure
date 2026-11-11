@@ -14,13 +14,17 @@ Integration Readiness 和 VS-02E Local Commercial Simulation。VS-02C 微信支�
 当前版本：`0.2.0`  
 当前交付状态：`VS-02E Local Commercial Simulation COMPLETE / No Real Money Evidence`
 
+当前项目控制：`CONTROLLED_RECOVERY`；正式 Resume Gate 尚未完全关闭。VS-01 仍冻结，Stage 2
+仅允许具名 bounded change units，完整 Stage 2、Stage 3、外部 Pilot、生产和真实资金均未授权。
+当前治理入口是 [`25_Project_Control_Baseline.md`](docs/08_Execution/25_Project_Control_Baseline.md)。
+
 ```text
 VS-01 Product Proof                Complete
 VS-02A Money Domain                Complete
 VS-02B Provider Integration Ready  Complete
 VS-02C Provider Adapter            Conditional
 VS-02D Engineering Readiness       READY
-VS-02D Real Money Activation       Founder GO Required
+VS-02D Real Money Activation       NOT AUTHORIZED / Founder activation required
 VS-02E Local Commercial Simulation COMPLETE
 ```
 
@@ -34,12 +38,16 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 - 产品实现合同：`docs/07_Product_Architecture/20_MVP_PRD_VS01.md`
 - VS-02 产品实现合同：`docs/09_Engineering_Governance/35_VS02_Paid_Service_PRD.md`
 - 执行台账：`docs/08_Execution/21_Prototype_Execution.md`
-- 当前交接：`docs/08_Execution/23_2026-08-15_Handoff.md`
+- 当前项目控制：`docs/08_Execution/25_Project_Control_Baseline.md`
+- 历史暂停交接：`docs/08_Execution/22_Project_Handoff.md`
 - 工程治理：`docs/09_Engineering_Governance/22_Engineering_Governance.md`
 - VS-02 工程治理增量：`docs/09_Engineering_Governance/36_Engineering_Governance_Delta.md`
 - Provider 外部资格：`docs/09_Engineering_Governance/35A_Provider_Qualification_Dossier.md`
 - 技术架构决策：`docs/09_Engineering_Governance/23_Technology_Architecture_Decision.md`
 - 技术架构落地规划：`docs/09_Engineering_Governance/24_Technology_Architecture_Implementation_Plan.md`
+
+当前主要 Web 实现和验收目标是 `apps/web-v2`；`apps/web` 是历史 Reference Client，
+`apps/api-mock` 是历史模拟 API，不是当前主要 API Runtime。当前实现事实不等于生产批准。
 
 ## 技术基线
 
@@ -87,7 +95,8 @@ pnpm --dir apps/web-v2 exec next dev -p 3000
 ```
 
 打开 `http://localhost:3000/dashboard`。Supabase 和 mock 中的既有账号不会自动迁移到自建认证；
-自建认证目前尚未实现密码找回。
+当前自建认证已包含密码找回 API 和前端流程。没有邮件 Provider 时，系统报告 delivery unavailable，
+不把本地实现解释为外部邮件交付或生产验收。
 
 ```powershell
 pnpm install

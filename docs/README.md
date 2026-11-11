@@ -1,21 +1,28 @@
 # Personal Commerce Infrastructure 文档索引
 
-> **CURRENT PROJECT STATUS**：SUSPENDED — DEVELOPMENT PAUSED
+> **CURRENT PROJECT CONTROL**：CONTROLLED RECOVERY — FORMAL RESUME GATE NOT FULLY CLOSED
 > **CURRENT BASELINE**：CLIENT-002 — Commerce Golden Path Closure = COMPLETE
+> **CURRENT CONTROL BASELINE**：[`25 — Project Control Baseline`](./08_Execution/25_Project_Control_Baseline.md)
 > **RESTART SSOT**：[`docs/08_Execution/22_Project_Handoff.md`](./08_Execution/22_Project_Handoff.md)
 > **ARCHITECTURAL DISCOVERY BEFORE SUSPENSION**：Identity Infrastructure is required
-> **NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
+> **HISTORICAL NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
+> **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
 > 最近执行更新：2026-10-09
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
-PROJECT_STATUS = SUSPENDED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
 CLIENT-002 = COMPLETE
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 apps/app = DEFERRED
 IDENTITY DIRECTION = Identity → Commerce Profile → Commerce ID → External Platform Account → Commerce Relationship
-NEXT TASK = RESUME-001 — Identity & External Platform Binding Foundation
+NEXT CONTROL ACTION = PROVENANCE AND ACCEPTANCE RECONCILIATION
 ```
 
 当前阶段索引：
@@ -23,10 +30,10 @@ NEXT TASK = RESUME-001 — Identity & External Platform Binding Foundation
 ```text
 CLIENT-001 Web Client Convergence   Complete
 CLIENT-002 Golden Path Closure      Complete
-Project Development                Suspended
+Project Development                Controlled Recovery
 Real Money                         Disabled
 Native App                         Deferred
-Identity / Commerce Profile Runtime 已有提交实现；整体授权和验收状态待恢复审查核对
+Identity / Commerce Profile Runtime 已有提交实现；仅具名 change units 可在原范围内继续核验
 ```
 
 当前产品状态：
@@ -40,8 +47,9 @@ Pattern-first Commerce Web
 ```
 
 挂起前新增的架构发现是：PCI 不替代第三方内容与宣发平台，而是承接其产生的商业流量。
-下一次恢复时，应优先建立平台无关的 Identity、Commerce Profile、Commerce ID / C号 与
-External Platform Account / Commerce Relationship 边界；当前不实现 Identity API、OAuth 或平台绑定。
+当前控制基线承认暂停后发生了有限、分段的工程恢复，但不宣布完整 Resume Gate 已通过。
+Identity、Commerce Profile 和 Commerce Reference 的已批准范围以当前控制基线为准；OAuth、平台验证、
+Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实资金仍未授权。
 
 `VS-01 Regression` 的当前解释是 `VS-01 Semantics Remain Stable`，不是 `VS-01 Isolation`。
 合法 VS-02 Contract 可以新增，但不得覆盖 VS-01 route、改变 VS-01 request/response semantics、
@@ -173,7 +181,7 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
     记录 Reference Product → Real Product Foundation 的本地技术 Cutline 与 CR-01–CR-08 历史执行证据。
 
 23. [23 — 2026-08-15 Handoff](./08_Execution/23_2026-08-15_Handoff.md)
-    记录 VS-02A–VS-02D 交接，并由 2026-08-16 `EXEC-002` 更新补充当前验证基线。
+    历史 VS-02A–VS-02D 交接记录；不替代当前 Project Control Baseline。
 
 24. [24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
     用简体中文汇总 M1–M9、VS-01 / VS-02、Stage 2、Private Self-Service、Stage 3–5、OV-001、Real Money 和工程治理任务；标注状态、依赖、验收和授权边界。本清单仍待 Founder / Main Control 接受。
@@ -261,6 +269,8 @@ External Platform Account / Commerce Relationship 边界；当前不实现 Ident
     当前唯一 Project Restart SSOT；记录 `SUSPENDED` 状态、CLIENT-002 基线、Identity Anchor 架构、Resume Gate 与新的 `RESUME-001`。
 60. [59 — Identity Anchor and Commerce ID](./09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md)
     冻结 `Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Account`、多平台多账号、账号关系与 C号不可变/不可复用边界；不授权实现。
+61. [25 — Project Control Baseline](./08_Execution/25_Project_Control_Baseline.md)
+    当前项目治理入口；登记 `CONTROLLED_RECOVERY`、具名 bounded approvals、Capability Reality Matrix、权威层级和未解决工程债务。
 
 配套治理文档：
 

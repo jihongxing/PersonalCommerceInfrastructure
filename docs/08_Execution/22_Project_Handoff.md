@@ -3,6 +3,12 @@
 > **Project Restart SSOT**: This document is the authoritative re-entry and suspension baseline.
 > **Effective date**: 2026-08-18
 > **Architecture update**: `PROJECT-SUSPEND-002` — Identity Anchor / Commerce ID / External Platform Binding
+> **Current Control Baseline**: [`25_Project_Control_Baseline.md`](./25_Project_Control_Baseline.md)
+
+The current control mode is managed by `25_Project_Control_Baseline.md`. This document retains the
+historical suspension baseline and the original Resume Gate as evidence. The current control mode is
+`CONTROLLED_RECOVERY`; that classification does not claim that the nine historical Resume Gate
+conditions have all passed or that full Stage 2 has been authorized.
 
 ## 1. Project Identity
 
@@ -466,6 +472,10 @@ This document is the unique Project Restart SSOT. Historical handoff and commerc
 remain useful evidence, but they do not supersede this file for current project status, restart
 sequence or suspension boundaries. `docs/09_Engineering_Governance/59_Identity_Anchor_and_Commerce_ID.md` is the linked governance
 record for the identity architecture direction; it is not a second Restart SSOT.
+
+For the current project control mode, bounded authorization and implementation-versus-verification
+status, use [`25_Project_Control_Baseline.md`](./25_Project_Control_Baseline.md). This reference does
+not supersede the historical suspend facts or rewrite the Resume Gate evidence in this document.
 
 ```text
 PERSONALCOMMERCEINFRASTRUCTURE

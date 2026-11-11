@@ -1,0 +1,248 @@
+# 25 - Project Control Baseline
+
+> **Status**: CURRENT CONTROL BASELINE
+> **Effective date**: 2026-11-12
+> **Project**: Personal Commerce Infrastructure
+> **Control mode**: `CONTROLLED_RECOVERY`
+> **Formal Resume Gate**: `NOT_FULLY_CLOSED`
+> **Owner**: Main Controller
+
+This document is the current project governance entry point. It records the current control state,
+bounded product authorization, implementation reality, verification status, authority boundaries and
+historical decision provenance. It does not replace the Product Direction, the VS-01 PRD, the
+Technology Architecture Decision or the historical Project Handoff.
+
+The Founder approval of Product Direction v0.3 is adopted from external historical decision context
+confirmed by the Founder. The repository does not contain an independent signed approval artifact;
+that provenance limitation is retained explicitly. Strategic approval does not constitute full Stage 2
+authorization.
+
+## 1. Current Project Definition
+
+PCI provides an independent, portable commerce identity and entry point for creators affected by
+platform distribution restrictions or account loss. Commerce Reference (C number) is the stable
+identity-facing entry point. Third-party platforms remain discovery and distribution channels; PCI is
+not a marketplace, CRM, social network or real-money payment network.
+
+The strategic source is
+[`05_Personal_Commerce_Infrastructure_Product_Direction.md`](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md).
+The VS-01 implementation contract remains
+[`20_MVP_PRD_VS01.md`](../07_Product_Architecture/20_MVP_PRD_VS01.md).
+
+## 2. Adopted Control State
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+
+REAL_MONEY_ENABLED = false
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+apps/app = DEFERRED
+```
+
+The August 2026 suspension remains a historical fact and evidence baseline. The project is not
+treated as fully resumed. Limited, segmented engineering recovery is acknowledged because code and
+execution records exist after `suspend/client-002-complete`, but the existence of those commits does
+not close the historical Resume Gate or authorize new product scope.
+
+The historical restart and suspension record remains in
+[`22_Project_Handoff.md`](./22_Project_Handoff.md). Its nine Resume Gate conditions are preserved;
+this baseline manages the current control state and does not claim that all nine conditions passed.
+
+## 3. Product Authorization Boundary
+
+Only the named change units in Section 4 are currently classified as bounded approved units. A named
+unit may continue only for its recorded scope, evidence closure, regression verification or migration
+rehearsal explicitly required by that unit. It may not be used to infer a larger Stage 2, new vertical,
+new product object, public production surface, external pilot or real-money path.
+
+The authorization levels are separate:
+
+```text
+D = architecture / design
+L = local implementation
+I = isolated integration testing
+P = external pilot
+R = production
+M = real-money activation
+```
+
+Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
+
+## 4. Named Approved Change Units
+
+| Unit | Current decision | Approved scope | Explicit exclusions | Implementation / verification | Continue within original scope? |
+| --- | --- | --- | --- | --- | --- |
+| `IDENTITY-001` | `APPROVED` (bounded) | Internal Identity and Commerce Profile pure-domain contract | Persistence, migration, API, UI, delegation, ownership transfer | Domain and later runtime exist; domain/runtime evidence is historical and requires provenance review | Yes, only reconciliation and regression |
+| `IDENTITY-002` | `APPROVED` (bounded) | External Platform Account and Commerce Relationship pure-domain contract | OAuth, platform API, verification, persistence and public exposure | Domain and private runtime exist; no platform verification acceptance | Yes, only bounded private verification |
+| `IDENTITY-003` | `APPROVED` (bounded) | Canonical Commerce Reference value and immutable association contract | Generator, allocation, resolver, QR runtime and enumeration controls in the original unit | Later implementation exists; ownership is superseded by `DEV-061` | Yes, only reconciliation of the superseded boundary |
+| `DEV-053` | `APPROVED` (bounded) | Self-declared external account and relationship composite command | OAuth, platform proof, manager/delegated manager, public API, resolver, QR and money | Self-declared private command exists; provenance remains ledger-based | Yes, only self-declared `OWNER/PROPOSED` path |
+| `DEV-061` | `APPROVED` (bounded) | Identity-owned, immutable, never-reused Commerce Reference | No new format, capacity or resolver security design | Migration and Identity-owned contract exist; production migration not accepted | Yes, only local evidence and migration rehearsal |
+| `DEV-062` | `APPROVED` (bounded) | Identity C-number homepage, exact anonymous entry, independent homepage lifecycle and empty state | Search, discovery, marketplace, generic lookup policy and production launch | Implemented; local acceptance incomplete | Yes, only local acceptance closure |
+| `DEV-063` | `APPROVED` (bounded) | One selected public Profile per Identity and Profile-surface summary | Additional homepage rows, unselected Profile exposure or public disclosure expansion | Implemented; local acceptance incomplete | Yes, only regression and local verification |
+| `DEV-064` | `APPROVED` (bounded) | Versioned homepages, server-time selection, non-overlapping activation windows | Recurrence, visitor-selected versions, new events, payment, CRM | Implemented; local automated acceptance recorded, external evidence absent | Yes, only named acceptance evidence |
+| `DEV-065` | `APPROVED` (bounded) | Move homepage management to the Profile surface | API, database, C-number or permission changes | Implemented; local acceptance recorded | Yes, only UI regression |
+| `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | Implementation complete; product acceptance and migration rehearsal pending | Yes, only named acceptance and rehearsal |
+| `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | Implementation complete; database/admin verification pending | Yes, only migration/admin verification |
+
+The historical execution ledger remains the evidence source for these units. Where its claim conflicts
+with the Decision Package, stale `COMMITTED` fields or missing signed approval, the unit is additionally
+classified as `PROVENANCE_REQUIRES_REVIEW`; the scope is never enlarged by that uncertainty.
+
+## 5. Capability Reality Matrix
+
+State meanings:
+
+- `Implementation`: `NOT_IMPLEMENTED`, `PARTIAL`, `IMPLEMENTED`
+- `Decision`: `APPROVED`, `PROPOSED`, `EXTERNAL_FOUNDER_CONTEXT_PENDING`, `UNKNOWN`, `REJECTED`
+- `Documentation`: `SYNCED`, `STALE`, `MISSING`, `CONFLICTED`
+- `Verification`: `UNTESTED`, `TESTED`, `ACCEPTED`, `NOT_ACCEPTED`
+
+| Capability | Implementation | Decision | Documentation | Verification | Current control interpretation |
+| --- | --- | --- | --- | --- | --- |
+| Internal Identity | `IMPLEMENTED` | `APPROVED` bounded by `IDENTITY-001` | `CONFLICTED` | `TESTED` | Preserve current domain/runtime; no new identity governance |
+| Account Identity Membership | `IMPLEMENTED` | `UNKNOWN` outside named units | `CONFLICTED` | `TESTED` | Historical onboarding/runtime only; no new authority model |
+| Commerce Profile | `IMPLEMENTED` | `APPROVED` bounded by `IDENTITY-001` | `CONFLICTED` | `TESTED` | Identity owns Profiles; no transfer or delegation |
+| Commerce Reference | `IMPLEMENTED` | `APPROVED` bounded by `DEV-061` | `CONFLICTED` | `TESTED` | Identity is ownership root; generic resolver security remains outside scope |
+| External Platform Account | `IMPLEMENTED` | `APPROVED` bounded by `IDENTITY-002` | `CONFLICTED` | `TESTED` | Private account facts only; no OAuth or platform proof |
+| Commerce Relationship | `IMPLEMENTED` | `APPROVED` bounded by `DEV-053` | `CONFLICTED` | `TESTED` | Self-declared `OWNER/PROPOSED` only |
+| Public Homepage | `IMPLEMENTED` | `APPROVED` bounded by `DEV-062`/`063` | `CONFLICTED` | `TESTED` | Local homepage behavior exists; production is not authorized |
+| Homepage Scheduling | `IMPLEMENTED` | `APPROVED` bounded by `DEV-064` | `CONFLICTED` | `TESTED` | Local schedule evidence only; external observability absent |
+| Controlled Catalog | `IMPLEMENTED` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | Product acceptance and migration/admin rehearsal remain open |
+| Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
+| Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | Engineering capability exists; documentation requires synchronization |
+| Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | Existing implementation must not be described as absent |
+| Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
+| Contract | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
+| Paid Commerce | `IMPLEMENTED` (simulation/domain) | `UNKNOWN` for current product | `SYNCED` | `TESTED` | Local Simulation only; real money remains disabled |
+| Fulfillment / QR | `PARTIAL` | `UNKNOWN` / not current product-approved | `CONFLICTED` | `NOT_ACCEPTED` | Preserve code for audit; do not treat as product commitment |
+| Legacy Public Creator Profile API | `PARTIAL` | `UNKNOWN` | `CONFLICTED` | `UNTESTED` | Route file and frontend hook exist; route is not registered and uses a legacy ID assumption |
+
+`TESTED` means that local, unit, integration or browser evidence exists. It does not mean product
+acceptance, external pilot acceptance or production readiness. `NOT_ACCEPTED` means implementation
+evidence exists but the product or environment gate remains open.
+
+## 6. Authority and Supersession Rules
+
+The following authority hierarchy applies by scope, not by file modification time:
+
+1. Founder-approved Strategic Direction - strategic authority.
+2. Founder-approved Product Contracts and explicit DEV Amendments - product authority.
+3. Accepted Domain Decisions - domain-model authority.
+4. Accepted Technology Decisions - technical-architecture authority.
+5. This Project Control Baseline - current project governance and execution-range authority.
+6. Prototype Execution - implementation history, deviations and verification evidence.
+7. Project Handoff - historical suspension baseline and original Resume Gate evidence.
+8. Development Backlog - planning and task index; no independent authorization power.
+9. Git and source code - actual engineering implementation facts.
+10. Test evidence - actual verification facts.
+
+Conflict rules:
+
+- This baseline controls the current project mode and allowed execution range.
+- Historical documents remain unchanged as historical evidence unless a narrow synchronization note is
+  explicitly authorized.
+- A later explicit product amendment supersedes only the conflicting rule named by that amendment.
+- A code commit never supersedes a product decision or creates Founder approval.
+- A test result never creates implementation, pilot, production or money authorization.
+- A proposed reconciliation never supersedes a Founder-owned source of truth until accepted.
+- Unknown provenance is recorded as `PROVENANCE_REQUIRES_REVIEW`; it is never silently upgraded.
+
+## 7. Documentation Synchronization Map
+
+| Document | Current control treatment |
+| --- | --- |
+| Product Direction v0.3 | Strategic authority; approved from external Founder context; no full Stage 2 authorization |
+| VS-01 MVP PRD | Frozen product contract; DEV-062, DEV-064 and DEV-082 amendments apply only within their explicit scope |
+| Stage 2 Founder Decision Package | Historical decision-preparation artifact; `NOT AUTHORIZED` statements remain evidence of the prior baseline |
+| Prototype Execution | Historical implementation and verification ledger; not rewritten in this task |
+| Project Handoff | Historical suspend baseline and nine Resume Gate conditions; current status is managed here |
+| Development Backlog | Proposed planning index; no independent authorization |
+| Stage 2 Execution Reconciliation | Proposed supporting evidence; not authoritative until accepted |
+| `docs/README.md` | Index and current-control navigation; must link to this baseline |
+| Root `README.md` | Developer-facing summary; may state current implementation facts but not production approval |
+
+## 8. Historical Decision Register
+
+| Decision ID | Decision date | Description | Evidence source | Approved scope | Exclusions | Current effect | Superseded by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `STAGE2-DECISION-001..009` | 2026-08-26 in ledger; independent signed date `UNKNOWN` | Canonical Identity, Profile, Reference, External Account and Relationship architecture | `docs/08_Execution/21_Prototype_Execution.md` DEV-028..030 | Pure domain contracts as later bounded units | Runtime, API, migration, OAuth, resolver, QR, money | Retained as bounded historical approval claim | This baseline narrows current execution to named units |
+| `IDENTITY-001` | 2026-08-26 in ledger | Internal Identity and Commerce Profile contract | `docs/08_Execution/21_Prototype_Execution.md` DEV-028 | Domain contract | Persistence, API, UI, migration, delegation | Approved bounded unit | Runtime records require provenance review |
+| `IDENTITY-002` | 2026-08-26 in ledger | External Platform Account and Commerce Relationship contract | `docs/08_Execution/21_Prototype_Execution.md` DEV-029 | Domain contract | OAuth, platform verification, persistence, public API | Approved bounded unit | `DEV-053` adds only self-declared composite command |
+| `IDENTITY-003` | 2026-08-26 in ledger | Canonical Commerce Reference and immutable association | `docs/08_Execution/21_Prototype_Execution.md` DEV-030 | Domain contract | Generator, allocation, resolver and QR runtime | Retained only where compatible with Identity ownership | `DEV-061` |
+| `DEV-053` | 2026-08-27 | Self-declared external account and relationship composite command | `docs/08_Execution/21_Prototype_Execution.md:4466` | Private self-declared `OWNER/PROPOSED` command | OAuth, platform proof, manager, public surface, money | Approved bounded unit | This baseline |
+| `DEV-061` | 2026-11-08 | Identity-owned C-number | `docs/08_Execution/21_Prototype_Execution.md:7654` | One immutable C-number per Identity | New format, capacity or generic resolver policy | Current ownership rule | This baseline |
+| `DEV-062` | 2026-11-08 | Public C-number homepage | `docs/07_Product_Architecture/20_MVP_PRD_VS01.md:605` | Exact C-number homepage and lifecycle | Search, discovery, marketplace, production launch | Current bounded homepage rule | `DEV-064` extends scheduling only |
+| `DEV-063` | 2026-11-08 | Selected public Profile | `docs/08_Execution/21_Prototype_Execution.md:7824` | One selected Profile per Identity | Unselected Profile exposure and disclosure expansion | Current bounded selection rule | This baseline |
+| `DEV-064` | 2026-11-08 | Time-scheduled homepage versions | `docs/08_Execution/21_Prototype_Execution.md:7878` | Server-time version selection and windows | Recurrence, visitor selection, new events | Current bounded scheduling rule | This baseline |
+| `DEV-065` | 2026-11-09 | Profile-surface homepage management | `docs/08_Execution/21_Prototype_Execution.md:7949` | UI information architecture | API, database, permission and C-number changes | Current bounded UI rule | This baseline |
+| `DEV-082` | 2026-11-10 | Controlled capability and service publishing | `docs/08_Execution/21_Prototype_Execution.md:8690` | Catalog, templates, policy states and gates | Arbitrary categories, marketplace, AI-only moderation | Acceptance remains open | `DEV-083` changes storage model only |
+| `DEV-083` | 2026-11-11 | Database-managed service policy catalog | `docs/08_Execution/21_Prototype_Execution.md:8732` | Database-managed releases, records and audit | Payment, marketplace, CRM and new product objects | Migration/admin verification remains open | This baseline |
+
+## 9. Architecture Boundary Debt
+
+The following are real engineering follow-up items. They are recorded here and are not fixed by this
+documentation-only task:
+
+- `public-creator-profile-routes.ts` is not registered by the current API server and contains the
+  `commerce_profile_id === creator_id` assumption.
+- The legacy public creator-profile frontend hook still calls the unregistered route.
+- Root lint/typecheck and known repository-wide preflight failures remain open.
+- Root scripts and the historical Web Reference Client versus `apps/web-v2` target need alignment.
+- Migration execution and product acceptance for DEV-082/083 remain open.
+- Web V2 acceptance remains local and does not establish external or production acceptance.
+- Fulfillment code generation and Commerce Action fulfillment update remain incomplete.
+
+These debt items do not authorize code changes, schema changes, migration, deployment or product
+expansion.
+
+## 10. Current Prohibitions and Allowed Work
+
+Prohibited without a new Founder decision and a named change unit:
+
+- Full Stage 2 implementation;
+- Stage 3 public resolver expansion or enumeration policy expansion;
+- OAuth or platform verification;
+- Manager, delegated manager or Profile transfer;
+- new verticals, marketplace, CRM or discovery;
+- external Pilot activation;
+- production deployment;
+- real payment, settlement, withdrawal or refund activation;
+- changing `REAL_MONEY_ENABLED`.
+
+Allowed within the bounded recovery control mode:
+
+- documentation reconciliation;
+- provenance review;
+- regression and acceptance evidence collection for named units;
+- controlled catalog migration rehearsal and admin verification for DEV-082/083;
+- local-only verification that does not change product scope;
+- architecture debt triage without implementation.
+
+## 11. Verification and Provenance Limitations
+
+- The earliest reachable Git root is the VS-01 delivery commit; formal project start is `UNKNOWN`.
+- The repository has no independent signed Founder approval artifact for Product Direction v0.3 or all
+  named units.
+- The execution ledger contains stale `COMMITTED = NO` fields and historical environment limitations.
+- Local tests, fixtures, simulations and isolated PostgreSQL do not prove external service, pilot,
+  production or real-money acceptance.
+- Current production database state and external deployment state are not asserted by this document.
+- This baseline does not retroactively sign, rewrite or certify historical records.
+
+## 12. Change Control
+
+Any future product behavior change must identify the affected contract, domain objects, state
+transitions, canonical events, permissions, acceptance evidence and DEV change unit before implementation.
+This document must be updated only through a new governance change that preserves the historical
+record and identifies the superseded rule explicitly.
+
+Current control baseline owner: Main Controller.
+Founder-only decisions remain required for strategic change, new product commitments, external Pilot,
+production and real-money activation.

@@ -88,7 +88,10 @@ async function collectSourceFiles(directory) {
     const absolutePath = resolve(directory, entry.name);
 
     if (entry.isDirectory()) {
-      if (['.next', 'coverage', 'dist', 'node_modules'].includes(entry.name)) {
+      if (
+        entry.name.startsWith('.next') ||
+        ['coverage', 'dist', 'node_modules'].includes(entry.name)
+      ) {
         continue;
       }
       files.push(...(await collectSourceFiles(absolutePath)));
@@ -128,8 +131,11 @@ for (const area of checkedAreas) {
 
   for (const file of files) {
     const relativeFile = relative(repositoryRoot, file);
-    const rules =
-      area === 'apps' && relativeFile.split(sep)[1] === 'web' ? webClientRules : layerRules[area];
+    const pathParts = relativeFile.split(sep);
+    // E2E fixtures run in Node, outside the frontend runtime (for example, isolated DB setup).
+    const isFrontendRuntime =
+      area === 'apps' && ['web-v2', 'admin-web'].includes(pathParts[1]) && pathParts[2] !== 'e2e';
+    const rules = isFrontendRuntime ? webClientRules : layerRules[area];
     const source = await readFile(file, 'utf8');
 
     for (const match of source.matchAll(importPattern)) {

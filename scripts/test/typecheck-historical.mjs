@@ -6,14 +6,10 @@ import { fileURLToPath, URL } from 'node:url';
 
 const repositoryRoot = fileURLToPath(new URL('../..', import.meta.url));
 const rootCompiler = createRequire(import.meta.url).resolve('typescript/bin/tsc');
-const webCompiler = createRequire(new URL('../../apps/web/package.json', import.meta.url)).resolve(
-  'typescript/bin/tsc',
-);
 
 // Run every historical scope even when an earlier compiler fails.
 for (const [name, compiler, config] of [
   ['backend', rootCompiler, 'tsconfig.historical.json'],
-  ['web', webCompiler, 'apps/web/tsconfig.json'],
   ['tests', rootCompiler, 'tsconfig.historical-tests.json'],
 ]) {
   console.log(`Historical ${name}: ${config}`);

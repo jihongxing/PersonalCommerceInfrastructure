@@ -1,7 +1,11 @@
 packages:
-  - apps/*
+  - apps/web-v2
   - applications/*
   - contracts/*
   - modules/*
   - adapters/*
   - packages/*
+
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

@@ -4,7 +4,6 @@
     "noEmit": true
   },
   "include": [
-    "apps/api-mock/src/**/*.ts",
     "adapters/auth/middleware/auth-middleware.ts",
     "adapters/transport/http/auth-routes.ts",
     "lib/**/*.ts"

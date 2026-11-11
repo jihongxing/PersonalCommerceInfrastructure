@@ -3,12 +3,11 @@ dist/
 coverage/
 .next/
 .next-*/
-apps/web/.next/
 output/playwright/
 output/backups/
 apps/web-v2/playwright-report/
 apps/web-v2/test-results/
-tests/acceptance/browser/fixtures/auth-state.json
+tests/historical/retired-reference-client/browser/fixtures/auth-state.json
 .env
 .env.*
 !.env.example

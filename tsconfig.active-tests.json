@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.tests.json",
   "exclude": [
-    "apps/web",
+    "apps/web-v2",
+    "apps/admin-web",
+    "tests/historical",
     "dist",
     "node_modules",
     "coverage",

@@ -23,11 +23,17 @@
     "database/**/*.ts",
     "drizzle.config.ts",
     "modules/**/*.ts",
-    "playwright.config.ts",
     "scripts/**/*.ts",
     "adapters/**/*.ts",
     "tests/**/*.ts",
     "vitest.config.ts"
   ],
-  "exclude": ["apps/web", "dist", "node_modules", "coverage"]
+  "exclude": [
+    "apps/web-v2",
+    "apps/admin-web",
+    "tests/historical",
+    "dist",
+    "node_modules",
+    "coverage"
+  ]
 }

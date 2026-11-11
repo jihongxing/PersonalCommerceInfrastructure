@@ -5,8 +5,6 @@
     "tests/auth-integration.test.ts",
     "tests/auth-password-reset.test.ts",
     "tests/auth-token-service.test.ts",
-    "tests/email-service.test.ts",
-    "tests/acceptance/browser/**/*.ts",
-    "playwright.config.ts"
+    "tests/email-service.test.ts"
   ]
 }

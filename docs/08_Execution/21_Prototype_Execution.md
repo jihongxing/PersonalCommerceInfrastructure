@@ -8992,3 +8992,46 @@ The current control baseline records scoped migration/Operations TESTED evidence
 overall Catalog implementation/acceptance. Historical DEV-082/083 and ENG-008/009 records remain
 intact. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization
 and REAL_MONEY_ENABLED=false remain unchanged.
+
+
+## PCI-ENG-012 / CU-A — Retired workspace removal and target consolidation
+
+> Date: 2026-11-12 (Asia/Shanghai). Authorization: explicit Founder Direction in the
+> PCI-ENG-012 task. Scope: engineering topology and test preservation, not new product behavior.
+
+Retired apps/web and apps/api-mock with no future development target. Preserved shared API,
+application/domain/contract/persistence code and current Creator runtime without source changes.
+Root Web aliases now target apps/web-v2; default dev/start target the existing shared API.
+Removed old API generation and reference-only copy/design/token adapter gates, historical Web
+compiler, old browser launchers and Dockerfile.web. Compose now selects Dockerfile.web-v2; the
+Creator image consumes the root lock/workspace. No image build or deployment was executed.
+
+Consolidated the nested Creator workspace/lock into the root lock, retaining its locked stack.
+No backend runtime dependency or product contract was changed. Removed retired workspace entries,
+imports/aliases, TypeScript/Vitest targets and build dependencies. Frontend import boundaries now
+cover current Creator and Admin runtime; dedicated Node E2E fixtures remain outside frontend rules.
+
+Historical coverage classification is recorded in tests/historical/retired-reference-client/README.md.
+Preserved 18 browser specs plus three driver/fixture sources, eight old Web unit sources and five
+harness sources. Browser source bytes match the starting Git revision a792267c957e267189cb3d56e571ac8b139d5fa8.
+No mock-only dependent test was found. Canonical C-number clipboard coverage now calls the actual
+Creator utility; all 19 reusable foundation API operation assertions remain executable in a new
+backend contract test. The 13 AT source-entry checks explicitly read historical source inventory,
+not executed product acceptance. Backend Request/Reservation/Contract/Operations behavior remains
+covered at its existing layers; current Creator UI equivalence to archived flows is not claimed.
+
+Root browser gate now selects the existing Creator E2E harness instead of retired Web. This is
+a changed gate scope, not equivalent or completed AT acceptance. Browser provisioning, controlled
+API fixtures and explicit current UI qualification remain necessary. Root broad quality gates and
+shared token calibration remain; historical failures are not suppressed.
+
+Verification: Creator production build PASS; native Creator 28 files/86 tests PASS; root Web bridge
+3 files/64 tests PASS; preserved source-entry/copy/API checks 3 files/15 tests PASS. Shared API
+build and OpenAPI compatibility PASS; active runtime and test type aggregates PASS. Import
+boundary check, focused ESLint/Prettier and diff checks PASS. Frozen install PASS. No existing
+database, migration, external service, Pilot, production or real-money operation was used.
+
+Local ignored browser auth state was moved outside Git without reading contents. Recursive cache
+delete was blocked by tool policy; reversible relocation placed old build/node_modules residue in
+ignored .gstack/retired-workspaces. Both retired apps/ paths are absent. This cache is not an active
+workspace or future development target. CONTROLLED_RECOVERY and all existing authorization gates remain.

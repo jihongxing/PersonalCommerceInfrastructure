@@ -2,17 +2,19 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, test } from 'vitest';
 
-const fullBrowserAcceptance = readFileSync('tests/acceptance/browser/vs01.spec.ts', 'utf8');
+// These assertions preserve the historical AT entry inventory; they do not execute browser ATs.
+const historicalBrowserRoot = 'tests/historical/retired-reference-client/browser';
+const fullBrowserAcceptance = readFileSync(`${historicalBrowserRoot}/vs01.spec.ts`, 'utf8');
 const m4BrowserAcceptance = readFileSync(
-  'tests/acceptance/browser/m4-publish-share.spec.ts',
+  `${historicalBrowserRoot}/m4-publish-share.spec.ts`,
   'utf8',
 );
 const m5BrowserAcceptance = readFileSync(
-  'tests/acceptance/browser/m5-customer-request.spec.ts',
+  `${historicalBrowserRoot}/m5-customer-request.spec.ts`,
   'utf8',
 );
 const m6BrowserAcceptance = readFileSync(
-  'tests/acceptance/browser/m6-creator-decision.spec.ts',
+  `${historicalBrowserRoot}/m6-creator-decision.spec.ts`,
   'utf8',
 );
 const m7ObservationAcceptance = readFileSync(
@@ -20,11 +22,11 @@ const m7ObservationAcceptance = readFileSync(
   'utf8',
 );
 const foundationBrowserAcceptance = readFileSync(
-  'tests/acceptance/browser/foundation.spec.ts',
+  `${historicalBrowserRoot}/foundation.spec.ts`,
   'utf8',
 );
 
-describe('VS-01 acceptance entry points', () => {
+describe('VS-01 historical acceptance entry inventory (not browser acceptance)', () => {
   test('AT-001 Creator creates Identity → Capability → Draft Offering', () => {
     expect(fullBrowserAcceptance).toContain(
       'AT-001 complete VS-01 path from Identity to confirmed Customer result',

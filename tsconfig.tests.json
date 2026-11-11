@@ -3,11 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": [
-    "adapters/**/*.test.ts",
-    "modules/**/*.test.ts",
-    "tests/**/*.ts",
-    "playwright.config.ts",
-    "vitest.config.ts"
-  ]
+  "include": ["adapters/**/*.test.ts", "modules/**/*.test.ts", "tests/**/*.ts", "vitest.config.ts"]
 }

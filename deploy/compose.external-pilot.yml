@@ -63,7 +63,7 @@ services:
   web:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.web
+      dockerfile: deploy/Dockerfile.web-v2
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?NEXT_PUBLIC_API_BASE_URL is required}
         NEXT_PUBLIC_RUNTIME_ENV: controlled

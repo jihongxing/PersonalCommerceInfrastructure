@@ -1,14 +1,13 @@
 .git
 .gstack
 .next
-apps/web/.next
+apps/admin-web/.next
 apps/web-v2/.next
 apps/web-v2/.next-*
 coverage
 dist
 node_modules
 **/node_modules
-apps/web/node_modules
 apps/web-v2/node_modules
 output
 .env

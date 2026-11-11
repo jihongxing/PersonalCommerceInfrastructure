@@ -8935,3 +8935,60 @@ commit as a separate ENG-009 documentation commit. Full root gates, external col
 DEV-082/083 full migration/admin acceptance and production-image qualification remain outside this
 closure. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization
 and REAL_MONEY_ENABLED=false remain unchanged.
+
+## PCI-ENG-010 / CONTROLLED-CATALOG-DATABASE-AND-ADMIN-LIFECYCLE-ACCEPTANCE
+
+> Date: 2026-11-12 (Asia/Shanghai). Overall status: PARTIAL; migration and implemented Operations
+> engineering verification: PASS / TESTED. Full DEV-082/083 product acceptance: NOT_ACCEPTED.
+> Evidence: [120 - Controlled Catalog Acceptance](../09_Engineering_Governance/120_Controlled_Catalog_Acceptance.md).
+
+Read original Decisions 34/35, PRD amendments, DEV-082/083 execution records and the current control
+baseline before testing. Actual management scope is workspace/audit reading, capability/template
+status, selection/publication switches and risk changes, plus publication of loaded policy versions.
+No generic Catalog CRUD, new Admin UI, role, category or policy dimension was inferred or added.
+
+Each final round used fresh pci_eng010_clean and pci_eng010_upgrade databases, plus a separate
+pci_tracing_disposable fault database, in new task container pci-eng-010-p0epon. Official local
+PostgreSQL 17 image by immutable ID reported 17.10; exact deployment 17.6-bookworm was unavailable
+locally. Only 127.0.0.1:40355 was bound, with random temporary credentials and 1 GiB tmpfs PGDATA.
+All URLs were child-process-only; no existing database, container or persistent volume was reused.
+
+Normal authoritative migration entry passed all 36 migrations. Historical upgrade used the original
+0000-0032 SQL/journal prefix, existing-schema history fixtures, then normal full migration through 0035. All four acceptance database reruns preserved journal IDs/hashes/timestamps, full Catalog
+rows and audit/release state. Initial metadata matched the checked-in 10 capability/10 template
+seed, with one published v1, four primary keys, eleven indexes and btree_gist. Known legacy dance
+records mapped to Catalog/template; unknown capability remained custom_request; historical Offering
+became not_checked rather than approved. Existing actions, events and assets remained unchanged.
+
+Real database diagnostics demonstrated partial writes when audit INSERT failed and lost updates
+when two Operations calls changed different fields. Capability risk review also incorrectly allowed
+publication. Code commit 9a1b7a535dcbdcd7271d4161bc5a647bf717e137 repairs existing contract behavior
+with atomic entity/release+audit transactions, a shared transaction-scoped admin advisory lock,
+repeatable-read snapshots, and existing capability risk/missing-reference checks. No new Schema,
+Migration, API shape, canonical event, Identity, C-number or money behavior was introduced.
+
+Added 25 real PostgreSQL Catalog cases in controlled-catalog.postgres.test.ts. Both final runs of
+nine test files passed 79/79, 0 FAIL, 0 SKIP, exit 0. Included all original 13 database-gated cases,
+ENG-009 rejection/privacy coverage, Capability concurrency, real TCP interruption and SQLSTATE
+42501 recovery. Active runtime types, active backend test types, focused ESLint, formatting and
+diff checks passed. No full root gates, browser, external services or full AT acceptance is claimed.
+
+Operations API denial was verified without credentials, with ordinary Creator tokens and invalid
+Operations credentials across all five endpoints, with no mutation. Current response is 401; the
+decision text says 403, so literal contract acceptance remains unresolved. Report/appeal/manual
+review records required by DEV-082 have no corresponding implemented workflow. Permanent retirement
+semantics also need reconciliation. No workflow or authentication policy was invented to close gaps.
+Catalog FKs and complete loaded-version reference validation are absent; current business publication
+fails closed for a missing reference. These limits are recorded rather than implying new constraints.
+
+Both final rounds dropped all six databases after zero-connection checks; no fault role remained.
+Finally cleanup removed the exact task container and migration-prefix directory, verified port
+closure, unchanged parent environment, and identical 52 unrelated container snapshots/55 volume
+names. No volume or system prune was used. Sanitized local evidence is in
+E:/User/jihx/AppData/Local/Temp/pci-eng-010-p0Epon. Temporary executor deletion and final clean Git
+verification accompany the separate documentation commit.
+
+The current control baseline records scoped migration/Operations TESTED evidence and PARTIAL
+overall Catalog implementation/acceptance. Historical DEV-082/083 and ENG-008/009 records remain
+intact. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization
+and REAL_MONEY_ENABLED=false remain unchanged.

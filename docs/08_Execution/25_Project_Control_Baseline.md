@@ -88,8 +88,8 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-063` | `APPROVED` (bounded) | One selected public Profile per Identity and Profile-surface summary | Additional homepage rows, unselected Profile exposure or public disclosure expansion | Implemented; local acceptance incomplete | Yes, only regression and local verification |
 | `DEV-064` | `APPROVED` (bounded) | Versioned homepages, server-time selection, non-overlapping activation windows | Recurrence, visitor-selected versions, new events, payment, CRM | Implemented; local automated acceptance recorded, external evidence absent | Yes, only named acceptance evidence |
 | `DEV-065` | `APPROVED` (bounded) | Move homepage management to the Profile surface | API, database, C-number or permission changes | Implemented; local acceptance recorded | Yes, only UI regression |
-| `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | Implementation complete; product acceptance and migration rehearsal pending | Yes, only named acceptance and rehearsal |
-| `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | Implementation complete; database/admin verification pending | Yes, only migration/admin verification |
+| `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | ENG-010 core policy regression and migrations pass; full product workflows/acceptance remain PARTIAL | Yes, only named acceptance and rehearsal |
+| `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
 
 The historical execution ledger remains the evidence source for these units. Where its claim conflicts
 with the Decision Package, stale `COMMITTED` fields or missing signed approval, the unit is additionally
@@ -114,7 +114,7 @@ State meanings:
 | Commerce Relationship | `IMPLEMENTED` | `APPROVED` bounded by `DEV-053` | `CONFLICTED` | `TESTED` | Self-declared `OWNER/PROPOSED` only |
 | Public Homepage | `IMPLEMENTED` | `APPROVED` bounded by `DEV-062`/`063` | `CONFLICTED` | `TESTED` | Local homepage behavior exists; production is not authorized |
 | Homepage Scheduling | `IMPLEMENTED` | `APPROVED` bounded by `DEV-064` | `CONFLICTED` | `TESTED` | Local schedule evidence only; external observability absent |
-| Controlled Catalog | `IMPLEMENTED` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | Product acceptance and migration/admin rehearsal remain open |
+| Controlled Catalog | `PARTIAL` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | ENG-010 core database/Operations TESTED; report/appeal/manual-review workflow and contract conflicts remain; see Section 5.3 |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
 | Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
 | Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
@@ -163,6 +163,34 @@ Test-only commit: fe59d494b8994acaf539a96fec72b6edb94cccc7. No production code, 
 authorization changed; cleanup removed all task resources and preserved unrelated containers/volumes.
 TESTED is not promoted to ACCEPTED. Full Catalog/admin acceptance, exact production-image
 qualification, formal Resume Gate, product scope and Pilot/production/money decisions remain open.
+
+### 5.3 ENG-010 Controlled Catalog acceptance evidence
+
+ENG-010 overall is PARTIAL. Two independent clean PostgreSQL rounds each passed 79 tests with
+0 FAIL and 0 SKIP, including 25 new Catalog cases and all original 13 database-gated cases. Each
+round passed all 36 migrations, a historical 0000-0032 to 0033-0035 upgrade, and unchanged full
+migrator reruns. Ten capabilities, ten templates, one initial published release, four primary keys,
+eleven indexes and preserved historical actions/assets/events were verified. The server was 17.10;
+the exact deployment image 17.6-bookworm remains unqualified.
+
+Existing Operations workspace/audit, state/switch/risk updates and loaded-version publication were
+verified against real PostgreSQL. Bounded fixes make entity/release changes atomic with audit,
+serialize registered admin writers, and honor existing capability risk and missing-reference gates.
+Code/regression commit: 9a1b7a535dcbdcd7271d4161bc5a647bf717e137.
+
+Full product acceptance remains NOT_ACCEPTED: Decision 35's non-Operations 403 conflicts with the
+existing invalid-credentials 401 response; required report/appeal/manual-review record workflows
+are absent; permanent retirement semantics remain unresolved. No new workflow, role, category or
+permission was added. Catalog reference enforcement has no database FK guarantee; no new FK or
+arbitrary-version authoring/import API is implied. No Admin UI is required by the current decision.
+
+This updates only the current engineering interpretation of migration/admin evidence; historical
+DEV-082/083 and ENG-008/009 measurements remain unchanged. The implementation field is PARTIAL
+because the complete approved product workflow is not implemented, while existing core Operations
+paths are TESTED. All task resources were removed; unrelated containers/volumes were unchanged.
+Evidence: [120 - Controlled Catalog Acceptance](../09_Engineering_Governance/120_Controlled_Catalog_Acceptance.md).
+CONTROLLED_RECOVERY, incomplete Resume Gate and no full Stage 2/Pilot/production/money authorization
+remain unchanged.
 
 ## 6. Authority and Supersession Rules
 
@@ -219,7 +247,7 @@ Conflict rules:
 | `DEV-064` | 2026-11-08 | Time-scheduled homepage versions | `docs/08_Execution/21_Prototype_Execution.md:7878` | Server-time version selection and windows | Recurrence, visitor selection, new events | Current bounded scheduling rule | This baseline |
 | `DEV-065` | 2026-11-09 | Profile-surface homepage management | `docs/08_Execution/21_Prototype_Execution.md:7949` | UI information architecture | API, database, permission and C-number changes | Current bounded UI rule | This baseline |
 | `DEV-082` | 2026-11-10 | Controlled capability and service publishing | `docs/08_Execution/21_Prototype_Execution.md:8690` | Catalog, templates, policy states and gates | Arbitrary categories, marketplace, AI-only moderation | Acceptance remains open | `DEV-083` changes storage model only |
-| `DEV-083` | 2026-11-11 | Database-managed service policy catalog | `docs/08_Execution/21_Prototype_Execution.md:8732` | Database-managed releases, records and audit | Payment, marketplace, CRM and new product objects | Migration/admin verification remains open | This baseline |
+| `DEV-083` | 2026-11-11 | Database-managed service policy catalog | `docs/08_Execution/21_Prototype_Execution.md:8732` | Database-managed releases, records and audit | Payment, marketplace, CRM and new product objects | ENG-010 migration/implemented admin tests PASS; overall acceptance PARTIAL | This baseline, Section 5.3 |
 
 ## 9. Architecture Boundary Debt
 
@@ -231,7 +259,7 @@ documentation-only task:
 - The legacy public creator-profile frontend hook still calls the unregistered route.
 - Root lint/typecheck and known repository-wide preflight failures remain open.
 - Root scripts and the historical Web Reference Client versus `apps/web-v2` target need alignment.
-- Migration execution and product acceptance for DEV-082/083 remain open.
+- ENG-010 migration/implemented Operations verification passed; DEV-082/083 product acceptance and explicit contract conflicts remain open.
 - Web V2 acceptance remains local and does not establish external or production acceptance.
 - Fulfillment code generation and Commerce Action fulfillment update remain incomplete.
 

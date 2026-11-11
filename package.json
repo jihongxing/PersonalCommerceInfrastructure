@@ -41,8 +41,8 @@
     "typecheck:core": "tsc -p tsconfig.build.json --noEmit",
     "typecheck:api": "tsc -p tsconfig.api.build.json --noEmit",
     "typecheck:web-v2": "pnpm --dir apps/web-v2 exec tsc --noEmit",
-    "typecheck:active": "pnpm typecheck:core && pnpm typecheck:api && pnpm typecheck:web-v2",
-    "typecheck:active-tests": "pnpm typecheck:active-tests:backend && pnpm typecheck:active-tests:web-bridge && pnpm typecheck:web-v2:tests",
+    "typecheck:active": "pnpm typecheck:core && pnpm typecheck:api && pnpm typecheck:web-v2 && pnpm typecheck:admin-web",
+    "typecheck:active-tests": "pnpm typecheck:active-tests:backend && pnpm typecheck:active-tests:web-bridge && pnpm typecheck:web-v2:tests && pnpm typecheck:admin-web:tests",
     "typecheck:active-tests:backend": "tsc -p tsconfig.active-tests.json --noEmit",
     "typecheck:active-tests:web-bridge": "tsc -p tsconfig.active-web-tests.json --noEmit",
     "typecheck:tests": "tsc -p tsconfig.tests.json",
@@ -60,7 +60,14 @@
     "test:acceptance": "vitest run tests/acceptance",
     "test:acceptance:browser": "pnpm --filter web-v2 exec playwright test",
     "check:design-tokens": "node scripts/design/check-token-calibration.mjs",
-    "preflight": "powershell.exe -File scripts/test/preflight.ps1"
+    "preflight": "powershell.exe -File scripts/test/preflight.ps1",
+    "dev:admin-web": "pnpm --filter admin-web dev",
+    "build:admin-web": "pnpm --filter admin-web build",
+    "typecheck:admin-web": "pnpm --filter admin-web typecheck",
+    "typecheck:admin-web:tests": "pnpm --filter admin-web typecheck:tests",
+    "test:admin-web": "pnpm --filter admin-web test",
+    "lint:admin-web": "pnpm --filter admin-web lint",
+    "verify:admin-web": "node scripts/test/verify-admin-web.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

@@ -33,6 +33,11 @@ if (-not $SkipProjectTests) {
   Invoke-Checked { pnpm check:openapi } "OpenAPI compatibility"
   Invoke-Checked { pnpm web:typecheck } "Web typecheck"
   Invoke-Checked { pnpm build:web } "Web build"
+  Invoke-Checked { pnpm lint:admin-web } "Admin Web lint"
+  Invoke-Checked { pnpm typecheck:admin-web } "Admin Web typecheck"
+  Invoke-Checked { pnpm typecheck:admin-web:tests } "Admin Web test typecheck"
+  Invoke-Checked { pnpm test:admin-web } "Admin Web smoke tests"
+  Invoke-Checked { pnpm verify:admin-web } "Admin Web build and shell security"
   Invoke-Checked { pnpm test:acceptance:browser } "Creator Web browser acceptance (requires controlled API fixture)"
 }
 

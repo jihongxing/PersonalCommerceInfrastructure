@@ -9035,3 +9035,39 @@ Local ignored browser auth state was moved outside Git without reading contents.
 delete was blocked by tool policy; reversible relocation placed old build/node_modules residue in
 ignored .gstack/retired-workspaces. Both retired apps/ paths are absent. This cache is not an active
 workspace or future development target. CONTROLLED_RECOVERY and all existing authorization gates remain.
+
+
+## PCI-ENG-012 / CU-B — Independent Operations Admin shell
+
+> Date: 2026-11-12 (Asia/Shanghai). Authorization: explicit ENG-012 Founder architecture direction.
+> Scope: local shell only; no new business behavior, roles, permissions or canonical events.
+
+Created apps/admin-web with independent Next 16.4.5 / React 19.3.0 / TypeScript configuration,
+root workspace scripts and root lockfile. Seven navigation pages cover Overview, Capability Catalog,
+Service Templates, Policy Versions, Reports & Appeals, Manual Reviews and Audit Records. Pending
+sections clearly remain unavailable; no fake metrics, credentials, API data or management actions.
+Responsive layout, skip link, active navigation, loading, safe error/retry and 404 states are present.
+
+No backend, database connection, route handler, server action, static Operations token, browser
+secret storage or Operations caller was introduced. Catalog authority does not grant Offering human
+review authority; report identity/anonymous strategy, review permissions and appeal outcomes remain
+unresolved. Existing DEV-082/083 scope, Identity/C-number and REAL_MONEY_ENABLED=false are unchanged.
+
+Verification: dedicated Admin ESLint PASS; runtime and test TypeScript PASS; 9 smoke tests PASS;
+production build PASS. Reproducible verify:admin-web inspects 9 runtime files and builds with fabricated
+server-only secret sentinels, then scans 13 browser assets; no sentinel leakage. The static gate is
+specific to this no-integration shell and must be reviewed when future auth/API work is authorized.
+Seven loopback HTTP routes returned 200 and an unknown section returned 404. gstack browse inspected
+1440px desktop and 375px mobile, clicked navigation, verified active page/unavailable state, no input
+forms, no horizontal overflow, minimum 44px nav height and no console errors. Error/retry/loading
+are covered by component tests; no production error was deliberately induced.
+
+Final shared contracts suite: 7 files / 28 tests PASS. Active runtime and all four active-test scopes
+PASS; Creator 86 native tests and 64 bridge tests PASS. Docker images, current Creator E2E and full
+root preflight were not qualified. preflight -SkipProjectTests was attempted and interrupted after
+its existing recursive governance source scan did not complete in the observation window; no PASS
+is claimed. The scan filters node_modules/generated paths after traversal; its performance and
+pre-existing configuration/read-boundary issues were not expanded into this task.
+
+Retirement/config commit: 9fc68b5. Admin source/config and this evidence form the second change unit.
+No push, deployment, migration, existing database access, external Pilot or real-money operation.

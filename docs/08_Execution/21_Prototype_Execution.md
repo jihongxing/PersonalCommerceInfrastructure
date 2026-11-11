@@ -9071,3 +9071,29 @@ pre-existing configuration/read-boundary issues were not expanded into this task
 
 Retirement/config commit: 9fc68b5. Admin source/config and this evidence form the second change unit.
 No push, deployment, migration, existing database access, external Pilot or real-money operation.
+
+
+## PCI-ENG-012 / CU-C — Architecture and control documentation synchronization
+
+> Date: 2026-11-12 (Asia/Shanghai). Status: scoped engineering implementation and verification complete.
+> Retirement commit: 9fc68b5. Admin bootstrap commit: e8be2744aa6ed7f4247c9393d3efae9e74b9e40a.
+
+Added document 121 Operations Admin Web Architecture. Updated the current Project Control Baseline,
+document index and root README with the explicit Founder topology decision, independent client/shared
+API boundaries, shell-only scope, authentication ownership and unresolved review powers. Supersession
+is narrow: independent Admin shell is newly approved, while Decision 35 did not historically require
+a UI. Frozen strategic/product contracts and historical acceptance records remain unchanged.
+
+The documentation records retired test coverage and every changed gate scope, root command ownership,
+reproducible security checks and limitations. Current Creator E2E is not equivalent to archived AT
+coverage. Full root gates, Docker/Compose execution and external acceptance are not claimed. The
+governance-only preflight attempt was interrupted during its existing slow recursive scan, with no
+PASS claim. No new authentication, review permission, appeal outcome, Catalog rule or product scope
+was approved by implementation. CONTROLLED_RECOVERY, incomplete Resume Gate, full Stage 2/Pilot/
+production prohibitions and REAL_MONEY_ENABLED=false remain unchanged.
+
+Evidence: 121_Operations_Admin_Web_Architecture.md and the historical test inventory; active types,
+Creator build/86 native tests/64 bridge tests, Admin lint/build/security/9 smoke tests, API build/
+OpenAPI and 28 contract/runtime tests passed. Local browser/HTTP evidence is bounded to the shell.
+Final documentation link checks, diff checks, commit history and clean tracked worktree verification
+are part of the closure review. No push or deployment is performed.

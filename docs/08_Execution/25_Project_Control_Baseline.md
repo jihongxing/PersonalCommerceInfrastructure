@@ -91,6 +91,11 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | ENG-010 core policy regression and migrations pass; full product workflows/acceptance remain PARTIAL | Yes, only named acceptance and rehearsal |
 | `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
 
+ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
+and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
+authorizes local topology/shell work only, excluding authentication integration, Operations mutations,
+review powers, new product scope, deployment and money. Subsequent integration needs a named unit.
+
 The historical execution ledger remains the evidence source for these units. Where its claim conflicts
 with the Decision Package, stale `COMMITTED` fields or missing signed approval, the unit is additionally
 classified as `PROVENANCE_REQUIRES_REVIEW`; the scope is never enlarged by that uncertainty.
@@ -116,6 +121,7 @@ State meanings:
 | Homepage Scheduling | `IMPLEMENTED` | `APPROVED` bounded by `DEV-064` | `CONFLICTED` | `TESTED` | Local schedule evidence only; external observability absent |
 | Controlled Catalog | `PARTIAL` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | ENG-010 core database/Operations TESTED; report/appeal/manual-review workflow and contract conflicts remain; see Section 5.3 |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
+| Operations Admin Web | `IMPLEMENTED` shell only | `APPROVED` by explicit ENG-012 task | `SYNCED` | `TESTED` local shell | No authentication, data, mutations or human-review authority; see Section 5.4 |
 | Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
 | Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
@@ -182,7 +188,9 @@ Full product acceptance remains NOT_ACCEPTED: Decision 35's non-Operations 403 c
 existing invalid-credentials 401 response; required report/appeal/manual-review record workflows
 are absent; permanent retirement semantics remain unresolved. No new workflow, role, category or
 permission was added. Catalog reference enforcement has no database FK guarantee; no new FK or
-arbitrary-version authoring/import API is implied. No Admin UI is required by the current decision.
+arbitrary-version authoring/import API is implied. Decision 35 did not itself require an Admin UI.
+ENG-012 separately approves the independent Admin shell in Section 5.4; it does not retroactively
+change Decision 35 or close full Catalog acceptance.
 
 This updates only the current engineering interpretation of migration/admin evidence; historical
 DEV-082/083 and ENG-008/009 measurements remain unchanged. The implementation field is PARTIAL
@@ -191,6 +199,35 @@ paths are TESTED. All task resources were removed; unrelated containers/volumes 
 Evidence: [120 - Controlled Catalog Acceptance](../09_Engineering_Governance/120_Controlled_Catalog_Acceptance.md).
 CONTROLLED_RECOVERY, incomplete Resume Gate and no full Stage 2/Pilot/production/money authorization
 remain unchanged.
+
+### 5.4 ENG-012 application topology and shell
+
+The explicit Founder Direction in the PCI-ENG-012 task adopts:
+
+```text
+apps/web = RETIRED / NO_FURTHER_DEVELOPMENT
+apps/api-mock = RETIRED / NO_FURTHER_DEVELOPMENT
+apps/web-v2 = ACTIVE / CREATOR_WEB
+apps/admin-web = APPROVED / OPERATIONS_ADMIN_WEB
+apps/api = ACTIVE / SHARED_BACKEND
+```
+
+This supersedes the former root-script/Reference Client target ambiguity and absence of an approved
+Admin application. It does not supersede unresolved product, authentication, review, Catalog or
+acceptance decisions. Both retired source trees and active targets are removed; Git and classified
+test sources preserve history. Local ignored cache residue is outside apps/.
+
+The Admin shell has seven pages, navigation, loading/error/unavailable states and no credentials,
+API requests, operational data, mutation controls or database imports. Local build, types, lint,
+9 smoke tests, browser checks and fabricated credential-sentinel scan pass. Creator build, all
+86 native tests and 64 bridge tests pass; shared API build/OpenAPI compatibility pass. Historical
+Reference Client browser acceptance is archived, not claimed passed. Current Creator E2E, full
+root preflight, Docker images and external acceptance were not qualified in this unit.
+
+Architecture, permissions and gate changes are recorded in
+[121 - Operations Admin Web Architecture](../09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md).
+CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization and
+REAL_MONEY_ENABLED=false remain unchanged. Catalog management never grants human-review authority.
 
 ## 6. Authority and Supersession Rules
 
@@ -258,7 +295,8 @@ documentation-only task:
   `commerce_profile_id === creator_id` assumption.
 - The legacy public creator-profile frontend hook still calls the unregistered route.
 - Root lint/typecheck and known repository-wide preflight failures remain open.
-- Root scripts and the historical Web Reference Client versus `apps/web-v2` target need alignment.
+- ENG-012 closes root-script/retired-client topology debt; historical browser acceptance is archived
+  and current Creator E2E coverage still needs explicit qualification.
 - ENG-010 migration/implemented Operations verification passed; DEV-082/083 product acceptance and explicit contract conflicts remain open.
 - Web V2 acceptance remains local and does not establish external or production acceptance.
 - Fulfillment code generation and Commerce Action fulfillment update remain incomplete.
@@ -287,6 +325,7 @@ Allowed within the bounded recovery control mode:
 - regression and acceptance evidence collection for named units;
 - controlled catalog migration rehearsal and admin verification for DEV-082/083;
 - local-only verification that does not change product scope;
+- ENG-012 topology retirement and independent Admin shell within its explicitly approved scope;
 - architecture debt triage without implementation.
 
 ## 11. Verification and Provenance Limitations

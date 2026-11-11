@@ -8,7 +8,7 @@
 > **HISTORICAL NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
 > **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
-> 最近执行更新：2026-10-09
+> 最近执行更新：2026-11-12（PCI-ENG-012 三应用拓扑与 Admin shell）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -26,6 +26,12 @@ NEXT CONTROL ACTION = PROVENANCE AND ACCEPTANCE RECONCILIATION
 ```
 
 当前阶段索引：
+
+当前应用拓扑：`apps/api`（共享后端）、`apps/web-v2`（唯一 Creator Web）、
+`apps/admin-web`（独立 Operations Admin shell）。`apps/web` / `apps/api-mock` 已按
+Founder 决策退休。认证、目录操作和人工复核尚未接入 Admin。
+参见 [121 — Operations Admin Web Architecture](./09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)
+及[退休测试与门禁清单](../tests/historical/retired-reference-client/README.md)。
 
 ```text
 CLIENT-001 Web Client Convergence   Complete

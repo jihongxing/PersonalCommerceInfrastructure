@@ -46,18 +46,25 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 - 技术架构决策：`docs/09_Engineering_Governance/23_Technology_Architecture_Decision.md`
 - 技术架构落地规划：`docs/09_Engineering_Governance/24_Technology_Architecture_Implementation_Plan.md`
 
-当前主要 Web 实现和验收目标是 `apps/web-v2`；`apps/web` 是历史 Reference Client，
-`apps/api-mock` 是历史模拟 API，不是当前主要 API Runtime。当前实现事实不等于生产批准。
+PCI-ENG-012 已落实 Founder 的三应用架构：`apps/api` 为共享后端，`apps/web-v2` 为唯一活动
+Creator Web，`apps/admin-web` 为独立 Operations Admin Web。`apps/web` 和 `apps/api-mock`
+已退休并移出活动工作区，不再开发。当前实现事实不等于生产批准。
+
+Admin 仅有七个导航页面、加载、错误和不可用状态；身份验证与业务流程尚未接入，不读取
+运营数据、不提供管理操作。架构和权限边界见
+[121 — Operations Admin Web Architecture](docs/09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)。
+旧测试分类、保留方式和门禁变化见[历史测试清单](tests/historical/retired-reference-client/README.md)。
 
 PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)
-记录了各门禁的完整范围、排除项和遗留错误。`pnpm typecheck:active` 验证当前服务端与 Web V2；
+记录了各门禁的完整范围、排除项和遗留错误。`pnpm typecheck:active` 验证当前服务端、Creator Web 与 Admin Web；
 `pnpm typecheck:tests` 和 `pnpm typecheck:web-v2:tests` 分别验证根测试与 Web V2 测试/E2E 类型；
-`pnpm typecheck:historical:backend` 和 `pnpm typecheck:historical:web` 保留历史组件的独立验证。
-原始 `pnpm typecheck` 保持不变且仍失败；active 通过不代表根门禁、全仓库质量或生产验收通过。
+`pnpm typecheck:historical:backend` 和 `pnpm typecheck:historical:tests` 保留其余历史范围；
+退休 Web 的独立编译入口已移除。
+原始 `pnpm typecheck` 命令保留；其历史问题未在本次任务全面关闭。active 通过不代表根门禁、全仓库质量或生产验收通过。
 
 PCI-ENG-007 的 [活动测试类型基线](docs/09_Engineering_Governance/118_Active_Test_TypeScript_Baseline.md)
 逐条分类了 57 条测试诊断。`pnpm typecheck:active-tests` 检查当前 Backend、根目录 Web V2
-测试和 Web V2 原生测试；`pnpm test:web-bridge` 在 jsdom 中执行根目录的当前 Web 测试。
+测试、Web V2 原生测试和 Admin 测试；`pnpm test:web-bridge` 在 jsdom 中执行根目录的当前 Web 测试。
 `pnpm typecheck:historical` 会执行全部历史范围并保留失败。原始根和混合测试命令均未替换。
 
 ## 技术基线
@@ -113,10 +120,17 @@ pnpm --dir apps/web-v2 exec next dev -p 3000
 pnpm install
 pnpm dev
 pnpm dev:api
-pnpm dev:web
-pnpm web:generate-api
-pnpm web:typecheck
-pnpm build:web
+pnpm dev:creator-web
+pnpm build:creator-web
+pnpm typecheck:creator-web
+pnpm dev:admin-web
+pnpm build:admin-web
+pnpm typecheck:admin-web
+pnpm lint:admin-web
+pnpm test:admin-web
+pnpm verify:admin-web
+pnpm build:api
+pnpm typecheck:api
 pnpm test:domain
 pnpm test:contracts
 pnpm test:acceptance
@@ -125,8 +139,12 @@ pnpm preflight
 ```
 
 `pnpm preflight` 依次执行工程治理检查、格式检查、Lint、类型检查、测试、服务端构建、
-OpenAPI Client 生成、Web 类型检查和 Next Production Build。
-Preflight 还会使用系统 Edge 启动 API 与 Web Reference Client，执行基础浏览器验收。
+OpenAPI 兼容检查、Creator 类型和构建，以及 Admin lint/类型/冒烟/构建与安全检查。
+浏览器门禁现指向既有 Creator Playwright 配置，需要安装浏览器和受控 API fixture；
+不再启动退休 Reference Client，也不代表旧 AT 已迁移。全仓库门禁历史问题仍保留。
+`dev:web` / `build:web` / `web:typecheck` 是 Creator 兼容别名；默认 `dev` / `start` 指向 API。
+Admin 在 `http://127.0.0.1:3002` 启动，不需要业务凭据；`verify:admin-web` 用虚构服务端
+密钥标记构建并检查浏览器产物，不连接数据库。
 
 开发 API 以 `APP_ENV=development` 启动时，需要 `DATABASE_URL`、`JWT_SECRET` 和上述运营认证配置。
 

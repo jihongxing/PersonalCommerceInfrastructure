@@ -10,6 +10,7 @@ import {
   PostgresOfferingRepository,
 } from '../../adapters/persistence/postgres/postgres-creator-identity-repositories.js';
 import { PostgresProductEventStore } from '../../adapters/persistence/postgres/postgres-product-event-store.js';
+import { PostgresServicePolicyCatalogRepository } from '../../adapters/persistence/postgres/postgres-service-policy-catalog-repository.js';
 import { PostgresUnitOfWork } from '../../adapters/persistence/postgres/postgres-unit-of-work.js';
 import { createActorContext } from '../../applications/core/actor-context.js';
 import { CanonicalEventRecorder } from '../../applications/core/canonical-event-recorder.js';
@@ -331,6 +332,7 @@ describe.skipIf(!databaseUrl)('capability concurrency with PostgreSQL', () => {
       state: 'generated',
     });
     const useCase = new RecordExternalDistributionUseCase({
+      servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(database.database),
       identityRepository: new PostgresCommerceIdentityRepository(database.database),
       capabilityRepository: new PostgresCapabilityRepository(database.database),
       offeringRepository: offerings,

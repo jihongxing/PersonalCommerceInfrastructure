@@ -7,7 +7,8 @@ import {
   TokenCacheManager,
   RequestDeduplicator,
   TokenPreRefreshManager,
-} from '../apps/web-v2/lib/api/optimization';
+} from '../apps/web-v2/lib/api/optimization.js';
+import { clearSession, setSession } from '../apps/web-v2/lib/auth/session.js';
 
 describe('Performance Optimization', () => {
   describe('TokenCacheManager', () => {
@@ -67,10 +68,7 @@ describe('Performance Optimization', () => {
     it('应该执行请求', async () => {
       const executor = vi.fn(async () => ({ data: 'test' }));
 
-      const result = await deduplicator.execute(
-        '/api/test',
-        executor
-      );
+      const result = await deduplicator.execute('/api/test', executor);
 
       expect(result).toEqual({ data: 'test' });
       expect(executor).toHaveBeenCalledTimes(1);
@@ -78,7 +76,7 @@ describe('Performance Optimization', () => {
 
     it('应该去重相同的请求', async () => {
       const executor = vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         return { data: 'test' };
       });
 
@@ -112,9 +110,7 @@ describe('Performance Optimization', () => {
         throw new Error('Request failed');
       });
 
-      await expect(
-        deduplicator.execute('/api/test', executor)
-      ).rejects.toThrow('Request failed');
+      await expect(deduplicator.execute('/api/test', executor)).rejects.toThrow('Request failed');
     });
 
     it('应该提供待处理请求统计', async () => {
@@ -122,7 +118,7 @@ describe('Performance Optimization', () => {
       expect(stats.pendingRequests).toBe(0);
 
       deduplicator.execute('/api/test', async () => {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         return { data: 'test' };
       });
 
@@ -146,37 +142,46 @@ describe('Performance Optimization', () => {
     let preRefreshManager: TokenPreRefreshManager;
 
     beforeEach(() => {
+      vi.useFakeTimers();
+      setSession({
+        accessToken: 'monitoring-test-token',
+        userEmail: 'monitoring@example.test',
+        expiresAt: Math.floor(Date.now() / 1000) + 90,
+      });
       preRefreshManager = new TokenPreRefreshManager();
     });
 
     afterEach(() => {
       preRefreshManager.stopMonitoring();
+      clearSession();
+      vi.useRealTimers();
+      vi.restoreAllMocks();
     });
 
-    it('应该启动和停止监视', (done) => {
+    it('应该启动和停止监视', async () => {
       const onRefresh = vi.fn(async () => {});
 
       preRefreshManager.startMonitoring(onRefresh);
 
-      // 验证正在监视
-      setTimeout(() => {
-        preRefreshManager.stopMonitoring();
-        done();
-      }, 100);
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+      preRefreshManager.stopMonitoring();
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(onRefresh).toHaveBeenCalledTimes(1);
     });
 
-    it('应该处理监视期间的错误', (done) => {
+    it('应该处理监视期间的错误', async () => {
+      const failure = new Error('Refresh failed');
+      const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
       const onRefresh = vi.fn(async () => {
-        throw new Error('Refresh failed');
+        throw failure;
       });
 
       preRefreshManager.startMonitoring(onRefresh);
 
-      // 验证监视继续运行
-      setTimeout(() => {
-        preRefreshManager.stopMonitoring();
-        done();
-      }, 100);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(onRefresh).toHaveBeenCalledTimes(2);
+      expect(errorLog).toHaveBeenCalledWith(failure);
     });
   });
 
@@ -201,9 +206,7 @@ describe('Performance Optimization', () => {
 
       const promises = [];
       for (let i = 0; i < 10; i++) {
-        promises.push(
-          deduplicator.execute('/api/test', executor)
-        );
+        promises.push(deduplicator.execute('/api/test', executor));
       }
 
       await Promise.all(promises);
@@ -233,7 +236,7 @@ describe('Performance Optimization', () => {
       ]);
 
       // 都应该返回相同结果
-      expect(results.every(r => r.authenticated === true)).toBe(true);
+      expect(results.every((r) => r.authenticated === true)).toBe(true);
       // 只执行一次
       expect(executor).toHaveBeenCalledTimes(1);
     });

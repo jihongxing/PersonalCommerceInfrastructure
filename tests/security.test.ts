@@ -2,14 +2,14 @@
  * 安全审计测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   XSSProtectionManager,
   CSRFProtectionManager,
   PasswordSecurityPolicy,
   RateLimitManager,
   SecurityHeadersValidator,
-} from '../apps/web-v2/lib/security/security-manager';
+} from '../apps/web-v2/lib/security/security-manager.js';
 
 describe('Security Audit', () => {
   describe('XSS Protection', () => {
@@ -20,6 +20,12 @@ describe('Security Audit', () => {
       expect(escaped).toContain('&lt;');
       expect(escaped).toContain('&gt;');
       expect(escaped).not.toContain('<script>');
+    });
+
+    it('escapes every HTML delimiter while preserving ordinary and Unicode text', () => {
+      expect(XSSProtectionManager.escapeHTML(`<>&"' 中文🙂`)).toBe(
+        '&lt;&gt;&amp;&quot;&#39; 中文🙂',
+      );
     });
 
     it('应该验证安全 URL', () => {
@@ -140,28 +146,28 @@ describe('Security Audit', () => {
       const result = PasswordSecurityPolicy.validatePassword('Short1');
 
       expect(result.isValid).toBe(false);
-      expect(result.feedback.some(f => f.includes('字符'))).toBe(true);
+      expect(result.feedback.some((f) => f.includes('字符'))).toBe(true);
     });
 
     it('应该检查大写字母', () => {
       const result = PasswordSecurityPolicy.validatePassword('lowercase123');
 
       expect(result.isValid).toBe(false);
-      expect(result.feedback.some(f => f.includes('大写'))).toBe(true);
+      expect(result.feedback.some((f) => f.includes('大写'))).toBe(true);
     });
 
     it('应该检查小写字母', () => {
       const result = PasswordSecurityPolicy.validatePassword('UPPERCASE123');
 
       expect(result.isValid).toBe(false);
-      expect(result.feedback.some(f => f.includes('小写'))).toBe(true);
+      expect(result.feedback.some((f) => f.includes('小写'))).toBe(true);
     });
 
     it('应该检查数字', () => {
       const result = PasswordSecurityPolicy.validatePassword('NoNumbers');
 
       expect(result.isValid).toBe(false);
-      expect(result.feedback.some(f => f.includes('数字'))).toBe(true);
+      expect(result.feedback.some((f) => f.includes('数字'))).toBe(true);
     });
 
     it('应该计算密码强度', () => {

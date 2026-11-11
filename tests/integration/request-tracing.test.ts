@@ -99,6 +99,7 @@ describe('request tracing', () => {
             },
         )
         .find((line) => line.context.correlationId === 'valid-id');
+      if (firstLog === undefined) throw new Error('Expected the log for valid-id.');
       expect(firstLog.context.trace_id).toBe(firstSpan?.spanContext().traceId);
       expect(firstLog.context.span_id).toBe(firstSpan?.spanContext().spanId);
     } finally {

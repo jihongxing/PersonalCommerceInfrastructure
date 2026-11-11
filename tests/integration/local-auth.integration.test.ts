@@ -41,6 +41,7 @@ describe.skipIf(!databaseUrl)('local auth with PostgreSQL', () => {
         correlationId: 'test',
       });
       expect(actor.actor.kind).toBe('creator');
+      if (actor.actor.kind !== 'creator') throw new Error('Expected a mapped Creator actor.');
       expect(actor.actor.creatorId).not.toBe(first.user.id);
       const otherSignup = await server.inject({
         method: 'POST',
@@ -54,6 +55,7 @@ describe.skipIf(!databaseUrl)('local auth with PostgreSQL', () => {
         correlationId: 'test-other',
       });
       expect(otherActor.actor.kind).toBe('creator');
+      if (otherActor.actor.kind !== 'creator') throw new Error('Expected another Creator actor.');
       expect(otherActor.actor.creatorId).not.toBe(actor.actor.creatorId);
       expect(
         (

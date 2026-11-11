@@ -1,11 +1,11 @@
 /**
  * Week 2 Part 2 - 前端集成测试
- * 
+ *
  * 测试认证系统与 API 拦截器的完整集成
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { clearSession, getSession, setSession } from '../apps/web-v2/lib/auth/session';
+import { clearSession, getSession, setSession } from '../apps/web-v2/lib/auth/session.js';
 
 /**
  * 会话管理测试
@@ -55,7 +55,7 @@ describe('Session Management', () => {
       expiresAt: Math.floor(Date.now() / 1000) + 3600,
     };
 
-    localStorage.setItem('auth_session', JSON.stringify(session));
+    localStorage.setItem('pci.auth.session', JSON.stringify(session));
 
     const retrieved = getSession();
     expect(retrieved).toEqual(session);
@@ -247,7 +247,7 @@ describe('LocalStorage Integration', () => {
       return;
     }
 
-    const key = 'auth_session';
+    const key = 'pci.auth.session';
     const session = {
       accessToken: 'persist-token',
       userEmail: 'persist@example.com',
@@ -268,7 +268,7 @@ describe('LocalStorage Integration', () => {
       return;
     }
 
-    const key = 'auth_session';
+    const key = 'pci.auth.session';
     localStorage.setItem(key, JSON.stringify({ test: 'data' }));
 
     localStorage.removeItem(key);

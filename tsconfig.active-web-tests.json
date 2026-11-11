@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": { "@/*": ["apps/web-v2/*"] }
+  },
+  "include": [
+    "tests/auth-integration-e2e.test.ts",
+    "tests/optimization.test.ts",
+    "tests/security.test.ts",
+    "vitest.web-bridge.config.ts"
+  ]
+}

@@ -78,8 +78,8 @@ describe('safe logger', () => {
     }
 
     const entries = messages.map((message) => JSON.parse(message) as { context: unknown });
-    expect(entries[0].context).toEqual({ correlationId: 'request-1' });
-    expect(entries[1].context).toEqual({
+    expect(entries[0]?.context).toEqual({ correlationId: 'request-1' });
+    expect(entries[1]?.context).toEqual({
       correlationId: 'request-1',
       trace_id: spanContext.traceId,
       span_id: spanContext.spanId,

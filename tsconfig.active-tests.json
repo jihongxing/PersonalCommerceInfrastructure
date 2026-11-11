@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.tests.json",
+  "exclude": [
+    "apps/web",
+    "dist",
+    "node_modules",
+    "coverage",
+    "tests/acceptance/browser",
+    "playwright.config.ts",
+    "tests/auth-e2e-frontend.test.ts",
+    "tests/auth-integration.test.ts",
+    "tests/auth-password-reset.test.ts",
+    "tests/auth-token-service.test.ts",
+    "tests/email-service.test.ts",
+    "tests/auth-integration-e2e.test.ts",
+    "tests/optimization.test.ts",
+    "tests/security.test.ts"
+  ]
+}

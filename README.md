@@ -55,6 +55,11 @@ PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/1
 `pnpm typecheck:historical:backend` 和 `pnpm typecheck:historical:web` 保留历史组件的独立验证。
 原始 `pnpm typecheck` 保持不变且仍失败；active 通过不代表根门禁、全仓库质量或生产验收通过。
 
+PCI-ENG-007 的 [活动测试类型基线](docs/09_Engineering_Governance/118_Active_Test_TypeScript_Baseline.md)
+逐条分类了 57 条测试诊断。`pnpm typecheck:active-tests` 检查当前 Backend、根目录 Web V2
+测试和 Web V2 原生测试；`pnpm test:web-bridge` 在 jsdom 中执行根目录的当前 Web 测试。
+`pnpm typecheck:historical` 会执行全部历史范围并保留失败。原始根和混合测试命令均未替换。
+
 ## 技术基线
 
 - Node.js 22

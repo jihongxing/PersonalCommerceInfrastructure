@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.tests.json",
+  "include": [
+    "tests/auth-e2e-frontend.test.ts",
+    "tests/auth-integration.test.ts",
+    "tests/auth-password-reset.test.ts",
+    "tests/auth-token-service.test.ts",
+    "tests/email-service.test.ts",
+    "tests/acceptance/browser/**/*.ts",
+    "playwright.config.ts"
+  ]
+}

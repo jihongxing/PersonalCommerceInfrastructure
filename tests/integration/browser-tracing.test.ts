@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { InjectOptions } from 'fastify';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 import { createSafeLogger } from '../../adapters/observability/safe-logger.js';
@@ -54,14 +55,14 @@ describe('browser trace ingestion', () => {
       const payload = JSON.parse(forwarded) as {
         resourceSpans: Array<{ scopeSpans: Array<{ spans: Array<{ attributes: unknown }> }> }>;
       };
-      const exported = payload.resourceSpans[0].scopeSpans[0].spans[0];
+      const exported = payload.resourceSpans[0]?.scopeSpans[0]?.spans[0];
       expect(exported).toMatchObject({
         name: 'auth.refresh.wait',
         kind: 1,
         status: { code: 2 },
         links: span.links,
       });
-      expect(exported.attributes).toEqual([
+      expect(exported?.attributes).toEqual([
         { key: 'pci.refresh.outcome', value: { stringValue: 'rejected' } },
       ]);
       expect(forwarded).not.toContain('must-not-be-forwarded');
@@ -99,7 +100,7 @@ describe('browser trace ingestion', () => {
       expect(forward).toHaveBeenCalledTimes(16);
       expect(messages.join('\n')).toContain('collector_concurrency_limit');
       pending.shift()?.(new Response('{}'));
-      expect((await requests[0]).statusCode).toBe(202);
+      expect((await requests[0])?.statusCode).toBe(202);
       const recovered = inject().then((response) => response);
       await vi.waitFor(() => expect(forward).toHaveBeenCalledTimes(17));
       pending.pop()?.(new Response('{}'));
@@ -397,7 +398,7 @@ describe('browser trace ingestion', () => {
       links: [],
     };
     const headers = { origin: 'http://localhost:3000' };
-    const inject = (payload: unknown) =>
+    const inject = (payload: InjectOptions['payload']) =>
       server.inject({ method: 'POST', url: '/api/v1/telemetry/browser-traces', headers, payload });
     try {
       expect((await inject({ spans: Array.from({ length: 21 }, () => span) })).statusCode).toBe(

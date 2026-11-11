@@ -8794,3 +8794,47 @@ or real-money activation was performed. The tracing probe tests used local fake 
 Root lint cleanup, full preflight, PostgreSQL acceptance and browser acceptance remain outside this
 type recovery. Existing CI/preflight still invokes the failing original root gate; no merge-gate
 replacement was silently adopted. Engineering changes remain uncommitted for controller review.
+
+## PCI-ENG-007 / ACTIVE-TEST-TYPESCRIPT-RECOVERY
+
+> Date: 2026-11-12. Active test TypeScript recovery: COMPLETED.
+> PostgreSQL execution verification: PARTIAL; historical type debt remains OPEN.
+> Evidence: [118 — Active Test TypeScript Baseline](../09_Engineering_Governance/118_Active_Test_TypeScript_Baseline.md).
+
+ENG-006 was reviewed in full against its report and committed separately as
+`bc38fbc8fa944dba81a69af289ba67889946753a`; CTRL-005 remains the independent `9fcc850` commit.
+The initial mixed test gate reproduced 57 diagnostics / 16 files. All are individually inventoried:
+15 test implementation errors, 17 infrastructure type errors, 1 stale fixture and 24 historical
+helper/test diagnostics. No diagnostic was classified as historical merely because it failed.
+
+The 33 active diagnostics are repaired through Actor narrowing, checked trace evidence access,
+Fastify payload typing, current catalog dependency injection, Vitest assertion compatibility and
+proper compilation/execution of the three root tests importing current Web V2 helpers. The Web
+session fixture uses the existing pci.auth.session contract. Awaited fake-timer tests now exercise
+actual refresh execution, stopping and continuation after refresh errors. No tests were deleted.
+
+The strict Web bridge gate additionally found a production callback return-contract defect in
+HTML escaping. The only production edit uses `map[char] ?? char`; the regex's existing five mapped
+delimiters retain their behavior. A delimiter/Unicode regression passed, and old/new implementations
+produced identical output over all 65,536 UTF-16 code units. There are no product object, state,
+event, permission, Identity/Profile, C-number, API contract or database schema changes, so no new
+DEV product deviation is introduced.
+
+`pnpm typecheck:active` and `pnpm typecheck:active-tests` pass. The original root typecheck remains
+FAIL with 172 diagnostics / 44 files. The unchanged mixed test gate remains FAIL with 25 diagnostics
+/ 7 files: 24 historical diagnostics and one Web alias error from the mixed NodeNext environment.
+Historical Backend remains 42 diagnostics / 6 files; historical tests retain 24 diagnostics / 6 files;
+historical Web passes. The historical aggregate executes all scopes even when an earlier one fails.
+All original 165 mixed-test compiler roots remain covered by the explicit new scopes. Root command,
+root configs and CI/preflight acceptance policy are unchanged; no strict checks were weakened.
+
+Verification: Domain/Application/Contract suites 62 files / 388 tests passed; changed regressions
+47 passed / 13 PostgreSQL-conditional skips; root Web bridge 3 files / 64 tests passed; native Web V2
+28 files / 86 tests passed; Import Boundary Governance Suite 6/6 passed with command-line timeout 60000. The PostgreSQL skips require LOCAL_AUTH_TEST_DATABASE_URL or TRACING_DISPOSABLE_DATABASE_URL;
+their database execution is not accepted by these type results. No database mutation or migration
+was performed. E2E types passed, but no browser acceptance or external acceptance is claimed.
+
+Focused lint comparison found no new lint errors after correcting the new runner's Node imports.
+39 pre-existing lint errors remain across four edited test files; full root lint remediation is
+outside scope. Current control remains CONTROLLED_RECOVERY with the Resume Gate not fully closed,
+full Stage 2 not authorized, Pilot/production not authorized and REAL_MONEY_ENABLED=false.

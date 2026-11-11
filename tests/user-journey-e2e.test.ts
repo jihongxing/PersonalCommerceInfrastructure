@@ -1,10 +1,10 @@
 /**
  * 完整用户旅程 E2E 测试
- * 
+ *
  * 测试从注册到登出的完整认证生命周期
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 /**
  * 模拟用户旅程
@@ -81,7 +81,7 @@ describe('Complete User Journey - E2E', () => {
             accessToken: signupResponse.data.accessToken,
             userEmail: signupResponse.data.user.email,
             expiresAt: Math.floor(Date.now() / 1000) + 3600,
-          })
+          }),
         );
       }
 
@@ -104,7 +104,8 @@ describe('Complete User Journey - E2E', () => {
         numbers: /[0-9]/.test(weakPassword),
       };
 
-      const isValid = validation.length && validation.uppercase && validation.lowercase && validation.numbers;
+      const isValid =
+        validation.length && validation.uppercase && validation.lowercase && validation.numbers;
 
       expect(isValid).toBe(false);
     });
@@ -132,7 +133,7 @@ describe('Complete User Journey - E2E', () => {
             accessToken: 'existing-token',
             userEmail: testUser.email,
             expiresAt: Math.floor(Date.now() / 1000) + 3600,
-          })
+          }),
         );
       }
     });
@@ -168,7 +169,7 @@ describe('Complete User Journey - E2E', () => {
             accessToken: loginResponse.data.accessToken,
             userEmail: loginResponse.data.user.email,
             expiresAt: Math.floor(Date.now() / 1000) + 3600,
-          })
+          }),
         );
       }
 
@@ -229,7 +230,7 @@ describe('Complete User Journey - E2E', () => {
             accessToken: refreshResponse.data.accessToken,
             userEmail: 'user@example.com',
             expiresAt: Math.floor(Date.now() / 1000) + refreshResponse.data.expiresIn,
-          })
+          }),
         );
       }
 
@@ -247,6 +248,9 @@ describe('Complete User Journey - E2E', () => {
         userEmail: 'user@example.com',
         expiresAt: Math.floor(Date.now() / 1000) - 100, // 已过期
       };
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('auth_session', JSON.stringify(session));
+      }
 
       // Step 2: 尝试刷新
       const refreshResponse = {
@@ -295,6 +299,7 @@ describe('Complete User Journey - E2E', () => {
       // Step 5: 用户点击链接
       const resetToken = 'reset-token-abc123';
       const resetPage = `/auth/reset-password?token=${resetToken}`;
+      expect(new URL(resetPage, 'http://localhost').searchParams.get('token')).toBe(resetToken);
 
       // Step 6: 输入新密码
       const newPassword = 'NewSecurePassword456!';
@@ -352,7 +357,7 @@ describe('Complete User Journey - E2E', () => {
             accessToken: 'valid-token',
             userEmail: testUser.email,
             expiresAt: Math.floor(Date.now() / 1000) + 3600,
-          })
+          }),
         );
       }
     });
@@ -448,7 +453,7 @@ describe('Complete User Journey - E2E', () => {
           Promise.resolve({
             status: 200,
             data: { accessToken: 'token' },
-          })
+          }),
         );
       }
 
@@ -465,14 +470,14 @@ describe('Complete User Journey - E2E', () => {
           Promise.resolve({
             status: 200,
             data: { accessToken: 'new-token' },
-          })
+          }),
         );
       }
 
       const results = await Promise.all(refreshPromises);
 
       // 所有请求应该返回成功
-      expect(results.every(r => r.status === 200)).toBe(true);
+      expect(results.every((r) => r.status === 200)).toBe(true);
     });
   });
 

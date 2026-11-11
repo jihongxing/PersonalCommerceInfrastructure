@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { createActorContext } from '../../applications/core/actor-context.js';
-import { ApplicationError } from '../../applications/core/application-error.js';
 import { createServicePolicyAdminService } from '../../applications/service-policy/service-policy-admin-service.js';
 import { InMemoryServicePolicyCatalogRepository } from '../../adapters/in-memory/in-memory-service-policy-catalog-repository.js';
 import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
@@ -67,7 +66,7 @@ describe('service policy administration', () => {
         { status: 'paused', reason: 'test' },
         creatorContext,
       ),
-    ).rejects.toMatchObject<ApplicationError>({
+    ).rejects.toMatchObject({
       category: 'authorization',
       code: 'service_policy_operations_required',
     });
@@ -77,14 +76,14 @@ describe('service policy administration', () => {
         { status: 'paused', reason: ' ' },
         operationsContext,
       ),
-    ).rejects.toMatchObject<ApplicationError>({
+    ).rejects.toMatchObject({
       category: 'validation',
       code: 'service_policy_reason_required',
     });
 
     await expect(
       service.publishVersion('v2', 'Publish before import', operationsContext),
-    ).rejects.toMatchObject<ApplicationError>({
+    ).rejects.toMatchObject({
       category: 'validation',
       code: 'service_policy_version_not_loaded',
     });

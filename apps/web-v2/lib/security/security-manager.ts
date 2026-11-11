@@ -25,7 +25,7 @@ export class XSSProtectionManager {
       '"': '&quot;',
       "'": '&#39;',
     };
-    return text.replace(/[&<>"']/g, (char) => map[char]);
+    return text.replace(/[&<>"']/g, (char) => map[char] ?? char);
   }
 
   /**

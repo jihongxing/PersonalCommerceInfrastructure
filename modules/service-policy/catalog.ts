@@ -148,16 +148,17 @@ export function evaluateOfferingPolicy(input: {
   const itemIds = (input.capabilityCatalogItemIds ?? []).filter(
     (value): value is string => value !== undefined,
   );
-  const unavailableCapability = itemIds
-    .map((id) => input.catalog.capabilities.find((item) => item.id === id))
-    .find(
-      (item) =>
-        item === undefined ||
-        item.status !== 'active' ||
-        item.creatorSelectable === false ||
-        item.publishEnabled === false,
-    );
-  if (unavailableCapability !== undefined) {
+  const selectedCapabilities = itemIds.map((id) =>
+    input.catalog.capabilities.find((item) => item.id === id),
+  );
+  const unavailableCapability = selectedCapabilities.some(
+    (item) =>
+      item === undefined ||
+      item.status !== 'active' ||
+      item.creatorSelectable === false ||
+      item.publishEnabled === false,
+  );
+  if (unavailableCapability) {
     return {
       status: 'review_required',
       reason: '所选能力当前已暂停或不再开放发布。',
@@ -179,6 +180,9 @@ export function evaluateOfferingPolicy(input: {
       reason: '内容包含平台禁止发布的服务类型或目的。',
       policyVersion,
     };
+  }
+  if (selectedCapabilities.some((item) => item?.riskTier === 'prohibited')) {
+    return { status: 'rejected', reason: '该能力类型不在平台允许范围内。', policyVersion };
   }
   // Test fixtures and pre-policy in-memory snapshots may not carry policy metadata.
   // Persisted and API-created capabilities always carry catalogStatus, so this
@@ -295,7 +299,10 @@ export function evaluateOfferingPolicy(input: {
       policyVersion,
     };
   }
-  if (template.riskTier === 'review') {
+  if (
+    template.riskTier === 'review' ||
+    selectedCapabilities.some((item) => item?.riskTier === 'review')
+  ) {
     return {
       status: 'review_required',
       reason: '该服务类型需要人工审核后才能公开。',

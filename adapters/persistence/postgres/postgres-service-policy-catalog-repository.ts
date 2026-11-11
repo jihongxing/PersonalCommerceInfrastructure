@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
 import {
@@ -26,7 +26,16 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
   public constructor(private readonly database: ProductDatabase) {}
 
   public async getSnapshot(): Promise<ServicePolicyCatalogSnapshot> {
-    const releases = await this.database
+    return this.database.transaction((database) => this.readSnapshot(database), {
+      isolationLevel: 'repeatable read',
+      accessMode: 'read only',
+    });
+  }
+
+  private async readSnapshot(
+    database: Pick<ProductDatabase, 'select'>,
+  ): Promise<ServicePolicyCatalogSnapshot> {
+    const releases = await database
       .select()
       .from(servicePolicyReleases)
       .where(eq(servicePolicyReleases.status, 'published'))
@@ -34,11 +43,11 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
       .limit(1);
     const policyVersion = releases[0]?.policyVersion ?? 'v1';
     const [capabilities, templates] = await Promise.all([
-      this.database
+      database
         .select()
         .from(servicePolicyCapabilities)
         .where(eq(servicePolicyCapabilities.policyVersion, policyVersion)),
-      this.database
+      database
         .select()
         .from(servicePolicyTemplates)
         .where(eq(servicePolicyTemplates.policyVersion, policyVersion)),
@@ -76,49 +85,57 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
     },
     context: { readonly actorId: string; readonly correlationId: string },
   ): Promise<CapabilityCatalogItem> {
-    const snapshot = await this.getSnapshot();
-    const current = snapshot.capabilities.find((item) => item.id === id);
-    if (current === undefined) {
-      throw new ApplicationError({
-        category: 'not_found',
-        code: 'service_policy_capability_not_found',
-        message: 'Service policy capability was not found.',
-      });
-    }
-    const updated = {
-      ...current,
-      ...(input.status === undefined ? {} : { status: input.status }),
-      ...(input.creatorSelectable === undefined
-        ? {}
-        : { creatorSelectable: input.creatorSelectable }),
-      ...(input.publishEnabled === undefined ? {} : { publishEnabled: input.publishEnabled }),
-      ...(input.riskTier === undefined ? {} : { riskTier: input.riskTier }),
-    };
-    await this.database
-      .update(servicePolicyCapabilities)
-      .set({
-        status: updated.status,
-        creatorSelectable: updated.creatorSelectable ?? true,
-        publishEnabled: updated.publishEnabled ?? true,
-        riskTier: updated.riskTier,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(
-        and(
-          eq(servicePolicyCapabilities.id, id),
-          eq(servicePolicyCapabilities.policyVersion, snapshot.policyVersion),
-        ),
+    return this.database.transaction(async (database) => {
+      await database.execute(
+        sql`select pg_advisory_xact_lock(hashtext('pci.service-policy.catalog'))`,
       );
-    await this.appendAudit(
-      'capability',
-      id,
-      current as unknown as Readonly<Record<string, unknown>>,
-      updated as unknown as Readonly<Record<string, unknown>>,
-      input.reason,
-      context,
-      'updated',
-    );
-    return updated;
+
+      const snapshot = await this.readSnapshot(database);
+      const current = snapshot.capabilities.find((item) => item.id === id);
+      if (current === undefined) {
+        throw new ApplicationError({
+          category: 'not_found',
+          code: 'service_policy_capability_not_found',
+          message: 'Service policy capability was not found.',
+        });
+      }
+      const updated = {
+        ...current,
+        ...(input.status === undefined ? {} : { status: input.status }),
+        ...(input.creatorSelectable === undefined
+          ? {}
+          : { creatorSelectable: input.creatorSelectable }),
+        ...(input.publishEnabled === undefined ? {} : { publishEnabled: input.publishEnabled }),
+        ...(input.riskTier === undefined ? {} : { riskTier: input.riskTier }),
+      };
+      await database
+        .update(servicePolicyCapabilities)
+        .set({
+          status: updated.status,
+          creatorSelectable: updated.creatorSelectable ?? true,
+          publishEnabled: updated.publishEnabled ?? true,
+          riskTier: updated.riskTier,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(
+          and(
+            eq(servicePolicyCapabilities.id, id),
+            eq(servicePolicyCapabilities.policyVersion, snapshot.policyVersion),
+          ),
+        );
+      await this.appendAudit(
+        database,
+        snapshot.policyVersion,
+        'capability',
+        id,
+        current as unknown as Readonly<Record<string, unknown>>,
+        updated,
+        input.reason,
+        context,
+        'updated',
+      );
+      return updated;
+    });
   }
 
   public async updateTemplate(
@@ -132,49 +149,57 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
     },
     context: { readonly actorId: string; readonly correlationId: string },
   ): Promise<ServiceOfferingTemplate> {
-    const snapshot = await this.getSnapshot();
-    const current = snapshot.templates.find((template) => template.id === id);
-    if (current === undefined) {
-      throw new ApplicationError({
-        category: 'not_found',
-        code: 'service_policy_template_not_found',
-        message: 'Service policy template was not found.',
-      });
-    }
-    const updated = {
-      ...current,
-      ...(input.status === undefined ? {} : { status: input.status }),
-      ...(input.creatorSelectable === undefined
-        ? {}
-        : { creatorSelectable: input.creatorSelectable }),
-      ...(input.publishEnabled === undefined ? {} : { publishEnabled: input.publishEnabled }),
-      ...(input.riskTier === undefined ? {} : { riskTier: input.riskTier }),
-    };
-    await this.database
-      .update(servicePolicyTemplates)
-      .set({
-        status: updated.status,
-        creatorSelectable: updated.creatorSelectable ?? true,
-        publishEnabled: updated.publishEnabled ?? true,
-        riskTier: updated.riskTier,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(
-        and(
-          eq(servicePolicyTemplates.id, id),
-          eq(servicePolicyTemplates.policyVersion, snapshot.policyVersion),
-        ),
+    return this.database.transaction(async (database) => {
+      await database.execute(
+        sql`select pg_advisory_xact_lock(hashtext('pci.service-policy.catalog'))`,
       );
-    await this.appendAudit(
-      'template',
-      id,
-      current as unknown as Readonly<Record<string, unknown>>,
-      updated as unknown as Readonly<Record<string, unknown>>,
-      input.reason,
-      context,
-      'updated',
-    );
-    return updated;
+
+      const snapshot = await this.readSnapshot(database);
+      const current = snapshot.templates.find((template) => template.id === id);
+      if (current === undefined) {
+        throw new ApplicationError({
+          category: 'not_found',
+          code: 'service_policy_template_not_found',
+          message: 'Service policy template was not found.',
+        });
+      }
+      const updated = {
+        ...current,
+        ...(input.status === undefined ? {} : { status: input.status }),
+        ...(input.creatorSelectable === undefined
+          ? {}
+          : { creatorSelectable: input.creatorSelectable }),
+        ...(input.publishEnabled === undefined ? {} : { publishEnabled: input.publishEnabled }),
+        ...(input.riskTier === undefined ? {} : { riskTier: input.riskTier }),
+      };
+      await database
+        .update(servicePolicyTemplates)
+        .set({
+          status: updated.status,
+          creatorSelectable: updated.creatorSelectable ?? true,
+          publishEnabled: updated.publishEnabled ?? true,
+          riskTier: updated.riskTier,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(
+          and(
+            eq(servicePolicyTemplates.id, id),
+            eq(servicePolicyTemplates.policyVersion, snapshot.policyVersion),
+          ),
+        );
+      await this.appendAudit(
+        database,
+        snapshot.policyVersion,
+        'template',
+        id,
+        current as unknown as Readonly<Record<string, unknown>>,
+        updated,
+        input.reason,
+        context,
+        'updated',
+      );
+      return updated;
+    });
   }
 
   public async publishVersion(
@@ -182,55 +207,63 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
     reason: string,
     context: { readonly actorId: string; readonly correlationId: string },
   ): Promise<void> {
-    const [capabilityRows, templateRows] = await Promise.all([
-      this.database
-        .select({ id: servicePolicyCapabilities.id })
-        .from(servicePolicyCapabilities)
-        .where(eq(servicePolicyCapabilities.policyVersion, version)),
-      this.database
-        .select({ id: servicePolicyTemplates.id })
-        .from(servicePolicyTemplates)
-        .where(eq(servicePolicyTemplates.policyVersion, version)),
-    ]);
-    if (capabilityRows.length === 0 || templateRows.length === 0) {
-      throw new ApplicationError({
-        category: 'validation',
-        code: 'service_policy_version_not_loaded',
-        message: 'The service policy version must be imported before publication.',
-      });
-    }
-    const before = await this.database
-      .select()
-      .from(servicePolicyReleases)
-      .where(eq(servicePolicyReleases.policyVersion, version));
-    const now = new Date().toISOString();
-    // Keep exactly one published release so runtime snapshots are deterministic.
-    await this.database
-      .update(servicePolicyReleases)
-      .set({ status: 'archived' })
-      .where(eq(servicePolicyReleases.status, 'published'));
-    await this.database
-      .insert(servicePolicyReleases)
-      .values({
-        policyVersion: version,
-        status: 'published',
+    return this.database.transaction(async (database) => {
+      await database.execute(
+        sql`select pg_advisory_xact_lock(hashtext('pci.service-policy.catalog'))`,
+      );
+
+      const [capabilityRows, templateRows] = await Promise.all([
+        database
+          .select({ id: servicePolicyCapabilities.id })
+          .from(servicePolicyCapabilities)
+          .where(eq(servicePolicyCapabilities.policyVersion, version)),
+        database
+          .select({ id: servicePolicyTemplates.id })
+          .from(servicePolicyTemplates)
+          .where(eq(servicePolicyTemplates.policyVersion, version)),
+      ]);
+      if (capabilityRows.length === 0 || templateRows.length === 0) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'service_policy_version_not_loaded',
+          message: 'The service policy version must be imported before publication.',
+        });
+      }
+      const before = await database
+        .select()
+        .from(servicePolicyReleases)
+        .where(eq(servicePolicyReleases.policyVersion, version));
+      const now = new Date().toISOString();
+      // Keep exactly one published release so runtime snapshots are deterministic.
+      await database
+        .update(servicePolicyReleases)
+        .set({ status: 'archived' })
+        .where(eq(servicePolicyReleases.status, 'published'));
+      await database
+        .insert(servicePolicyReleases)
+        .values({
+          policyVersion: version,
+          status: 'published',
+          reason,
+          publishedBy: context.actorId,
+          publishedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: servicePolicyReleases.policyVersion,
+          set: { status: 'published', reason, publishedBy: context.actorId, publishedAt: now },
+        });
+      await this.appendAudit(
+        database,
+        version,
+        'release',
+        version,
+        before[0] ?? {},
+        { policyVersion: version, status: 'published', publishedBy: context.actorId },
         reason,
-        publishedBy: context.actorId,
-        publishedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: servicePolicyReleases.policyVersion,
-        set: { status: 'published', reason, publishedBy: context.actorId, publishedAt: now },
-      });
-    await this.appendAudit(
-      'release',
-      version,
-      before[0] ?? {},
-      { policyVersion: version, status: 'published', publishedBy: context.actorId },
-      reason,
-      context,
-      'published',
-    );
+        context,
+        'published',
+      );
+    });
   }
 
   public async listAudit(): Promise<readonly ServicePolicyAuditRecord[]> {
@@ -254,6 +287,8 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
   }
 
   private async appendAudit(
+    database: Pick<ProductDatabase, 'insert'>,
+    policyVersion: string,
     entityType: ServicePolicyAuditRecord['entityType'],
     entityId: string,
     before: Readonly<Record<string, unknown>>,
@@ -262,8 +297,7 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
     context: { readonly actorId: string; readonly correlationId: string },
     action: ServicePolicyAuditRecord['action'],
   ): Promise<void> {
-    const snapshot = await this.getSnapshot();
-    await this.database.insert(servicePolicyAudits).values({
+    await database.insert(servicePolicyAudits).values({
       id: randomUUID(),
       actorId: context.actorId,
       entityType,
@@ -272,7 +306,7 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
       beforeState: before,
       afterState: after,
       reason,
-      policyVersion: snapshot.policyVersion,
+      policyVersion,
       occurredAt: new Date().toISOString(),
       correlationId: context.correlationId,
     });

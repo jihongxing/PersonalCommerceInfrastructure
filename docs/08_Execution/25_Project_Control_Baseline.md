@@ -116,8 +116,8 @@ State meanings:
 | Homepage Scheduling | `IMPLEMENTED` | `APPROVED` bounded by `DEV-064` | `CONFLICTED` | `TESTED` | Local schedule evidence only; external observability absent |
 | Controlled Catalog | `IMPLEMENTED` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | Product acceptance and migration/admin rehearsal remain open |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
-| Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008: six Local Auth PostgreSQL cases pass in two clean rounds and existing-script regression; product acceptance remains open |
-| Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
+| Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
+| Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
 | Contract | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
 | Paid Commerce | `IMPLEMENTED` (simulation/domain) | `UNKNOWN` for current product | `SYNCED` | `TESTED` | Local Simulation only; real money remains disabled |
@@ -144,6 +144,25 @@ All task containers, databases and listeners were removed; unrelated containers/
 Evidence: [119 - PostgreSQL Integration Test Baseline](../09_Engineering_Governance/119_PostgreSQL_Integration_Test_Baseline.md).
 This refines local verification evidence only. TESTED is not promoted to ACCEPTED; product decisions,
 documentation debt, DEV-082/083 full migration/admin acceptance and all authorization boundaries remain.
+
+### 5.2 ENG-009 current PostgreSQL verification closure
+
+On 2026-11-12, PG09 was aligned with the existing active VS-01 dance-teaching Catalog item and
+private-lesson template. A separate real PostgreSQL case preserves custom-request publication
+rejection. Two full clean runs each passed all original 13 database-gated cases plus the new case;
+including existing nonconditional tests, each run was 23 PASS, 0 FAIL and 0 SKIPPED.
+
+Current scoped PostgreSQL verification is CLOSED / TESTED. PG09 now reaches and passes successful
+publication, canonical-event persistence/ownership, correlation, transaction-Span and privacy
+assertions. The independent rejection case verifies HTTP 409, draft/review_required and no published
+event/asset. Real TCP interruption and SQLSTATE 42501 recovery cases still pass.
+
+This supersedes only Section 5.1's open PG09/current PARTIAL interpretation; its ENG-008 historical
+measurements remain unchanged. Evidence: [119 - Section 12 ENG-009 closure](../09_Engineering_Governance/119_PostgreSQL_Integration_Test_Baseline.md).
+Test-only commit: fe59d494b8994acaf539a96fec72b6edb94cccc7. No production code, policy, schema or
+authorization changed; cleanup removed all task resources and preserved unrelated containers/volumes.
+TESTED is not promoted to ACCEPTED. Full Catalog/admin acceptance, exact production-image
+qualification, formal Resume Gate, product scope and Pilot/production/money decisions remain open.
 
 ## 6. Authority and Supersession Rules
 

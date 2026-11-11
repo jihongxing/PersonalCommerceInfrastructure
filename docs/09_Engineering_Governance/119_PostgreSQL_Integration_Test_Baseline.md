@@ -7,6 +7,10 @@
 > Database provisioning, clean reruns and mandatory cleanup: PASS.
 > Control: CONTROLLED_RECOVERY; no product, Pilot, production or money authorization added.
 
+Current scoped update: ENG-009 closes PG09 and verifies all original 13 cases plus one independent
+review-rejection case in two clean PostgreSQL runs. See Section 12. The ENG-008 measurements below
+remain unchanged as historical evidence. This update does not grant product acceptance.
+
 ## 1. Authority and scope
 
 ENG-008 explicitly authorizes temporary Podman PostgreSQL, disposable databases, existing project
@@ -245,3 +249,139 @@ the stale fixture publish. DEV-082/083 full migration/admin acceptance, exact pr
 qualification, real email delivery, full root gate recovery and external acceptance remain separate.
 CONTROLLED_RECOVERY, FORMAL_RESUME_GATE=NOT_FULLY_CLOSED, FULL_STAGE_2=NOT AUTHORIZED,
 EXTERNAL_PILOT=NOT AUTHORIZED, PRODUCTION=NOT AUTHORIZED and REAL_MONEY_ENABLED=false remain.
+
+## 12. ENG-009 - PG09 contract alignment and closure
+
+> Date: 2026-11-12 (Asia/Shanghai)
+> Scoped status: COMPLETED / TESTED; PG09 and the original PostgreSQL execution gap are closed.
+> Prior baseline: 0900efd45153d14ecf046b20386b1f367d461e64 (ENG-008).
+> Test-only commit: fe59d494b8994acaf539a96fec72b6edb94cccc7.
+> Both clean runs: 23 PASS, 0 FAIL, 0 SKIPPED; original cases 13/13 PASS, additional case 1/1 PASS.
+
+### 12.1 Original intent and Catalog evidence
+
+Full review covered request-tracing.test.ts, catalog.ts, offering-use-cases.ts, the PostgreSQL Catalog
+Repository, Catalog schema/seed records, relevant API fixtures and the ENG-008 migration inventory.
+PG09's original name and all original important assertions remain. Its complete path is signup,
+session/workspace initialization, authenticated capability/Offering creation, complete Creator
+profile, publish, persisted creator_published event, correlation propagation and telemetry privacy.
+
+| Original concern                  | Preserved or strengthened evidence                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Registration / PostgreSQL tracing | HTTP 201, setupPending=false, auth.signup/session/workspace/account-create/transaction spans in the signup trace, parent-child relation |
+| Offering publication              | Normal API creation and HTTP 200; draft/auto_approved becomes persisted published/approved with the selected template                   |
+| Canonical event                   | Original name/correlation assertions retained; now exactly one event with the correct actor/object ownership                            |
+| Correlation ID                    | Original event correlation retained; response header, completion log, server Span and transaction Span also linked                      |
+| Privacy                           | Original email/password/private-name/access-token/refresh-token checks over logs and Span attributes/events/status retained and reached |
+
+The existing rule at modules/service-policy/catalog.ts:215 requires review for custom_request
+capabilities. The publish guard at applications/service-offering/offering-use-cases.ts:192 persists
+that result and rejects publication. The older in-memory Capability API rejection test did not cover
+real PostgreSQL persistence, canonical-event absence, trace correlation or privacy, so one independent
+database case was warranted. No duplicate production behavior or new product decision was introduced.
+
+### 12.2 Successful Fixture and independent rejection scenario
+
+Scenario A reads the actual migrated Catalog using composition.servicePolicyCatalogRepository.
+It selects capability-dance-teaching and template-dance-private-lesson, seeded by existing migration
+0034 at lines 65 and 75. Both must be active, low risk, VS-01, creator-selectable and publish-enabled;
+the template must reference that capability. Missing or unsuitable data fails the test rather than
+creating approval. These are existing Catalog states, not newly invented Approved capability states.
+
+Dance teaching was selected over other available entries because it is the existing low-risk VS-01
+service template, preserving the narrow Creator Offering publication intent. The test creates the
+Capability and Offering through actual APIs with explicit catalogItemId/templateId. It does not use
+legacy metadata-free compatibility branches, direct approval inserts, admin overrides or Mock
+repositories. Only SELECT statements were added for database assertions.
+
+The persisted Offering must be published/approved with the selected template; the response must
+identify that Offering and its distribution asset. creator_published remains a Creator-identity fact:
+object_id and actor_id equal the persisted Offering's creator_id, not the Offering ID. This preserves
+the canonical contract while verifying the Offering's ownership link. The event count is exactly one,
+and its correlation matches the publish response/log. A successful postgres.transaction Span must
+share the publish trace and be a child of its server Span. No trace feature or event was added.
+
+Scenario B, named traces custom capability review rejection without publishing or leaking secrets,
+uses its own account and complete Creator profile. The original Test capability/Test offering
+payload remains a custom request. It asserts HTTP 409, conflict/service_offering_policy_review_required,
+matching error/header/log/Span correlation, persisted draft/review_required, no event for that request
+or Creator publication, no distribution asset, and no private credentials or identity data in the
+error response or logs/Span attributes/events/status. This is a separate real PostgreSQL case.
+
+### 12.3 Two complete clean executions
+
+Both rounds used the existing pnpm test script with the exact Local Auth, Capability and Request
+Tracing integration files, JSON reporter and output outside Git. No assertions, timeouts, gates or
+skip conditions were weakened.
+
+| Scope                                                                  | Clean round 1               | Clean round 2               |
+| ---------------------------------------------------------------------- | --------------------------- | --------------------------- |
+| Local Auth file / PG01-PG06                                            | 6 PASS, 0 FAIL, 0 SKIP      | 6 PASS, 0 FAIL, 0 SKIP      |
+| Capability file / PG07-PG08 plus four existing cases                   | 6 PASS, 0 FAIL, 0 SKIP      | 6 PASS, 0 FAIL, 0 SKIP      |
+| Request Tracing / PG09-PG13 plus new rejection and five existing cases | 11 PASS, 0 FAIL, 0 SKIP     | 11 PASS, 0 FAIL, 0 SKIP     |
+| Original 13 database-gated cases                                       | 13 PASS, 0 FAIL, 0 SKIP     | 13 PASS, 0 FAIL, 0 SKIP     |
+| Additional PostgreSQL review-rejection case                            | 1 PASS                      | 1 PASS                      |
+| Total / exit                                                           | 23 PASS, 0 FAIL, 0 SKIP / 0 | 23 PASS, 0 FAIL, 0 SKIP / 0 |
+
+PG06 retains its original database-gated suite placement; its unavailable-mail assertion itself does
+not perform a database query. The 13-case accounting preserves ENG-008's original inventory.
+
+All original test names remain, including PG09. PG10-PG13 now begin at request-tracing.test.ts:660,
+:753, :829 and :977. PG12 still interrupts a real local TCP proxy and recovers. PG13 still creates a
+temporary role, observes real SQLSTATE 42501 and verifies zero memberships after failure and one
+ACTIVE membership after restored permission/retry. The existing fault-trigger spy does not replace
+the real PostgreSQL interaction.
+
+The verified file SHA-256 is ef0f634c270a9e3aff2de8332dabecdcd02ee02df700ae7bdf6976d66659bfca.
+It was checked again before the test-only commit. Focused ESLint, typecheck:active-tests:backend,
+test-file formatting and git diff --check passed. Unrelated source files and original gates were
+unchanged; full root lint/TypeScript, browser and external acceptance were not rerun or claimed.
+
+### 12.4 Disposable database setup and cleanup
+
+Podman 5.7.1 and the existing running WSL machine were inspected again. Used a new
+pci-eng-009-tx5wyw container, ID 38815f316436512fc02b299b0a7c79967bcdfd2e1ead820d68829f76cc95effd,
+with --rm, task label, random credentials, 127.0.0.1:41091 dynamic binding and 1 GiB tmpfs PGDATA.
+No ENG-008 or other existing container was reused. The official local PostgreSQL 17 image ID and
+actual PostgreSQL 17.10 server match Section 2; no image pull was required.
+
+Each round created pci_eng009_main and pci_tracing_disposable from empty databases. Only child
+process maps received LOCAL_AUTH_TEST_DATABASE_URL/TRACING_DISPOSABLE_DATABASE_URL. Existing
+DATABASE_URL and POSTGRES_PASSWORD were excluded from test environments; global .env/settings
+and real-money controls were not changed. pg_isready preceded all database initialization.
+
+The same exact 16-migration tracing dependency subset from Section 4 was used for both databases.
+Original SQL bytes and journal metadata were copied to a temporary folder and processed by the
+existing Drizzle migrator. All four initializations passed; identical reruns preserved journal hashes,
+timestamps and count. No full inventory or unrelated migration rehearsal was run.
+
+Before each drop, main database counts were 10 accounts, 2 product events and 3 Offerings; fault
+database counts were 2 accounts, 0 events and 0 Offerings in both rounds. Existing tests retain
+records, so cleanup dropped the exact databases. All four drops observed zero active connections
+and verified database absence. No tracing_fault_* role remained after either round.
+
+Execution ran 2026-11-11T20:47:05.910Z to 20:48:14.078Z, or November 12 04:47-04:48 Asia/Shanghai.
+The finally block stopped/removed the exact labeled container. Container absence, closed TCP port,
+unchanged 52 unrelated container snapshots and 55 volume names, unchanged parent environment,
+and deletion of the temporary migration directory were verified. No volume was created or removed.
+The temporary executor was subsequently deleted and container/listener absence rechecked. No usable
+credential file or connection URL was retained.
+
+### 12.5 Current result, provenance and limits
+
+Local evidence: E:/User/jihx/AppData/Local/Temp/pci-eng-009-TX5WYw contains summary.json,
+round-1.json/log, round-2.json/log and resources-before/after.json. The summary retains per-case
+statuses, Catalog metadata, original SQL hashes, migration rerun and cleanup checks. Raw reports
+were removed after redaction; local artifacts may be cleared by the OS.
+
+The test-only commit is fe59d494b8994acaf539a96fec72b6edb94cccc7; a separate ENG-009 documentation
+commit appends this closure, the execution ledger and the current control-baseline update. ENG-008
+remains its original historical PARTIAL measurement. Current PG09 and the scoped 13-case PostgreSQL
+verification are closed by ENG-009 evidence, without retroactively changing those results.
+
+Spans still use the existing in-memory exporter; actual event persistence is PostgreSQL-backed. This
+does not validate an external collector, real email delivery, all migrations, production's exact
+17.6-bookworm image, full Catalog/admin acceptance or whole-repository quality. No production code,
+schema, API contract, Catalog policy, Identity, C-number or money behavior changed, so no new product
+deviation is introduced. Capability verification remains TESTED, not ACCEPTED. CONTROLLED_RECOVERY,
+incomplete formal Resume Gate and no full Stage 2/Pilot/production/real-money authorization remain.

@@ -8885,3 +8885,53 @@ ENG-008 remains PARTIAL pending a separate bounded PG09 fixture repair and succe
 regression. Root TypeScript/lint debt, production-image qualification and DEV-082/083 full acceptance
 remain open. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production
 authorization and REAL_MONEY_ENABLED=false are unchanged.
+
+## PCI-ENG-009 / POSTGRESQL-TRACING-CONTRACT-ALIGNMENT-AND-PG09-CLOSURE
+
+> Date: 2026-11-12 (Asia/Shanghai). Status: COMPLETED within the PG09/test-verification scope.
+> Two clean PostgreSQL runs: 23 PASS, 0 FAIL, 0 SKIPPED each; original database cases 13/13 PASS.
+> Evidence: [119 - ENG-009 closure](../09_Engineering_Governance/119_PostgreSQL_Integration_Test_Baseline.md).
+
+Reviewed the complete tracing test, Catalog rules, Offering use cases, PostgreSQL Catalog
+Repository/schema/seeds, current fixtures and ENG-008 initialization evidence. The prior PG09
+publish-200 expectation used a custom_request capability and correctly received 409. Preserved
+its name, signup/transaction Span, canonical-event correlation and all original sensitive-data
+assertions. Selected the existing migrated capability-dance-teaching and template-dance-private-lesson
+because they are active, low-risk VS-01 entries with creator selection/publication enabled. Explicit
+Catalog/template selectors and actual APIs create the successful Offering; no approval data was
+inserted manually and no compatibility branch was used to bypass policy.
+
+The successful case now asserts persisted published/approved state, correct template, exactly one
+creator_published event, actor/object association through the Offering's Creator, matching response,
+log and event correlation, a child postgres.transaction Span in the publish trace, and original
+privacy checks. The canonical event remains an identity fact, not a new Offering event. Added one
+independent PostgreSQL test for the original custom capability: HTTP 409 with correct error
+correlation, persisted draft/review_required, no event/asset, matching completion Span and no secrets
+in the error or telemetry. The existing in-memory rejection test lacked this database/trace coverage.
+
+Only tests/integration/request-tracing.test.ts changed in test commit
+fe59d494b8994acaf539a96fec72b6edb94cccc7 (238 insertions, 5 deletions). No production source,
+business policy, Schema, Migration, API contract, Identity or C-number changed. Focused ESLint,
+typecheck:active-tests:backend, formatting and git diff --check passed. Original PG10-PG13 remain;
+real TCP interruption/recovery and PostgreSQL SQLSTATE 42501 permission denial/recovery passed.
+
+Used new container pci-eng-009-tx5wyw with official local PostgreSQL 17 image by immutable ID,
+actual server 17.10, --rm, task label, 127.0.0.1:41091 dynamic binding, random credentials and 1 GiB
+tmpfs PGDATA. Each round recreated pci_eng009_main and pci_tracing_disposable and used the same
+16 existing dependency migrations as ENG-008. Both clean initializations and no-op reruns passed.
+Test URLs existed only in child environments; no .env/global setting or existing database was used.
+
+Both existing pnpm test executions of the exact Local Auth, Capability and Request Tracing files
+passed 23 tests: all original 13 conditional cases, the added rejection case and nine existing
+nonconditional cases. Local Auth was 6/6, Capability 6/6 and Request Tracing 11/11 in each run.
+Four database drops observed zero active connections; no fault role remained. Finally cleanup
+removed the task container, databases, temporary migration directory and executor, and verified
+port closure. All 52 unrelated container snapshots and 55 volume names matched; no volume was
+created/deleted and parent environments were unchanged.
+
+The control baseline now records PG09 and scoped PostgreSQL verification CLOSED / TESTED. ENG-008's
+historical PARTIAL entry is not rewritten. This documentation follows the independent test-only
+commit as a separate ENG-009 documentation commit. Full root gates, external collector/email,
+DEV-082/083 full migration/admin acceptance and production-image qualification remain outside this
+closure. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization
+and REAL_MONEY_ENABLED=false remain unchanged.

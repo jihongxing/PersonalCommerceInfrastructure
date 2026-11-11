@@ -116,8 +116,8 @@ State meanings:
 | Homepage Scheduling | `IMPLEMENTED` | `APPROVED` bounded by `DEV-064` | `CONFLICTED` | `TESTED` | Local schedule evidence only; external observability absent |
 | Controlled Catalog | `IMPLEMENTED` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | Product acceptance and migration/admin rehearsal remain open |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
-| Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | Engineering capability exists; documentation requires synchronization |
-| Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | Existing implementation must not be described as absent |
+| Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008: six Local Auth PostgreSQL cases pass in two clean rounds and existing-script regression; product acceptance remains open |
+| Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
 | Contract | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
 | Paid Commerce | `IMPLEMENTED` (simulation/domain) | `UNKNOWN` for current product | `SYNCED` | `TESTED` | Local Simulation only; real money remains disabled |
@@ -127,6 +127,23 @@ State meanings:
 `TESTED` means that local, unit, integration or browser evidence exists. It does not mean product
 acceptance, external pilot acceptance or production readiness. `NOT_ACCEPTED` means implementation
 evidence exists but the product or environment gate remains open.
+
+### 5.1 ENG-008 PostgreSQL execution evidence
+
+On 2026-11-12, isolated Podman PostgreSQL 17.10 execution replaced ENG-007's environment-unavailable
+status for the exact 13 conditional cases. Two clean focused rounds and the existing pnpm test
+regression each produced 12 PASS, 1 FAIL and 0 SKIPPED for those cases (21 PASS, 1 FAIL and
+0 SKIPPED including nine additional cases). Local Auth/Recovery has 6/6 passing cases; Capability
+concurrency has 2/2; database-dependent Request Tracing has 4/5 and remains PARTIAL.
+
+The remaining tracing case expects HTTP 200 for a custom capability publication, but current policy
+returns HTTP 409/service_offering_policy_review_required and preserves draft/review_required. No
+rule or assertion was changed. Its later successful-publication event correlation remains open.
+All task containers, databases and listeners were removed; unrelated containers/volumes were unchanged.
+
+Evidence: [119 - PostgreSQL Integration Test Baseline](../09_Engineering_Governance/119_PostgreSQL_Integration_Test_Baseline.md).
+This refines local verification evidence only. TESTED is not promoted to ACCEPTED; product decisions,
+documentation debt, DEV-082/083 full migration/admin acceptance and all authorization boundaries remain.
 
 ## 6. Authority and Supersession Rules
 

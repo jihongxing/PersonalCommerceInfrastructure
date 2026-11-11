@@ -8838,3 +8838,50 @@ Focused lint comparison found no new lint errors after correcting the new runner
 39 pre-existing lint errors remain across four edited test files; full root lint remediation is
 outside scope. Current control remains CONTROLLED_RECOVERY with the Resume Gate not fully closed,
 full Stage 2 not authorized, Pilot/production not authorized and REAL_MONEY_ENABLED=false.
+
+## PCI-ENG-008 / DISPOSABLE-POSTGRESQL-INTEGRATION-VERIFICATION
+
+> Date: 2026-11-12 (Asia/Shanghai). Result: PARTIAL - 12/13 original database cases PASS, 1 FAIL, 0 SKIPPED.
+> Disposable initialization, repeated execution and mandatory cleanup: PASS.
+> Evidence: [119 - PostgreSQL Integration Test Baseline](../09_Engineering_Governance/119_PostgreSQL_Integration_Test_Baseline.md).
+
+Starting from independent ENG-007 commit df10c2d01da46ee3ba652c3cecac0ca771b02f05 with a clean
+working tree, inspected Podman 5.7.1, the running default WSL machine, local images, existing ports,
+52 unrelated containers and 55 volumes. Used the already installed official PostgreSQL 17 image
+by immutable ID; actual server was PostgreSQL 17.10. The deployment's exact 17.6-bookworm pin is
+not qualified by this run. No existing database/container/volume was reused.
+
+Created unique task containers with --rm, loopback-only dynamic ports, generated temporary
+credentials and explicit tmpfs PGDATA. Test URLs existed only in child-process environment maps;
+no .env/global configuration changed. The three selected files do not initialize schemas, so the
+existing Drizzle migrator used byte-identical SQL and filtered original journals: Auth 0027/0031/0032;
+Capability 0000/0001/0002/0003/0013/0033; Tracing those current runtime dependencies plus
+0016/0017/0018/0020/0027/0028/0031/0032/0034/0035 (16 migrations total). Catalog migrations
+were only supporting dependencies of the existing trace fixture; full DEV-082/083 rehearsal/admin
+acceptance was not performed. Every clean initialization and same-subset no-op rerun passed.
+
+Both clean focused rounds produced Local Auth 6 PASS, Capability 6 PASS and Request Tracing
+9 PASS/1 FAIL, with zero skipped. Of these, the exact ENG-007 database cases are Auth 6 PASS,
+Capability concurrency 2 PASS and Tracing 4 PASS/1 FAIL. A third clean existing pnpm test run of
+the same three files reproduced 21 PASS/1 FAIL/0 SKIPPED. All 13 original cases actually executed.
+
+The failure at request-tracing.test.ts:399 expects publish HTTP 200 but gets 409. A separate clean
+API diagnostic observed custom_request capability, service_offering_policy_review_required and
+stored draft/review_required, consistent with the current Catalog rule. This is a stale successful-
+publication fixture/contract conflict, not database initialization failure. No test, application,
+schema, migration or policy was repaired or weakened. Later publication-event correlation and full
+secret assertions in that case remain unverified. Real PostgreSQL permission-denial and local TCP
+interruption/recovery cases passed; trace export itself uses the existing in-memory exporter.
+
+Suites retain test rows before cleanup; exact databases were dropped and recreated between
+rounds. All ten main-run drops observed zero active connections. No temporary fault role remained.
+Finally cleanup removed every exact task container, including an initial setup-abort container and
+the diagnostic container; ports 40275/39473/40579 were closed. All 52 unrelated container snapshots
+and 55 volume names matched; no volume was created/deleted, no credential file was retained, and
+parent environments were unchanged. No persistent database or external service was contacted.
+
+The control baseline now records scoped PostgreSQL evidence without promoting TESTED to ACCEPTED.
+ENG-008 remains PARTIAL pending a separate bounded PG09 fixture repair and successful event-trace
+regression. Root TypeScript/lint debt, production-image qualification and DEV-082/083 full acceptance
+remain open. CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production
+authorization and REAL_MONEY_ENABLED=false are unchanged.

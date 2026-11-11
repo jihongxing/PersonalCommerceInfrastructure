@@ -52,7 +52,9 @@ const supportedLogLevels = new Set<AppConfiguration['logLevel']>([
   'error',
 ]);
 
-export function loadConfiguration(environment: NodeJS.ProcessEnv = process.env): AppConfiguration {
+export function loadConfiguration(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): AppConfiguration {
   const appEnvironment = environment.APP_ENV ?? 'development';
   const apiHost = environment.API_HOST ?? '127.0.0.1';
   const apiPort = Number(environment.API_PORT ?? '3000');
@@ -102,7 +104,7 @@ export function loadConfiguration(environment: NodeJS.ProcessEnv = process.env):
 }
 
 export function loadDatabaseConfiguration(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: Readonly<Record<string, string | undefined>> = process.env,
 ): DatabaseConfiguration {
   const databaseUrl = environment.DATABASE_URL?.trim();
 
@@ -116,7 +118,7 @@ export function loadDatabaseConfiguration(
 }
 
 export function loadAuthConfiguration(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: Readonly<Record<string, string | undefined>> = process.env,
 ): AuthConfiguration {
   const supabaseUrl = environment.SUPABASE_URL?.trim();
   const supabaseAnonKey = environment.SUPABASE_ANON_KEY?.trim();
@@ -145,7 +147,7 @@ export function loadAuthConfiguration(
 }
 
 export function loadOperationsAuthConfiguration(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: Readonly<Record<string, string | undefined>> = process.env,
 ): OperationsAuthConfiguration {
   const operationsAccessToken = environment.OPERATIONS_ACCESS_TOKEN?.trim();
   const operationsOperatorId = environment.OPERATIONS_OPERATOR_ID?.trim();
@@ -161,7 +163,7 @@ export function loadOperationsAuthConfiguration(
 }
 
 export function loadRealMoneyRuntimeConfiguration(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: Readonly<Record<string, string | undefined>> = process.env,
 ): RealMoneyRuntimeConfiguration {
   const runtimeEnvironment = parseRuntimeEnvironment(environment.RUNTIME_ENV);
   const realMoneyEnabled = parseBoolean(environment.REAL_MONEY_ENABLED, false);
@@ -220,7 +222,7 @@ function parseBoolean(value: string | undefined, defaultValue: boolean): boolean
 }
 
 function parseLiveProviderConfiguration(
-  environment: NodeJS.ProcessEnv,
+  environment: Readonly<Record<string, string | undefined>>,
 ): LiveProviderConfiguration | undefined {
   const values = {
     providerId: optionalTrimmed(environment.LIVE_PROVIDER_ID),

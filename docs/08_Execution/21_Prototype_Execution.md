@@ -8745,3 +8745,52 @@ Focused evidence so far: `pnpm build` passed; `pnpm check:openapi` passed after 
 service-policy Operations endpoints; service-offering, reservation and policy unit tests passed 17/17.
 Database migration execution and PostgreSQL admin lifecycle tests remain the next verification step;
 no production migration or real project acceptance was performed.
+
+## PCI-ENG-006 / ACTIVE-RUNTIME-TYPESCRIPT-BASELINE-RECOVERY
+
+> Date: 2026-11-12. Engineering recovery completed within the authorized type/configuration scope.
+> Repository-wide root and root-test gates remain FAIL; this is not full repository acceptance.
+> Baseline: [117 — TypeScript Quality Baseline](../09_Engineering_Governance/117_TypeScript_Quality_Baseline.md).
+
+PCI-CTRL-005 was finalized separately as documentation-only commit
+`9fcc850ff0d1afed0d8454d2e5d1d1c32757dfa9` before engineering work.
+The current control baseline remains `CONTROLLED_RECOVERY`, `FORMAL_RESUME_GATE=NOT_FULLY_CLOSED`,
+`FULL_STAGE_2=NOT AUTHORIZED` and `REAL_MONEY_ENABLED=false`.
+
+Affected surface: configuration bootstrap, tracing configuration, integration preflight configuration,
+tracing probe input types, test-only axe result typing and an order-result API response fixture.
+There are no changes to product requirements, domain objects, state transitions, canonical events,
+permissions, Identity/Profile semantics, Commerce Reference ownership/format/generation, API contracts
+or database schema/migrations. No new DEV product deviation is required for these erased type changes
+and validation-only fixtures. Transpilation against HEAD confirmed identical emitted JavaScript for
+all four edited production-source files and the accessibility spec.
+
+The prior failing auth middleware and alternate auth-routes module are not imported by the current
+API/prototype roots; current authentication is registered through local-auth-routes.ts. Their exact
+build exclusions predate this task at `6862864`. Both modules, lib helpers, api-mock and the historical
+Web Reference Client remain present and independently visible. No legacy endpoint was activated.
+
+The original root TypeScript command/configuration is unchanged. Initial `pnpm typecheck` had
+263 diagnostics in 59 files; after replacing ambient ProcessEnv inputs with readonly optional string
+maps and correcting axe target typing it has 206 diagnostics in 55 files (exit 2). Of the 57 removed
+diagnostics, 56 came from Next.js making NODE_ENV required in the mixed root compilation.
+`pnpm typecheck:active` passes all three subgates: core, API and Web V2. The new root test gate remains
+57 diagnostics / 16 files (exit 2), including current test fixture/narrowing issues and imported
+historical helpers. The new Web V2 test/E2E gate passes; its initial 90 diagnostics exposed missing
+Vitest DOM matcher augmentation, axe target shape and obsolete test mock response shape.
+The historical backend gate retains 42 diagnostics / 6 files (exit 2); the historical Web gate passes.
+Gate counts overlap and must not be added together. Full scope and file/code inventory are in 117.
+
+Verification: configuration/tracing/API focused regression 5 files / 48 tests passed; contract/API
+suite 6 files / 27 tests passed; Web V2 unit suite 28 files / 86 tests passed, followed by 3/3 order-hook
+tests after the final fixture correction. Domain suite passed 216/216 before the type-only edits;
+domain source was not changed. Import boundary script passed, and its governance suite passed 6/6
+with command-line `--testTimeout=60000`; the first unchanged default-timeout invocation failed because
+repository scanning exceeded five seconds. No test timeout was committed. Both production builds
+passed again. Focused ESLint passed for all six edited TypeScript source/test files.
+
+No database connection/mutation, migration, deployment, external service acceptance, external Pilot
+or real-money activation was performed. The tracing probe tests used local fake HTTP servers.
+Root lint cleanup, full preflight, PostgreSQL acceptance and browser acceptance remain outside this
+type recovery. Existing CI/preflight still invokes the failing original root gate; no merge-gate
+replacement was silently adopted. Engineering changes remain uncommitted for controller review.

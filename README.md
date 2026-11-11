@@ -49,6 +49,12 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 当前主要 Web 实现和验收目标是 `apps/web-v2`；`apps/web` 是历史 Reference Client，
 `apps/api-mock` 是历史模拟 API，不是当前主要 API Runtime。当前实现事实不等于生产批准。
 
+PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)
+记录了各门禁的完整范围、排除项和遗留错误。`pnpm typecheck:active` 验证当前服务端与 Web V2；
+`pnpm typecheck:tests` 和 `pnpm typecheck:web-v2:tests` 分别验证根测试与 Web V2 测试/E2E 类型；
+`pnpm typecheck:historical:backend` 和 `pnpm typecheck:historical:web` 保留历史组件的独立验证。
+原始 `pnpm typecheck` 保持不变且仍失败；active 通过不代表根门禁、全仓库质量或生产验收通过。
+
 ## 技术基线
 
 - Node.js 22

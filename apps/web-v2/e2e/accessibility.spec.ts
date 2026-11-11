@@ -1,6 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect, login, api, submitRequest } from './fixtures';
 
+type AxeTarget = Awaited<
+  ReturnType<AxeBuilder['analyze']>
+>['violations'][number]['nodes'][number]['target'];
+
 test('lookup and dashboard pass automated WCAG A/AA checks', async ({ page, seed }) => {
   test.setTimeout(120_000);
   async function checkPage() {
@@ -35,7 +39,7 @@ test('populated creator and public routes pass automated WCAG A/AA checks', asyn
     path: string;
     id: string;
     impact: string | null | undefined;
-    targets: Array<{ selector: string[]; html: string; summary: string | undefined }>;
+    targets: Array<{ selector: AxeTarget; html: string; summary: string | undefined }>;
   }> = [];
   async function scan(path: string) {
     const results = await new AxeBuilder({ page })

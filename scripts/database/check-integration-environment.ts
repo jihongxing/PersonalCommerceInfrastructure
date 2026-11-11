@@ -119,7 +119,7 @@ export interface IntegrationEnvironmentConfiguration {
 }
 
 export function loadIntegrationEnvironmentConfiguration(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: Readonly<Record<string, string | undefined>> = process.env,
 ): IntegrationEnvironmentConfiguration {
   const databaseUrl = environment.DATABASE_URL?.trim();
   if (databaseUrl === undefined || databaseUrl.length === 0) {

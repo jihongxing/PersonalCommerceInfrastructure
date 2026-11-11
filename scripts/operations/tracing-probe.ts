@@ -83,7 +83,9 @@ function containsSpan(value: unknown, traceId: string, spanId: string): boolean 
   );
 }
 
-export async function runTracingProbe(env: NodeJS.ProcessEnv = process.env): Promise<string> {
+export async function runTracingProbe(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<string> {
   const collector = endpoint(env.TRACING_PROBE_OTLP_URL);
   const query = endpoint(env.TRACING_PROBE_JAEGER_URL);
   const token = env.TRACING_PROBE_QUERY_TOKEN;

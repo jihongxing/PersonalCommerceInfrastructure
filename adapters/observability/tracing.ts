@@ -58,7 +58,7 @@ export interface TracingConfiguration {
 }
 
 export function loadTracingConfiguration(
-  env: NodeJS.ProcessEnv = process.env,
+  env: Readonly<Record<string, string | undefined>> = process.env,
 ): TracingConfiguration & { readonly browserEnabled: boolean } {
   const enabled = env.OTEL_TRACING_ENABLED ?? 'false';
   if (enabled !== 'true' && enabled !== 'false')

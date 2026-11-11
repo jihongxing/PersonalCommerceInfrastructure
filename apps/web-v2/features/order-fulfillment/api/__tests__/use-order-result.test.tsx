@@ -49,7 +49,7 @@ describe('useOrderResult hook', () => {
     vi.mocked(apiClient.GET).mockResolvedValueOnce({
       data: mockData,
       error: null,
-      response: new Response(),
+      status: 200,
     });
 
     const { result } = renderHook(() => useOrderResult('test-token'), { wrapper: createWrapper() });
@@ -71,7 +71,7 @@ describe('useOrderResult hook', () => {
     vi.mocked(apiClient.GET).mockResolvedValueOnce({
       data: undefined,
       error: mockError,
-      response: new Response(),
+      status: 404,
     });
 
     const { result } = renderHook(() => useOrderResult('invalid-token'), {

@@ -358,26 +358,67 @@ describe('request tracing', () => {
           refreshToken: string;
         }>();
         const headers = { authorization: `Bearer ${token}` };
+        const catalog = await composition.servicePolicyCatalogRepository.getSnapshot();
+        const catalogItem = catalog.capabilities.find(
+          (item) => item.id === 'capability-dance-teaching',
+        );
+        const template = catalog.templates.find(
+          (item) => item.id === 'template-dance-private-lesson',
+        );
+        expect(catalogItem).toMatchObject({
+          status: 'active',
+          riskTier: 'low',
+          releaseScope: 'vs01',
+          creatorSelectable: true,
+          publishEnabled: true,
+        });
+        expect(template).toMatchObject({
+          capabilityCatalogItemId: 'capability-dance-teaching',
+          status: 'active',
+          riskTier: 'low',
+          releaseScope: 'vs01',
+          creatorSelectable: true,
+          publishEnabled: true,
+        });
+        if (catalogItem === undefined || template === undefined) {
+          throw new Error('Expected the migrated VS-01 dance capability and template.');
+        }
         const capability = await server.inject({
           method: 'POST',
           url: '/api/v1/creator/identity/capabilities',
           headers,
-          payload: { name: 'Test capability', description: 'Test description' },
+          payload: {
+            catalogItemId: catalogItem.id,
+            name: catalogItem.name,
+            description: 'Test description',
+          },
         });
         expect(capability.statusCode).toBe(201);
+        expect(capability.json()).toMatchObject({
+          capabilities: [
+            expect.objectContaining({ catalogItemId: catalogItem.id, catalogStatus: 'active' }),
+          ],
+        });
         const offering = await server.inject({
           method: 'POST',
           url: '/api/v1/creator/offerings',
           headers,
           payload: {
             capabilityIds: capability.json<{ capabilityIds: string[] }>().capabilityIds,
-            title: 'Test offering',
+            templateId: template.id,
+            title: template.name,
             description: 'Test description',
             availabilityDescription: 'By appointment',
             requestInstructions: 'Request an appointment',
           },
         });
         expect(offering.statusCode).toBe(201);
+        const created = offering.json<{ id: string; creatorId: string }>();
+        expect(offering.json()).toMatchObject({
+          state: 'draft',
+          policyStatus: 'auto_approved',
+          templateId: template.id,
+        });
         expect(
           (
             await server.inject({
@@ -393,17 +434,69 @@ describe('request tracing', () => {
         const correlationId = `publish-${randomUUID()}`;
         const publish = await server.inject({
           method: 'POST',
-          url: `/api/v1/creator/offerings/${offering.json<{ id: string }>().id}/publish`,
+          url: `/api/v1/creator/offerings/${created.id}/publish`,
           headers: { ...headers, 'x-correlation-id': correlationId },
         });
         expect(publish.statusCode).toBe(200);
-        const events = await composition.database.client<
-          { name: string; correlation_id: string }[]
-        >`
-          select name, correlation_id from product_events where correlation_id = ${correlationId}
+        expect(publish.headers['x-correlation-id']).toBe(correlationId);
+        expect(publish.json()).toMatchObject({
+          offering: { id: created.id, creatorId: created.creatorId, state: 'published' },
+          distributionAsset: { offeringId: created.id },
+        });
+        const persisted = await composition.database.client`
+          select creator_id, state, policy_status, template_id from service_offerings
+          where id = ${created.id}
         `;
+        expect(persisted).toEqual([
+          {
+            creator_id: created.creatorId,
+            state: 'published',
+            policy_status: 'approved',
+            template_id: template.id,
+          },
+        ]);
+        const events = await composition.database.client<
+          { name: string; correlation_id: string; object_id: string; actor_id: string }[]
+        >`
+          select name, correlation_id, object_id, actor_id from product_events
+          where correlation_id = ${correlationId}
+        `;
+        expect(events).toHaveLength(1);
         expect(events.map((event) => event.name)).toContain('creator_published');
         expect(events.every((event) => event.correlation_id === correlationId)).toBe(true);
+        // creator_published belongs to the Creator identity that owns this Offering.
+        expect(events[0]).toMatchObject({
+          object_id: created.creatorId,
+          actor_id: created.creatorId,
+        });
+        await processor.forceFlush();
+        const publishLog = messages
+          .map(
+            (line) =>
+              JSON.parse(line) as {
+                event: string;
+                context: { correlationId: string; trace_id: string; span_id: string };
+              },
+          )
+          .find(
+            (line) =>
+              line.event === 'api_request_completed' &&
+              line.context.correlationId === correlationId,
+          );
+        expect(publishLog).toBeDefined();
+        if (publishLog === undefined) throw new Error('Expected the successful publish log.');
+        const publishSpans = exporter
+          .getFinishedSpans()
+          .filter((span) => span.spanContext().traceId === publishLog.context.trace_id);
+        const publishSpan = publishSpans.find(
+          (span) => span.spanContext().spanId === publishLog.context.span_id,
+        );
+        expect(publishSpan?.name).toBe('POST /api/v1/creator/offerings/:offeringId/publish');
+        expect(publishSpan?.attributes['http.response.status_code']).toBe(200);
+        const transaction = publishSpans.find((span) => span.name === 'postgres.transaction');
+        expect(transaction).toBeDefined();
+        expect(transaction?.parentSpanContext?.spanId).toBe(publishSpan?.spanContext().spanId);
+        expect(transaction?.status.code).not.toBe(SpanStatusCode.ERROR);
         const telemetry = JSON.stringify({
           messages,
           spans: exporter.getFinishedSpans().map((span) => ({
@@ -414,6 +507,146 @@ describe('request tracing', () => {
           })),
         });
         for (const secret of [email, password, name, token, refreshToken]) {
+          expect(telemetry).not.toContain(secret);
+        }
+      } finally {
+        await server.close();
+        await composition.database.close();
+      }
+    },
+  );
+
+  it.skipIf(!process.env.LOCAL_AUTH_TEST_DATABASE_URL)(
+    'traces custom capability review rejection without publishing or leaking secrets',
+    async () => {
+      const messages: string[] = [];
+      const composition = createPostgresCreatorIdentityComposition(
+        { databaseUrl: process.env.LOCAL_AUTH_TEST_DATABASE_URL! },
+        { localAuthSecret: 'integration-test-secret-at-least-32-bytes' },
+        'http://localhost:3000',
+        { deliver: async () => {} },
+        { operationsAccessToken: 'test-token', operationsOperatorId: 'test' },
+      );
+      const server = await createApiServer({
+        localAuthService: composition.localAuthService,
+        authContextProvider: composition.authContextProvider,
+        creatorIdentityService: composition.service,
+        serviceOfferingService: composition.offeringService,
+        logger: createSafeLogger('info', (line) => messages.push(line)),
+      });
+      try {
+        const email = `${randomUUID()}@example.test`;
+        const password = 'private-review-password-for-trace-test';
+        const name = 'private-review-name-for-trace-test';
+        const signup = await server.inject({
+          method: 'POST',
+          url: '/api/v1/auth/signup',
+          payload: { email, password, name },
+        });
+        expect(signup.statusCode).toBe(201);
+        const session = signup.json<{
+          accessToken: string;
+          refreshToken: string;
+          setupPending: boolean;
+        }>();
+        expect(session.setupPending).toBe(false);
+        const headers = { authorization: `Bearer ${session.accessToken}` };
+        const profile = await server.inject({
+          method: 'PATCH',
+          url: '/api/v1/creator/identity',
+          headers,
+          payload: { profile: { displayName: 'Test creator', bio: 'Test bio', socialLinks: [] } },
+        });
+        expect(profile.statusCode).toBe(200);
+        const capability = await server.inject({
+          method: 'POST',
+          url: '/api/v1/creator/identity/capabilities',
+          headers,
+          payload: { name: 'Test capability', description: 'Test description' },
+        });
+        expect(capability.statusCode).toBe(201);
+        expect(capability.json()).toMatchObject({
+          capabilities: [expect.objectContaining({ catalogStatus: 'custom_request' })],
+        });
+        const offering = await server.inject({
+          method: 'POST',
+          url: '/api/v1/creator/offerings',
+          headers,
+          payload: {
+            capabilityIds: capability.json<{ capabilityIds: string[] }>().capabilityIds,
+            title: 'Test offering',
+            description: 'Test description',
+            availabilityDescription: 'By appointment',
+            requestInstructions: 'Request an appointment',
+          },
+        });
+        expect(offering.statusCode).toBe(201);
+        expect(offering.json()).toMatchObject({ state: 'draft', policyStatus: 'review_required' });
+        const created = offering.json<{ id: string; creatorId: string }>();
+        const correlationId = `review-publish-${randomUUID()}`;
+        const publish = await server.inject({
+          method: 'POST',
+          url: `/api/v1/creator/offerings/${created.id}/publish`,
+          headers: { ...headers, 'x-correlation-id': correlationId },
+        });
+        expect(publish.statusCode).toBe(409);
+        expect(publish.headers['x-correlation-id']).toBe(correlationId);
+        expect(publish.json()).toMatchObject({
+          error: {
+            category: 'conflict',
+            code: 'service_offering_policy_review_required',
+            correlationId,
+          },
+        });
+        const persisted = await composition.database.client`
+          select state, policy_status from service_offerings where id = ${created.id}
+        `;
+        expect(persisted).toEqual([{ state: 'draft', policy_status: 'review_required' }]);
+        const publishedEvents = await composition.database.client`
+          select name from product_events where correlation_id = ${correlationId}
+          or (name = 'creator_published' and object_id = ${created.creatorId})
+        `;
+        expect(publishedEvents).toHaveLength(0);
+        const assets = await composition.database.client`
+          select offering_id from distribution_assets where offering_id = ${created.id}
+        `;
+        expect(assets).toHaveLength(0);
+        await processor.forceFlush();
+        const completion = messages
+          .map(
+            (line) =>
+              JSON.parse(line) as {
+                event: string;
+                context: { correlationId: string; trace_id: string; span_id: string };
+              },
+          )
+          .find(
+            (line) =>
+              line.event === 'api_request_completed' &&
+              line.context.correlationId === correlationId,
+          );
+        expect(completion).toBeDefined();
+        if (completion === undefined) throw new Error('Expected the rejected publish log.');
+        const publishSpan = exporter
+          .getFinishedSpans()
+          .find(
+            (span) =>
+              span.spanContext().traceId === completion.context.trace_id &&
+              span.spanContext().spanId === completion.context.span_id,
+          );
+        expect(publishSpan?.name).toBe('POST /api/v1/creator/offerings/:offeringId/publish');
+        expect(publishSpan?.attributes['http.response.status_code']).toBe(409);
+        const telemetry = JSON.stringify({
+          messages,
+          spans: exporter.getFinishedSpans().map((span) => ({
+            name: span.name,
+            attributes: span.attributes,
+            events: span.events,
+            status: span.status,
+          })),
+        });
+        for (const secret of [email, password, name, session.accessToken, session.refreshToken]) {
+          expect(JSON.stringify(publish.json())).not.toContain(secret);
           expect(telemetry).not.toContain(secret);
         }
       } finally {

@@ -123,6 +123,40 @@ describe('Operations identity domain contract', () => {
     expect('refreshToken' in credential).toBe(false);
   });
 
+  it('requires positive credential versions and consistent terminal metadata', () => {
+    expect(() =>
+      createOperationsCredentialMetadata({
+        id: createOperationsCredentialId('credential-zero'),
+        accountId: account().id,
+        kind: 'password',
+        status: 'active',
+        version: 0,
+        createdAt,
+      }),
+    ).toThrow('positive integer');
+    expect(() =>
+      createOperationsCredentialMetadata({
+        id: createOperationsCredentialId('credential-active-revoked-at'),
+        accountId: account().id,
+        kind: 'password',
+        status: 'active',
+        version: 1,
+        createdAt,
+        revokedAt: updatedAt,
+      }),
+    ).toThrow('cannot have revokedAt');
+    expect(() =>
+      createOperationsCredentialMetadata({
+        id: createOperationsCredentialId('credential-revoked'),
+        accountId: account().id,
+        kind: 'password',
+        status: 'revoked',
+        version: 1,
+        createdAt,
+      }),
+    ).toThrow('requires revokedAt');
+  });
+
   it('keeps principal and account status independent', () => {
     const human = principal();
     const invited = createOperationsAccount({

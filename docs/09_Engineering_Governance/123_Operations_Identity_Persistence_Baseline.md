@@ -2,19 +2,20 @@
 
 > **Task:** `PCI-ENG-015-B`
 > **Decision dependency:** `PCI-ENG-014_ARCHITECTURE = APPROVED`; `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
-> **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`
+> **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Effective date:** 2026-11-12
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
 
-This document records the accepted bounded persistence foundation for the Operations Human and Machine
-identity domain. Acceptance is limited to the three Principal/Account persistence categories and the
-recorded verification evidence. It is an implementation and evidence record. It does not create Founder approval
-for authentication, sessions, credentials, permissions, Admin API integration, external Pilot,
-production or real-money operation.
+This document records the accepted bounded persistence foundations for the Operations Human and Machine
+identity domain. PCI-ENG-015-B remains limited to the three Principal/Account persistence categories;
+PCI-ENG-016-B adds only the accepted Password Credential persistence boundary and its recorded evidence.
+It is an implementation and evidence record. It does not create Founder approval for authentication,
+sessions, password verification/reset, permissions, Admin API integration, external Pilot, production
+or real-money operation.
 
 ## 1. Persisted boundary
 
-Exactly three new tables are part of this unit:
+Exactly three new tables are part of the PCI-ENG-015-B Principal persistence unit:
 
 | Table                         | Stored contract                                                                                         | Key constraints                                                                                                                                                                       |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -43,10 +44,10 @@ Account uniqueness or foreign-key failure rolls the Principal back as well. The 
 entry point is `createPostgresOperationsIdentityComposition`; it is exposed from the existing
 Creator PostgreSQL composition without starting Operations authentication.
 
-The following remain outside this unit and are not implemented:
+The following remain outside the accepted persistence units and are not implemented:
 
 ```text
-OPERATIONS_CREDENTIAL_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_CREDENTIAL_PERSISTENCE = IMPLEMENTED / ACCEPTED (PCI-ENG-016-B)
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_MFA = NOT IMPLEMENTED
@@ -75,6 +76,45 @@ missing/both/null discriminator IDs, duplicate Provider/System IDs, concurrent P
 uniqueness and combined transaction rollback.
 Tests use real PostgreSQL; mocks, fixtures and simulations are not used as database acceptance
 evidence. The temporary containers and named volumes were removed after each round.
+
+## 3.1 PCI-ENG-016-B Credential persistence acceptance
+
+The accepted credential persistence ledger is:
+
+```text
+PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED
+PCI-ENG-016-B-R1 = ACCEPTED
+PCI-ENG-016-B-R2 = ACCEPTED
+```
+
+This bounded unit delivers Encoded Password Verifier persistence, an Operations Account Credential
+Repository, an account-scoped Credential Version sequence beginning at 1 and increasing strictly,
+atomic replacement using an Account row lock and expected version, revoked-history protection,
+PostgreSQL integrity constraints and triggers, Operations Persistence Composition integration, and
+Domain/PostgreSQL integration verification. Each Account has at most one active Password Credential.
+When all historical credentials are revoked, only the next historical version may be created. Revoked
+credentials cannot be reactivated, modified or deleted.
+
+The implementation does not generate or verify passwords, issue reset tokens, create Sessions, perform
+login/logout, add MFA/RBAC, or create an Admin BFF/API. The repository accepts only an already encoded
+verifier; the database stores it as `text` without selecting a password algorithm or PHC format.
+
+Final verification evidence:
+
+| Check | Result | Boundary |
+| --- | --- | --- |
+| Domain contract | 14/14 PASS | Credential metadata invariants and existing Operations identity contract only |
+| Credential + Operations Identity PostgreSQL | 19/19 PASS | Real PostgreSQL migration, constraints, triggers, concurrency and rollback |
+| Full Persistence | 108 PASS / 12 FAIL / 3 SKIPPED | The 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`; Full Persistence is not fully green |
+| Changed-file ESLint | PASS | New/changed implementation and test files |
+| TypeScript / build | PASS | Direct core and active backend checks plus production build |
+| Migration check | PASS | Schema/migration journal parity including 0037 |
+| Full lint | 458 errors | Parent comparison is not complete; this remains a repository-level limitation |
+
+The database has no independent Migration Role / Runtime Role. Compose uses the same `DATABASE_URL`
+connection for Migration and API services, and superuser or equivalent database administration can
+bypass ordinary trigger protection. Runtime Role / Migration Role separation must be separately approved
+and accepted before Operations Authentication Runtime is enabled.
 
 Implementation commits:
 

@@ -92,6 +92,7 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
 | `PCI-ENG-015-A` | `ACCEPTED` (bounded engineering delivery) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; final focused contract tests 13/13; production source typecheck and focused lint pass | Yes, only contract verification and review |
 | `PCI-ENG-015-B` | `ACCEPTED` (bounded engineering delivery) | Operations Human Principal, Account and Service Principal persistence foundation | Credentials, sessions, authentication, MFA, BFF, permissions, Actor migration, Admin API, Pilot, production and money | R2 final domain 13/13; PostgreSQL persistence 11/11 in each of two rounds; migration rerun journal 37/37; typecheck and focused lint pass | Yes, only the three persistence categories and their recorded evidence |
+| `PCI-ENG-016-B` / `R1` / `R2` | `ACCEPTED` (bounded engineering delivery) | Encoded Password Verifier persistence, Operations Account Credential Repository, account-scoped strict versioning, atomic replacement, revoked-history protection, PostgreSQL constraints/triggers, composition integration and Domain/PostgreSQL verification | Login, Session, password verification/reset, MFA, RBAC, BFF/Admin API, Creator Auth, Pilot, production and real money | Domain 14/14; Credential + Operations Identity PostgreSQL 19/19; full persistence 108 PASS / 12 FAIL / 3 SKIPPED; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`; changed-file ESLint, TypeScript, build and migration check pass; full lint remains 458 errors without parent comparison | Yes, only this accepted persistence boundary and evidence closure |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -281,6 +282,51 @@ tests, including association integrity, canonical login handling, explicit error
 concurrent uniqueness and rollback. The formal migration runner was run twice on each same database;
 the journal remained at 37 rows. This proves local persistence
 behavior only; it does not establish external Pilot, production or real-money authorization.
+
+### 5.7 PCI-ENG-016-B Operations Credential persistence foundation
+
+The following acceptance values are now authoritative for the bounded credential persistence unit:
+
+```text
+PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED
+PCI-ENG-016-B-R1 = ACCEPTED
+PCI-ENG-016-B-R2 = ACCEPTED
+```
+
+PCI-ENG-016-B delivers only Encoded Password Verifier persistence, the Operations Account Credential
+Repository, an account-scoped Credential Version sequence beginning at 1 and increasing strictly,
+atomic replacement using an Account row lock and expected version, revoked-history protection,
+PostgreSQL integrity constraints and triggers, Operations Persistence Composition integration, and
+Domain/PostgreSQL integration verification. Each Account has at most one active Password Credential;
+all-revoked history permits only the next historical version; revoked records cannot be reactivated,
+modified or deleted.
+
+Verification is recorded as Domain 14/14 PASS and Credential plus Operations Identity PostgreSQL
+19/19 PASS. Full Persistence remains 108 PASS, 12 FAIL and 3 SKIPPED. The same 12 failures reproduce
+on the source baseline and are classified `PROVEN PRE-EXISTING — SOURCE BASELINE`; this is not a claim
+that Full Persistence is fully green. Changed-file ESLint, TypeScript, build and migration checks pass;
+full repository lint remains 458 errors and has not received a parent comparison.
+
+The database has no independent Migration Role / Runtime Role. Compose uses the same `DATABASE_URL`
+connection for Migration and API services, and superuser or equivalent database administration can
+bypass ordinary trigger protection. Runtime Role / Migration Role separation must be separately approved
+and accepted before Operations Authentication Runtime is enabled.
+
+This acceptance does not authorize Operations login, Session creation, password reset, MFA, RBAC,
+Admin BFF or Admin API, Creator Auth changes, Pilot, Production or real-money behavior. The following
+control state remains unchanged:
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
 
 ## 6. Authority and Supersession Rules
 

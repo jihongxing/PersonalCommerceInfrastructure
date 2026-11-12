@@ -3,6 +3,7 @@ export { identities } from './identity.js';
 export {
   operationsHumanPrincipals,
   operationsAccounts,
+  operationsCredentials,
   servicePrincipals,
 } from './operations-identity.js';
 export { accountIdentityMemberships } from './account-identity-membership.js';

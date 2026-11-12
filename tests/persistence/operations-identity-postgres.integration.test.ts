@@ -33,6 +33,7 @@ import {
 } from '../../adapters/persistence/postgres/postgres-operations-identity-repositories.js';
 import { PostgresOperationsIdentityTransaction } from '../../adapters/persistence/postgres/postgres-operations-identity-transaction.js';
 import { createPostgresOperationsIdentityComposition } from '../../adapters/persistence/postgres/postgres-operations-identity-composition.js';
+import { PostgresOperationsCredentialRepository } from '../../adapters/persistence/postgres/postgres-operations-credential-repository.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeWithDatabase = databaseUrl === undefined ? describe.skip : describe;
@@ -56,8 +57,17 @@ describeWithDatabase('Operations Identity PostgreSQL persistence', () => {
 
   beforeEach(async () => {
     await connection.database.execute(
-      sql`truncate table operations_accounts, service_principals, operations_human_principals`,
+      sql`ALTER TABLE operations_credentials DISABLE TRIGGER operations_credentials_reject_truncate_trigger`,
     );
+    try {
+      await connection.database.execute(
+        sql`TRUNCATE TABLE operations_credentials, operations_accounts, service_principals, operations_human_principals`,
+      );
+    } finally {
+      await connection.database.execute(
+        sql`ALTER TABLE operations_credentials ENABLE TRIGGER operations_credentials_reject_truncate_trigger`,
+      );
+    }
   });
 
   afterAll(async () => {
@@ -115,6 +125,7 @@ describeWithDatabase('Operations Identity PostgreSQL persistence', () => {
       PostgresOperationsHumanPrincipalRepository,
     );
     expect(composition.accountRepository).toBeInstanceOf(PostgresOperationsAccountRepository);
+    expect(composition.credentialRepository).toBeInstanceOf(PostgresOperationsCredentialRepository);
     expect(composition.servicePrincipalRepository).toBeInstanceOf(
       PostgresServicePrincipalRepository,
     );

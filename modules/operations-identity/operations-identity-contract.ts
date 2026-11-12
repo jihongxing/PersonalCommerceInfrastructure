@@ -488,10 +488,13 @@ export function assertOperationsCredentialMetadata(value: OperationsCredentialMe
     throw new OperationsDomainInvariantError('Operations Credential kind must be password.');
   }
   assertStatus(value.status, operationsCredentialStatuses, 'Operations Credential status');
-  assertNonNegativeInteger(value.version, 'Operations Credential version');
+  assertPositiveInteger(value.version, 'Operations Credential version');
   assertDate(value.createdAt, 'Operations Credential creation date');
   if (value.revokedAt !== undefined)
     assertDate(value.revokedAt, 'Operations Credential revoke date');
+  if (value.status === 'active' && value.revokedAt !== undefined) {
+    throw new OperationsDomainInvariantError('Active Operations Credential cannot have revokedAt.');
+  }
   if (value.status === 'revoked' && value.revokedAt === undefined) {
     throw new OperationsDomainInvariantError('Revoked Operations Credential requires revokedAt.');
   }
@@ -715,6 +718,12 @@ function assertDateOrder(first: Date, second: Date, label: string): void {
 function assertNonNegativeInteger(value: number, label: string): void {
   if (!Number.isInteger(value) || value < 0) {
     throw new OperationsDomainInvariantError(`${label} must be a non-negative integer.`);
+  }
+}
+
+function assertPositiveInteger(value: number, label: string): void {
+  if (!Number.isInteger(value) || value < 1) {
+    throw new OperationsDomainInvariantError(`${label} must be a positive integer.`);
   }
 }
 

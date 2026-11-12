@@ -1,5 +1,15 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, pgTable, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
+import {
+  check,
+  integer,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uniqueIndex,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const operationsHumanPrincipals = pgTable(
   'operations_human_principals',
@@ -51,6 +61,50 @@ export const operationsAccounts = pgTable(
   ],
 );
 
+export const operationsCredentials = pgTable(
+  'operations_credentials',
+  {
+    credentialId: varchar('credential_id', { length: 128 }).primaryKey(),
+    accountId: varchar('account_id', { length: 128 })
+      .notNull()
+      .references(() => operationsAccounts.accountId, { onDelete: 'restrict' }),
+    kind: varchar('kind', { length: 32 }).notNull().default('password'),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    verifier: text('verifier').notNull(),
+    version: integer('version').notNull(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    revokedAt: timestamp('revoked_at', { mode: 'string', withTimezone: true }),
+  },
+  (table) => [
+    unique('operations_credentials_account_kind_version_unique').on(
+      table.accountId,
+      table.kind,
+      table.version,
+    ),
+    uniqueIndex('operations_credentials_active_account_unique')
+      .on(table.accountId)
+      .where(sql`${table.kind} = 'password' and ${table.status} = 'active'`),
+    index('operations_credentials_account_id_idx').on(table.accountId),
+    check('operations_credentials_kind_check', sql`${table.kind} = 'password'`),
+    check('operations_credentials_status_check', sql`${table.status} in ('active', 'revoked')`),
+    check(
+      'operations_credentials_verifier_check',
+      sql`length(regexp_replace(${table.verifier}, '[[:space:]]', '', 'g')) > 0`,
+    ),
+    check('operations_credentials_version_check', sql`${table.version} >= 1`),
+    check(
+      'operations_credentials_lifecycle_check',
+      sql`(${table.status} = 'active' and ${table.revokedAt} is null)
+        or (${table.status} = 'revoked' and ${table.revokedAt} is not null)`,
+    ),
+  ],
+);
+
 export const servicePrincipals = pgTable(
   'service_principals',
   {
@@ -83,4 +137,5 @@ export const servicePrincipals = pgTable(
 
 export type OperationsHumanPrincipalRow = typeof operationsHumanPrincipals.$inferSelect;
 export type OperationsAccountRow = typeof operationsAccounts.$inferSelect;
+export type OperationsCredentialRow = typeof operationsCredentials.$inferSelect;
 export type ServicePrincipalRow = typeof servicePrincipals.$inferSelect;

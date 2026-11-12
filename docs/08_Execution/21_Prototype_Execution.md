@@ -9179,3 +9179,50 @@ Each round passed 24 total focused tests (13 domain and 11 PostgreSQL), and each
 was stopped and removed. Existing Podman resources were not modified. Acceptance covers only the three
 Principal/Account persistence categories; it does not authorize authentication, sessions, credentials,
 MFA, permissions, Admin API, Pilot, production or real-money behavior.
+
+## PCI-ENG-016-B / Credential Persistence Foundation Acceptance
+
+> Date: 2026-11-13. Status: `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`.
+> `PCI-ENG-016-B-R1 = ACCEPTED`; `PCI-ENG-016-B-R2 = ACCEPTED`. Authorization remains limited to
+> the bounded Credential Persistence Foundation.
+
+The accepted delivery consists only of Encoded Password Verifier persistence, the Operations Account
+Credential Repository, an account-scoped Credential Version sequence beginning at 1 and increasing
+strictly, atomic replacement using an Account row lock and expected version, revoked-history protection,
+PostgreSQL integrity constraints and triggers, Operations Persistence Composition integration, and
+Domain/PostgreSQL integration verification. Each Account has at most one active Password Credential;
+after all history is revoked, only the next historical version may be created. Revoked history cannot
+be reactivated, modified or deleted.
+
+Final evidence records Domain `14/14 PASS` and Credential plus Operations Identity PostgreSQL `19/19
+PASS`. Full Persistence remains `108 PASS`, `12 FAIL`, `3 SKIPPED`; the same 12 failures reproduce on
+the source baseline and are classified `PROVEN PRE-EXISTING — SOURCE BASELINE`. The parent test used
+the same existing dependency tree; independent offline dependency reconstruction was not completed.
+Changed-file ESLint, TypeScript, build and migration checks pass. Full lint remains `458 errors` and
+has not received a parent comparison.
+
+The repository/database boundary does not implement password generation or verification, reset tokens,
+login/logout, Sessions, MFA, RBAC or Admin API/BFF behavior. There is no independent Migration Role /
+Runtime Role; Compose uses the same `DATABASE_URL` for Migration and API services, and superuser or
+equivalent database administration can bypass ordinary trigger protection. Runtime Role / Migration
+Role separation requires a separate approval and acceptance before Operations Authentication Runtime is
+enabled.
+
+The project control state remains unchanged:
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+Credential Persistence acceptance does not authorize Operations login, Session creation, password
+reset, MFA, RBAC, Admin BFF/Admin API, Creator Auth changes, Pilot, Production or real-money behavior.
+This section preserves the earlier 015-B and 015-B-R2 entries as historical records and records the
+accepted 016-B ledger closure separately.

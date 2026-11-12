@@ -2,7 +2,7 @@
 
 > **Decision:** `PCI-ENG-014_ARCHITECTURE = APPROVED`
 > **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
-> **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`
+> **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Effective date:** 2026-11-12
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
 
@@ -99,7 +99,8 @@ Credential and secret material are deliberately excluded from every domain entit
   through a type cast supported by the contract.
 
 Database uniqueness, foreign keys and persistence constraints are implemented only for the bounded
-PCI-ENG-015-B Principal persistence unit; they do not authorize authentication or runtime use.
+PCI-ENG-015-B Principal and PCI-ENG-016-B Credential persistence units; they do not authorize
+authentication or runtime use.
 
 ## 5. Verification evidence
 
@@ -116,7 +117,7 @@ Verification of the accepted domain contract on the R2 closure branch:
 
 | Check                           | Result                              | What it proves                                        | What it does not prove                          |
 | ------------------------------- | ----------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
-| Focused Vitest                  | PASS, 13/13                         | Pure contract behavior, including login canonicalization | Persistence or runtime auth                     |
+| Focused Vitest                  | PASS, 14/14                         | Pure contract behavior, including credential metadata and login canonicalization | Persistence or runtime auth                     |
 | `tsconfig.build.json` typecheck | PASS                                | Production source compiles                            | Test aggregate health                           |
 | Focused ESLint                  | PASS                                | New files meet lint rules                             | Full repository lint                            |
 | `git diff --check`              | PASS                                | No whitespace errors                                  | Product acceptance                              |
@@ -124,6 +125,20 @@ Verification of the accepted domain contract on the R2 closure branch:
 
 The aggregate test typecheck failures include existing `apps/web-v2` path resolution, legacy auth
 utility and unused-symbol diagnostics. They are not changed by this unit and are not claimed closed.
+
+## 5.1 Accepted credential persistence follow-on
+
+PCI-ENG-016-B, PCI-ENG-016-B-R1 and PCI-ENG-016-B-R2 are accepted bounded persistence units. They add
+only Encoded Password Verifier persistence, the Operations Account Credential Repository, strict
+account-scoped Credential Version sequencing, atomic replacement with Account row locking and expected
+version checks, revoked-history protection, PostgreSQL constraints/triggers, composition integration,
+and Domain/PostgreSQL verification. Domain verification is 14/14 PASS and the Credential plus
+Operations Identity PostgreSQL verification is 19/19 PASS.
+
+This acceptance does not authorize password generation or verification, login/logout, password reset,
+Session creation, MFA, RBAC, Admin BFF/API, Creator Auth changes, Pilot, Production or real-money use.
+The 108 PASS / 12 FAIL / 3 SKIPPED Full Persistence result remains recorded as a repository regression
+result; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`.
 
 ## 6. Not implemented by this unit
 
@@ -141,10 +156,10 @@ OPERATIONS_PROVIDER_SYSTEM_RUNTIME_MIGRATION = NOT IMPLEMENTED
 OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 ```
 
-No Credential, Session, MFA factor, Role or Permission was created or assigned. PCI-ENG-015-B adds
-only the three Principal persistence tables, repositories and disposable PostgreSQL verification
-described in the persistence baseline. No Cookie, BFF, MFA, CSRF, mTLS, API route, Actor runtime,
-Webhook, Catalog, Commercial Pilot, Paid Commerce or Admin Web behavior was changed.
+PCI-ENG-016-B adds only bounded Credential persistence; no Session, MFA factor, Role or Permission
+was created or assigned. No Cookie, BFF, MFA, CSRF, mTLS, API route, Actor runtime, Webhook, Catalog,
+Commercial Pilot, Paid Commerce or Admin Web behavior was changed. Credential persistence acceptance
+does not authorize Operations Authentication Runtime.
 
 ## 7. Dependencies and remaining decisions
 

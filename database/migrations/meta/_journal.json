@@ -260,6 +260,13 @@
       "when": 1794477491886,
       "tag": "0036_operations_principal_persistence",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794500821357,
+      "tag": "0037_operations_credential_persistence",
+      "breakpoints": true
     }
   ]
 }

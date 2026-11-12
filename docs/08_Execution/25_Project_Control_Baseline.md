@@ -494,6 +494,40 @@ document changes and commits them together. Retained commands/results and proven
 CONTROLLED_RECOVERY, incomplete Resume Gate, frozen VS-01, bounded Stage 2 only, no full Stage 2,
 Stage 3, external Pilot or production, and `REAL_MONEY_ENABLED = false`.
 
+### 5.11 PCI-ENG-017-C1 lifecycle contracts, awaiting review
+
+Authority: Main Controller's PCI-ENG-017-C1 instruction accepts C0 and approves bounded Domain and
+Application contract implementation. C1 is implemented, not self-accepted. C2/C3 remain unauthorized.
+
+```text
+PCI-ENG-017-C0 = ACCEPTED
+PCI-ENG-017-C1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+The contracts require expected status/Epoch CAS for Human Principal and Account lifecycle changes,
+Principal-wide security generation binding, no old Session revival after recovery, atomic terminal
+entry/invalidation, and atomic Credential version+1 with old-version Session revocation. Existing
+Session signatures and strict CAS/no-grace/absolute-expiry rules remain unchanged. Service Principal
+is separate; no Human Session model is applied to Service.
+
+First activation's Epoch rule, durable activation-history evidence, active-to-initial regression and
+distinct non-active transitions are explicitly PENDING_FOUNDER_DECISION and fail closed. These are
+not inferred from permissive old setters. Complete matrices and security/audit effects are in Domain
+Baseline 5.5; atomic/lock/error/verification obligations are in Persistence Baseline 3.5.
+
+C1 tests prove pure contract outcomes, including fourteen ordered race scenarios; they do not prove
+database concurrency, physical lock order, transaction rollback, Runtime Role permissions or HTTP
+authentication. Existing adapters/Composition, Migrations, Schema and roles are unchanged. The
+017-B accepted terminal UPDATE/DELETE behavior and historical evidence remain intact. No new
+product behavior, canonical product event or DEV deviation is introduced by a pure contract unit.
+
+All Section 2 governance values remain unchanged. No Authentication Runtime, password Hash/Verify,
+Session credential issuance, Cookie/BFF, MFA/RBAC, Bootstrap, permission grant, Creator Auth, Pilot,
+production or real-money authorization follows.
+
 ## 6. Authority and Supersession Rules
 
 The following authority hierarchy applies by scope, not by file modification time:

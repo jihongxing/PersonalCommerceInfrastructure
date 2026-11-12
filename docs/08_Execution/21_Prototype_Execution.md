@@ -9710,3 +9710,94 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-017-C1 / Operations Identity Lifecycle and Security Epoch Contract
+
+> Date: 2026-11-13. Authority: Main Controller's explicit PCI-ENG-017-C1 instruction.
+> C0 is accepted. C1 is a bounded Domain/Application contract unit, awaiting independent review.
+> No PostgreSQL lifecycle implementation, runtime implementation or product authorization is granted.
+
+```text
+PCI-ENG-017-C0 = ACCEPTED
+PCI-ENG-017-C1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+Preflight: branch `codex/pci-eng-015-b-r2-persistence-closure`, HEAD
+`79bceb0cbb1bb4a39b18c56548611009847b4c28`, parent
+`ae8356057edc877bad17b4250c7b93a2d27374e1`; staged, unstaged and untracked lists all empty.
+
+Four new engineering files reuse existing entity and Port types:
+
+- `modules/operations-identity/operations-identity-lifecycle-contract.ts`: pure Principal/Account
+  transition plans, expected-status/Epoch CAS, bounded counters, terminal and pending-policy failures.
+- `modules/operations-identity/operations-identity-lifecycle-contract.test.ts`: 63 Domain cases,
+  including complete 25+25 transition matrices, activation history, terminal and counter limits.
+- `applications/operations-identity/operations-identity-lifecycle-transactions.ts`: atomic lifecycle
+  Port, audit context, Credential replacement intent, pure Session eligibility/Touch/Rotation/Revoke
+  contracts, declared-lock-order validation and typed failure classification. No Adapter is wired.
+- `modules/operations-identity/operations-identity-lifecycle-transactions.test.ts`: 25 Application
+  contract cases, including all fourteen requested ordered race outcomes and existing Port errors.
+
+Only four authoritative documents are updated: this append-only ledger, Project Control Baseline
+5.11, Domain Baseline 5.5 and Persistence Baseline 3.5. Historical execution/acceptance entries remain
+unchanged. These sections distinguish frozen safety requirements, C1 contracts, Founder policy gaps
+and unimplemented persistence. No existing Domain entity, Session Port, Adapter or Migration changes.
+
+Contracts consume the owning Principal Epoch on approved active departure, proven recovery and
+terminal entry. Terminal effects include scoped Session and active Password Credential revocation
+in the same transaction. Credential replacement consumes version+1 and revokes old-version Sessions
+without an Epoch bump. Same-state nonterminal requests require current expectations and do nothing;
+terminal no-op always rejects. Commands cannot supply activation-history approval. First activation,
+unknown activation history, active-to-initial regression and distinct non-active transitions remain
+PENDING_FOUNDER_DECISION and return no executable plan. Privileged inactive-parent password recovery
+is not authorized. Audit outcomes are technical facts, not new canonical product events.
+
+Fourteen scenario contracts: Principal disable vs Create/Validate/Rotation/recovery; Account disable
+vs Create; Account recovery vs old Validate; Credential replacement vs Create/Rotation; Revoke vs
+Touch; same expected Epoch updates; terminal vs recovery/Create; Epoch change during Create; Account
+vs Principal state changes. Tests use ordered authoritative snapshots and explicit expected outcomes,
+not fake locks, a persistence simulator or a claim about actual PostgreSQL schedules.
+
+Two-axis code review found no hard Standards violation; its branded-version improvement is applied.
+The Spec review found a Rotation Digest mismatch classified as authentication failure; this is
+corrected to the accepted credential_digest CAS conflict with a matching-Version regression case.
+Both refinements affect only the new contracts/tests, not accepted adapters or existing Port signatures.
+
+Final bounded verification: 116/116 PASS = new Domain 63 + new Application 25 + unchanged Domain 21
+and unchanged Session Port 7. Production TypeScript, Active Backend Test TypeScript, changed-file ESLint,
+Prettier and `tsconfig.build.json` Build exit 0. Full repository lint and database/persistence suites
+are not rerun. Historical 017-B PostgreSQL results remain historical; C1 claims no new DB evidence.
+
+Exact command arrays, UTC times, exit codes, stdout logs and `unit-results.json` are retained under
+`E:/Users/jihx/.codex/visualizations/2026/11/11/01a1cb52-385b-70f0-95cf-11c189dd0a9d/pci-eng-017-c1-20261113`.
+Tools execute via existing `node node_modules/...` entry points because local `.bin` wrappers are
+absent. An offline frozen-lockfile/ignore-scripts restore could not complete because the cache lacks
+`@axe-core/playwright` 4.14.0; no package manifest or lockfile changes. Verification uses the existing
+dependency tree, not an independently reconstructed install: Node 22.23.2, Vitest 4.1.10, TypeScript
+5.9.3, ESLint 9.39.5 and Prettier 3.9.6. Initial missing-module tracer attempts are development
+failures, not acceptance results.
+
+C2/C3 require separate authorization. C2 must implement the documented P -> A -> C -> S boundary,
+durable history/audit source, whole-operation rollback, CAS/idempotency and terminal+Epoch ordering.
+C3 must verify actual PostgreSQL interleavings, SQL bypass limits, migration behavior and privileges.
+Migration/Runtime Roles remain unseparated; no database management or role operations occur in C1.
+No Session credential issuance, Password Hash/Verify, login/logout, HTTP middleware, Cookie, BFF,
+MFA/RBAC, Bootstrap, permissions, Service Authentication, Creator Auth or production behavior changes.
+No DEV deviation is introduced because this unit adds contracts without runtime product changes.
+The bounded files are committed together; the completion report supplies Commit/Parent and final
+clean-worktree evidence. No Push or deployment.
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

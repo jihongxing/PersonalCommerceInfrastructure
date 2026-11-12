@@ -147,6 +147,12 @@ describeWithDatabase('Operations Identity PostgreSQL persistence', () => {
     ).rejects.toMatchObject({ cause: { code: '23514' } });
     await expect(
       connection.database.execute(
+        sql`insert into operations_accounts (account_id, principal_id, login_identifier_normalized, status, created_at, updated_at)
+            values ('account-invalid-status', 'principal-constraints', 'invalid-status@example.test', 'invalid', now(), now())`,
+      ),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+    await expect(
+      connection.database.execute(
         sql`delete from operations_human_principals where principal_id = 'principal-constraints'`,
       ),
     ).rejects.toMatchObject({ cause: { code: '23503' } });
@@ -211,6 +217,12 @@ describeWithDatabase('Operations Identity PostgreSQL persistence', () => {
       connection.database.execute(
         sql`insert into service_principals (service_principal_id, kind, provider_id, system_id, status, created_at)
             values ('service-invalid-status', 'platform_system', null, 'system-invalid', 'invalid', now())`,
+      ),
+    ).rejects.toMatchObject({ cause: { code: '23514' } });
+    await expect(
+      connection.database.execute(
+        sql`insert into service_principals (service_principal_id, kind, provider_id, system_id, status, created_at)
+            values ('service-invalid-platform', 'platform_system', 'provider-invalid', null, 'active', now())`,
       ),
     ).rejects.toMatchObject({ cause: { code: '23514' } });
   });

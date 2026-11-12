@@ -68,7 +68,10 @@ import {
 } from '../../../applications/customer-request/customer-request-service.js';
 import { createSupabaseAuthContextProvider } from '../../auth/supabase/supabase-auth-context-provider.js';
 import { InMemoryCreatorActorResolver } from '../../auth/testing/creator-actor-resolver.js';
-import { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
+import {
+  LocalAuthService,
+  type PasswordResetDelivery,
+} from '../../../applications/account-identity-membership/local-auth-service.js';
 import { createInitialCommerceIdentity } from '../../../modules/creator-commerce-identity/commerce-identity.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
 import { createAuthContextProvider } from '../../../applications/core/ports/auth-context-provider.js';
@@ -144,6 +147,10 @@ import {
   type ServicePolicyAdminService,
 } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
+import {
+  createPostgresOperationsIdentityComposition,
+  type PostgresOperationsIdentityComposition,
+} from './postgres-operations-identity-composition.js';
 
 export interface CreatorIdentityDatabaseConfiguration {
   readonly databaseUrl: string;
@@ -196,6 +203,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly database: PostgresDatabaseConnection;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
+  readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
 }
 
 export function createPostgresCreatorIdentityComposition(
@@ -204,7 +212,7 @@ export function createPostgresCreatorIdentityComposition(
     | CreatorIdentityAuthConfiguration
     | {
         readonly localAuthSecret: string;
-        readonly passwordResetDelivery?: import('../../../applications/account-identity-membership/local-auth-service.js').PasswordResetDelivery;
+        readonly passwordResetDelivery?: PasswordResetDelivery;
       },
   publicOrigin: string,
   notificationPort: NotificationPort,
@@ -217,6 +225,9 @@ export function createPostgresCreatorIdentityComposition(
   logger?: SafeLogger,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
+  const operationsIdentityPersistence = createPostgresOperationsIdentityComposition(
+    database.database,
+  );
   const accountIdentityMembershipRepository = new PostgresAccountIdentityMembershipRepository(
     database.database,
   );
@@ -552,5 +563,6 @@ export function createPostgresCreatorIdentityComposition(
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),
+    operationsIdentityPersistence,
   };
 }

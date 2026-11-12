@@ -9162,9 +9162,9 @@ Pilot, production or real-money behavior.
 
 Two independent fresh `postgres:17-alpine` containers (digest
 `sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193`) used loopback dynamic
-ports `40777` and `39447`, tmpfs database storage, and PostgreSQL `17.10`. The final verification
-container IDs were `6f78b8fb853ae1dc8e1a0d2ef516a92347c9e73eee5b6d475acac540093e9de5` and
-`b09a500e3c7d7c8ad8e46cac77a2045f2bebf3a140d6932b2d74617a0424d817`. Each formal `pnpm db:migrate`
+ports `40489` and `41169`, tmpfs database storage, and PostgreSQL `17.10`. The final verification
+container IDs were `7d0373bbc847e5eac8e2ebf6d277dfab3fb907afa975fd39a50cd7e817fc20b1` and
+`0a538e6cf924328e11faf069e8e605820df2ddce935540186213b911bdb6b562`. Each formal `pnpm db:migrate`
 run exited 0; rerunning on the same database exited 0 with the migration journal unchanged at 37 rows.
 Each round passed 24 total focused tests (13 domain and 11 PostgreSQL), and each task-created container
 was stopped and removed. Existing Podman resources were not modified. The persistence status remains

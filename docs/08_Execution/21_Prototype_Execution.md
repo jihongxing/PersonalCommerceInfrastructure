@@ -9144,6 +9144,6 @@ rounds installed the complete migration history and ran 5/5 persistence tests ea
 rehydration, duplicate and concurrent uniqueness, missing foreign keys, invalid statuses, discriminator
 checks, restricted deletion and transaction rollback. Temporary containers and volumes were removed.
 
-Schema commit: `c5c4349`. Repository/test commit: `3da7213`. Documentation synchronization is a
-separate commit. Project control mode, incomplete Resume Gate, bounded Stage 2 boundary,
+Schema commit: `c5c4349`. Repository commit: `3da7213`. Constraint coverage commit: `60f32e6`.
+Documentation synchronization is separate. Project control mode, incomplete Resume Gate, bounded Stage 2 boundary,
 Pilot/production prohibition and `REAL_MONEY_ENABLED=false` remain unchanged.

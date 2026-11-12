@@ -74,6 +74,7 @@ Implementation commits:
 
 - `c5c4349` — `feat: add operations principal persistence schema (PCI-ENG-015-B)`
 - `3da7213` — `feat: persist operations principal identities (PCI-ENG-015-B)`
+- `60f32e6` — `test: complete operations persistence constraint coverage (PCI-ENG-015-B)`
 
 ## 4. Control interpretation
 

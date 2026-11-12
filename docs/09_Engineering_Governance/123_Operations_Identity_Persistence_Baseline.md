@@ -80,6 +80,9 @@ Implementation commits:
 - `c5c4349` — `feat: add operations principal persistence schema (PCI-ENG-015-B)`
 - `3da7213` — `feat: persist operations principal identities (PCI-ENG-015-B)`
 - `60f32e6` — `test: complete operations persistence constraint coverage (PCI-ENG-015-B)`
+- `4bf113b` — R2 domain/repository integrity fixes
+- `591e038` — R2 PostgreSQL constraint and verification coverage
+- `b700ca6` — R2 formal PostgreSQL persistence composition
 
 ## 4. Control interpretation
 

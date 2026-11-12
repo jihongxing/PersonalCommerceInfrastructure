@@ -112,7 +112,7 @@ Human Session ownership and expiry, MFA metadata, Provider/System separation, Se
 ownership and all four execution attribution forms. `@ts-expect-error` assertions cover incompatible
 Human, Account and Service IDs and the absence of Human Account fields on Provider principals.
 
-Verification on the PCI-ENG-015-A branch:
+Verification of the accepted domain contract on the R2 closure branch:
 
 | Check                           | Result                              | What it proves                                        | What it does not prove                          |
 | ------------------------------- | ----------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |

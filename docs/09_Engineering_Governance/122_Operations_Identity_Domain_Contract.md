@@ -6,7 +6,8 @@
 > **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Effective date:** 2026-11-12
 > **Session persistence follow-on:** `PCI-ENG-016-C2 = ACCEPTED`; `PCI-ENG-016-C2-E2 = ACCEPTED`
-> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C2-E2
+> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-017-B-E2
+> **Terminal integrity acceptance:** `PCI-ENG-017-B = ACCEPTED`; `PCI-ENG-017-B-E2 = ACCEPTED` (UPDATE/DELETE only)
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
 
 This document adopts the final PCI-ENG-014 Operations identity architecture and records the first
@@ -254,6 +255,49 @@ C2 excludes login, Session Credential issuance/verification Runtime, Cookie and 
 acceptance is not production security certification. Unfrozen Founder Session policies in Section 5.2
 remain unresolved; technical and evidence details are recorded in the Persistence Baseline, Section 3.3.
 
+## 5.4 Accepted terminal identity integrity closure
+
+Authority: Main Controller's explicit PCI-ENG-017-B-E2 instruction, dated 2026-11-13. It accepts
+the existing 017-B delivery and authorizes documentation/Git closure only; E2 changes no Domain,
+Repository, Schema, Migration or test logic and reruns no Migration or PostgreSQL tests.
+
+```text
+PCI-ENG-017-A = ACCEPTED_READ_ONLY_ASSESSMENT
+PCI-ENG-017-B = ACCEPTED
+PCI-ENG-017-B-E2 = ACCEPTED
+OPERATIONS_TERMINAL_STATE_UPDATE_PROTECTION = ACCEPTED
+OPERATIONS_TERMINAL_STATE_DELETE_PROTECTION = ACCEPTED
+```
+
+The irreversible terminal states are Human Principal `tombstoned`, Operations Account `revoked`
+and Service Principal `revoked`, covering both Provider and Platform System. After terminal entry,
+every field/status UPDATE, including no-op updates and intermediate-state reactivation, is rejected;
+terminal rows cannot be deleted. The transition into terminal itself remains allowed. Nonterminal
+Principal/Service suspended or disabled and Account locked or disabled recovery remains unchanged.
+
+The existing Domain entity shapes and enums are unchanged. Repository status setters read current
+state under a row lock in the same update transaction; Migration 0039 independently protects ordinary
+SQL UPDATE/DELETE. Drizzle Snapshot v7 does not encode these triggers; the versioned SQL and actual
+PostgreSQL verification are their evidence. No Credential or Session lifecycle contract is expanded.
+
+Retained accepted verification: focused and Operations regressions 107/107 PASS; full Persistence
+168 PASS / 12 FAIL / 3 SKIPPED. The same 12 failed names/files/error summaries match accepted
+source-baseline evidence, with no new failures or prior test-status changes. Classification remains
+`PROVEN PRE-EXISTING — SOURCE BASELINE`; the prior source proof shared dependencies without an
+independent rebuild. Production TypeScript, Active Backend Test TypeScript, changed-file ESLint,
+Prettier, Build and Migration Check PASS. Migration 0039 upgrade, rerun and empty install PASS.
+These are retained 017-B results, not new E2 execution or a fully green Persistence claim.
+
+Limits remain explicit: Service Principal TRUNCATE succeeded in the test environment because these
+guards cover only UPDATE/DELETE. Principal/Account TRUNCATE is blocked by foreign keys and existing
+child-table guards, not its own independent TRUNCATE triggers. Migration/Runtime Roles are not
+separated and database administration can bypass triggers. Prior illegal historical restoration has
+not been audited. This unit implements no Security Epoch/Session state linkage, Authentication
+Runtime, Password Hash/Verify, login, Bootstrap, MFA, RBAC or BFF. Full lint is not newly verified.
+No identity creation, permission grant, Pilot, production or real-money authority follows. Section 8
+control values remain unchanged. Detailed provenance is in the Persistence Baseline, Section 3.4,
+and the original 017-B execution ledger followed by its separate E2 acceptance entry.
+
 ## 6. Current implementation and excluded runtime
 
 The current Operations implementation values are:
@@ -262,6 +306,8 @@ The current Operations implementation values are:
 OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
 OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTED
 SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
+OPERATIONS_TERMINAL_STATE_UPDATE_PROTECTION = ACCEPTED
+OPERATIONS_TERMINAL_STATE_DELETE_PROTECTION = ACCEPTED
 OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
 OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
 OPERATIONS_SESSION_PERSISTENCE = ACCEPTED

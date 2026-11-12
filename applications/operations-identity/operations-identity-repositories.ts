@@ -86,7 +86,7 @@ export class OperationsTerminalStatusTransitionError extends Error {
     public readonly id: string,
     public readonly status: 'tombstoned' | 'revoked',
   ) {
-    super(`Terminal ${entity} ${id} cannot transition from ${status} to active.`);
+    super(`Terminal ${entity} ${id} cannot be modified from ${status}.`);
     this.name = 'OperationsTerminalStatusTransitionError';
   }
 }
@@ -94,6 +94,7 @@ export class OperationsTerminalStatusTransitionError extends Error {
 export interface OperationsHumanPrincipalRepository {
   create(principal: OperationsHumanPrincipal): Promise<void>;
   findById(principalId: OperationsHumanPrincipalId): Promise<OperationsHumanPrincipal | undefined>;
+  /** Reject every update once the current Principal is tombstoned, including no-op updates. */
   updateStatus(
     principalId: OperationsHumanPrincipalId,
     status: OperationsHumanPrincipalStatus,
@@ -110,6 +111,7 @@ export interface OperationsAccountRepository {
   findByNormalizedLoginIdentifier(
     loginIdentifierNormalized: string,
   ): Promise<OperationsAccount | undefined>;
+  /** Reject every update once the current Account is revoked, including no-op updates. */
   updateStatus(
     accountId: OperationsAccountId,
     status: OperationsAccountStatus,
@@ -123,6 +125,7 @@ export interface ServicePrincipalRepository {
   findById(principalId: ServicePrincipalId): Promise<ServicePrincipal | undefined>;
   findByProviderId(providerId: ProviderId): Promise<ProviderServicePrincipal | undefined>;
   findBySystemId(systemId: PlatformSystemId): Promise<PlatformSystemPrincipal | undefined>;
+  /** Reject every update once the current Service Principal is revoked, including no-op updates. */
   updateStatus(principalId: ServicePrincipalId, status: ServicePrincipalStatus): Promise<void>;
 }
 

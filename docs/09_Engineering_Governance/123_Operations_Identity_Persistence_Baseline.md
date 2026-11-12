@@ -5,7 +5,8 @@
 > **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Session acceptance:** `PCI-ENG-016-C0 = ACCEPTED`; `PCI-ENG-016-C1 = ACCEPTED`; `PCI-ENG-016-C1-E2 = ACCEPTED`; `PCI-ENG-016-C2 = ACCEPTED`; `PCI-ENG-016-C2-E2 = ACCEPTED`
 > **Effective date:** 2026-11-12
-> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C2-E2
+> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-017-B-E2
+> **Terminal integrity acceptance:** `PCI-ENG-017-B = ACCEPTED`; `PCI-ENG-017-B-E2 = ACCEPTED` (UPDATE/DELETE only)
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
 
 This document records the accepted bounded persistence foundations for the Operations Human and Machine
@@ -51,6 +52,8 @@ Current capability states distinguish accepted persistence/contracts from unimpl
 
 ```text
 OPERATIONS_CREDENTIAL_PERSISTENCE = IMPLEMENTED / ACCEPTED (PCI-ENG-016-B)
+OPERATIONS_TERMINAL_STATE_UPDATE_PROTECTION = ACCEPTED
+OPERATIONS_TERMINAL_STATE_DELETE_PROTECTION = ACCEPTED
 OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
 OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
 OPERATIONS_SESSION_PERSISTENCE = ACCEPTED
@@ -255,6 +258,71 @@ PostgreSQL acceptance is not production security certification. Session timeout/
 limits, device management, Touch/Rotation policy, Cookie/CSRF, retention and MFA policy remain unfrozen.
 No Authentication Runtime, MFA/RBAC, Admin API, Creator Auth, first real Principal/Account, permission
 grant, deployment, Pilot, production or real-money authorization is added.
+
+## 3.4 PCI-ENG-017-B terminal UPDATE/DELETE acceptance and E2 closure
+
+Authority: Main Controller's explicit PCI-ENG-017-B-E2 instruction, dated 2026-11-13. The accepted
+implementation baseline is `ae8356057edc877bad17b4250c7b93a2d27374e1`. E2 synchronizes four governance
+documents and commits the seven accepted engineering files unchanged; it runs no Migration or
+PostgreSQL tests, changes no runtime logic and does not Push. Earlier verification counts retain
+their historical context.
+
+```text
+PCI-ENG-017-A = ACCEPTED_READ_ONLY_ASSESSMENT
+PCI-ENG-017-B = ACCEPTED
+PCI-ENG-017-B-E2 = ACCEPTED
+OPERATIONS_TERMINAL_STATE_UPDATE_PROTECTION = ACCEPTED
+OPERATIONS_TERMINAL_STATE_DELETE_PROTECTION = ACCEPTED
+```
+
+Human Principal `tombstoned`, Operations Account `revoked` and Service Principal `revoked` are
+irreversible. Every subsequent field/status UPDATE, no-op write and intermediate-state reactivation
+is rejected; terminal rows cannot be deleted. The update entering terminal remains allowed. Existing
+nonterminal suspended/disabled Principal or Service recovery and locked/disabled Account recovery
+are preserved. All three Repository status setters lock/read the current state in their update
+transaction and return the existing typed terminal error. Transaction-scope repositories share them.
+
+Migration `0039_operations_identity_terminal_state_protection.sql` adds one shared function and three
+BEFORE UPDATE OR DELETE row triggers, independently rejecting terminal SQL writes with SQLSTATE 23514. No field, key, enum or historical data changes; accepted Migrations 0036/0037/0038 remain
+unchanged. Snapshot 0039 preserves Schema definitions and updates only id/prevId; Journal adds idx 39
+at 1794691200002. Drizzle v7 does not represent these triggers; SQL, Catalog and real tests do. The
+Session regression changes only its Journal count expectation from 39 to 40.
+
+Retained accepted 017-B evidence, not rerun by E2:
+
+- Focused and Operations regressions 107/107 PASS, exit 0: Domain 21, Session Port 7, Identity
+  PostgreSQL 11, Credential PostgreSQL 8, Session PostgreSQL 23, new terminal integrity 37.
+- Full Persistence 168 PASS / 12 FAIL / 3 SKIPPED, exit 1. All 12 failed names/files/error summaries
+  match retained accepted source-baseline evidence, with no new failures, prior status changes or
+  removed tests. Classification remains `PROVEN PRE-EXISTING — SOURCE BASELINE`; earlier proof
+  shared existing dependencies without independent reconstruction. No new full parent run is implied.
+- Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier, Build and
+  Migration Check PASS. Full lint is not newly verified; no fully green Persistence claim is made.
+- Migration 0039 upgrade 39 -> 40 Journal rows, identical 40-row rerun and 40-row empty installation
+  PASS. Prior applied entries are preserved; archive CRLF versus worktree LF historical SQL hashes
+  differ only by line endings, not content. New SQL SHA256 is
+  `7fba8a695294bb2abf2c98e790d72f92b33451909691e5e2b60d72366621e363`.
+
+Evidence root:
+`E:/Users/jihx/.codex/visualizations/2026/11/11/01a1cb52-385b-70f0-95cf-11c189dd0a9d/pci-eng-017-b-20261113`.
+`README.md`, `commands.jsonl`, final test JSON, `regression-reconciliation.json`,
+`migration-reconciliation.json`, environment/Catalog and cleanup records retain original evidence.
+The disposable PostgreSQL 17.10 container was removed; E2 does not recreate it.
+
+Mandatory limits:
+
+1. `TRUNCATE service_principals` succeeded in the verification environment; new terminal guards cover
+   UPDATE/DELETE only, not TRUNCATE.
+2. Principal/Account TRUNCATE is currently blocked by existing foreign keys and dependent
+   Credential/Session guards; there is no independent identity-table TRUNCATE trigger.
+3. Migration Role and Runtime Role remain unseparated; superuser/database administration can bypass
+   triggers. No production security certification is implied.
+4. Historical illegal restoration has not been audited or automatically corrected.
+5. No Security Epoch/Session status linkage is implemented.
+6. No Authentication Runtime, Password Hash/Verify, login, Bootstrap, MFA, RBAC or BFF is implemented.
+
+No Creator Auth, Credential or Session logic is changed by E2. All Section 4 governance values remain
+unchanged; acceptance grants no identity, permission, Pilot, production or real-money authority.
 
 ## 4. Control interpretation
 

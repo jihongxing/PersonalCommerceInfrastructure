@@ -2,7 +2,7 @@
 
 > **Status**: CURRENT CONTROL BASELINE
 > **Effective date**: 2026-11-12
-> **Acceptance ledger update**: 2026-11-13 — PCI-ENG-016-C2-E2
+> **Acceptance ledger update**: 2026-11-13 — PCI-ENG-017-B-E2
 > **Project**: Personal Commerce Infrastructure
 > **Control mode**: `CONTROLLED_RECOVERY`
 > **Formal Resume Gate**: `NOT_FULLY_CLOSED`
@@ -99,6 +99,9 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `PCI-ENG-016-C1-E2` | `ACCEPTED` (ledger and commit closure) | Accepted C1 contracts and four governance documents | New engineering logic or database execution | Commit `cef592ec4a1a513f63589005508c4c8aa708fd32`; C1 evidence remains historical | Documentation and recorded evidence only |
 | `PCI-ENG-016-C2` | `ACCEPTED` (bounded engineering delivery) | Operations Human Session PostgreSQL persistence, seven Session adapters, separate Epoch CAS repository and Operations Composition | Login, Session Credential issuance/authentication runtime, Cookie/BFF, MFA/RBAC, Admin API, Creator Auth, production and money | Focused 70/70 PASS; full persistence 131 PASS / 12 FAIL / 3 SKIPPED; 12 failures individually match the accepted source baseline; see Section 5.9 | Only the accepted persistence delivery; new runtime work needs a separate named unit |
 | `PCI-ENG-016-C2-E2` | `ACCEPTED` (ledger and commit closure) | C2 accepted files and four authorized governance documents in one Git commit | New engineering logic, database operations, roles, runtime and product authorization | Main Controller's explicit C2-E2 acceptance instruction; original C2 evidence is retained without rerunning tests | Documentation and Git closure only; no Push |
+| `PCI-ENG-017-A` | `ACCEPTED_READ_ONLY_ASSESSMENT` | Operations Authentication Runtime architecture/readiness assessment | Runtime implementation, Bootstrap, permissions and production authority | Accepted read-only assessment; implementation gaps and policy decisions remain separate | Assessment and evidence review only |
+| `PCI-ENG-017-B` | `ACCEPTED` (bounded integrity delivery) | Human Principal tombstoned and Account/Service Principal revoked UPDATE/DELETE protection in Repository and PostgreSQL | Independent identity TRUNCATE protection, historical data repair, Epoch/Session linkage and Authentication Runtime | Focused 107/107 PASS; full Persistence 168 PASS / 12 FAIL / 3 SKIPPED; no new failures; see Section 5.10 | Only accepted terminal UPDATE/DELETE integrity and evidence closure |
+| `PCI-ENG-017-B-E2` | `ACCEPTED` (ledger and commit closure) | Accepted 017-B files and four authorized governance documents in one Git commit | New engineering logic, Migration/database tests, runtime, roles and product authorization | Main Controller's explicit acceptance instruction; retained 017-B evidence without rerunning Migration or PostgreSQL tests | Documentation and Git closure only; no Push |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -133,6 +136,7 @@ State meanings:
 | Operations Admin Web | `IMPLEMENTED` shell only | `APPROVED` by explicit ENG-012 task | `SYNCED` | `TESTED` local shell | No authentication, data, mutations or human-review authority; see Section 5.4 |
 | Operations Session Domain / Application Ports | `IMPLEMENTED` contracts only | `APPROVED` bounded by accepted `PCI-ENG-016-C0` / `C1` | `SYNCED` | `ACCEPTED` contracts only | C1 remains the accepted contract; C2 separately accepts persistence; see Sections 5.8 and 5.9 |
 | Operations Human Session Persistence | `IMPLEMENTED` persistence only | `APPROVED` bounded by accepted `PCI-ENG-016-C2` | `SYNCED` | `ACCEPTED` persistence only | Seven PostgreSQL Session operations and independent Epoch CAS; Session Authentication Runtime remains NOT IMPLEMENTED; see Section 5.9 |
+| Operations Identity Terminal UPDATE/DELETE Protection | `IMPLEMENTED` | `APPROVED` bounded by accepted `PCI-ENG-017-B` | `SYNCED` | `ACCEPTED` UPDATE/DELETE only | Three irreversible terminal states; nonterminal recovery preserved; identity TRUNCATE and runtime limitations remain; see Section 5.10 |
 | Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
 | Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
@@ -442,6 +446,53 @@ Cookie/CSRF, retention and MFA Session policy remain unfrozen. Authentication Ru
 Admin BFF/API, first real Principal/Account, permission grants and Creator Auth changes remain excluded.
 All project control values in Section 2 remain unchanged, including the incomplete Resume Gate,
 bounded Stage 2, no Pilot/production and `REAL_MONEY_ENABLED = false`.
+
+### 5.10 PCI-ENG-017-B terminal integrity acceptance and E2 commit closure
+
+Authority: Main Controller's explicit PCI-ENG-017-B-E2 instruction, dated 2026-11-13, accepts
+017-B within its UPDATE/DELETE integrity boundary and authorizes this ledger synchronization and
+one Git commit. The original 017-B execution entry remains historical; only its pending current
+acceptance state is superseded. No engineering logic or prior verification evidence is rewritten.
+
+```text
+PCI-ENG-017-A = ACCEPTED_READ_ONLY_ASSESSMENT
+PCI-ENG-017-B = ACCEPTED
+PCI-ENG-017-B-E2 = ACCEPTED
+OPERATIONS_TERMINAL_STATE_UPDATE_PROTECTION = ACCEPTED
+OPERATIONS_TERMINAL_STATE_DELETE_PROTECTION = ACCEPTED
+```
+
+Human Principal `tombstoned`, Operations Account `revoked` and Service Principal `revoked` are
+irreversible terminal states. Terminal rows reject every later field/status UPDATE, including no-op
+writes and indirect reactivation, and cannot be deleted. Entry from a nonterminal state remains
+allowed. Existing Principal/Service suspended or disabled and Account locked or disabled recovery
+semantics remain unchanged. Repository setters read/lock the current state in the update transaction;
+Migration 0039 adds independent BEFORE UPDATE OR DELETE row triggers. No field, key or enum changes.
+
+Accepted 017-B evidence, retained without new execution by E2:
+
+- Focused and Operations regressions: 107/107 PASS, exit 0 (Domain 21, Session Port 7, Identity
+  PostgreSQL 11, Credential PostgreSQL 8, Session PostgreSQL 23 and new terminal integrity 37).
+- Full Persistence: 168 PASS / 12 FAIL / 3 SKIPPED, exit 1. The same 12 failed names/files/error
+  summaries match retained accepted source-baseline evidence; no new failures or prior status changes.
+  Classification remains `PROVEN PRE-EXISTING — SOURCE BASELINE`. The earlier source proof shares
+  existing dependencies, without an independent rebuild; E2 does not rerun the parent suite.
+- Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier, Build and
+  Migration Check PASS. Migration 0039 upgrade, identical rerun and empty installation PASS; Journal
+  39 -> 40, repeat 40, fresh 40. Full Persistence is not fully green; full lint is not newly verified.
+
+Mandatory limits: `TRUNCATE service_principals` succeeded in the verification environment; the new
+guards cover UPDATE/DELETE only. Principal/Account TRUNCATE is currently blocked by foreign keys
+and existing dependent-table guards, not independent identity TRUNCATE triggers. Migration/Runtime
+Roles remain unseparated, and superuser/database administration can bypass triggers. Historical
+illegal restoration has not been audited. No Security Epoch/Session status linkage, Authentication
+Runtime, Password Hash/Verify, login, Bootstrap, MFA, RBAC or BFF is implemented by this delivery.
+
+E2 preserves all seven accepted engineering-file bytes, adds only the four authorized governance
+document changes and commits them together. Retained commands/results and provenance are indexed in
+[`21_Prototype_Execution.md`](./21_Prototype_Execution.md). All Section 2 control values remain unchanged:
+CONTROLLED_RECOVERY, incomplete Resume Gate, frozen VS-01, bounded Stage 2 only, no full Stage 2,
+Stage 3, external Pilot or production, and `REAL_MONEY_ENABLED = false`.
 
 ## 6. Authority and Supersession Rules
 

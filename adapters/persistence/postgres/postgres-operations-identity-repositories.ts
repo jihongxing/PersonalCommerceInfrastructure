@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import {
   createOperationsAccount,
@@ -72,29 +72,25 @@ export class PostgresOperationsHumanPrincipalRepository implements OperationsHum
     status: OperationsHumanPrincipal['status'],
     updatedAt: Date,
   ): Promise<void> {
-    const updated = await this.database
-      .update(operationsHumanPrincipals)
-      .set({ status, updatedAt: updatedAt.toISOString() })
-      .where(
-        status === 'active'
-          ? and(
-              eq(operationsHumanPrincipals.principalId, principalId),
-              ne(operationsHumanPrincipals.status, 'tombstoned'),
-            )
-          : eq(operationsHumanPrincipals.principalId, principalId),
-      )
-      .returning({ principalId: operationsHumanPrincipals.principalId });
-    if (updated.length > 0) return;
-    const existing = await this.findById(principalId);
-    if (existing === undefined) throw new OperationsHumanPrincipalNotFoundError(principalId);
-    if (existing.status === 'tombstoned' && status === 'active') {
-      throw new OperationsTerminalStatusTransitionError(
-        'human_principal',
-        principalId,
-        'tombstoned',
-      );
-    }
-    throw new OperationsHumanPrincipalNotFoundError(principalId);
+    await this.database.transaction(async (transaction) => {
+      const [current] = await transaction
+        .select({ status: operationsHumanPrincipals.status })
+        .from(operationsHumanPrincipals)
+        .where(eq(operationsHumanPrincipals.principalId, principalId))
+        .for('update');
+      if (current === undefined) throw new OperationsHumanPrincipalNotFoundError(principalId);
+      if (current.status === 'tombstoned') {
+        throw new OperationsTerminalStatusTransitionError(
+          'human_principal',
+          principalId,
+          'tombstoned',
+        );
+      }
+      await transaction
+        .update(operationsHumanPrincipals)
+        .set({ status, updatedAt: updatedAt.toISOString() })
+        .where(eq(operationsHumanPrincipals.principalId, principalId));
+    });
   }
 }
 
@@ -168,25 +164,21 @@ export class PostgresOperationsAccountRepository implements OperationsAccountRep
     status: OperationsAccount['status'],
     updatedAt: Date,
   ): Promise<void> {
-    const updated = await this.database
-      .update(operationsAccounts)
-      .set({ status, updatedAt: updatedAt.toISOString() })
-      .where(
-        status === 'active'
-          ? and(
-              eq(operationsAccounts.accountId, accountId),
-              ne(operationsAccounts.status, 'revoked'),
-            )
-          : eq(operationsAccounts.accountId, accountId),
-      )
-      .returning({ accountId: operationsAccounts.accountId });
-    if (updated.length > 0) return;
-    const existing = await this.findById(accountId);
-    if (existing === undefined) throw new OperationsAccountNotFoundError(accountId);
-    if (existing.status === 'revoked' && status === 'active') {
-      throw new OperationsTerminalStatusTransitionError('account', accountId, 'revoked');
-    }
-    throw new OperationsAccountNotFoundError(accountId);
+    await this.database.transaction(async (transaction) => {
+      const [current] = await transaction
+        .select({ status: operationsAccounts.status })
+        .from(operationsAccounts)
+        .where(eq(operationsAccounts.accountId, accountId))
+        .for('update');
+      if (current === undefined) throw new OperationsAccountNotFoundError(accountId);
+      if (current.status === 'revoked') {
+        throw new OperationsTerminalStatusTransitionError('account', accountId, 'revoked');
+      }
+      await transaction
+        .update(operationsAccounts)
+        .set({ status, updatedAt: updatedAt.toISOString() })
+        .where(eq(operationsAccounts.accountId, accountId));
+    });
   }
 }
 
@@ -292,29 +284,25 @@ export class PostgresServicePrincipalRepository implements ServicePrincipalRepos
     principalId: ServicePrincipal['id'],
     status: ServicePrincipal['status'],
   ): Promise<void> {
-    const updated = await this.database
-      .update(servicePrincipals)
-      .set({ status })
-      .where(
-        status === 'active'
-          ? and(
-              eq(servicePrincipals.servicePrincipalId, principalId),
-              ne(servicePrincipals.status, 'revoked'),
-            )
-          : eq(servicePrincipals.servicePrincipalId, principalId),
-      )
-      .returning({ servicePrincipalId: servicePrincipals.servicePrincipalId });
-    if (updated.length > 0) return;
-    const existing = await this.findById(principalId);
-    if (existing === undefined) throw new ServicePrincipalNotFoundError(principalId);
-    if (existing.status === 'revoked' && status === 'active') {
-      throw new OperationsTerminalStatusTransitionError(
-        'service_principal',
-        principalId,
-        'revoked',
-      );
-    }
-    throw new ServicePrincipalNotFoundError(principalId);
+    await this.database.transaction(async (transaction) => {
+      const [current] = await transaction
+        .select({ status: servicePrincipals.status })
+        .from(servicePrincipals)
+        .where(eq(servicePrincipals.servicePrincipalId, principalId))
+        .for('update');
+      if (current === undefined) throw new ServicePrincipalNotFoundError(principalId);
+      if (current.status === 'revoked') {
+        throw new OperationsTerminalStatusTransitionError(
+          'service_principal',
+          principalId,
+          'revoked',
+        );
+      }
+      await transaction
+        .update(servicePrincipals)
+        .set({ status })
+        .where(eq(servicePrincipals.servicePrincipalId, principalId));
+    });
   }
 }
 

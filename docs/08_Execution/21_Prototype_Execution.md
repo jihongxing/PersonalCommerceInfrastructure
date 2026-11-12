@@ -9121,3 +9121,29 @@ unrelated auth, Web V2 path and unused-symbol diagnostics. Contract implementati
 `e2acf7b`. Documentation synchronization is recorded in the separate PCI-ENG-015-A documentation
 change unit. Project control mode, Resume Gate, Stage 2 boundary, Pilot/production prohibition and
 `REAL_MONEY_ENABLED=false` remain unchanged.
+
+## PCI-ENG-015-B / CU-A - Operations Principal Persistence Foundation
+
+> Date: 2026-11-12. Status: bounded persistence implementation complete; acceptance evidence recorded,
+> Main Controller acceptance pending. Authorization: PCI-ENG-014 architecture approval and the named
+> PCI-ENG-015-B bounded change unit. This record does not authorize authentication or product runtime.
+
+Added only `operations_human_principals`, `operations_accounts` and `service_principals` in migration
+`0036_operations_principal_persistence.sql`, with lifecycle/security checks, restricted Principal
+foreign-key deletion, initial one-to-one Principal/Account uniqueness, normalized-login uniqueness and
+Provider/System discriminator constraints. Added minimal application repository ports, PostgreSQL
+adapters and a transaction wrapper that rolls a Principal back when Account creation fails.
+
+No credential, session, authentication, MFA, permission, audit runtime, BFF, Admin API, Actor migration,
+Pilot, production or real-money behavior was added. Existing LocalAuth, Web sessions, Creator identity,
+Catalog and shared Actor modules were not changed.
+
+Verification: 015-A domain suite 11/11 PASS; `pnpm db:check` PASS; active runtime and backend test
+typechecks PASS; focused lint/format/diff checks PASS. Two independent fresh PostgreSQL 17 Podman
+rounds installed the complete migration history and ran 5/5 persistence tests each, covering valid
+rehydration, duplicate and concurrent uniqueness, missing foreign keys, invalid statuses, discriminator
+checks, restricted deletion and transaction rollback. Temporary containers and volumes were removed.
+
+Schema commit: `c5c4349`. Repository/test commit: `3da7213`. Documentation synchronization is a
+separate commit. Project control mode, incomplete Resume Gate, bounded Stage 2 boundary,
+Pilot/production prohibition and `REAL_MONEY_ENABLED=false` remain unchanged.

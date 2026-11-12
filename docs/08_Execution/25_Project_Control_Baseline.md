@@ -91,6 +91,7 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | ENG-010 core policy regression and migrations pass; full product workflows/acceptance remain PARTIAL | Yes, only named acceptance and rehearsal |
 | `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
 | `PCI-ENG-015-A` | `APPROVED` (bounded) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; focused contract tests 11/11; production source typecheck and focused lint pass | Yes, only contract verification and review |
+| `PCI-ENG-015-B` | `APPROVED` (bounded) | Operations Human Principal, Account and Service Principal persistence foundation | Credentials, sessions, authentication, MFA, BFF, permissions, Actor migration, Admin API, Pilot, production and money | Commits `c5c4349`, `3da7213`; migration check PASS; two fresh PostgreSQL rounds PASS | Yes, only persistence evidence closure and explicitly named regression work |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -240,21 +241,38 @@ Principal metadata. Typed execution attribution distinguishes Human direct execu
 System execution, Provider fact processing and autonomous System execution.
 
 The contract deliberately remains outside `modules/shared/actors.ts` and does not alter the current
-`pilot_operations` runtime. Credential secrets, Session Credential Hashes, persistence, authentication,
-BFF, MFA, Permission enforcement, audit runtime and Admin API integration remain unimplemented. The
-contract commit is `e2acf7b`; focused tests pass 11/11. Aggregate active-test typechecking retains
+`pilot_operations` runtime. Credential secrets, Session Credential Hashes, authentication, BFF, MFA,
+Permission enforcement, audit runtime and Admin API integration remain unimplemented. Principal,
+Account and Service Principal persistence is recorded by the separately bounded PCI-ENG-015-B unit.
+The contract commit is `e2acf7b`; focused tests pass 11/11. Aggregate active-test typechecking retains
 pre-existing repository diagnostics and is not claimed closed.
 
-The following control values remain unchanged:
+The following Operations implementation values are recorded by the 015-A/015-B bounded units:
 
 ```text
-OPERATIONS_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
+OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
+SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_BFF = NOT IMPLEMENTED
 OPERATIONS_PERMISSION_ENFORCEMENT = NOT IMPLEMENTED
 OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 ```
+
+### 5.6 PCI-ENG-015-B Operations Principal persistence foundation
+
+PCI-ENG-015-B implements only the PostgreSQL persistence foundation described in
+[`123_Operations_Identity_Persistence_Baseline.md`](../09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md).
+It adds `operations_human_principals`, `operations_accounts` and `service_principals`, restricted
+foreign-key and discriminator constraints, repository ports/adapters and an atomic Human
+Principal + Account transaction. It does not add credentials, sessions, authentication, MFA,
+permissions, audit runtime or Admin API behavior.
+
+Migration `0036_operations_principal_persistence.sql` was installed from the complete migration
+history in two independent disposable PostgreSQL rounds. Both rounds passed the five focused
+integration tests, including concurrent uniqueness and rollback. This proves local persistence
+behavior only; it does not establish external Pilot, production or real-money authorization.
 
 ## 6. Authority and Supersession Rules
 
@@ -294,6 +312,7 @@ Conflict rules:
 | Development Backlog | Proposed planning index; no independent authorization |
 | Stage 2 Execution Reconciliation | Proposed supporting evidence; not authoritative until accepted |
 | Operations Identity Domain Contract | PCI-ENG-014 technical baseline and PCI-ENG-015-A pure domain contract; no runtime authorization |
+| Operations Identity Persistence Baseline | PCI-ENG-015-B bounded persistence implementation/evidence; no authentication or runtime authorization |
 | `docs/README.md` | Index and current-control navigation; must link to this baseline |
 | Root `README.md` | Developer-facing summary; may state current implementation facts but not production approval |
 

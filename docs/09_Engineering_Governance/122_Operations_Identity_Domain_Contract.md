@@ -2,12 +2,15 @@
 
 > **Decision:** `PCI-ENG-014_ARCHITECTURE = APPROVED`
 > **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = IMPLEMENTED / PENDING ACCEPTANCE`
+> **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING`
 > **Effective date:** 2026-11-12
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
 
 This document adopts the final PCI-ENG-014 Operations identity architecture and records the first
-bounded implementation unit. It does not authorize persistence, authentication, Session runtime,
-BFF, permissions, Admin API integration, migrations, deployment or production use.
+bounded implementation unit. Principal persistence is recorded separately in
+[`123_Operations_Identity_Persistence_Baseline.md`](./123_Operations_Identity_Persistence_Baseline.md).
+This document does not authorize authentication, Session runtime, BFF, permissions, Admin API
+integration, deployment or production use.
 
 ## 1. Adopted architecture
 
@@ -93,7 +96,8 @@ Credential and secret material are deliberately excluded from every domain entit
 - A System subject cannot create a Human initiator, and a Provider subject cannot become a Human subject
   through a type cast supported by the contract.
 
-Database uniqueness, foreign keys and persistence constraints remain PCI-ENG-015-B scope.
+Database uniqueness, foreign keys and persistence constraints are implemented only for the bounded
+PCI-ENG-015-B Principal persistence unit; they do not authorize authentication or runtime use.
 
 ## 5. Verification evidence
 
@@ -121,10 +125,12 @@ utility and unused-symbol diagnostics. They are not changed by this unit and are
 
 ## 6. Not implemented by this unit
 
-The following remain `NOT IMPLEMENTED`:
+The current Operations implementation values are:
 
 ```text
-OPERATIONS_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
+OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
+SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_BFF = NOT IMPLEMENTED
@@ -133,9 +139,10 @@ OPERATIONS_PROVIDER_SYSTEM_RUNTIME_MIGRATION = NOT IMPLEMENTED
 OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 ```
 
-No Principal, Account, Credential, Session, MFA factor, Role or Permission was created or assigned.
-No database, migration, Cookie, BFF, MFA, CSRF, mTLS, API route, Actor runtime, Webhook, Catalog,
-Commercial Pilot, Paid Commerce or Admin Web behavior was changed.
+No Credential, Session, MFA factor, Role or Permission was created or assigned. PCI-ENG-015-B adds
+only the three Principal persistence tables, repositories and disposable PostgreSQL verification
+described in the persistence baseline. No Cookie, BFF, MFA, CSRF, mTLS, API route, Actor runtime,
+Webhook, Catalog, Commercial Pilot, Paid Commerce or Admin Web behavior was changed.
 
 ## 7. Dependencies and remaining decisions
 

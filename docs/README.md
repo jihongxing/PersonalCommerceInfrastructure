@@ -280,6 +280,8 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
     当前项目治理入口；登记 `CONTROLLED_RECOVERY`、具名 bounded approvals、Capability Reality Matrix、权威层级和未解决工程债务。
 62. [122 — Operations Identity Domain Contract](./09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)
     PCI-ENG-014 已采纳的 Operations Human/Machine 身份领域合同；只实现纯领域类型和校验，不包含认证、持久化或 Admin API。
+63. [123 — Operations Identity Persistence Baseline](./09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md)
+    记录 PCI-ENG-015-B 的三张 Operations Principal 持久化表、Repository 边界、迁移与两轮真实 PostgreSQL 验证；不授权认证、Session、权限或 Admin API。
 
 配套治理文档：
 

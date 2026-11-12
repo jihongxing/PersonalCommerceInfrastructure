@@ -1,6 +1,8 @@
 import { sql } from 'drizzle-orm';
 import {
   check,
+  customType,
+  foreignKey,
   integer,
   index,
   pgTable,
@@ -51,6 +53,7 @@ export const operationsAccounts = pgTable(
   },
   (table) => [
     unique('operations_accounts_principal_id_unique').on(table.principalId),
+    unique('operations_accounts_account_principal_unique').on(table.accountId, table.principalId),
     unique('operations_accounts_login_identifier_normalized_unique').on(
       table.loginIdentifierNormalized,
     ),
@@ -105,6 +108,61 @@ export const operationsCredentials = pgTable(
   ],
 );
 
+const sessionDigestBytes = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});
+
+export const operationsSessions = pgTable(
+  'operations_sessions',
+  {
+    sessionId: varchar('session_id', { length: 128 }).primaryKey(),
+    principalId: varchar('principal_id', { length: 128 })
+      .notNull()
+      .references(() => operationsHumanPrincipals.principalId, { onDelete: 'restrict' }),
+    accountId: varchar('account_id', { length: 128 }).notNull(),
+    credentialDigest: sessionDigestBytes('credential_digest').notNull(),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    credentialVersion: integer('credential_version').notNull(),
+    principalSecurityEpoch: integer('principal_security_epoch').notNull(),
+    sessionVersion: integer('session_version').notNull().default(1),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true }).notNull(),
+    lastActivityAt: timestamp('last_activity_at', { mode: 'string', withTimezone: true }).notNull(),
+    idleExpiresAt: timestamp('idle_expires_at', { mode: 'string', withTimezone: true }).notNull(),
+    absoluteExpiresAt: timestamp('absolute_expires_at', {
+      mode: 'string',
+      withTimezone: true,
+    }).notNull(),
+    mfaVerifiedAt: timestamp('mfa_verified_at', { mode: 'string', withTimezone: true }),
+    revokedAt: timestamp('revoked_at', { mode: 'string', withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      name: 'operations_sessions_account_principal_fk',
+      columns: [table.accountId, table.principalId],
+      foreignColumns: [operationsAccounts.accountId, operationsAccounts.principalId],
+    }).onDelete('restrict'),
+    unique('operations_sessions_credential_digest_unique').on(table.credentialDigest),
+    index('operations_sessions_account_id_idx').on(table.accountId),
+    index('operations_sessions_principal_id_idx').on(table.principalId),
+    check(
+      'operations_sessions_digest_length_check',
+      sql`octet_length(${table.credentialDigest}) = 32`,
+    ),
+    check('operations_sessions_status_check', sql`${table.status} in ('active', 'revoked')`),
+    check('operations_sessions_credential_version_check', sql`${table.credentialVersion} >= 1`),
+    check('operations_sessions_security_epoch_check', sql`${table.principalSecurityEpoch} >= 0`),
+    check('operations_sessions_session_version_check', sql`${table.sessionVersion} >= 1`),
+    check(
+      'operations_sessions_lifecycle_check',
+      sql`(${table.status} = 'active' and ${table.revokedAt} is null) or (${table.status} = 'revoked' and ${table.revokedAt} is not null)`,
+    ),
+    check(
+      'operations_sessions_time_order_check',
+      sql`${table.createdAt} <= ${table.lastActivityAt} and ${table.lastActivityAt} <= ${table.idleExpiresAt} and ${table.idleExpiresAt} <= ${table.absoluteExpiresAt} and ${table.absoluteExpiresAt} > ${table.createdAt}`,
+    ),
+  ],
+);
+
 export const servicePrincipals = pgTable(
   'service_principals',
   {
@@ -138,4 +196,5 @@ export const servicePrincipals = pgTable(
 export type OperationsHumanPrincipalRow = typeof operationsHumanPrincipals.$inferSelect;
 export type OperationsAccountRow = typeof operationsAccounts.$inferSelect;
 export type OperationsCredentialRow = typeof operationsCredentials.$inferSelect;
+export type OperationsSessionRow = typeof operationsSessions.$inferSelect;
 export type ServicePrincipalRow = typeof servicePrincipals.$inferSelect;

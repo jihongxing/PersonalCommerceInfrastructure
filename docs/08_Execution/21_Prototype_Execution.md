@@ -9310,3 +9310,213 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-016-C2 / Operations Human Session Persistence Implementation
+
+> Date: 2026-11-13. Execution result: implemented and verified, awaiting Main Controller acceptance.
+> Authorization remains `PCI-ENG-016-C2 = IMPLEMENTATION AUTHORIZED`; this entry does not declare
+> formal acceptance or authorize an Authentication Runtime. The accepted source baseline is
+> `cef592ec4a1a513f63589005508c4c8aa708fd32`, parent
+> `083ddc9062f4d1aa472097ec80d391e4e1746584`, on
+> `codex/pci-eng-015-b-r2-persistence-closure`. No C2 commit, staging or push was performed.
+
+The bounded implementation adds `operations_sessions` with the accepted 14 fields, a 32-byte `bytea`
+Digest, Digest uniqueness, lifecycle/version/time checks, two RESTRICT foreign keys and Account/Principal
+lookup indexes. The Account receives only the composite unique constraint required by the composite
+Session foreign key. Migration `0038_operations_session_persistence.sql`, Snapshot and Journal are
+included. Earlier migrations, the accepted Domain/C1 Port, Credential Persistence logic, Creator Auth
+and Authentication Runtime remain unchanged. The two existing Operations PostgreSQL test files change
+only their cleanup Fixtures, under the user's explicit approval to include the new Session table and
+disable/restore its TRUNCATE guard; their assertions are unchanged.
+
+All seven accepted Session Repository operations have real PostgreSQL implementations: Create, Find
+Active by Digest, Validate/Touch, strict Digest plus Session Version CAS Rotation, Revoke Single, Revoke
+All for Account, and Revoke All for Principal. The separate Epoch Repository implements expectedEpoch
+CAS, exactly +1, stale conflict and int32 overflow rejection for Human Principals. The existing
+Operations Persistence Composition exposes both repositories without creating records or runtime routes.
+
+Every credential validation checks active Session/Principal/Account/current Password Credential, matching
+Account ownership, Credential Version, Security Epoch, Idle Expiry and Absolute Expiry in the same
+transaction. Cross-resource repository locks follow Principal -> Account -> Credentials -> Sessions;
+bulk operations lock complete sets in deterministic order. Touch merges activity/idle timestamps
+monotonically without changing Digest, snapshots, CAS Version or Absolute Expiry. Rotation changes the
+Digest and advances CAS Version by exactly one in one transaction; losing requests leave the winner
+intact, old Digests immediately fail, and no recovery/grace window exists.
+
+Database protection is explicit: the INSERT trigger locks parents in repository order and checks live
+ownership/snapshots, initial active state, Version 1 and unexpired windows; the UPDATE trigger protects
+immutable metadata, legal Touch/Rotation coupling, monotonic times, expiry and terminal revocation.
+The UPDATE row trigger takes no parent locks because PostgreSQL already owns the Session tuple lock
+before invoking it; adding parent locks there would reverse the hierarchy. Live parent validation on
+reads/updates is enforced by the repository transaction. Separate DELETE and TRUNCATE triggers reject
+ordinary SQL removal. The Epoch trigger rejects decreases and jumps. These protections are not a
+claim that database administrators cannot bypass triggers.
+
+Final verification (all raw commands, times, outputs and exit codes are retained outside the repository):
+
+- C1 Domain: 21 PASS; C1 Port: 7 PASS; Operations Identity PostgreSQL: 11 PASS; Credential PostgreSQL:
+  8 PASS; new Session PostgreSQL file: 23 PASS. The five-file focused command passed 70/70, exit 0.
+  The Session file includes real migrations, direct SQL checks, two physical PostgreSQL connections,
+  CAS/Rotation/Revoke/Touch/status/Credential/Epoch races, rollback, expiry and one pure error-mapper case.
+- Full `tests/persistence`: 131 PASS, 12 FAIL, 3 SKIPPED, exit 1. The accepted source archive through
+  0037, on a separate disposable database, produced 108 PASS, 12 FAIL, 3 SKIPPED, exit 1. Every existing
+  test retains the same status; all 12 failed full names, files and error summaries match individually.
+  Seven fail in the Private Identity cleanup because `public_commerce_homepages` references
+  `commerce_profiles` (SQLSTATE 0A000); five fail under historical Profile-owned Commerce Reference
+  assumptions. Classification: `PROVEN PRE-EXISTING — SOURCE BASELINE`. The comparison uses the same
+  existing dependency tree through a Junction; independent dependency reconstruction was not performed.
+- Production TypeScript, Active Backend Test TypeScript, the eight changed TS files' ESLint, TS/JSON
+  Prettier, production build and the migration file/journal check all pass. Build plus
+  `node scripts/database/check-migrations.mjs` is the direct equivalent of `db:check`; it is not reported
+  as a separately executed pnpm command. Full lint was not rerun; the historical 458-error report still
+  lacks a clean parent comparison.
+- Drizzle generation against an external copy of migration metadata reports no Schema changes. Earlier
+  supplementary attempts with incomplete CLI arguments and an absolute Windows output path are retained
+  as unsuccessful attempts, including one misleading native exit 0 with an ENOENT diagnostic. The final
+  relative-output invocation completed successfully without creating a migration. Triggers remain
+  versioned SQL assets outside Drizzle Snapshot representation.
+- Final 0037 -> 0038 upgrade changes the database Journal from 38 to 39 rows; rerun exits 0 and retains
+  the identical 39 rows. Fresh install also has 39 rows. The new Journal timestamp is 1794691200001,
+  greater than every older entry; old non-monotonic Journal entries were not rewritten. Final SQL SHA256:
+  `344196ebc3a1c91afa710a7f399e55119a394e992915792c882c031f8f817594`.
+
+Evidence root:
+`E:/Users/jihx/.codex/visualizations/2026/11/11/01a1cb52-385b-70f0-95cf-11c189dd0a9d/pci-eng-016-c2-20261113`.
+See `README.md`, `commands.jsonl`, `final-focused.json`, `final-full-persistence.json`,
+`baseline-persistence.json`, `final-regression-reconciliation.json`, final-prefixed migration/Journal
+logs, `final-database-schema-and-guards.log`, and `cleanup-reconciliation.json`. Intermediate test and
+migration logs are retained separately and are not relabeled as final evidence.
+
+Disposable environment: `docker.io/library/postgres:17-alpine`; actual container Image Digest
+`sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a`; PostgreSQL 17.10; Podman
+Client/Server 5.7.1; container `5e9736f6640dc662ad28764dd3ddbf3fe63e21c43e2e3aa943134dd7fff24307`;
+loopback `127.0.0.1:39787 -> 5432/tcp`; tmpfs `/var/lib/postgresql/data`, no mounted volume.
+`pci_c2` holds the upgrade/focused verification, `pci_c2_fresh` the fresh/full verification, and
+`pci_c2_baseline` the accepted-source comparison. Cleanup verified the container ID and task label,
+then `podman stop --time 10 pci-eng-016-c2-20261113` and `podman rm pci-eng-016-c2-20261113` both
+exited 0. The final container inventory exactly matches the 52 pre-existing containers, with no task
+container remaining. No prune or cleanup of other resources was performed.
+
+Limitations: no independent Migration/Runtime database roles were introduced; privileged database
+administration can bypass guards. Adapter errors retain only approved error types or sanitized
+SQLSTATE and have no SQL parameters, Digest, verifier or driver cause; the adapter emits no logs.
+Database administrator logging/redaction is not certified by this unit; disposable PostgreSQL retains
+its default error-statement setting. No raw container error log is exported as acceptance evidence.
+Concurrency tests prove the exercised schedules rather than a universal deadlock theorem. The two
+historical migration suites remain skipped, and the 12 historical failures remain unresolved.
+
+Idle Timeout, Absolute Lifetime, maximum concurrent Sessions, Device Management, Touch/Rotation
+frequencies, Cookie/CSRF, Session retention and MFA Session policy remain unfrozen. Fixture dates are
+not product policy. There is no new VS-01 FR/AT acceptance, canonical event, product behavior, dependency,
+runtime configuration or permission grant. No login/logout, password verification/reset, raw Session
+Credential generation, SHA-256 computation, Cookie, BFF, MFA, RBAC, Admin API, real bootstrap identity,
+Actor/Webhook, Catalog, Paid Commerce, Withdrawal, external Pilot or production behavior is introduced.
+
+```text
+PCI-ENG-016-C2 = IMPLEMENTATION AUTHORIZED
+OPERATIONS_SESSION_PERSISTENCE = IMPLEMENTATION IN PROGRESS
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
+OPERATIONS_MFA = NOT IMPLEMENTED
+OPERATIONS_RBAC = NOT IMPLEMENTED
+ADMIN_BFF_AUTH = NOT IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+Implementation evidence is ready for Main Controller review; authority status remains pending its
+acceptance. Earlier C1/016-B/015-B records retain their original historical status and test counts.
+
+## PCI-ENG-016-C2-E2 / Session Persistence Acceptance Ledger and Commit Closure
+
+> Date: 2026-11-13. Authority: Main Controller's explicit PCI-ENG-016-C2-E2 instruction formally
+> accepts C2 and authorizes this documentation synchronization and single-commit closure.
+> The previous C2 entry remains unchanged as the historical pre-acceptance execution record.
+> This entry supersedes only its pending acceptance/current persistence state, not its evidence.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+PCI-ENG-016-C1-E2 = ACCEPTED
+PCI-ENG-016-C2 = ACCEPTED
+PCI-ENG-016-C2-E2 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = ACCEPTED
+OPERATIONS_SESSION_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+Accepted C2 delivery:
+
+- `operations_sessions` PostgreSQL Schema, Migration 0038, Snapshot/Journal and the Account/Principal
+  composite RESTRICT foreign key; only the minimum supporting Account unique constraint is added.
+- 32-byte Digest persistence, independent Session Version, Credential Version Snapshot and Principal
+  Security Epoch Snapshot; the accepted Domain and C1 Port remain unchanged.
+- Seven Session Repository Port PostgreSQL implementations and a separate expectedEpoch-controlled
+  Security Epoch CAS Repository, integrated through Operations Persistence Composition.
+- Strict CAS Rotation, monotonic Touch, immutable Absolute Expiry, single/bulk revocation, Session
+  INSERT/UPDATE, DELETE and TRUNCATE protection plus the Epoch increment guard.
+
+Accepted verification is the retained final C2 execution, not a new E2 test run:
+
+| Check | Accepted result |
+| --- | --- |
+| Domain | 21 PASS |
+| Session Repository Port | 7 PASS |
+| Identity PostgreSQL | 11 PASS |
+| Credential PostgreSQL | 8 PASS |
+| Session PostgreSQL file | 23 PASS |
+| Focused total | 70/70 PASS, exit 0 |
+| Full Persistence | 131 PASS / 12 FAIL / 3 SKIPPED, exit 1 |
+| Source baseline | 108 PASS / 12 FAIL / 3 SKIPPED; the same 12 failures match individually and remain `PROVEN PRE-EXISTING — SOURCE BASELINE` |
+| Migration | 0037 -> 0038 succeeded; repeat execution keeps the identical 39 Journal rows; fresh installation succeeded |
+| Static/build verification | Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier, Build and Migration Check PASS |
+| Full lint | No new full-repository verification; historical 458 errors remain without a clean parent comparison |
+
+The existing C2 evidence root, commands, test JSON, Journal logs, SQL hash and cleanup record in the
+previous entry remain the provenance for these results. The baseline comparison shares the existing
+dependency tree; it is not an independent dependency reconstruction. Earlier 13/13, 14/14, 28/28 and
+intermediate C2 results retain their original historical contexts and are not rewritten.
+
+Mandatory limitations remain:
+
+1. Migration Role and Runtime Role are not separated.
+2. Current Compose uses the same `DATABASE_URL` for Migration and API.
+3. Database administration can bypass ordinary Trigger protection.
+4. MFA Runtime is not implemented; `mfa_verified_at` has no Step-up update interface.
+5. Full Persistence retains 12 proven source-baseline failures and 3 skipped tests.
+6. Concurrency evidence demonstrates exercised schedules, not a formal proof for all possible schedules.
+7. C2 excludes login, Session Credential issuance/verification Runtime, Cookie and BFF.
+
+PostgreSQL acceptance is not production security certification. Unfrozen Founder policies remain
+unchanged: Idle Timeout, Absolute Lifetime, concurrent Session limits, Device Management, Touch/Rotation
+policy, Cookie/CSRF, Session history retention and MFA Session semantics.
+
+E2 verifies the actual Branch/HEAD/worktree and all 12 accepted C2 file hashes before editing. The
+baseline is `cef592ec4a1a513f63589005508c4c8aa708fd32`, parent
+`083ddc9062f4d1aa472097ec80d391e4e1746584`, on
+`codex/pci-eng-015-b-r2-persistence-closure`; staging starts empty, with seven modified and five
+untracked C2 files and no extra changes. Only the four authorized governance documents are edited.
+The 11 engineering files are preserved unchanged and included with those four documents in one
+commit, `feat: accept operations session persistence foundation`. No Migration, database test,
+container, database role or runtime operation is executed; no Push or deployment is performed.
+No Authentication Runtime, Cookie, BFF, MFA, RBAC, Admin API, Creator Auth, real Principal/Account,
+permission grant or product authorization is added.
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

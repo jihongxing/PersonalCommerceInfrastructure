@@ -267,6 +267,13 @@
       "when": 1794500821357,
       "tag": "0037_operations_credential_persistence",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794691200001,
+      "tag": "0038_operations_session_persistence",
+      "breakpoints": true
     }
   ]
 }

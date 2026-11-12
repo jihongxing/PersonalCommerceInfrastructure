@@ -2,10 +2,11 @@
 
 > **Decision:** `PCI-ENG-014_ARCHITECTURE = APPROVED`
 > **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
-> **Session contract follow-on:** `PCI-ENG-016-C0 = ACCEPTED`; `PCI-ENG-016-C1 = ACCEPTED`
+> **Session contract follow-on:** `PCI-ENG-016-C0 = ACCEPTED`; `PCI-ENG-016-C1 = ACCEPTED`; `PCI-ENG-016-C1-E2 = ACCEPTED`
 > **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Effective date:** 2026-11-12
-> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C1-E2
+> **Session persistence follow-on:** `PCI-ENG-016-C2 = ACCEPTED`; `PCI-ENG-016-C2-E2 = ACCEPTED`
+> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C2-E2
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
 
 This document adopts the final PCI-ENG-014 Operations identity architecture and records the first
@@ -103,9 +104,9 @@ Credential and secret material are deliberately excluded from every domain entit
 - A System subject cannot create a Human initiator, and a Provider subject cannot become a Human subject
   through a type cast supported by the contract.
 
-Database uniqueness, foreign keys and persistence constraints are implemented only for the bounded
-PCI-ENG-015-B Principal and PCI-ENG-016-B Credential persistence units; they do not authorize
-authentication or runtime use.
+Database uniqueness, foreign keys and persistence constraints are implemented for the bounded
+PCI-ENG-015-B Principal, PCI-ENG-016-B Credential and PCI-ENG-016-C2 Session persistence units;
+they do not authorize authentication or runtime use. C2-E2 changes no accepted Domain contract.
 
 ## 5. Verification evidence
 
@@ -149,6 +150,8 @@ result; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXI
 
 Main Controller formally accepted C1 in the explicit PCI-ENG-016-C1-E2 instruction. C0 design acceptance
 is carried forward; this ledger closure changes no accepted TypeScript contract.
+The following state and verification record is historical as of C1-E2, before C2 persistence.
+Current C2 acceptance is recorded in Section 5.3 and the current-state block in Section 6.
 
 ```text
 PCI-ENG-016-C0 = ACCEPTED
@@ -207,7 +210,51 @@ Idle Timeout, Absolute Lifetime, maximum concurrent Sessions, Device Management,
 Rotation triggers, Cookie/CSRF, Session history retention and MFA Session semantics remain unfrozen
 Founder policies. Test Fixture dates do not approve timeout values.
 
-## 6. Not implemented by these accepted units
+## 5.3 Accepted Session Persistence follow-on
+
+Authority: Main Controller's explicit PCI-ENG-016-C2-E2 acceptance instruction, dated 2026-11-13.
+It accepts the existing C2 implementation and this documentation/Git closure, without changing the
+Domain/C1 Port, Credential Persistence logic, runtime behavior or product authorization.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+PCI-ENG-016-C1-E2 = ACCEPTED
+PCI-ENG-016-C2 = ACCEPTED
+PCI-ENG-016-C2-E2 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = ACCEPTED
+OPERATIONS_SESSION_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+C2 implements `operations_sessions`, Migration 0038 and corresponding Snapshot/Journal, the
+Account/Principal composite RESTRICT foreign key, 32-byte Digest persistence, independent Session
+Version, Credential Version and Principal Security Epoch snapshots, all seven PostgreSQL Session
+Repository operations, a separate Epoch CAS Repository and Operations Persistence Composition.
+Strict CAS Rotation increments Session Version by one without extending Absolute Expiry; Touch
+is monotonic and bounded. Single/bulk revocation and INSERT/UPDATE, DELETE and TRUNCATE trigger
+protection enforce the accepted persistence lifecycle. No Domain secret or new Domain field is added.
+
+Accepted C2 verification: Domain 21 PASS; Session Repository Port 7 PASS; Identity PostgreSQL 11 PASS;
+Credential PostgreSQL 8 PASS; Session PostgreSQL 23 PASS; focused total 70/70 PASS. Full Persistence
+is 131 PASS / 12 FAIL / 3 SKIPPED. All 12 failed names/files/error summaries individually match the
+accepted source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`; the comparison shares the
+existing dependency tree and is not an independent dependency reconstruction. Migration 0037 -> 0038
+and fresh install succeeded; formal rerun retains the identical 39 Journal rows. Production TypeScript,
+Active Backend Test TypeScript, changed-file ESLint, Prettier, Build and Migration Check pass. No new
+full lint verification was completed; the historical 458 errors lack a clean parent comparison.
+These are retained C2 results, not tests or database operations performed by C2-E2.
+
+Migration Role / Runtime Role are not separated; Compose uses the same `DATABASE_URL` for Migration
+and API, and database administration can bypass ordinary triggers. MFA Runtime is not implemented;
+`mfa_verified_at` has no Step-up update interface. The 12 source-baseline failures and 3 skips remain
+open. Concurrency tests demonstrate exercised schedules, not a formal proof for all schedules.
+C2 excludes login, Session Credential issuance/verification Runtime, Cookie and BFF. Persistence
+acceptance is not production security certification. Unfrozen Founder Session policies in Section 5.2
+remain unresolved; technical and evidence details are recorded in the Persistence Baseline, Section 3.3.
+
+## 6. Current implementation and excluded runtime
 
 The current Operations implementation values are:
 
@@ -217,7 +264,8 @@ OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTED
 SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
 OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
 OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
-OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_SESSION_PERSISTENCE = ACCEPTED
+OPERATIONS_SESSION_AUTH_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
@@ -228,21 +276,23 @@ OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 ```
 
 PCI-ENG-016-B adds only bounded Credential persistence; no Session, MFA factor, Role or Permission
-was created or assigned. No Cookie, BFF, MFA, CSRF, mTLS, API route, Actor runtime, Webhook, Catalog,
+was created or assigned by that historical unit. C2 separately accepts Session persistence only,
+without issuing a Session Credential or creating a real Operations Principal/Account. No Cookie, BFF,
+MFA, CSRF, mTLS, API route, Actor runtime, Webhook, Catalog,
 Commercial Pilot, Paid Commerce or Admin Web behavior was changed. Credential persistence acceptance
 does not authorize Operations Authentication Runtime.
 
 ## 7. Dependencies and remaining decisions
 
-The next bounded engineering units must be separately authorized:
+Session persistence and the C1 PostgreSQL Adapter are accepted in C2; they are no longer an
+unimplemented follow-on. New implementation still requires a separately authorized named unit:
 
-1. Operations Session persistence and database constraints; the accepted C1 Port has no SQL adapter;
-2. Operations authentication and the canonical opaque Session Credential runtime;
-3. BFF and Shared API trust boundary;
-4. Permission registry and enforcement;
-5. Provider/System runtime Actor migration;
-6. transactional and proposed append-only audit implementation;
-7. read-only Admin integration, followed by any separately approved Catalog mutation integration.
+1. Operations authentication and the canonical opaque Session Credential runtime;
+2. BFF and Shared API trust boundary;
+3. Permission registry and enforcement;
+4. Provider/System runtime Actor migration;
+5. transactional and proposed append-only audit implementation;
+6. read-only Admin integration, followed by any separately approved Catalog mutation integration.
 
 Founder / governance decisions remain required for the first Operations Principal, Bootstrap
 Authority, administrator invitation, high-risk permission grants, dual control, Break-glass access,

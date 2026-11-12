@@ -4,6 +4,7 @@ export {
   operationsHumanPrincipals,
   operationsAccounts,
   operationsCredentials,
+  operationsSessions,
   servicePrincipals,
 } from './operations-identity.js';
 export { accountIdentityMemberships } from './account-identity-membership.js';

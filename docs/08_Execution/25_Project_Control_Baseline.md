@@ -2,7 +2,7 @@
 
 > **Status**: CURRENT CONTROL BASELINE
 > **Effective date**: 2026-11-12
-> **Acceptance ledger update**: 2026-11-13 — PCI-ENG-016-C1-E2
+> **Acceptance ledger update**: 2026-11-13 — PCI-ENG-016-C2-E2
 > **Project**: Personal Commerce Infrastructure
 > **Control mode**: `CONTROLLED_RECOVERY`
 > **Formal Resume Gate**: `NOT_FULLY_CLOSED`
@@ -96,6 +96,9 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `PCI-ENG-016-B` / `R1` / `R2` | `ACCEPTED` (bounded engineering delivery) | Encoded Password Verifier persistence, Operations Account Credential Repository, account-scoped strict versioning, atomic replacement, revoked-history protection, PostgreSQL constraints/triggers, composition integration and Domain/PostgreSQL verification | Login, Session, password verification/reset, MFA, RBAC, BFF/Admin API, Creator Auth, Pilot, production and real money | Domain 14/14; Credential + Operations Identity PostgreSQL 19/19; full persistence 108 PASS / 12 FAIL / 3 SKIPPED; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`; changed-file ESLint, TypeScript, build and migration check pass; full lint remains 458 errors without parent comparison | Yes, only this accepted persistence boundary and evidence closure |
 | `PCI-ENG-016-C0` | `ACCEPTED` (bounded architecture contract) | Operations Human Session persistence design and implementation contract | Session persistence or authentication implementation; unresolved Founder policy values | Main Controller acceptance carried forward by the C1-E2 instruction; no database implementation or execution evidence implied | Only reconciliation of the accepted design |
 | `PCI-ENG-016-C1` | `ACCEPTED` (bounded engineering delivery) | Existing Session Domain Contract, Digest/Persistence Record types, seven Session Repository operations and a separate Security Epoch Increment Port | Session Schema/Migration/Adapter, database operations, authentication/login/logout, Cookie/BFF, MFA/RBAC, Admin API, Creator Auth and production authority | Domain 21 PASS + Session Repository Contract 7 PASS = 28/28; production and active backend test TypeScript, changed-file ESLint, Prettier and diff check PASS; no Session PostgreSQL tests or persistence implementation | Only accepted contract/port review and evidence closure; follow-on implementation needs a separate named unit |
+| `PCI-ENG-016-C1-E2` | `ACCEPTED` (ledger and commit closure) | Accepted C1 contracts and four governance documents | New engineering logic or database execution | Commit `cef592ec4a1a513f63589005508c4c8aa708fd32`; C1 evidence remains historical | Documentation and recorded evidence only |
+| `PCI-ENG-016-C2` | `ACCEPTED` (bounded engineering delivery) | Operations Human Session PostgreSQL persistence, seven Session adapters, separate Epoch CAS repository and Operations Composition | Login, Session Credential issuance/authentication runtime, Cookie/BFF, MFA/RBAC, Admin API, Creator Auth, production and money | Focused 70/70 PASS; full persistence 131 PASS / 12 FAIL / 3 SKIPPED; 12 failures individually match the accepted source baseline; see Section 5.9 | Only the accepted persistence delivery; new runtime work needs a separate named unit |
+| `PCI-ENG-016-C2-E2` | `ACCEPTED` (ledger and commit closure) | C2 accepted files and four authorized governance documents in one Git commit | New engineering logic, database operations, roles, runtime and product authorization | Main Controller's explicit C2-E2 acceptance instruction; original C2 evidence is retained without rerunning tests | Documentation and Git closure only; no Push |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -128,7 +131,8 @@ State meanings:
 | Controlled Catalog | `PARTIAL` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | ENG-010 core database/Operations TESTED; report/appeal/manual-review workflow and contract conflicts remain; see Section 5.3 |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
 | Operations Admin Web | `IMPLEMENTED` shell only | `APPROVED` by explicit ENG-012 task | `SYNCED` | `TESTED` local shell | No authentication, data, mutations or human-review authority; see Section 5.4 |
-| Operations Session Domain / Application Ports | `IMPLEMENTED` contracts only | `APPROVED` bounded by accepted `PCI-ENG-016-C0` / `C1` | `SYNCED` | `ACCEPTED` contracts only | Session persistence and authentication runtime remain NOT IMPLEMENTED; see Section 5.8 |
+| Operations Session Domain / Application Ports | `IMPLEMENTED` contracts only | `APPROVED` bounded by accepted `PCI-ENG-016-C0` / `C1` | `SYNCED` | `ACCEPTED` contracts only | C1 remains the accepted contract; C2 separately accepts persistence; see Sections 5.8 and 5.9 |
+| Operations Human Session Persistence | `IMPLEMENTED` persistence only | `APPROVED` bounded by accepted `PCI-ENG-016-C2` | `SYNCED` | `ACCEPTED` persistence only | Seven PostgreSQL Session operations and independent Epoch CAS; Session Authentication Runtime remains NOT IMPLEMENTED; see Section 5.9 |
 | Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
 | Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
@@ -337,6 +341,8 @@ REAL_MONEY_ENABLED = false
 
 Authority: Main Controller's explicit PCI-ENG-016-C1-E2 acceptance instruction, dated 2026-11-13.
 This records the accepted C0 design and C1 engineering delivery; it does not create follow-on scope.
+The state block and test counts below are historical as of C1-E2, before C2. Current Session
+persistence acceptance is recorded separately in Section 5.9.
 
 ```text
 PCI-ENG-016-C0 = ACCEPTED
@@ -380,6 +386,63 @@ BFF, MFA, RBAC, Admin API, a first Principal/Account, permission grants or Creat
 The exact project control values in Sections 2 and 5.7 remain unchanged: CONTROLLED_RECOVERY, incomplete
 Resume Gate, frozen VS-01, bounded Stage 2 only, no full Stage 2/Stage 3/Pilot/production or real money.
 
+### 5.9 PCI-ENG-016-C2 Session Persistence acceptance and C2-E2 commit closure
+
+Authority: Main Controller's explicit PCI-ENG-016-C2-E2 instruction, dated 2026-11-13, formally accepts
+C2 and authorizes documentation synchronization plus one Git commit. It supersedes only the earlier
+current Session persistence NOT IMPLEMENTED / IMPLEMENTATION IN PROGRESS and pending-acceptance states.
+Historical C1 and C2 execution evidence remains unchanged; no authentication or product authority is added.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+PCI-ENG-016-C1-E2 = ACCEPTED
+PCI-ENG-016-C2 = ACCEPTED
+PCI-ENG-016-C2-E2 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = ACCEPTED
+OPERATIONS_SESSION_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+Accepted delivery: `operations_sessions` PostgreSQL Schema and Migration 0038/Snapshot/Journal;
+Account/Principal composite RESTRICT foreign key; 32-byte Digest persistence; independent Session
+Version; Credential Version and Principal Security Epoch snapshots; all seven Session Repository
+Port PostgreSQL implementations; independent Security Epoch CAS Repository; Strict CAS Rotation;
+monotonic Touch and immutable Absolute Expiry; single and bulk revocation; INSERT/UPDATE, DELETE and
+TRUNCATE trigger protection; and Operations Persistence Composition integration. The Domain/C1 Port
+and Credential Persistence logic are unchanged. `mfa_verified_at` has no Step-up update interface.
+
+Accepted C2 evidence, recorded here without a new test or Migration run:
+
+| Check | Accepted result |
+| --- | --- |
+| Domain / Session Repository Port | 21 PASS / 7 PASS |
+| Identity / Credential / Session PostgreSQL | 11 PASS / 8 PASS / 23 PASS |
+| Focused total | 70/70 PASS, exit 0 |
+| Full Persistence | 131 PASS / 12 FAIL / 3 SKIPPED, exit 1 |
+| Source baseline comparison | The same 12 full names, files and error summaries match individually; `PROVEN PRE-EXISTING — SOURCE BASELINE` |
+| Migration | 0037 -> 0038 succeeded, 38 -> 39 Journal rows; repeat execution preserves the identical 39 rows; fresh installation succeeded |
+| Static/build checks | Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier, Build and Migration Check PASS |
+| Full lint | No new full-repository verification; the historical 458-error report still has no clean parent comparison |
+
+The accepted-source comparison uses the same existing dependency tree, not an independent dependency
+reconstruction. Raw C2 commands, logs and the 12-item reconciliation remain indexed by the C2 entry in
+[`21_Prototype_Execution.md`](./21_Prototype_Execution.md). Full Persistence is not fully green.
+
+Technical limits remain: Migration Role and Runtime Role are not separated; current Compose uses the
+same `DATABASE_URL` for Migration and API; database administration can bypass ordinary triggers.
+MFA Runtime and a Session Step-up update interface are not implemented. The 12 proven source-baseline
+failures and 3 skips remain open. Concurrency evidence proves exercised schedules, not all possible
+deadlock-free schedules. C2 excludes login, Session Credential issuance/verification Runtime, Cookie
+and BFF. PostgreSQL verification is not production security certification.
+
+Idle Timeout, Absolute Lifetime, concurrent Session limits, Device Management, Touch/Rotation policy,
+Cookie/CSRF, retention and MFA Session policy remain unfrozen. Authentication Runtime, MFA, RBAC,
+Admin BFF/API, first real Principal/Account, permission grants and Creator Auth changes remain excluded.
+All project control values in Section 2 remain unchanged, including the incomplete Resume Gate,
+bounded Stage 2, no Pilot/production and `REAL_MONEY_ENABLED = false`.
+
 ## 6. Authority and Supersession Rules
 
 The following authority hierarchy applies by scope, not by file modification time:
@@ -413,12 +476,12 @@ Conflict rules:
 | Product Direction v0.3 | Strategic authority; approved from external Founder context; no full Stage 2 authorization |
 | VS-01 MVP PRD | Frozen product contract; DEV-062, DEV-064 and DEV-082 amendments apply only within their explicit scope |
 | Stage 2 Founder Decision Package | Historical decision-preparation artifact; `NOT AUTHORIZED` statements remain evidence of the prior baseline |
-| Prototype Execution | Historical implementation and verification ledger; not rewritten in this task |
+| Prototype Execution | Historical implementation and verification ledger; C2-E2 appends acceptance without rewriting earlier evidence |
 | Project Handoff | Historical suspend baseline and nine Resume Gate conditions; current status is managed here |
 | Development Backlog | Proposed planning index; no independent authorization |
 | Stage 2 Execution Reconciliation | Proposed supporting evidence; not authoritative until accepted |
-| Operations Identity Domain Contract | PCI-ENG-014 technical baseline and PCI-ENG-015-A pure domain contract; no runtime authorization |
-| Operations Identity Persistence Baseline | PCI-ENG-015-B bounded persistence implementation/evidence; no authentication or runtime authorization |
+| Operations Identity Domain Contract | PCI-ENG-014 / 015-A and accepted C0/C1 contracts; records C2 persistence acceptance without changing the Domain or authorizing runtime |
+| Operations Identity Persistence Baseline | Accepted 015-B Principal, 016-B Credential and 016-C2 Session persistence/evidence; no authentication runtime authorization |
 | `docs/README.md` | Index and current-control navigation; must link to this baseline |
 | Root `README.md` | Developer-facing summary; may state current implementation facts but not production approval |
 

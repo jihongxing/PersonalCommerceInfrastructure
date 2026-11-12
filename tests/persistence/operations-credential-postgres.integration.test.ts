@@ -426,13 +426,19 @@ describeWithDatabase('Operations credential PostgreSQL persistence', () => {
 
   async function resetCredentialTables() {
     await connection.database.execute(
+      sql`ALTER TABLE operations_sessions DISABLE TRIGGER operations_sessions_reject_truncate_trigger`,
+    );
+    await connection.database.execute(
       sql`ALTER TABLE operations_credentials DISABLE TRIGGER operations_credentials_reject_truncate_trigger`,
     );
     try {
       await connection.database.execute(
-        sql`TRUNCATE TABLE operations_credentials, operations_accounts, operations_human_principals`,
+        sql`TRUNCATE TABLE operations_sessions, operations_credentials, operations_accounts, operations_human_principals`,
       );
     } finally {
+      await connection.database.execute(
+        sql`ALTER TABLE operations_sessions ENABLE TRIGGER operations_sessions_reject_truncate_trigger`,
+      );
       await connection.database.execute(
         sql`ALTER TABLE operations_credentials ENABLE TRIGGER operations_credentials_reject_truncate_trigger`,
       );

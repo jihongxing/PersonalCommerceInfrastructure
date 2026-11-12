@@ -2,12 +2,13 @@
 
 > **Task:** `PCI-ENG-015-B`
 > **Decision dependency:** `PCI-ENG-014_ARCHITECTURE = APPROVED`; `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
-> **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING`
+> **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`
 > **Effective date:** 2026-11-12
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
 
-This document records the bounded persistence foundation for the Operations Human and Machine
-identity domain. It is an implementation and evidence record. It does not create Founder approval
+This document records the accepted bounded persistence foundation for the Operations Human and Machine
+identity domain. Acceptance is limited to the three Principal/Account persistence categories and the
+recorded verification evidence. It is an implementation and evidence record. It does not create Founder approval
 for authentication, sessions, credentials, permissions, Admin API integration, external Pilot,
 production or real-money operation.
 

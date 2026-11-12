@@ -90,8 +90,8 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-065` | `APPROVED` (bounded) | Move homepage management to the Profile surface | API, database, C-number or permission changes | Implemented; local acceptance recorded | Yes, only UI regression |
 | `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | ENG-010 core policy regression and migrations pass; full product workflows/acceptance remain PARTIAL | Yes, only named acceptance and rehearsal |
 | `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
-| `PCI-ENG-015-A` | `APPROVED` (bounded) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; focused contract tests 11/11; production source typecheck and focused lint pass | Yes, only contract verification and review |
-| `PCI-ENG-015-B` | `APPROVED` (bounded) | Operations Human Principal, Account and Service Principal persistence foundation | Credentials, sessions, authentication, MFA, BFF, permissions, Actor migration, Admin API, Pilot, production and money | Commits `c5c4349`, `3da7213`, `60f32e6`; migration check PASS; two fresh PostgreSQL rounds PASS | Yes, only persistence evidence closure and explicitly named regression work |
+| `PCI-ENG-015-A` | `ACCEPTED` (bounded engineering delivery) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; final focused contract tests 13/13; production source typecheck and focused lint pass | Yes, only contract verification and review |
+| `PCI-ENG-015-B` | `ACCEPTED` (bounded engineering delivery) | Operations Human Principal, Account and Service Principal persistence foundation | Credentials, sessions, authentication, MFA, BFF, permissions, Actor migration, Admin API, Pilot, production and money | R2 final domain 13/13; PostgreSQL persistence 11/11 in each of two rounds; migration rerun journal 37/37; typecheck and focused lint pass | Yes, only the three persistence categories and their recorded evidence |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -247,12 +247,14 @@ Account and Service Principal persistence is recorded by the separately bounded 
 The contract commit is `e2acf7b`; PCI-ENG-015-A is accepted and focused tests pass 13/13. Aggregate active-test typechecking retains
 pre-existing repository diagnostics and is not claimed closed.
 
-The following Operations implementation values are recorded by the 015-A/015-B bounded units:
+The following Operations implementation values are recorded by the accepted 015-A/015-B bounded
+engineering deliveries. Acceptance covers only the named persistence categories; it does not grant
+authentication, runtime, permission, Pilot, production or real-money authorization:
 
 ```text
-OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
-OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
-SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING
+OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
+OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTED
+SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_BFF = NOT IMPLEMENTED
@@ -261,6 +263,10 @@ OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 ```
 
 ### 5.6 PCI-ENG-015-B Operations Principal persistence foundation
+
+`PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = ACCEPTED`.
+This acceptance is limited to the three Principal/Account persistence categories above and their
+recorded PostgreSQL verification evidence.
 
 PCI-ENG-015-B implements only the PostgreSQL persistence foundation described in
 [`123_Operations_Identity_Persistence_Baseline.md`](../09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md).

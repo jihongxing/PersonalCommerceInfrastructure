@@ -9100,6 +9100,10 @@ are part of the closure review. No push or deployment is performed.
 
 ## PCI-ENG-015-A / CU-A - Operations Principal Domain Contract
 
+> Current engineering acceptance: `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`. The acceptance covers
+> the pure domain contract and its recorded verification only; it does not authorize persistence or
+> authentication runtime.
+
 > Date: 2026-11-12 (Asia/Shanghai). Authorization: Founder-approved PCI-ENG-014 final Operations
 > identity architecture. Scope: pure Human Operations and Machine Service Principal domain contracts
 > and tests only. Persistence and authentication implementation are not authorized.
@@ -9115,17 +9119,19 @@ The module intentionally does not modify `modules/shared/actors.ts`, the existin
 runtime, Creator LocalAuth, Webhook Runtime or any API route. It does not create persistence, login,
 Cookie, BFF, MFA, permission or audit runtime behavior.
 
-Verification: focused Vitest passed 11/11; `tsconfig.build.json` typecheck passed; focused ESLint and
+Historical initial-unit verification: focused Vitest passed 11/11; `tsconfig.build.json` typecheck passed; focused ESLint and
 `git diff --check` passed. The aggregate `tsconfig.tests.json` check remains blocked by pre-existing
 unrelated auth, Web V2 path and unused-symbol diagnostics. Contract implementation commit:
 `e2acf7b`. Documentation synchronization is recorded in the separate PCI-ENG-015-A documentation
 change unit. Project control mode, Resume Gate, Stage 2 boundary, Pilot/production prohibition and
 `REAL_MONEY_ENABLED=false` remain unchanged.
 
+Final R2 evidence for this accepted contract is 13/13 focused domain tests; the earlier 11/11 result
+above remains a historical initial-unit record.
+
 ## PCI-ENG-015-B / CU-A - Operations Principal Persistence Foundation
 
-> Date: 2026-11-12. Status: bounded persistence implementation complete; acceptance evidence recorded,
-> Main Controller acceptance pending. Authorization: PCI-ENG-014 architecture approval and the named
+> Date: 2026-11-12. Status: `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = ACCEPTED`. Authorization: PCI-ENG-014 architecture approval and the named
 > PCI-ENG-015-B bounded change unit. This record does not authorize authentication or product runtime.
 
 Added only `operations_human_principals`, `operations_accounts` and `service_principals` in migration
@@ -9138,12 +9144,15 @@ No credential, session, authentication, MFA, permission, audit runtime, BFF, Adm
 Pilot, production or real-money behavior was added. Existing LocalAuth, Web sessions, Creator identity,
 Catalog and shared Actor modules were not changed.
 
-Verification: 015-A domain suite 13/13 PASS; two independent PostgreSQL 17 tmpfs rounds passed 11/11
+Final verification: 015-A domain suite 13/13 PASS; two independent PostgreSQL 17 tmpfs rounds passed 11/11
 integration tests each; same-database formal migration rerun kept the journal at 37 rows; `pnpm db:check` PASS; active runtime and backend test
 typechecks PASS; focused lint/format/diff checks PASS. Two independent fresh PostgreSQL 17 Podman
-rounds installed the complete migration history and ran 5/5 persistence tests each, covering valid
+rounds installed the complete migration history and ran 11/11 persistence tests each, covering valid
 rehydration, duplicate and concurrent uniqueness, missing foreign keys, invalid statuses, discriminator
 checks, restricted deletion and transaction rollback. Temporary containers and volumes were removed.
+
+The earlier `5/5` persistence result in this section is retained as a historical R1 execution record;
+it is not the final R2 round result.
 
 Schema commit: `c5c4349`. Repository commit: `3da7213`. Constraint coverage commit: `60f32e6`.
 Documentation synchronization is separate. Project control mode, incomplete Resume Gate, bounded Stage 2 boundary,
@@ -9151,8 +9160,8 @@ Pilot/production prohibition and `REAL_MONEY_ENABLED=false` remain unchanged.
 
 ## PCI-ENG-015-B-R2 / Persistence Integrity and Verification Closure
 
-> Date: 2026-11-12. Status: implementation and evidence complete; Main Controller acceptance remains
-> pending. Authorization is limited to the existing PCI-ENG-015-B persistence scope.
+> Date: 2026-11-12. Status: `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = ACCEPTED`. Authorization remains
+> limited to the existing PCI-ENG-015-B persistence scope.
 
 R2 adds the Principal/Account association guard, trim/NFC login canonicalization with preserved case,
 formal PostgreSQL Operations Identity composition, explicit not-found and constraint-specific conflict
@@ -9167,5 +9176,6 @@ container IDs were `7d0373bbc847e5eac8e2ebf6d277dfab3fb907afa975fd39a50cd7e817fc
 `0a538e6cf924328e11faf069e8e605820df2ddce935540186213b911bdb6b562`. Each formal `pnpm db:migrate`
 run exited 0; rerunning on the same database exited 0 with the migration journal unchanged at 37 rows.
 Each round passed 24 total focused tests (13 domain and 11 PostgreSQL), and each task-created container
-was stopped and removed. Existing Podman resources were not modified. The persistence status remains
-`PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING` pending Main Controller acceptance.
+was stopped and removed. Existing Podman resources were not modified. Acceptance covers only the three
+Principal/Account persistence categories; it does not authorize authentication, sessions, credentials,
+MFA, permissions, Admin API, Pilot, production or real-money behavior.

@@ -312,6 +312,7 @@ export function createOperationsSession(input: {
   readonly mfaVerifiedAt?: Date;
   readonly revokedAt?: Date;
 }): OperationsSession {
+  assertOperationsAccount(input.account);
   const session: OperationsSession = {
     id: input.id,
     principalId: input.account.principalId,
@@ -505,7 +506,7 @@ export function assertOperationsSession(value: OperationsSession): void {
   assertBrandedId(value.principalId, 'Operations Human Principal ID');
   assertBrandedId(value.accountId, 'Operations Account ID');
   assertStatus(value.status, operationsSessionStatuses, 'Operations Session status');
-  assertNonNegativeInteger(value.credentialVersion, 'Operations Session credential version');
+  assertPositiveInteger(value.credentialVersion, 'Operations Session credential version');
   assertNonNegativeInteger(
     value.principalSecurityEpoch,
     'Operations Session principal security epoch',
@@ -517,6 +518,11 @@ export function assertOperationsSession(value: OperationsSession): void {
   assertDateOrder(value.createdAt, value.lastActivityAt, 'Operations Session activity dates');
   assertDateOrder(value.lastActivityAt, value.idleExpiresAt, 'Operations Session idle dates');
   assertDateOrder(value.idleExpiresAt, value.absoluteExpiresAt, 'Operations Session expiry dates');
+  if (value.absoluteExpiresAt.getTime() <= value.createdAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session absolute expiry must be after creation date.',
+    );
+  }
   if (value.mfaVerifiedAt !== undefined) assertDate(value.mfaVerifiedAt, 'Operations MFA date');
   if (value.revokedAt !== undefined) assertDate(value.revokedAt, 'Operations Session revoke date');
   if (value.status === 'revoked' && value.revokedAt === undefined) {
@@ -525,6 +531,82 @@ export function assertOperationsSession(value: OperationsSession): void {
   if (value.status === 'active' && value.revokedAt !== undefined) {
     throw new OperationsDomainInvariantError('Active Operations Session cannot have revokedAt.');
   }
+}
+
+export function assertOperationsSessionTouch(
+  current: OperationsSession,
+  next: Pick<OperationsSession, 'lastActivityAt' | 'idleExpiresAt'>,
+): void {
+  assertOperationsSession(current);
+  if (current.status === 'revoked') {
+    throw new OperationsDomainInvariantError('Revoked Operations Session is terminal.');
+  }
+  assertDate(next.lastActivityAt, 'Operations Session next activity date');
+  assertDate(next.idleExpiresAt, 'Operations Session next idle expiry');
+  if (next.lastActivityAt.getTime() < current.lastActivityAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session activity date cannot move backwards.',
+    );
+  }
+  if (next.idleExpiresAt.getTime() < next.lastActivityAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session next idle expiry cannot precede activity date.',
+    );
+  }
+  if (next.idleExpiresAt.getTime() < current.idleExpiresAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session idle expiry cannot move backwards.',
+    );
+  }
+  if (next.idleExpiresAt.getTime() > current.absoluteExpiresAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session idle expiry cannot extend beyond absolute expiry.',
+    );
+  }
+}
+
+export function assertOperationsSessionRotationAbsoluteExpiry(
+  current: OperationsSession,
+  nextAbsoluteExpiresAt: Date,
+): void {
+  assertOperationsSession(current);
+  if (current.status === 'revoked') {
+    throw new OperationsDomainInvariantError('Revoked Operations Session is terminal.');
+  }
+  assertDate(nextAbsoluteExpiresAt, 'Operations Session next absolute expiry');
+  if (nextAbsoluteExpiresAt.getTime() !== current.absoluteExpiresAt.getTime()) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session rotation cannot change absolute expiry.',
+    );
+  }
+}
+
+export function assertOperationsSessionTransition(
+  current: OperationsSession,
+  next: OperationsSession,
+): void {
+  assertOperationsSession(current);
+  assertOperationsSession(next);
+  if (
+    current.id !== next.id ||
+    current.principalId !== next.principalId ||
+    current.accountId !== next.accountId ||
+    current.credentialVersion !== next.credentialVersion ||
+    current.principalSecurityEpoch !== next.principalSecurityEpoch ||
+    current.createdAt.getTime() !== next.createdAt.getTime() ||
+    current.absoluteExpiresAt.getTime() !== next.absoluteExpiresAt.getTime()
+  ) {
+    throw new OperationsDomainInvariantError(
+      'Operations Session identity and snapshot fields cannot change.',
+    );
+  }
+  if (current.status === 'revoked') {
+    throw new OperationsDomainInvariantError('Revoked Operations Session is terminal.');
+  }
+  if (next.status !== 'active' && next.status !== 'revoked') {
+    throw new OperationsDomainInvariantError('Operations Session transition is invalid.');
+  }
+  assertOperationsSessionTouch(current, next);
 }
 
 export function assertOperationsSessionBelongsToAccount(

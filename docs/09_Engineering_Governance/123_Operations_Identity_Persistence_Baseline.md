@@ -3,7 +3,9 @@
 > **Task:** `PCI-ENG-015-B`
 > **Decision dependency:** `PCI-ENG-014_ARCHITECTURE = APPROVED`; `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
 > **Implementation state:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
+> **Session contracts only:** `PCI-ENG-016-C0 = ACCEPTED`; `PCI-ENG-016-C1 = ACCEPTED`; Session persistence is not implemented
 > **Effective date:** 2026-11-12
+> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C1-E2
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
 
 This document records the accepted bounded persistence foundations for the Operations Human and Machine
@@ -44,10 +46,14 @@ Account uniqueness or foreign-key failure rolls the Principal back as well. The 
 entry point is `createPostgresOperationsIdentityComposition`; it is exposed from the existing
 Creator PostgreSQL composition without starting Operations authentication.
 
-The following remain outside the accepted persistence units and are not implemented:
+Current capability states distinguish accepted persistence/contracts from unimplemented runtime:
 
 ```text
 OPERATIONS_CREDENTIAL_PERSISTENCE = IMPLEMENTED / ACCEPTED (PCI-ENG-016-B)
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_MFA = NOT IMPLEMENTED
@@ -125,6 +131,47 @@ Implementation commits:
 - `591e038` — R2 PostgreSQL constraint and verification coverage
 - `b700ca6` — R2 formal PostgreSQL persistence composition
 
+## 3.2 PCI-ENG-016-C1 Session contract and Port acceptance, without persistence
+
+Authority: Main Controller's explicit PCI-ENG-016-C1-E2 acceptance instruction, dated 2026-11-13.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+The accepted C1 delivery contains only the existing Session Domain refinements and Application
+contracts. Credential Version is positive; Principal Security Epoch is non-negative; Session Version
+is separate CAS Persistence Metadata, initialized at 1 by future persistence. Sessions bind matching
+Account/Principal references. Digest and Password Verifier types are separate; the Domain contains no
+opaque credential, Digest or Session CAS Version. Rotation cannot change Absolute Expiry, Touch is
+monotonic and bounded by that expiry, and revoked Sessions are terminal.
+
+The Session Port defines Create, Find Active by Digest, Validate/Touch, Strict CAS Rotate, Revoke
+Single, Revoke All for Account and Revoke All for Principal. A separate Security Epoch Increment Port
+requires expectedEpoch and permits only epoch + 1. The future adapter must validate active ownership
+and current Credential Version/Epoch snapshots under Human Principal -> Operations Account ->
+Operations Credential -> Operations Session lock order; use strict Digest + expectedSessionVersion
+CAS; fail closed without a grace window; and preserve the winner when another rotation loses CAS.
+A lost rotation response requires reauthentication; no default successor recovery is provided.
+These are future persistence obligations, not verified database behavior.
+
+Accepted C1 evidence: Domain Contract Tests 21 PASS; Session Repository Contract Tests 7 PASS; total
+28/28 PASS. Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier and
+`git diff --check` PASS. No PostgreSQL Session tests were executed because there is no Session
+persistence implementation. This does not rerun or supersede the historical Principal/Credential
+PostgreSQL evidence above, and it does not close the recorded full-suite/lint limitations.
+
+C1 adds no Session table, Schema, Migration, PostgreSQL Adapter, Composition integration, Session
+issuance or Authentication Runtime. E2 commits the accepted four C1 files unchanged alongside the
+four authorized governance documents; no database operation, role change or new authority is granted.
+The full Domain/Port contract is recorded in
+[`122_Operations_Identity_Domain_Contract.md`](./122_Operations_Identity_Domain_Contract.md), Section 5.2.
+
 ## 4. Control interpretation
 
 This bounded implementation records engineering reality only. It does not change the project control
@@ -151,6 +198,9 @@ with the Main Controller and Founder according to the existing authority hierarc
 
 Before any authentication or Operations runtime implementation, the Main Controller/Founder must
 confirm the first Principal and Bootstrap Authority, administrator invitation policy, credential and
-session design, permission registry and high-risk controls. Each follow-on unit must state its own
+remaining Session policies, permission registry and high-risk controls. C0/C1 contract acceptance
+does not freeze Idle Timeout, Absolute Lifetime, maximum concurrent Sessions, Device Management,
+Touch frequency, Rotation trigger policy, Cookie/CSRF, Session history retention or MFA Session
+semantics. Each follow-on unit must state its own
 authorization level (`D`, `L`, `I`, `P`, `R` or `M`) and must not infer a higher level from this
 persistence evidence.

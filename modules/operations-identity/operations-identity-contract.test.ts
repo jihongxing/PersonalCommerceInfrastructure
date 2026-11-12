@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   assertExecutionAttribution,
+  assertOperationsSessionRotationAbsoluteExpiry,
   assertOperationsSessionBelongsToAccount,
+  assertOperationsSessionTouch,
+  assertOperationsSessionTransition,
   createHumanDirectExecutionAttribution,
   createHumanInitiatedSystemExecutionAttribution,
   createOperationsAccount,
@@ -28,6 +31,7 @@ import {
   normalizeOperationsLoginIdentifier,
   type OperationsAccountId,
   type OperationsHumanPrincipalId,
+  type PlatformSystemPrincipal,
   type ProviderServicePrincipal,
 } from './operations-identity-contract.js';
 
@@ -52,6 +56,21 @@ function account(principalId = principal().id, id = 'account-1') {
     status: 'active',
     createdAt,
     updatedAt,
+  });
+}
+
+function session(overrides: Partial<Parameters<typeof createOperationsSession>[0]> = {}) {
+  return createOperationsSession({
+    id: createOperationsSessionId('session-invariants'),
+    account: account(),
+    status: 'active',
+    credentialVersion: 1,
+    principalSecurityEpoch: 0,
+    createdAt,
+    lastActivityAt: updatedAt,
+    idleExpiresAt: new Date('2026-11-12T08:00:00.000Z'),
+    absoluteExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
+    ...overrides,
   });
 }
 
@@ -185,6 +204,7 @@ describe('Operations identity domain contract', () => {
 
     expect(session.principalId).toBe(owner.principalId);
     expect(session.accountId).toBe(owner.id);
+    expect(session.credentialVersion).toBe(1);
     expect(() => assertOperationsSessionBelongsToAccount(session, owner)).not.toThrow();
   });
 
@@ -224,6 +244,34 @@ describe('Operations identity domain contract', () => {
 
     expect(() =>
       createOperationsSession({
+        id: createOperationsSessionId('session-zero-credential-version'),
+        account: account(),
+        status: 'active',
+        credentialVersion: 0,
+        principalSecurityEpoch: 0,
+        createdAt,
+        lastActivityAt: updatedAt,
+        idleExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
+        absoluteExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
+      }),
+    ).toThrow('positive integer');
+
+    expect(() =>
+      createOperationsSession({
+        id: createOperationsSessionId('session-equal-absolute-expiry'),
+        account: account(),
+        status: 'active',
+        credentialVersion: 1,
+        principalSecurityEpoch: 0,
+        createdAt,
+        lastActivityAt: createdAt,
+        idleExpiresAt: createdAt,
+        absoluteExpiresAt: createdAt,
+      }),
+    ).toThrow('must be after creation');
+
+    expect(() =>
+      createOperationsSession({
         id: createOperationsSessionId('session-revoked'),
         account: account(),
         status: 'revoked',
@@ -235,6 +283,150 @@ describe('Operations identity domain contract', () => {
         absoluteExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
       }),
     ).toThrow('revokedAt');
+  });
+
+  it('keeps Touch and Rotation inside the immutable absolute expiry and preserves terminal state', () => {
+    const current = createOperationsSession({
+      id: createOperationsSessionId('session-time-contract'),
+      account: account(),
+      status: 'active',
+      credentialVersion: 1,
+      principalSecurityEpoch: 0,
+      createdAt,
+      lastActivityAt: updatedAt,
+      idleExpiresAt: new Date('2026-11-12T08:00:00.000Z'),
+      absoluteExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
+    });
+
+    expect(() =>
+      assertOperationsSessionTouch(current, {
+        lastActivityAt: new Date('2026-11-12T02:00:00.000Z'),
+        idleExpiresAt: new Date('2026-11-12T10:00:00.000Z'),
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertOperationsSessionTouch(current, {
+        lastActivityAt: new Date('2026-11-12T02:00:00.000Z'),
+        idleExpiresAt: new Date('2026-11-13T00:00:01.000Z'),
+      }),
+    ).toThrow('beyond absolute expiry');
+    expect(() =>
+      assertOperationsSessionRotationAbsoluteExpiry(current, new Date('2026-11-13T00:00:01.000Z')),
+    ).toThrow('cannot change absolute expiry');
+
+    const revoked = {
+      ...current,
+      status: 'revoked' as const,
+      revokedAt: new Date('2026-11-12T02:00:00.000Z'),
+    };
+    expect(() => assertOperationsSessionTransition(current, revoked)).not.toThrow();
+    expect(() => assertOperationsSessionTransition(revoked, revoked)).toThrow('terminal');
+  });
+
+  it('rejects non-positive Credential snapshots and negative or fractional Security Epochs', () => {
+    for (const credentialVersion of [0, -1, 1.5]) {
+      expect(() => session({ credentialVersion })).toThrow('positive integer');
+    }
+    for (const principalSecurityEpoch of [-1, 0.5]) {
+      expect(() => session({ principalSecurityEpoch })).toThrow('non-negative integer');
+    }
+    expect(session({ principalSecurityEpoch: 0 }).principalSecurityEpoch).toBe(0);
+  });
+
+  it('enforces every time-window boundary while accepting the permitted equalities', () => {
+    expect(() => session({ lastActivityAt: new Date('2026-11-11T23:59:59.000Z') })).toThrow(
+      'activity dates are out of order',
+    );
+    expect(() => session({ idleExpiresAt: createdAt })).toThrow('idle dates are out of order');
+    expect(() => session({ idleExpiresAt: new Date('2026-11-14T00:00:00.000Z') })).toThrow(
+      'expiry dates are out of order',
+    );
+    expect(() =>
+      session({
+        lastActivityAt: createdAt,
+        idleExpiresAt: new Date('2026-11-13T00:00:00.000Z'),
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects stale Touch timestamps and every attempt to change absolute expiry on Rotation', () => {
+    const current = session();
+    expect(() =>
+      assertOperationsSessionTouch(current, {
+        lastActivityAt: createdAt,
+        idleExpiresAt: current.idleExpiresAt,
+      }),
+    ).toThrow('activity date cannot move backwards');
+    expect(() =>
+      assertOperationsSessionTouch(current, {
+        lastActivityAt: current.lastActivityAt,
+        idleExpiresAt: new Date('2026-11-12T07:00:00.000Z'),
+      }),
+    ).toThrow('idle expiry cannot move backwards');
+    expect(() =>
+      assertOperationsSessionTouch(current, {
+        lastActivityAt: new Date('2026-11-12T10:00:00.000Z'),
+        idleExpiresAt: new Date('2026-11-12T09:00:00.000Z'),
+      }),
+    ).toThrow('cannot precede activity');
+    expect(() =>
+      assertOperationsSessionRotationAbsoluteExpiry(current, current.absoluteExpiresAt),
+    ).not.toThrow();
+    expect(() =>
+      assertOperationsSessionRotationAbsoluteExpiry(current, current.idleExpiresAt),
+    ).toThrow('cannot change absolute expiry');
+  });
+
+  it('rejects reactivation, Touch and Rotation of a revoked Session', () => {
+    const active = session();
+    const revoked = session({ status: 'revoked', revokedAt: updatedAt });
+    expect(() => assertOperationsSessionTransition(revoked, active)).toThrow('terminal');
+    expect(() => assertOperationsSessionTransition(revoked, revoked)).toThrow('terminal');
+    expect(() => assertOperationsSessionTouch(revoked, revoked)).toThrow('terminal');
+    expect(() =>
+      assertOperationsSessionRotationAbsoluteExpiry(revoked, revoked.absoluteExpiresAt),
+    ).toThrow('terminal');
+  });
+
+  it('preserves Session identity and security snapshots across transitions', () => {
+    const current = session();
+    const forbiddenChanges = [
+      { id: createOperationsSessionId('other-session') },
+      { principalId: createOperationsHumanPrincipalId('other-principal') },
+      { accountId: createOperationsAccountId('other-account') },
+      { credentialVersion: 2 },
+      { principalSecurityEpoch: 1 },
+      { createdAt: new Date('2026-11-11T00:00:00.000Z') },
+      { absoluteExpiresAt: new Date('2026-11-14T00:00:00.000Z') },
+    ];
+    for (const change of forbiddenChanges) {
+      expect(() => assertOperationsSessionTransition(current, { ...current, ...change })).toThrow(
+        'identity and snapshot fields cannot change',
+      );
+    }
+    expect(() =>
+      assertOperationsSessionTransition(current, { ...current, lastActivityAt: createdAt }),
+    ).toThrow('activity date cannot move backwards');
+  });
+
+  it('validates the supplied Human Account and rejects either ownership mismatch independently', () => {
+    const owner = account();
+    const current = session({ account: owner });
+    expect(() =>
+      assertOperationsSessionBelongsToAccount(
+        { ...current, principalId: createOperationsHumanPrincipalId('other-human') },
+        owner,
+      ),
+    ).toThrow('same Human Principal');
+    expect(() =>
+      assertOperationsSessionBelongsToAccount(
+        { ...current, accountId: createOperationsAccountId('other-account') },
+        owner,
+      ),
+    ).toThrow('same Human Principal');
+    expect(() =>
+      session({ account: { ...owner, loginIdentifierNormalized: ' Not-Normalized ' } }),
+    ).toThrow('must already be normalized');
   });
 
   it('requires enrollment and revocation timestamps for MFA metadata', () => {
@@ -370,3 +562,21 @@ const typedProviderPrincipal: ProviderServicePrincipal = {
 
 // @ts-expect-error Provider Service Principals do not expose Human Account fields.
 void typedProviderPrincipal.accountId;
+
+// @ts-expect-error Provider Service Principals cannot own a Human Operations Session.
+const invalidSessionOwner: Parameters<typeof createOperationsSession>[0]['account'] =
+  typedProviderPrincipal;
+void invalidSessionOwner;
+
+const typedSystemPrincipal: PlatformSystemPrincipal = {
+  id: typedServiceId,
+  kind: 'platform_system',
+  systemId: createPlatformSystemId('system-typed'),
+  status: 'active',
+  createdAt,
+};
+
+// @ts-expect-error Platform System Principals cannot own a Human Operations Session.
+const invalidSystemSessionOwner: Parameters<typeof createOperationsSession>[0]['account'] =
+  typedSystemPrincipal;
+void invalidSystemSessionOwner;

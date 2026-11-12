@@ -2,6 +2,7 @@
 
 > **Status**: CURRENT CONTROL BASELINE
 > **Effective date**: 2026-11-12
+> **Acceptance ledger update**: 2026-11-13 — PCI-ENG-016-C1-E2
 > **Project**: Personal Commerce Infrastructure
 > **Control mode**: `CONTROLLED_RECOVERY`
 > **Formal Resume Gate**: `NOT_FULLY_CLOSED`
@@ -93,6 +94,8 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `PCI-ENG-015-A` | `ACCEPTED` (bounded engineering delivery) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; final focused contract tests 13/13; production source typecheck and focused lint pass | Yes, only contract verification and review |
 | `PCI-ENG-015-B` | `ACCEPTED` (bounded engineering delivery) | Operations Human Principal, Account and Service Principal persistence foundation | Credentials, sessions, authentication, MFA, BFF, permissions, Actor migration, Admin API, Pilot, production and money | R2 final domain 13/13; PostgreSQL persistence 11/11 in each of two rounds; migration rerun journal 37/37; typecheck and focused lint pass | Yes, only the three persistence categories and their recorded evidence |
 | `PCI-ENG-016-B` / `R1` / `R2` | `ACCEPTED` (bounded engineering delivery) | Encoded Password Verifier persistence, Operations Account Credential Repository, account-scoped strict versioning, atomic replacement, revoked-history protection, PostgreSQL constraints/triggers, composition integration and Domain/PostgreSQL verification | Login, Session, password verification/reset, MFA, RBAC, BFF/Admin API, Creator Auth, Pilot, production and real money | Domain 14/14; Credential + Operations Identity PostgreSQL 19/19; full persistence 108 PASS / 12 FAIL / 3 SKIPPED; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`; changed-file ESLint, TypeScript, build and migration check pass; full lint remains 458 errors without parent comparison | Yes, only this accepted persistence boundary and evidence closure |
+| `PCI-ENG-016-C0` | `ACCEPTED` (bounded architecture contract) | Operations Human Session persistence design and implementation contract | Session persistence or authentication implementation; unresolved Founder policy values | Main Controller acceptance carried forward by the C1-E2 instruction; no database implementation or execution evidence implied | Only reconciliation of the accepted design |
+| `PCI-ENG-016-C1` | `ACCEPTED` (bounded engineering delivery) | Existing Session Domain Contract, Digest/Persistence Record types, seven Session Repository operations and a separate Security Epoch Increment Port | Session Schema/Migration/Adapter, database operations, authentication/login/logout, Cookie/BFF, MFA/RBAC, Admin API, Creator Auth and production authority | Domain 21 PASS + Session Repository Contract 7 PASS = 28/28; production and active backend test TypeScript, changed-file ESLint, Prettier and diff check PASS; no Session PostgreSQL tests or persistence implementation | Only accepted contract/port review and evidence closure; follow-on implementation needs a separate named unit |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -125,6 +128,7 @@ State meanings:
 | Controlled Catalog | `PARTIAL` | `APPROVED` bounded by `DEV-082`/`083` | `SYNCED` | `NOT_ACCEPTED` | ENG-010 core database/Operations TESTED; report/appeal/manual-review workflow and contract conflicts remain; see Section 5.3 |
 | Web V2 | `IMPLEMENTED` | `UNKNOWN` for complete product scope | `STALE` | `TESTED` | Main implementation target; no automatic scope expansion |
 | Operations Admin Web | `IMPLEMENTED` shell only | `APPROVED` by explicit ENG-012 task | `SYNCED` | `TESTED` local shell | No authentication, data, mutations or human-review authority; see Section 5.4 |
+| Operations Session Domain / Application Ports | `IMPLEMENTED` contracts only | `APPROVED` bounded by accepted `PCI-ENG-016-C0` / `C1` | `SYNCED` | `ACCEPTED` contracts only | Session persistence and authentication runtime remain NOT IMPLEMENTED; see Section 5.8 |
 | Local Auth | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: six Local Auth PostgreSQL cases pass; ENG-009 reverified two clean runs; product acceptance remains open |
 | Password Recovery | `IMPLEMENTED` | `UNKNOWN` as product scope | `STALE` | `TESTED` | ENG-008/009: PostgreSQL reset/queue/single-use cases pass; real mail delivery and product acceptance remain open |
 | Reservation | `IMPLEMENTED` | `UNKNOWN` current expansion | `SYNCED` | `TESTED` | Historical implementation; no scope expansion |
@@ -245,8 +249,9 @@ The contract deliberately remains outside `modules/shared/actors.ts` and does no
 `pilot_operations` runtime. Credential secrets, Session Credential Hashes, authentication, BFF, MFA,
 Permission enforcement, audit runtime and Admin API integration remain unimplemented. Principal,
 Account and Service Principal persistence is recorded by the separately bounded PCI-ENG-015-B unit.
-The contract commit is `e2acf7b`; PCI-ENG-015-A is accepted and focused tests pass 13/13. Aggregate active-test typechecking retains
-pre-existing repository diagnostics and is not claimed closed.
+The original contract commit is `e2acf7b`; PCI-ENG-015-A is accepted and its final focused tests passed
+13/13. That unit recorded pre-existing aggregate test-type diagnostics without closing them. Current
+C1 Production and Active Backend Test TypeScript results are recorded separately in Section 5.8.
 
 The following Operations implementation values are recorded by the accepted 015-A/015-B bounded
 engineering deliveries. Acceptance covers only the named persistence categories; it does not grant
@@ -327,6 +332,53 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+### 5.8 PCI-ENG-016-C1 Session Domain Contract and Application Port acceptance
+
+Authority: Main Controller's explicit PCI-ENG-016-C1-E2 acceptance instruction, dated 2026-11-13.
+This records the accepted C0 design and C1 engineering delivery; it does not create follow-on scope.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+The accepted contract keeps Session Credential Version positive, Principal Security Epoch non-negative,
+and Session Version separate as CAS Persistence Metadata. Each Human Session binds one Operations
+Account and its matching Human Principal; Provider/System and Creator identities are excluded. Digest
+and Encoded Password Verifier are distinct types, and neither Digest nor Session Version is added to
+the Domain entity. Time ordering is `createdAt <= lastActivityAt <= idleExpiresAt <= absoluteExpiresAt`,
+with `absoluteExpiresAt > createdAt`; Touch is monotonic, Rotation cannot change Absolute Expiry, and
+revoked Sessions are terminal.
+
+The seven Session operations are Create, Find Active by Digest, Validate/Touch, Strict CAS Rotate,
+Revoke Single, Revoke All for Account and Revoke All for Principal. The separate Epoch Increment Port
+uses expectedEpoch and permits only an increment of one. Future persistence must lock Human Principal
+then Operations Account, Operations Credential and Operations Session; validate current Credential
+Version and Security Epoch snapshots; and use Digest plus expectedSessionVersion CAS. It must fail
+closed without a grace window, preserve the winner on a single CAS conflict and require
+reauthentication after a lost rotation response. No default successor recovery is provided.
+These are accepted persistence obligations, not implemented database behavior.
+
+Accepted C1 verification: Domain Contract Tests 21 PASS; Session Repository Contract Tests 7 PASS;
+total 28/28 PASS. Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier
+and `git diff --check` PASS. No PostgreSQL Session tests were executed because Session persistence
+does not exist. C1-E2 preserves the four accepted engineering files and synchronizes this ledger;
+these test numbers describe C1 evidence, not a new database or full-repository verification run.
+Earlier 015-A/015-B/016-B evidence and repository-level limitations remain historical records.
+
+Founder policies remain unfrozen: Idle Timeout, Absolute Lifetime, maximum concurrent Sessions,
+Device Management, Touch frequency, Rotation trigger policy, Cookie/CSRF, Session history retention
+and MFA Session semantics. Fixture dates do not approve 8h/24h or other policy values.
+
+Acceptance does not implement or authorize Operations login/logout, Session issuance/runtime, Cookie,
+BFF, MFA, RBAC, Admin API, a first Principal/Account, permission grants or Creator Auth changes.
+The exact project control values in Sections 2 and 5.7 remain unchanged: CONTROLLED_RECOVERY, incomplete
+Resume Gate, frozen VS-01, bounded Stage 2 only, no full Stage 2/Stage 3/Pilot/production or real money.
 
 ## 6. Authority and Supersession Rules
 

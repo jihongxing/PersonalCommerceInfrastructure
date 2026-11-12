@@ -2,8 +2,10 @@
 
 > **Decision:** `PCI-ENG-014_ARCHITECTURE = APPROVED`
 > **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
+> **Session contract follow-on:** `PCI-ENG-016-C0 = ACCEPTED`; `PCI-ENG-016-C1 = ACCEPTED`
 > **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED`; `PCI-ENG-016-B_CREDENTIAL_PERSISTENCE = ACCEPTED`
 > **Effective date:** 2026-11-12
+> **Acceptance ledger update:** 2026-11-13 — PCI-ENG-016-C1-E2
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
 
 This document adopts the final PCI-ENG-014 Operations identity architecture and records the first
@@ -84,6 +86,9 @@ Credential and secret material are deliberately excluded from every domain entit
 - Human Account `principalId` is an `OperationsHumanPrincipalId`; it cannot be a Creator or Service ID.
 - A Human Session is constructed from one Account and derives the matching Human Principal reference.
 - Session expiry ordering is `createdAt <= lastActivityAt <= idleExpiresAt <= absoluteExpiresAt`.
+- Session Credential Version is a positive integer; Principal Security Epoch is a non-negative integer.
+- Absolute Expiry must be after creation. Touch cannot move activity/idle timestamps backwards or
+  extend beyond Absolute Expiry; Rotation cannot change Absolute Expiry. Revoked Sessions are terminal.
 - Active and revoked Session/Credential/MFA states have the required timestamp rules.
 - Principal and Account lifecycle state remain separate; an active Account does not grant permissions.
 - Provider and Platform System principals require their own branded Provider/System IDs.
@@ -113,7 +118,7 @@ Human Session ownership and expiry, MFA metadata, Provider/System separation, Se
 ownership and all four execution attribution forms. `@ts-expect-error` assertions cover incompatible
 Human, Account and Service IDs and the absence of Human Account fields on Provider principals.
 
-Verification of the accepted domain contract on the R2 closure branch:
+Historical verification of the accepted 015-A / 016-B domain baseline, before C1:
 
 | Check                           | Result                              | What it proves                                        | What it does not prove                          |
 | ------------------------------- | ----------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
@@ -140,7 +145,69 @@ Session creation, MFA, RBAC, Admin BFF/API, Creator Auth changes, Pilot, Product
 The 108 PASS / 12 FAIL / 3 SKIPPED Full Persistence result remains recorded as a repository regression
 result; the 12 failures reproduce on the source baseline and are `PROVEN PRE-EXISTING — SOURCE BASELINE`.
 
-## 6. Not implemented by this unit
+## 5.2 Accepted Session Domain Contract and Application Repository Port
+
+Main Controller formally accepted C1 in the explicit PCI-ENG-016-C1-E2 instruction. C0 design acceptance
+is carried forward; this ledger closure changes no accepted TypeScript contract.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+C1 refines the existing `OperationsSession`; no parallel Domain or database fields are introduced.
+It binds each Session to one Operations Account and its matching Human Principal, rejects mismatched
+ownership, and excludes Provider Service, Platform System and Creator identity reuse. The transition
+validators preserve identity, Credential Version/Security Epoch snapshots, creation time and Absolute
+Expiry, and reject reactivation or updates after revocation.
+
+`applications/operations-identity/operations-session-repositories.ts` defines:
+
+- `OperationsSessionCredentialDigest`: a branded 64-character lowercase hexadecimal representation
+  of a 32-byte digest, separate from `EncodedPasswordVerifier`; no digest generation is implemented.
+- Independent branded Credential Version, Session Version and Principal Security Epoch values.
+  Credential Version is positive, Epoch allows zero, and Session Version is positive CAS metadata
+  held only by `OperationsSessionPersistenceRecord`, outside the Domain entity.
+- `OperationsSessionSnapshot`, refining existing snapshot field types without adding Domain fields.
+- Seven Repository operations: Create, Find Active by Digest, Validate/Touch, Strict CAS Rotate,
+  Revoke Single, Revoke All for Account and Revoke All for Principal.
+- A separate expectedEpoch-controlled Security Epoch Increment Port; no decrement/reset/setter.
+- Contract, Conflict, NotFound, NotAuthenticated and sanitized Persistence errors; no delete,
+  reactivation, arbitrary update or raw opaque credential input.
+
+Future persistence must initialize Session Version at 1 and increment it by exactly one on successful
+Digest + expectedSessionVersion CAS. It must follow Human Principal -> Operations Account ->
+Operations Credential -> Operations Session lock order, validate active owners and current Credential
+Version/Epoch snapshots, and fail closed at expiry or invalidation. Touch must merge timestamps
+monotonically. A single CAS conflict does not revoke the winner; a lost rotation response requires
+reauthentication. There is no grace window, default successor recovery or independent credential TTL.
+BFF single-flight cannot replace database CAS. These remain persistence obligations, not SQL/runtime
+implementation or database concurrency evidence.
+
+Accepted C1 verification:
+
+| Check | Result | Scope and limit |
+| --- | --- | --- |
+| Domain Contract Tests | 21 PASS | Existing identity/credential checks plus Session ownership, versions, time and terminal-state invariants |
+| Session Repository Contract Tests | 7 PASS | Digest/Verifier and version type separation, port surface, pure CAS/Epoch arithmetic; no database concurrency |
+| Focused total | 28/28 PASS | Two test files; existing 14 Domain tests retained within the expanded 21 |
+| Production TypeScript | PASS | `tsconfig.build.json`, no emit |
+| Active Backend Test TypeScript | PASS | `tsconfig.active-tests.json`; distinct from the historical aggregate above |
+| Changed-file ESLint / Prettier | PASS / PASS | Four C1 engineering files |
+| `git diff --check` | PASS | Accepted C1 difference whitespace check |
+| PostgreSQL Session tests | NOT EXECUTED | No Session persistence implementation exists |
+
+Evidence is the accepted C1 report; E2 records it without rerunning database verification. Historical
+13/13, 14/14 and PostgreSQL counts belong to their original units and are not rewritten as C1 results.
+Idle Timeout, Absolute Lifetime, maximum concurrent Sessions, Device Management, Touch frequency,
+Rotation triggers, Cookie/CSRF, Session history retention and MFA Session semantics remain unfrozen
+Founder policies. Test Fixture dates do not approve timeout values.
+
+## 6. Not implemented by these accepted units
 
 The current Operations implementation values are:
 
@@ -148,6 +215,10 @@ The current Operations implementation values are:
 OPERATIONS_HUMAN_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
 OPERATIONS_ACCOUNT_PERSISTENCE = IMPLEMENTED / ACCEPTED
 SERVICE_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
 OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
 OPERATIONS_BFF = NOT IMPLEMENTED
@@ -165,7 +236,7 @@ does not authorize Operations Authentication Runtime.
 
 The next bounded engineering units must be separately authorized:
 
-1. persistence and database constraints;
+1. Operations Session persistence and database constraints; the accepted C1 Port has no SQL adapter;
 2. Operations authentication and the canonical opaque Session Credential runtime;
 3. BFF and Shared API trust boundary;
 4. Permission registry and enforcement;
@@ -193,6 +264,6 @@ PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
 
-The implementation commit is `e2acf7b` (`feat: add operations identity domain contract
+The original PCI-ENG-015-A implementation commit is `e2acf7b` (`feat: add operations identity domain contract
 (PCI-ENG-015-A)`). Documentation synchronization is a separate change unit and does not imply
 runtime or product authorization.

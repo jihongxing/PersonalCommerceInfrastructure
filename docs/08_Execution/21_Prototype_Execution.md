@@ -8,7 +8,7 @@
 > **Source of Truth**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
 > **Upstream Product Definitions**：[17 Core Product Objects](../07_Product_Architecture/17_Core_Product_Objects.md)、[18 MVP Product Flow](../07_Product_Architecture/18_MVP_Product_Flow.md)、[19 MVP Product Specification](../07_Product_Architecture/19_MVP_Product_Specification.md)  
 > **Document Type**：Living execution record; implementation status, deviations, blockers, testing evidence and handoff only  
-> **Last Updated**：2026-11-10
+> **Last Updated**：2026-11-13
 
 ## 1. Purpose
 
@@ -9226,3 +9226,87 @@ Credential Persistence acceptance does not authorize Operations login, Session c
 reset, MFA, RBAC, Admin BFF/Admin API, Creator Auth changes, Pilot, Production or real-money behavior.
 This section preserves the earlier 015-B and 015-B-R2 entries as historical records and records the
 accepted 016-B ledger closure separately.
+
+## PCI-ENG-016-C1 / Session Domain Contract and Application Port Acceptance
+
+> Date: 2026-11-13. Main Controller formally accepted C1 in the PCI-ENG-016-C1-E2 instruction.
+> C0 design acceptance is carried forward. E2 is documentation synchronization and a single Git
+> commit closure, with no new engineering logic or database execution.
+
+```text
+PCI-ENG-016-C0 = ACCEPTED
+PCI-ENG-016-C1 = ACCEPTED
+OPERATIONS_SESSION_DOMAIN_CONTRACT = ACCEPTED
+OPERATIONS_SESSION_REPOSITORY_PORT = ACCEPTED
+OPERATIONS_SESSION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTH_RUNTIME = NOT IMPLEMENTED
+```
+
+The accepted change refines the existing `OperationsSession` Domain and adds
+`applications/operations-identity/operations-session-repositories.ts` with corresponding Domain/type
+tests. The four C1 engineering files are preserved unchanged in this E2 closure. The baseline before
+the closure commit is `083ddc9062f4d1aa472097ec80d391e4e1746584` on
+`codex/pci-eng-015-b-r2-persistence-closure`.
+
+Accepted technical contract:
+
+- Credential Version is a positive integer; Principal Security Epoch is a non-negative integer.
+  Independent Session Version is CAS Persistence Metadata, outside the Domain entity; future
+  persistence initializes it to 1 and advances it by exactly one after successful rotation.
+- Each Session binds its matching Human Operations Account and Principal. Provider/System and
+  Creator identities cannot be reused as Human Session owners.
+- Digest and Encoded Password Verifier are separate types. The Domain contains no raw credential,
+  Digest or Session Version. Digest construction validates representation only, without hashing.
+- Time ordering is `createdAt <= lastActivityAt <= idleExpiresAt <= absoluteExpiresAt`, with
+  `absoluteExpiresAt > createdAt`. Touch cannot regress timestamps or exceed Absolute Expiry;
+  Rotation cannot change Absolute Expiry. Revoked Sessions are terminal.
+- The seven Session Repository operations are Create, Find Active by Digest, Validate/Touch,
+  Strict CAS Rotate, Revoke Single, Revoke All for Account and Revoke All for Principal.
+- The separate Epoch Increment Port uses expectedEpoch and only permits epoch + 1. Neither Port
+  provides deletion, reactivation or arbitrary mutation.
+- Future persistence must follow Human Principal -> Operations Account -> Operations Credential ->
+  Operations Session lock order; validate active ownership and current Credential Version/Epoch
+  snapshots; and use Digest + expectedSessionVersion strict CAS. Conflicts fail closed without a
+  grace window or automatic winner revocation. A lost rotation response requires reauthentication;
+  no default successor recovery is provided. BFF single-flight cannot replace database CAS.
+
+Accepted C1 verification evidence:
+
+| Check | Result | Evidence boundary |
+| --- | --- | --- |
+| `modules/operations-identity/operations-identity-contract.test.ts` | 21 PASS | Domain invariants; preserves the existing 14 tests within the expanded suite |
+| `modules/operations-identity/operations-session-repositories.test.ts` | 7 PASS | Port/types, Digest separation and pure CAS/Epoch arithmetic |
+| Focused total | 28/28 PASS | Two files, exit code 0; final C1 result replaces its intermediate 18 PASS report only |
+| Production TypeScript | PASS | `tsconfig.build.json`, no emit |
+| Active Backend Test TypeScript | PASS | `tsconfig.active-tests.json`; does not claim the full historical aggregate passed |
+| Changed-file ESLint | PASS | Four C1 engineering files |
+| Prettier | PASS | Four C1 engineering files |
+| `git diff --check` | PASS | Accepted C1 difference whitespace check |
+| PostgreSQL Session tests | NOT EXECUTED | No Session persistence implementation exists |
+
+These are the accepted C1 report's execution results. E2 checks documentation, source preservation,
+the exact staged file set and Git closure; it does not rerun database tests or Migration. Pure contract
+tests do not prove SQL CAS, locks, transaction atomicity, Digest uniqueness or persistence enforcement.
+Earlier 015-A/015-B/016-B test counts, failures and limitations remain their original historical
+evidence and are not overwritten by the 28/28 result.
+
+Unfrozen Founder policies: Idle Timeout, Absolute Lifetime, maximum concurrent Sessions, Device
+Management, Touch frequency, Rotation trigger policy, Cookie/CSRF, Session history retention and
+MFA Session semantics. Fixture dates do not approve timeout values.
+
+This acceptance does not implement Operations login/logout, Session issuance/runtime, Cookie, BFF,
+MFA, RBAC or Admin API. No Schema, Migration, Adapter, Creator Auth or Credential Persistence was
+changed; no first Principal/Account or permission grant was created. There is no new product behavior,
+canonical event, VS-01 FR/AT claim, dependency, configuration or secret-handling runtime change.
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

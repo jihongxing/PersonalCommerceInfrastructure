@@ -9,6 +9,7 @@
 > **Terminal integrity acceptance:** `PCI-ENG-017-B = ACCEPTED`; `PCI-ENG-017-B-E2 = ACCEPTED` (UPDATE/DELETE only)
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
 > **Lifecycle contract update:** 2026-11-13 — C1 ACCEPTED; Founder decisions incorporated in C1-R1 awaiting review; lifecycle/history persistence NOT IMPLEMENTED
+> **Current lifecycle acceptance:** 2026-11-13 — C1-R1 ACCEPTED for contracts/tests/docs only; see section 3.5.1. Lifecycle/history database persistence remains NOT IMPLEMENTED.
 
 This document records the accepted bounded persistence foundations for the Operations Human and Machine
 identity domain. PCI-ENG-015-B remains limited to the three Principal/Account persistence categories;
@@ -331,6 +332,8 @@ Authority: Main Controller formally accepts C1 and incorporates Founder-approved
 FD-C1-05. The five pending policy placeholders in original C1 are superseded by Domain Baseline 5.5.
 No new PostgreSQL Adapter/Composition, history column, SQL or database operation is implemented.
 
+> Historical C1-R1 implementation submission: the awaiting-review status below is retained as recorded. Current formal acceptance appears in the subsequent E2 subsection.
+
 ```text
 PCI-ENG-017-C1 = ACCEPTED
 PCI-ENG-017-C1-R1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
@@ -412,6 +415,55 @@ administrators can bypass ordinary Trigger protection. Service Principal TRUNCAT
 017-B protection. Historical illegal restorations are unaudited. No runtime, role, database, Schema,
 Migration, Adapter, Composition or existing Credential/Session persistence behavior changes here.
 Historical PostgreSQL results remain historical and are not new C1-R1 database evidence.
+
+### 3.5.1 PCI-ENG-017-C1-R1-E2 subsequent formal acceptance
+
+Authority: Main Controller's explicit PCI-ENG-017-C1-R1-E2 instruction formally accepts
+PCI-ENG-017-C1-R1. This subsequent decision supersedes the earlier awaiting-review submission status
+for current acceptance only; that historical status and its original execution evidence are retained.
+Accepted engineering commit: 8b08936dc2d4ae60fdaec82dea51daba848ae2f9.
+
+```ini
+PCI-ENG-017-C0 = ACCEPTED
+PCI-ENG-017-C1 = ACCEPTED
+PCI-ENG-017-C1-R1 = ACCEPTED
+FD-C1-01 = APPROVED
+FD-C1-02 = APPROVED
+FD-C1-03 = APPROVED
+FD-C1-04 = APPROVED
+FD-C1-05 = APPROVED
+PCI-ENG-017-C1-R1-E2 = DOCUMENTATION CLOSED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+Acceptance covers C1/C1-R1 Domain, Application contracts, tests and governance documents only.
+The five approved decisions remain unchanged:
+
+- New Principal initialization uses Epoch=0. First activation of Principal or Account does not increase
+  Principal Epoch; the target's history changes to previously_activated.
+- Principal and Account each require their own persisted never_activated / previously_activated /
+  unknown history. This is the accepted future persistence contract, not completed database storage.
+  Previously activated history cannot reset; unknown history cannot authorize activation or recovery.
+- Active subjects cannot return to pending/invited, directly or through an intermediate state.
+- The Founder-approved Principal/Account whitelist matrices remain authoritative and unchanged;
+  expected status/Epoch checks and irreversible terminal-state rules remain in force.
+- Ordinary Credential Replacement requires both parents active and matching expected Credential
+  Version/Principal Epoch. Privileged Credential Recovery is NOT IMPLEMENTED and NOT AUTHORIZED;
+  it is not part of C2/C3 default authorization and needs a separately approved recovery design.
+
+Activation-history database persistence, historical-data verification/migration and lifecycle database
+transactions remain NOT IMPLEMENTED. Real PostgreSQL concurrency, lock waits and transaction rollback
+have not been proved by these pure Domain/Application tests. Runtime/Migration Roles remain
+unseparated. This acceptance does not mean Authentication Runtime, MFA, RBAC or Production is complete
+or authorized. Existing PostgreSQL evidence is historical and does not prove these new contracts.
+The historical 155/155 C1-R1 test result is retained; E2 does not rerun engineering or database tests.
+
+This is documentation closure only: no source, test, Schema, SQL, Migration, configuration, Adapter,
+Composition or runtime changes. No database/Migration/role operation, Push or deployment occurs.
+C2/C3 require separate authorization; all existing project governance restrictions remain in force.
 
 ## 4. Control interpretation
 

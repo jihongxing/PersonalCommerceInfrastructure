@@ -9896,3 +9896,74 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-017-C1-R1-E2 / Acceptance Documentation and Commit Closure
+
+> Date: 2026-11-13. Subsequent formal acceptance; documentation-only closure.
+
+Authority: Main Controller's explicit PCI-ENG-017-C1-R1-E2 instruction formally accepts
+PCI-ENG-017-C1-R1. This subsequent decision supersedes the earlier awaiting-review submission status
+for current acceptance only; that historical status and its original execution evidence are retained.
+Accepted engineering commit: 8b08936dc2d4ae60fdaec82dea51daba848ae2f9.
+
+```ini
+PCI-ENG-017-C0 = ACCEPTED
+PCI-ENG-017-C1 = ACCEPTED
+PCI-ENG-017-C1-R1 = ACCEPTED
+FD-C1-01 = APPROVED
+FD-C1-02 = APPROVED
+FD-C1-03 = APPROVED
+FD-C1-04 = APPROVED
+FD-C1-05 = APPROVED
+PCI-ENG-017-C1-R1-E2 = DOCUMENTATION CLOSED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+Acceptance covers C1/C1-R1 Domain, Application contracts, tests and governance documents only.
+The five approved decisions remain unchanged:
+
+- New Principal initialization uses Epoch=0. First activation of Principal or Account does not increase
+  Principal Epoch; the target's history changes to previously_activated.
+- Principal and Account each require their own persisted never_activated / previously_activated /
+  unknown history. This is the accepted future persistence contract, not completed database storage.
+  Previously activated history cannot reset; unknown history cannot authorize activation or recovery.
+- Active subjects cannot return to pending/invited, directly or through an intermediate state.
+- The Founder-approved Principal/Account whitelist matrices remain authoritative and unchanged;
+  expected status/Epoch checks and irreversible terminal-state rules remain in force.
+- Ordinary Credential Replacement requires both parents active and matching expected Credential
+  Version/Principal Epoch. Privileged Credential Recovery is NOT IMPLEMENTED and NOT AUTHORIZED;
+  it is not part of C2/C3 default authorization and needs a separately approved recovery design.
+
+Activation-history database persistence, historical-data verification/migration and lifecycle database
+transactions remain NOT IMPLEMENTED. Real PostgreSQL concurrency, lock waits and transaction rollback
+have not been proved by these pure Domain/Application tests. Runtime/Migration Roles remain
+unseparated. This acceptance does not mean Authentication Runtime, MFA, RBAC or Production is complete
+or authorized. Existing PostgreSQL evidence is historical and does not prove these new contracts.
+The historical 155/155 C1-R1 test result is retained; E2 does not rerun engineering or database tests.
+
+This is documentation closure only: no source, test, Schema, SQL, Migration, configuration, Adapter,
+Composition or runtime changes. No database/Migration/role operation, Push or deployment occurs.
+C2/C3 require separate authorization; all existing project governance restrictions remain in force.
+
+Preflight: branch codex/pci-eng-015-b-r2-persistence-closure; HEAD
+8b08936dc2d4ae60fdaec82dea51daba848ae2f9; parent
+c4e40ef921b2e9cc30edbf2a7c29fd44ce1f53a2. Staged, unstaged and untracked lists were empty.
+Only this ledger, Project Control Baseline, Operations Identity Domain Contract and Operations
+Identity Persistence Baseline are synchronized in one independent documentation commit. The final
+report supplies Commit/Parent, the four-file list, Markdown/diff checks and clean-worktree evidence.
+The original C1 and C1-R1 awaiting-review entries remain earlier historical records, in order.
+
+```ini
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

@@ -500,6 +500,8 @@ Authority: Main Controller's PCI-ENG-017-C1-R1 instruction formally accepts C1 a
 approval of FD-C1-01 through FD-C1-05. This current control section supersedes the original five
 pending policy placeholders; it does not rewrite the original C1 execution evidence.
 
+> Historical C1-R1 implementation submission: the awaiting-review status below is retained as recorded. Current formal acceptance appears in the subsequent E2 subsection.
+
 ```text
 PCI-ENG-017-C0 = ACCEPTED
 PCI-ENG-017-C1 = ACCEPTED
@@ -533,6 +535,55 @@ Version brands. It provides no database concurrency or runtime authentication pr
 Adapters/Composition, Migrations 0036-0039, Schema, roles, Creator Auth and Credential/Session
 persistence remain unchanged. All Section 2 governance values remain unchanged; no C2/C3, Runtime,
 Cookie/BFF, MFA/RBAC, Bootstrap, Pilot, Production or real-money authorization follows.
+
+#### 5.11.1 PCI-ENG-017-C1-R1-E2 subsequent formal acceptance
+
+Authority: Main Controller's explicit PCI-ENG-017-C1-R1-E2 instruction formally accepts
+PCI-ENG-017-C1-R1. This subsequent decision supersedes the earlier awaiting-review submission status
+for current acceptance only; that historical status and its original execution evidence are retained.
+Accepted engineering commit: 8b08936dc2d4ae60fdaec82dea51daba848ae2f9.
+
+```ini
+PCI-ENG-017-C0 = ACCEPTED
+PCI-ENG-017-C1 = ACCEPTED
+PCI-ENG-017-C1-R1 = ACCEPTED
+FD-C1-01 = APPROVED
+FD-C1-02 = APPROVED
+FD-C1-03 = APPROVED
+FD-C1-04 = APPROVED
+FD-C1-05 = APPROVED
+PCI-ENG-017-C1-R1-E2 = DOCUMENTATION CLOSED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+Acceptance covers C1/C1-R1 Domain, Application contracts, tests and governance documents only.
+The five approved decisions remain unchanged:
+
+- New Principal initialization uses Epoch=0. First activation of Principal or Account does not increase
+  Principal Epoch; the target's history changes to previously_activated.
+- Principal and Account each require their own persisted never_activated / previously_activated /
+  unknown history. This is the accepted future persistence contract, not completed database storage.
+  Previously activated history cannot reset; unknown history cannot authorize activation or recovery.
+- Active subjects cannot return to pending/invited, directly or through an intermediate state.
+- The Founder-approved Principal/Account whitelist matrices remain authoritative and unchanged;
+  expected status/Epoch checks and irreversible terminal-state rules remain in force.
+- Ordinary Credential Replacement requires both parents active and matching expected Credential
+  Version/Principal Epoch. Privileged Credential Recovery is NOT IMPLEMENTED and NOT AUTHORIZED;
+  it is not part of C2/C3 default authorization and needs a separately approved recovery design.
+
+Activation-history database persistence, historical-data verification/migration and lifecycle database
+transactions remain NOT IMPLEMENTED. Real PostgreSQL concurrency, lock waits and transaction rollback
+have not been proved by these pure Domain/Application tests. Runtime/Migration Roles remain
+unseparated. This acceptance does not mean Authentication Runtime, MFA, RBAC or Production is complete
+or authorized. Existing PostgreSQL evidence is historical and does not prove these new contracts.
+The historical 155/155 C1-R1 test result is retained; E2 does not rerun engineering or database tests.
+
+This is documentation closure only: no source, test, Schema, SQL, Migration, configuration, Adapter,
+Composition or runtime changes. No database/Migration/role operation, Push or deployment occurs.
+C2/C3 require separate authorization; all existing project governance restrictions remain in force.
 
 ## 6. Authority and Supersession Rules
 

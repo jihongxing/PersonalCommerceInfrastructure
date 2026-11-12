@@ -405,7 +405,7 @@ describeWithDatabase('Operations Identity PostgreSQL persistence', () => {
     await expect(
       connection.database.execute(
         sql`insert into service_principals (service_principal_id, kind, provider_id, system_id, status, created_at)
-            values ('service-no-ids', 'platform_system', null, null, 'active', now())`,
+            values ('service-no-ids', 'provider_service', null, null, 'active', now())`,
       ),
     ).rejects.toMatchObject({ cause: { code: '23514' } });
   });

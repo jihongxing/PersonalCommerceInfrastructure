@@ -25,6 +25,7 @@ import {
   createServiceCredentialMetadata,
   createServicePrincipalId,
   OperationsDomainInvariantError,
+  normalizeOperationsLoginIdentifier,
   type OperationsAccountId,
   type OperationsHumanPrincipalId,
   type ProviderServicePrincipal,
@@ -72,6 +73,33 @@ function systemSubject() {
 }
 
 describe('Operations identity domain contract', () => {
+  it('canonicalizes Operations login identifiers without changing case semantics', () => {
+    expect(normalizeOperationsLoginIdentifier('  Operator@Example.test  ')).toBe(
+      'Operator@Example.test',
+    );
+    expect(normalizeOperationsLoginIdentifier('e\u0301xample')).toBe('éxample');
+    expect(normalizeOperationsLoginIdentifier('Example')).not.toBe(
+      normalizeOperationsLoginIdentifier('example'),
+    );
+    expect(
+      createOperationsAccount({
+        ...account(),
+        loginIdentifierNormalized: '  e\u0301xample  ',
+      }).loginIdentifierNormalized,
+    ).toBe('éxample');
+  });
+
+  it('rejects empty, whitespace-only, and over-length Operations login identifiers', () => {
+    expect(() => normalizeOperationsLoginIdentifier('')).toThrow(OperationsDomainInvariantError);
+    expect(() => normalizeOperationsLoginIdentifier(' \t ')).toThrow(
+      OperationsDomainInvariantError,
+    );
+    expect(normalizeOperationsLoginIdentifier('a'.repeat(320))).toHaveLength(320);
+    expect(() => normalizeOperationsLoginIdentifier('a'.repeat(321))).toThrow(
+      OperationsDomainInvariantError,
+    );
+  });
+
   it('creates independent branded IDs and does not expose credential secrets', () => {
     const credential = createOperationsCredentialMetadata({
       id: createOperationsCredentialId('credential-1'),

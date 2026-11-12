@@ -31,6 +31,7 @@ NEXT CONTROL ACTION = PROVENANCE AND ACCEPTANCE RECONCILIATION
 `apps/admin-web`（独立 Operations Admin shell）。`apps/web` / `apps/api-mock` 已按
 Founder 决策退休。认证、目录操作和人工复核尚未接入 Admin。
 参见 [121 — Operations Admin Web Architecture](./09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)
+和 [122 — Operations Identity Domain Contract](./09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)，
 及[退休测试与门禁清单](../tests/historical/retired-reference-client/README.md)。
 
 ```text
@@ -277,6 +278,8 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
     冻结 `Identity ≠ Commerce Profile ≠ Commerce ID ≠ External Platform Account`、多平台多账号、账号关系与 C号不可变/不可复用边界；不授权实现。
 61. [25 — Project Control Baseline](./08_Execution/25_Project_Control_Baseline.md)
     当前项目治理入口；登记 `CONTROLLED_RECOVERY`、具名 bounded approvals、Capability Reality Matrix、权威层级和未解决工程债务。
+62. [122 — Operations Identity Domain Contract](./09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)
+    PCI-ENG-014 已采纳的 Operations Human/Machine 身份领域合同；只实现纯领域类型和校验，不包含认证、持久化或 Admin API。
 
 配套治理文档：
 

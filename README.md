@@ -53,6 +53,8 @@ Creator Web，`apps/admin-web` 为独立 Operations Admin Web。`apps/web` 和 `
 Admin 仅有七个导航页面、加载、错误和不可用状态；身份验证与业务流程尚未接入，不读取
 运营数据、不提供管理操作。架构和权限边界见
 [121 — Operations Admin Web Architecture](docs/09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)。
+Operations Human/Machine 领域合同见
+[122 — Operations Identity Domain Contract](docs/09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)；该合同不接入认证、持久化或 Admin API。
 旧测试分类、保留方式和门禁变化见[历史测试清单](tests/historical/retired-reference-client/README.md)。
 
 PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)

@@ -90,6 +90,7 @@ Approval at `D`, `L` or `I` never implies approval at `P`, `R` or `M`.
 | `DEV-065` | `APPROVED` (bounded) | Move homepage management to the Profile surface | API, database, C-number or permission changes | Implemented; local acceptance recorded | Yes, only UI regression |
 | `DEV-082` | `APPROVED` (bounded) | Controlled capability catalog, templates, policy states and publish gates | New arbitrary categories, marketplace, AI-only moderation or new canonical events | ENG-010 core policy regression and migrations pass; full product workflows/acceptance remain PARTIAL | Yes, only named acceptance and rehearsal |
 | `DEV-083` | `APPROVED` (bounded) | Database-managed capability and service catalog | Payment, marketplace, CRM and unrelated catalog expansion | ENG-010 full install/upgrade and implemented Operations verification pass; 403/401 and lifecycle interpretation remain open | Yes, only migration/admin verification |
+| `PCI-ENG-015-A` | `APPROVED` (bounded) | Pure Operations Human/Machine identity domain contracts and tests | Persistence, authentication, Session runtime, BFF, permissions, Actor migration, Admin API and product behavior | Commit `e2acf7b`; focused contract tests 11/11; production source typecheck and focused lint pass | Yes, only contract verification and review |
 
 ENG-012 is additionally approved by explicit Founder Direction in the current task: retire old Web
 and mock, consolidate Creator targets and implement an independent Operations Admin shell. This
@@ -229,6 +230,32 @@ Architecture, permissions and gate changes are recorded in
 CONTROLLED_RECOVERY, incomplete Resume Gate, no full Stage 2/Pilot/production authorization and
 REAL_MONEY_ENABLED=false remain unchanged. Catalog management never grants human-review authority.
 
+### 5.5 PCI-ENG-015-A Operations identity domain contract
+
+PCI-ENG-014's final Operations identity architecture is adopted as the technical baseline. The
+bounded PCI-ENG-015-A implementation adds only the pure contract module
+`modules/operations-identity/operations-identity-contract.ts` and its focused tests. Human
+Operations Principal/Account/Session metadata is separate from Provider Service and Platform System
+Principal metadata. Typed execution attribution distinguishes Human direct execution, Human-initiated
+System execution, Provider fact processing and autonomous System execution.
+
+The contract deliberately remains outside `modules/shared/actors.ts` and does not alter the current
+`pilot_operations` runtime. Credential secrets, Session Credential Hashes, persistence, authentication,
+BFF, MFA, Permission enforcement, audit runtime and Admin API integration remain unimplemented. The
+contract commit is `e2acf7b`; focused tests pass 11/11. Aggregate active-test typechecking retains
+pre-existing repository diagnostics and is not claimed closed.
+
+The following control values remain unchanged:
+
+```text
+OPERATIONS_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_AUTHENTICATION = NOT IMPLEMENTED
+OPERATIONS_SESSION_RUNTIME = NOT IMPLEMENTED
+OPERATIONS_BFF = NOT IMPLEMENTED
+OPERATIONS_PERMISSION_ENFORCEMENT = NOT IMPLEMENTED
+OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
+```
+
 ## 6. Authority and Supersession Rules
 
 The following authority hierarchy applies by scope, not by file modification time:
@@ -266,6 +293,7 @@ Conflict rules:
 | Project Handoff | Historical suspend baseline and nine Resume Gate conditions; current status is managed here |
 | Development Backlog | Proposed planning index; no independent authorization |
 | Stage 2 Execution Reconciliation | Proposed supporting evidence; not authoritative until accepted |
+| Operations Identity Domain Contract | PCI-ENG-014 technical baseline and PCI-ENG-015-A pure domain contract; no runtime authorization |
 | `docs/README.md` | Index and current-control navigation; must link to this baseline |
 | Root `README.md` | Developer-facing summary; may state current implementation facts but not production approval |
 

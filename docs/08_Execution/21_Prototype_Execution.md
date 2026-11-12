@@ -9097,3 +9097,27 @@ Creator build/86 native tests/64 bridge tests, Admin lint/build/security/9 smoke
 OpenAPI and 28 contract/runtime tests passed. Local browser/HTTP evidence is bounded to the shell.
 Final documentation link checks, diff checks, commit history and clean tracked worktree verification
 are part of the closure review. No push or deployment is performed.
+
+## PCI-ENG-015-A / CU-A - Operations Principal Domain Contract
+
+> Date: 2026-11-12 (Asia/Shanghai). Authorization: Founder-approved PCI-ENG-014 final Operations
+> identity architecture. Scope: pure Human Operations and Machine Service Principal domain contracts
+> and tests only. Persistence and authentication implementation are not authorized.
+
+Added `modules/operations-identity/operations-identity-contract.ts` with branded identifiers,
+Human Operations Principal/Account/Credential Metadata/Session/MFA Metadata, Provider and Platform
+System Service Principals, Service Credential Metadata, typed authenticated subjects and strict
+execution attribution unions. Pure validators enforce Human Session ownership, expiry ordering,
+separate lifecycle states, machine subtype identity and valid Human/Provider/System execution pairs.
+Credential secrets, hashes and Session credentials are excluded from the domain entities.
+
+The module intentionally does not modify `modules/shared/actors.ts`, the existing `pilot_operations`
+runtime, Creator LocalAuth, Webhook Runtime or any API route. It does not create persistence, login,
+Cookie, BFF, MFA, permission or audit runtime behavior.
+
+Verification: focused Vitest passed 11/11; `tsconfig.build.json` typecheck passed; focused ESLint and
+`git diff --check` passed. The aggregate `tsconfig.tests.json` check remains blocked by pre-existing
+unrelated auth, Web V2 path and unused-symbol diagnostics. Contract implementation commit:
+`e2acf7b`. Documentation synchronization is recorded in the separate PCI-ENG-015-A documentation
+change unit. Project control mode, Resume Gate, Stage 2 boundary, Pilot/production prohibition and
+`REAL_MONEY_ENABLED=false` remain unchanged.

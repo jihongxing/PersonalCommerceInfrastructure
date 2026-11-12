@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 
 import {
   createOperationsAccount,
@@ -10,6 +10,7 @@ import {
   createOperationsHumanPrincipalId,
   createPlatformSystemId,
   createProviderId,
+  normalizeOperationsLoginIdentifier,
   type OperationsAccount,
   type OperationsHumanPrincipal,
   type PlatformSystemPrincipal,
@@ -18,8 +19,12 @@ import {
 } from '../../../modules/operations-identity/operations-identity-contract.js';
 import {
   OperationsAccountAlreadyExistsError,
+  OperationsAccountNotFoundError,
   OperationsHumanPrincipalAlreadyExistsError,
+  OperationsHumanPrincipalNotFoundError,
+  OperationsTerminalStatusTransitionError,
   ServicePrincipalAlreadyExistsError,
+  ServicePrincipalNotFoundError,
   type OperationsAccountRepository,
   type OperationsHumanPrincipalRepository,
   type ServicePrincipalRepository,
@@ -44,7 +49,7 @@ export class PostgresOperationsHumanPrincipalRepository implements OperationsHum
         updatedAt: principal.updatedAt.toISOString(),
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
+      if (uniqueConstraint(error) === 'operations_human_principals_pkey') {
         throw new OperationsHumanPrincipalAlreadyExistsError(principal.id);
       }
       throw error;
@@ -67,10 +72,29 @@ export class PostgresOperationsHumanPrincipalRepository implements OperationsHum
     status: OperationsHumanPrincipal['status'],
     updatedAt: Date,
   ): Promise<void> {
-    await this.database
+    const updated = await this.database
       .update(operationsHumanPrincipals)
       .set({ status, updatedAt: updatedAt.toISOString() })
-      .where(eq(operationsHumanPrincipals.principalId, principalId));
+      .where(
+        status === 'active'
+          ? and(
+              eq(operationsHumanPrincipals.principalId, principalId),
+              ne(operationsHumanPrincipals.status, 'tombstoned'),
+            )
+          : eq(operationsHumanPrincipals.principalId, principalId),
+      )
+      .returning({ principalId: operationsHumanPrincipals.principalId });
+    if (updated.length > 0) return;
+    const existing = await this.findById(principalId);
+    if (existing === undefined) throw new OperationsHumanPrincipalNotFoundError(principalId);
+    if (existing.status === 'tombstoned' && status === 'active') {
+      throw new OperationsTerminalStatusTransitionError(
+        'human_principal',
+        principalId,
+        'tombstoned',
+      );
+    }
+    throw new OperationsHumanPrincipalNotFoundError(principalId);
   }
 }
 
@@ -78,18 +102,28 @@ export class PostgresOperationsAccountRepository implements OperationsAccountRep
   public constructor(private readonly database: ProductDatabase) {}
 
   public async create(account: OperationsAccount): Promise<void> {
+    const loginIdentifierNormalized = normalizeOperationsLoginIdentifier(
+      account.loginIdentifierNormalized,
+    );
     try {
       await this.database.insert(operationsAccounts).values({
         accountId: account.id,
         principalId: account.principalId,
-        loginIdentifierNormalized: account.loginIdentifierNormalized,
+        loginIdentifierNormalized,
         status: account.status,
         createdAt: account.createdAt.toISOString(),
         updatedAt: account.updatedAt.toISOString(),
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new OperationsAccountAlreadyExistsError(account.id);
+      const constraint = uniqueConstraint(error);
+      if (constraint === 'operations_accounts_pkey') {
+        throw new OperationsAccountAlreadyExistsError(account.id, 'primary_id');
+      }
+      if (constraint === 'operations_accounts_principal_id_unique') {
+        throw new OperationsAccountAlreadyExistsError(account.id, 'principal_id');
+      }
+      if (constraint === 'operations_accounts_login_identifier_normalized_unique') {
+        throw new OperationsAccountAlreadyExistsError(account.id, 'login_identifier_normalized');
       }
       throw error;
     }
@@ -120,10 +154,11 @@ export class PostgresOperationsAccountRepository implements OperationsAccountRep
   public async findByNormalizedLoginIdentifier(
     loginIdentifierNormalized: string,
   ): Promise<OperationsAccount | undefined> {
+    const canonicalLoginIdentifier = normalizeOperationsLoginIdentifier(loginIdentifierNormalized);
     const rows = await this.database
       .select()
       .from(operationsAccounts)
-      .where(eq(operationsAccounts.loginIdentifierNormalized, loginIdentifierNormalized));
+      .where(eq(operationsAccounts.loginIdentifierNormalized, canonicalLoginIdentifier));
     const row = rows[0];
     return row === undefined ? undefined : toOperationsAccount(row);
   }
@@ -133,10 +168,25 @@ export class PostgresOperationsAccountRepository implements OperationsAccountRep
     status: OperationsAccount['status'],
     updatedAt: Date,
   ): Promise<void> {
-    await this.database
+    const updated = await this.database
       .update(operationsAccounts)
       .set({ status, updatedAt: updatedAt.toISOString() })
-      .where(eq(operationsAccounts.accountId, accountId));
+      .where(
+        status === 'active'
+          ? and(
+              eq(operationsAccounts.accountId, accountId),
+              ne(operationsAccounts.status, 'revoked'),
+            )
+          : eq(operationsAccounts.accountId, accountId),
+      )
+      .returning({ accountId: operationsAccounts.accountId });
+    if (updated.length > 0) return;
+    const existing = await this.findById(accountId);
+    if (existing === undefined) throw new OperationsAccountNotFoundError(accountId);
+    if (existing.status === 'revoked' && status === 'active') {
+      throw new OperationsTerminalStatusTransitionError('account', accountId, 'revoked');
+    }
+    throw new OperationsAccountNotFoundError(accountId);
   }
 }
 
@@ -154,8 +204,15 @@ export class PostgresServicePrincipalRepository implements ServicePrincipalRepos
         createdAt: principal.createdAt.toISOString(),
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ServicePrincipalAlreadyExistsError(principal.id);
+      const constraint = uniqueConstraint(error);
+      if (constraint === 'service_principals_pkey') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'primary_id');
+      }
+      if (constraint === 'service_principals_provider_id_unique') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'provider_id');
+      }
+      if (constraint === 'service_principals_system_id_unique') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'system_id');
       }
       throw error;
     }
@@ -172,8 +229,15 @@ export class PostgresServicePrincipalRepository implements ServicePrincipalRepos
         createdAt: principal.createdAt.toISOString(),
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ServicePrincipalAlreadyExistsError(principal.id);
+      const constraint = uniqueConstraint(error);
+      if (constraint === 'service_principals_pkey') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'primary_id');
+      }
+      if (constraint === 'service_principals_provider_id_unique') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'provider_id');
+      }
+      if (constraint === 'service_principals_system_id_unique') {
+        throw new ServicePrincipalAlreadyExistsError(principal.id, 'system_id');
       }
       throw error;
     }
@@ -228,10 +292,29 @@ export class PostgresServicePrincipalRepository implements ServicePrincipalRepos
     principalId: ServicePrincipal['id'],
     status: ServicePrincipal['status'],
   ): Promise<void> {
-    await this.database
+    const updated = await this.database
       .update(servicePrincipals)
       .set({ status })
-      .where(eq(servicePrincipals.servicePrincipalId, principalId));
+      .where(
+        status === 'active'
+          ? and(
+              eq(servicePrincipals.servicePrincipalId, principalId),
+              ne(servicePrincipals.status, 'revoked'),
+            )
+          : eq(servicePrincipals.servicePrincipalId, principalId),
+      )
+      .returning({ servicePrincipalId: servicePrincipals.servicePrincipalId });
+    if (updated.length > 0) return;
+    const existing = await this.findById(principalId);
+    if (existing === undefined) throw new ServicePrincipalNotFoundError(principalId);
+    if (existing.status === 'revoked' && status === 'active') {
+      throw new OperationsTerminalStatusTransitionError(
+        'service_principal',
+        principalId,
+        'revoked',
+      );
+    }
+    throw new ServicePrincipalNotFoundError(principalId);
   }
 }
 
@@ -278,14 +361,23 @@ function toServicePrincipal(row: typeof servicePrincipals.$inferSelect): Service
   throw new Error(`Invalid Service Principal discriminator for ${row.servicePrincipalId}.`);
 }
 
-function isUniqueViolation(error: unknown): boolean {
+function uniqueConstraint(error: unknown): string | undefined {
   const databaseError = unwrapDatabaseError(error);
-  return (
-    typeof databaseError === 'object' &&
-    databaseError !== null &&
-    'code' in databaseError &&
-    databaseError.code === '23505'
-  );
+  if (
+    typeof databaseError !== 'object' ||
+    databaseError === null ||
+    !('code' in databaseError) ||
+    databaseError.code !== '23505'
+  ) {
+    return undefined;
+  }
+  if ('constraint_name' in databaseError && typeof databaseError.constraint_name === 'string') {
+    return databaseError.constraint_name;
+  }
+  if ('constraint' in databaseError && typeof databaseError.constraint === 'string') {
+    return databaseError.constraint;
+  }
+  return undefined;
 }
 
 function unwrapDatabaseError(error: unknown): unknown {

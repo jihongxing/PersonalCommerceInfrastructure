@@ -6,6 +6,7 @@ import type {
   OperationsAccount,
   OperationsHumanPrincipal,
 } from '../../../modules/operations-identity/operations-identity-contract.js';
+import { OperationsPrincipalAccountAssociationError } from '../../../applications/operations-identity/operations-identity-repositories.js';
 import type { ProductDatabase } from './postgres-database.js';
 import {
   PostgresOperationsAccountRepository,
@@ -32,6 +33,11 @@ export class PostgresOperationsIdentityTransaction implements OperationsIdentity
     principal: OperationsHumanPrincipal,
     account: OperationsAccount,
   ): Promise<void> {
+    if (principal.id !== account.principalId) {
+      return Promise.reject(
+        new OperationsPrincipalAccountAssociationError(principal.id, account.principalId),
+      );
+    }
     return this.execute(async ({ humanPrincipalRepository, accountRepository }) => {
       await humanPrincipalRepository.create(principal);
       await accountRepository.create(account);

@@ -261,8 +261,29 @@ export function createOperationsAccount(input: {
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }): OperationsAccount {
-  assertOperationsAccount(input);
-  return { ...input };
+  const account: OperationsAccount = {
+    ...input,
+    loginIdentifierNormalized: normalizeOperationsLoginIdentifier(input.loginIdentifierNormalized),
+  };
+  assertOperationsAccount(account);
+  return account;
+}
+
+/** Canonical storage form for Operations account login identifiers. */
+export function normalizeOperationsLoginIdentifier(value: string): string {
+  if (typeof value !== 'string') {
+    throw new OperationsDomainInvariantError('Operations login identifier must be a string.');
+  }
+  const normalized = value.trim().normalize('NFC');
+  if (normalized.length === 0) {
+    throw new OperationsDomainInvariantError('Operations login identifier cannot be empty.');
+  }
+  if ([...normalized].length > 320) {
+    throw new OperationsDomainInvariantError(
+      'Operations login identifier cannot exceed 320 characters.',
+    );
+  }
+  return normalized;
 }
 
 export function createOperationsCredentialMetadata(input: {
@@ -671,8 +692,8 @@ function assertNonEmpty(value: unknown, label: string): asserts value is string 
 }
 
 function assertNormalizedIdentifier(value: string): void {
-  assertNonEmpty(value, 'Operations login identifier');
-  if (value !== value.trim()) {
+  const normalized = normalizeOperationsLoginIdentifier(value);
+  if (value !== normalized) {
     throw new OperationsDomainInvariantError(
       'Operations login identifier must already be normalized.',
     );

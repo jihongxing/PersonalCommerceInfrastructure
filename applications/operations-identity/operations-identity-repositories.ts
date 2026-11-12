@@ -14,7 +14,13 @@ import type {
   ServicePrincipalStatus,
 } from '../../modules/operations-identity/operations-identity-contract.js';
 
+export type OperationsAccountUniqueConflict =
+  'primary_id' | 'principal_id' | 'login_identifier_normalized';
+export type ServicePrincipalUniqueConflict = 'primary_id' | 'provider_id' | 'system_id';
+
 export class OperationsHumanPrincipalAlreadyExistsError extends Error {
+  public readonly constraint = 'primary_id' as const;
+
   public constructor(public readonly principalId: OperationsHumanPrincipalId) {
     super(`Operations Human Principal ${principalId} already exists.`);
     this.name = 'OperationsHumanPrincipalAlreadyExistsError';
@@ -22,16 +28,66 @@ export class OperationsHumanPrincipalAlreadyExistsError extends Error {
 }
 
 export class OperationsAccountAlreadyExistsError extends Error {
-  public constructor(public readonly accountId: OperationsAccountId) {
+  public constructor(
+    public readonly accountId: OperationsAccountId,
+    public readonly conflict: OperationsAccountUniqueConflict = 'primary_id',
+  ) {
     super(`Operations Account ${accountId} conflicts with an existing account.`);
     this.name = 'OperationsAccountAlreadyExistsError';
   }
 }
 
 export class ServicePrincipalAlreadyExistsError extends Error {
-  public constructor(public readonly servicePrincipalId: ServicePrincipalId) {
+  public constructor(
+    public readonly servicePrincipalId: ServicePrincipalId,
+    public readonly conflict: ServicePrincipalUniqueConflict = 'primary_id',
+  ) {
     super(`Service Principal ${servicePrincipalId} conflicts with an existing principal.`);
     this.name = 'ServicePrincipalAlreadyExistsError';
+  }
+}
+
+export class OperationsPrincipalAccountAssociationError extends Error {
+  public constructor(
+    public readonly principalId: OperationsHumanPrincipalId,
+    public readonly accountPrincipalId: OperationsHumanPrincipalId,
+  ) {
+    super(
+      `Operations Account ${accountPrincipalId} must belong to Human Principal ${principalId}.`,
+    );
+    this.name = 'OperationsPrincipalAccountAssociationError';
+  }
+}
+
+export class OperationsHumanPrincipalNotFoundError extends Error {
+  public constructor(public readonly principalId: OperationsHumanPrincipalId) {
+    super(`Operations Human Principal ${principalId} was not found.`);
+    this.name = 'OperationsHumanPrincipalNotFoundError';
+  }
+}
+
+export class OperationsAccountNotFoundError extends Error {
+  public constructor(public readonly accountId: OperationsAccountId) {
+    super(`Operations Account ${accountId} was not found.`);
+    this.name = 'OperationsAccountNotFoundError';
+  }
+}
+
+export class ServicePrincipalNotFoundError extends Error {
+  public constructor(public readonly servicePrincipalId: ServicePrincipalId) {
+    super(`Service Principal ${servicePrincipalId} was not found.`);
+    this.name = 'ServicePrincipalNotFoundError';
+  }
+}
+
+export class OperationsTerminalStatusTransitionError extends Error {
+  public constructor(
+    public readonly entity: 'human_principal' | 'account' | 'service_principal',
+    public readonly id: string,
+    public readonly status: 'tombstoned' | 'revoked',
+  ) {
+    super(`Terminal ${entity} ${id} cannot transition from ${status} to active.`);
+    this.name = 'OperationsTerminalStatusTransitionError';
   }
 }
 

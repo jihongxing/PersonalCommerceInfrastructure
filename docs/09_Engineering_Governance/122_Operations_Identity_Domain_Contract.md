@@ -9,7 +9,7 @@
 > **Acceptance ledger update:** 2026-11-13 — PCI-ENG-017-B-E2
 > **Terminal integrity acceptance:** `PCI-ENG-017-B = ACCEPTED`; `PCI-ENG-017-B-E2 = ACCEPTED` (UPDATE/DELETE only)
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
-> **Lifecycle contract update:** 2026-11-13 — PCI-ENG-017-C0 ACCEPTED; PCI-ENG-017-C1 IMPLEMENTATION COMPLETED / AWAITING MAIN CONTROLLER REVIEW
+> **Lifecycle contract update:** 2026-11-13 — C1 ACCEPTED; FD-C1-01–05 APPROVED; C1-R1 IMPLEMENTATION COMPLETED / AWAITING MAIN CONTROLLER REVIEW
 
 This document adopts the final PCI-ENG-014 Operations identity architecture and records the first
 bounded implementation unit. Principal persistence is recorded separately in
@@ -299,111 +299,126 @@ No identity creation, permission grant, Pilot, production or real-money authorit
 control values remain unchanged. Detailed provenance is in the Persistence Baseline, Section 3.4,
 and the original 017-B execution ledger followed by its separate E2 acceptance entry.
 
-## 5.5 PCI-ENG-017-C1 Human lifecycle and security generation contract
+## 5.5 PCI-ENG-017-C1-R1 Founder-approved lifecycle and activation history
 
-Authority: Main Controller's explicit PCI-ENG-017-C1 instruction accepts C0 and freezes the listed
-security requirements. C1 adds pure Domain/Application contracts and tests only. It does not change
-the already accepted entity definitions, seven Session Port signatures, PostgreSQL adapters or
-Migrations 0036-0039. C1 itself is not accepted; C2 and C3 are NOT AUTHORIZED.
-
-Sources: `modules/operations-identity/operations-identity-lifecycle-contract.ts` and
-`applications/operations-identity/operations-identity-lifecycle-transactions.ts`. These reuse the
-existing Human Principal, Account, Credential Metadata and Session types. No Service Principal
-Epoch, Human Account for Service, or second identity model is introduced.
+Authority: Main Controller's PCI-ENG-017-C1-R1 instruction formally accepts C1 and records Founder
+approval of FD-C1-01 through FD-C1-05. This section supersedes the five pending policy placeholders
+in the original C1 contract. The original C1 execution entry remains historical evidence.
 
 ```text
 PCI-ENG-017-C0 = ACCEPTED
-PCI-ENG-017-C1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C1 = ACCEPTED
+PCI-ENG-017-C1-R1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+FD-C1-01 = APPROVED
+FD-C1-02 = APPROVED
+FD-C1-03 = APPROVED
+FD-C1-04 = APPROVED
+FD-C1-05 = APPROVED
 OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
 PCI-ENG-017-C2 = NOT AUTHORIZED
 PCI-ENG-017-C3 = NOT AUTHORIZED
 ```
 
-Frozen requirements from C0/C1 authority are distinct from permissive historical setters: departure
-from active and recovery into active each consume exactly one expected Principal Epoch; Account
-changes consume the owning Principal's Epoch. Terminal entry and its Epoch change are atomic.
-Credential Version, Principal Epoch and Session Version remain separate. Counter capacity is the
-accepted integer maximum 2147483647; overflow rejects, never resets.
-New Application commands and receipts retain the existing branded Epoch and Credential Version
-types rather than interchangeable numbers. Existing Domain entities remain unchanged.
+The lifecycle contract refines the existing Human Principal and Account entities with each entity's
+own activationHistory. It introduces no second identity model, shared hasActivated flag, Service
+Principal Epoch or database field. Existing entity constructors continue to support reconstruction;
+the new initializeOperationsPrincipalLifecycle contract fixes new-subject status=pending, Epoch=0
+and history=never_activated. initializeOperationsAccountLifecycle fixes status=invited and its own
+history=never_activated. These initialization contracts must never relabel existing legacy rows.
 
-### Complete transition matrices
+### Founder-approved history and activation rules
 
-N = nonterminal same-state no-op with matching expected status/Epoch; E = active departure;
-R = recovery with authoritative prior-activation history; T = terminal entry; P =
-`PENDING_FOUNDER_DECISION`, no executable plan; X = terminal rejection, including no-op.
+FD-C1-01: first activation preserves Principal Epoch. Both Principal and Account first activation
+change only the target entity's history from never_activated to previously_activated. Account first
+activation requires an active owning Principal and does not consume that Principal's Epoch.
+
+FD-C1-02: Principal and Account each independently retain never_activated, previously_activated or
+unknown. previously_activated never returns to never_activated. Read each marker from authoritative
+persisted state inside the future transaction; neither current status nor nonzero Epoch proves it.
+Commands contain no activation-history or activation-approval input. Unknown legacy history stays
+unknown until separately authorized investigation/correction; never initialize an old inactive row.
+
+| Target active from | Authoritative target history | Meaning                                 | Principal Epoch | Target history after |
+| ------------------ | ---------------------------- | --------------------------------------- | --------------- | -------------------- |
+| pending / invited  | never_activated              | first activation                        | unchanged       | previously_activated |
+| disabled           | never_activated              | first activation                        | unchanged       | previously_activated |
+| suspended / locked | previously_activated         | recovery                                | +1 CAS          | previously_activated |
+| disabled           | previously_activated         | recovery                                | +1 CAS          | previously_activated |
+| pending / invited  | previously_activated         | inconsistent; reject                    | no writes       | unchanged            |
+| any inactive       | unknown                      | unconfirmed; reject activation/recovery | no writes       | unchanged            |
+
+Active and suspended/locked subjects require previously_activated history; pending/invited cannot
+have previously_activated history. Disabled subjects distinguish never from previously; unknown
+inactive legacy history cannot authorize activation. Missing/invalid markers fail closed. Status,
+history, necessary Epoch changes, scoped invalidation and required audit must commit together.
+Account activation/recovery requires Principal active; a tombstoned Principal blocks Account lifecycle.
+
+### Complete whitelist transition matrices
+
+N = same-state nonterminal no-op with matching expected status/Epoch; F = first activation;
+R = proven recovery; E = active departure; B = allowed inactive-to-disabled change;
+T = terminal entry; D = forbidden transition; X = terminal rejection including same-state no-op.
+A = F for never_activated or R for previously_activated; unknown/inconsistent history rejects.
 
 | Principal current / target | pending | active | suspended | disabled | tombstoned |
 | -------------------------- | ------- | ------ | --------- | -------- | ---------- |
-| pending                    | N       | R or P | P         | P        | T          |
-| active                     | P       | N      | E         | E        | T          |
-| suspended                  | P       | R or P | N         | P        | T          |
-| disabled                   | P       | R or P | P         | N        | T          |
+| pending                    | N       | F      | D         | B        | T          |
+| active                     | D       | N      | E         | E        | T          |
+| suspended                  | D       | R      | N         | B        | T          |
+| disabled                   | D       | A      | D         | N        | T          |
 | tombstoned                 | X       | X      | X         | X        | X          |
 
 | Account current / target | invited | active | locked | disabled | revoked |
 | ------------------------ | ------- | ------ | ------ | -------- | ------- |
-| invited                  | N       | R or P | P      | P        | T       |
-| active                   | P       | N      | E      | E        | T       |
-| locked                   | P       | R or P | N      | P        | T       |
-| disabled                 | P       | R or P | P      | N        | T       |
+| invited                  | N       | F      | D      | B        | T       |
+| active                   | D       | N      | E      | E        | T       |
+| locked                   | D       | R      | N      | B        | T       |
+| disabled                 | D       | A      | D      | N        | T       |
 | revoked                  | X       | X      | X      | X        | X       |
 
-R is available only for `previously_activated` history read authoritatively inside the future
-transaction. `never_activated` and `unknown` produce P. Current state or a nonzero Epoch cannot prove
-prior activation: historical creation accepted arbitrary initial Epochs, and old setters allowed
-state regression. The command does not contain an activation-history approval field; the future
-adapter must supply facts from an approved durable source. Pending/invited with confirmed prior
-activation is recovery, not first activation.
+FD-C1-03/04 forbid every return to pending/invited, directly or through another state. All plans
+check Expected Status/Epoch, including no-op. Matrices assume consistent histories and correct
+ownership; they do not grant caller permissions. Terminal repeats always reject. Service Principal
+revoked remains irreversible and separate from this Human lifecycle contract.
 
-First activation's Epoch increment (zero or one) remains PENDING_FOUNDER_DECISION. It has no
-executable activation plan in C1. Until approved, pending/invited cannot become active through this
-Port and cannot create an eligible Session. This closes the initial reuse window without silently
-choosing a Founder policy. After any future first-activation approval, creation must still require
-both active parents, current active Password Credential/version, current Epoch and valid expiry.
+### Security effects and technical audit
 
-### Security effects, failure and audit matrix
+| Class                           | Epoch                                 | History                      | Session invalidation                              | Password Credential                          | Audit outcome      |
+| ------------------------------- | ------------------------------------- | ---------------------------- | ------------------------------------------------- | -------------------------------------------- | ------------------ |
+| N                               | unchanged                             | unchanged                    | none                                              | unchanged                                    | no_op              |
+| F                               | unchanged                             | target never -> previously   | target scope; closes initial Session reuse window | unchanged                                    | first_activated    |
+| E                               | +1 CAS                                | unchanged                    | target scope                                      | unchanged                                    | deactivated        |
+| R                               | +1 CAS                                | remains previously           | target scope; old Epoch never revived             | unchanged                                    | recovered          |
+| B                               | unchanged                             | unchanged, including unknown | target scope                                      | unchanged                                    | status_changed     |
+| T                               | +1 CAS atomically with terminal entry | unchanged                    | target scope                                      | active Password Credentials in scope revoked | terminal           |
+| D / X / history or CAS conflict | no writes                             | no writes                    | no writes                                         | no writes                                    | classified failure |
 
-| Class         | Epoch                                           | Session invalidation                                             | Credential revocation                | Reauthentication        | Audit outcome           |
-| ------------- | ----------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ | ----------------------- | ----------------------- |
-| N             | unchanged                                       | none                                                             | none                                 | no new requirement      | no_op                   |
-| Principal E/R | +1 CAS                                          | all Principal Sessions                                           | none                                 | required before new use | deactivated / recovered |
-| Account E/R   | owning Principal +1 CAS                         | all Account Sessions; all old Principal snapshots logically fail | none                                 | required before new use | deactivated / recovered |
-| Principal T   | +1 CAS in terminal transaction                  | all Principal Sessions                                           | active Password Credentials in scope | recovery forbidden      | terminal                |
-| Account T     | owning Principal +1 CAS in terminal transaction | all Account Sessions                                             | active Password Credential in scope  | recovery forbidden      | terminal                |
-| P             | no writes                                       | no writes                                                        | no writes                            | no activation granted   | policy-pending failure  |
-| X             | no writes                                       | no writes                                                        | no writes                            | recovery forbidden      | terminal failure        |
+Principal scope means all its Sessions/active Password Credentials; Account scope means that
+Account's rows. Account Epoch changes consume its owning Principal Epoch, so all old Principal
+snapshots also logically fail. Counter capacity remains 2147483647; overflow rejects, never resets.
+Credential Version, Principal Epoch and Session Version retain separate branded Application types.
 
-Every allowed operation checks expected current status and expected Principal Epoch, including N.
-CAS/status conflict, missing owner, ownership mismatch, terminal state, overflow or invalid metadata
-rejects the whole operation. Account lifecycle changes cannot append an Epoch write after its
-Principal has become tombstoned; such operations reject. A terminal Principal workflow must finish
-all required effects in its own transaction.
+Audit context uses operationId, correlationId, bounded reasonCode and occurredAt. Required technical
+facts include target IDs, before/after status, history and Epoch, activation kind, effects and outcome.
+They are not new canonical product events. No audit store or event publisher is implemented. Never
+serialize a Credential command, Verifier or Digest. Required status/history/Credential audit facts
+join the same future transaction. operationId is correlation, not a durable deduplication store.
 
-Audit context requires operationId, correlationId, bounded reasonCode and occurredAt. Successful
-technical audit facts combine target IDs, before/after status and Epoch, effect counts and outcome.
-They are engineering audit records, not new canonical product events; no event publishing or audit
-store is implemented. Never serialize a Credential command, Verifier or Digest into audit records.
-C2 must persist required status/Credential audit facts in the same transaction as their effects.
+### FD-C1-05 ordinary replacement and separate future recovery
 
-### Pending Founder policy and implementation boundaries
+Ordinary Credential replacement requires both parents active with consistent previously_activated
+history, current active Password Credential, Expected Credential Version and Expected Principal
+Epoch. Revoke old Credential, insert exactly version+1 and revoke old-version Sessions atomically;
+Principal Epoch and both activation histories remain unchanged. No privileged caller flag bypasses
+inactive parents. Privileged Credential Recovery remains a separately authorized future capability,
+requiring identity verification, recovery authority and atomicity design. It is not implemented here
+and is not included in C2/C3 default scope.
 
-- FD-C1-01: first-activation Epoch policy; first activation stays blocked pending approval.
-- FD-C1-02: authoritative activation-history evidence and treatment of unknown legacy history.
-- FD-C1-03: active-to-pending/invited regression; blocked rather than inferred from old setters.
-- FD-C1-04: changes between distinct non-active, nonterminal states; blocked pending policy.
-- FD-C1-05: privileged Credential recovery while parents are inactive. C1 replacement requires
-  active parents; it grants no recovery/reset or administrative bypass.
-
-Temporary suspension/locking does not automatically mean password compromise. Terminal Credential
-revocation and scoped Session revocation are explicit C1 contract effects for Main Controller review,
-not evidence of database implementation. Password replacement atomically revokes the previous
-Credential, creates version+1 and revokes old-version Sessions without an Epoch bump.
-
-Domain/Application tests validate pure plans, eligibility and both ordered outcomes of the fourteen
-specified races. They use existing entities and no database, fake lock or scheduling model. They
-cannot prove PostgreSQL atomicity, lock acquisition, trigger behavior, runtime privileges or all
-possible schedules. C2/C3 constraints and failure taxonomy are recorded in Persistence Baseline 3.5.
+All five Founder policies are approved, not pending. Physical history columns, migrations, legacy
+history verification and lifecycle persistence remain unimplemented engineering work requiring
+separate authorization. Pure Domain/Application tests retain the fourteen ordered scenario contracts;
+they prove no PostgreSQL locking, rollback, role enforcement or actual concurrency schedules.
 
 ## 6. Current implementation and excluded runtime
 

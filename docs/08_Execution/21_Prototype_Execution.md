@@ -9801,3 +9801,98 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-017-C1-R1 / Founder Decision Incorporation
+
+> Date: 2026-11-13. Authority: Main Controller's explicit PCI-ENG-017-C1-R1 instruction.
+> That instruction formally accepts C1 and records Founder approval of FD-C1-01 through FD-C1-05.
+> C1-R1 is implemented and submitted for review; it is not self-accepted.
+
+```text
+PCI-ENG-017-C1 = ACCEPTED
+FD-C1-01 = APPROVED
+FD-C1-02 = APPROVED
+FD-C1-03 = APPROVED
+FD-C1-04 = APPROVED
+FD-C1-05 = APPROVED
+PCI-ENG-017-C1-R1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+Preflight: branch codex/pci-eng-015-b-r2-persistence-closure, HEAD
+c4e40ef921b2e9cc30edbf2a7c29fd44ce1f53a2, parent
+79bceb0cbb1bb4a39b18c56548611009847b4c28. Staged, unstaged and untracked lists start empty.
+This entry supersedes the five policy-pending statements in the historical C1 record above; it does
+not rewrite the original C1 implementation, 116-test evidence or awaiting-review status at that time.
+
+### Contract changes and source scope
+
+- operations-identity-lifecycle-contract.ts refines existing Principal/Account entities with independent
+  three-state histories. New Principal initialization fixes Epoch=0/history=never_activated; new
+  Account initialization independently fixes history=never_activated. Initializers are not legacy
+  history reconstruction. First activation preserves Epoch and plans history=previously_activated;
+  proven recovery consumes +1. Unknown/inconsistent activation rejects. Exact whitelist matrices,
+  irreversible histories and terminal/CAS/counter rules replace the five pending policies.
+- operations-identity-lifecycle-transactions.ts removes the caller history argument and specifies
+  transaction-local authoritative read contracts. Status/history/Epoch/effects/audit must commit
+  together in future persistence. Commands do not carry history approval; snapshots supplied by a
+  future adapter must come from real locked rows, not external request data. Ordinary Credential
+  replacement still requires active parents, current Expected Credential Version/Principal Epoch,
+  changes neither history nor Epoch, and grants no privileged recovery bypass.
+- The two corresponding lifecycle tests are updated. All fourteen ordered race contracts remain.
+  Additional cases cover first/recovery activation, disabled history distinctions, unknown/inconsistent
+  state, full whitelist/no-op/terminal behavior, parent restrictions, forged command fields, history
+  preservation, CAS and limits. These are pure Domain/Application assertions, not SQL concurrency tests.
+- Four authority documents are synchronized: this append-only ledger, Control Baseline 5.11, Domain
+  Baseline 5.5 and Persistence Baseline 3.5. Current SSOT records C1 ACCEPTED and all five Founder
+  decisions APPROVED; C1-R1 remains awaiting review. Original execution evidence stays historical.
+
+### Verification evidence and limits
+
+Final bounded verification: 155/155 PASS across four files: lifecycle Domain 87, lifecycle Application
+40, unchanged identity Domain 21 and unchanged Session Repository Port 7; no skipped/failed tests.
+Production TypeScript, Active Backend Test TypeScript, changed-file ESLint, Prettier and
+tsconfig.build.json Build each exit 0. The added/revised documentation sections are formatted without
+reformatting historical sections. git diff --check and final Git scope/status are supplied at closure.
+
+Raw command arrays, cwd, UTC start/end, exit codes, stdout/stderr and unit-results.json are retained at:
+E:/Users/jihx/.codex/visualizations/2026/11/11/01a1cb52-385b-70f0-95cf-11c189dd0a9d/pci-eng-017-c1-r1-20261113.
+Commands use direct node node_modules entry points and the existing dependency tree. No independent
+fresh dependency reconstruction or package/lockfile change is claimed. The initial red decision
+seam test run had 17 expected failures against unchanged C1 behavior; it is not acceptance evidence.
+Two-axis read-only review reports zero hard Standards violations, zero reportable smells and zero
+Spec findings on the contract/tests and current SSOT revisions. It does not independently reproduce
+the 155-test evidence or constitute Main Controller acceptance.
+Full repository lint, full repository tests, database suites and Migration checks are not rerun.
+Historical PostgreSQL counts remain historical, not C1-R1 proof.
+
+### Unimplemented persistence and retained governance
+
+No Schema, field, index, Trigger, Migration (including 0036-0039), Snapshot, PostgreSQL Adapter or
+Composition is changed. Activation-history storage, migration/backfill, historical-data investigation,
+transactional audit persistence and lifecycle database transactions remain NOT IMPLEMENTED. Runtime/
+Migration Roles are unchanged and unseparated; ordinary Trigger protection is not a production
+security certification. No database/container/role operation is performed.
+
+Privileged Credential Recovery is a future separately authorized capability requiring identity
+verification, recovery authority and atomic transaction design; it is outside C1-R1 and C2/C3 default
+scope. No Login, Password Hash/Verify, Session Credential issuance, Authentication Runtime, HTTP
+Middleware, Cookie, BFF, MFA/RBAC, Bootstrap, permission grant, Creator Auth or Service Identity runtime
+change occurs. This contract-only unit changes no live product behavior and introduces no DEV deviation.
+One independent bounded commit is created after review/checks; the final report supplies its SHA,
+Parent, file list and clean-worktree proof. No Push or deployment.
+
+```text
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

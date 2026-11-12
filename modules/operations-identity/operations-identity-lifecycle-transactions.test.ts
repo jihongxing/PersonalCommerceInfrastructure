@@ -47,21 +47,27 @@ import {
 
 const now = new Date('2030-01-01T00:00:00Z');
 function fixture() {
-  const principal = createOperationsHumanPrincipal({
-    id: createOperationsHumanPrincipalId('human-c1'),
-    status: 'active',
-    securityEpoch: 2,
-    createdAt: now,
-    updatedAt: now,
-  });
-  const account = createOperationsAccount({
-    id: createOperationsAccountId('account-c1'),
-    principalId: principal.id,
-    status: 'active',
-    loginIdentifierNormalized: 'operator@example.test',
-    createdAt: now,
-    updatedAt: now,
-  });
+  const principal = {
+    ...createOperationsHumanPrincipal({
+      id: createOperationsHumanPrincipalId('human-c1'),
+      status: 'active',
+      securityEpoch: 2,
+      createdAt: now,
+      updatedAt: now,
+    }),
+    activationHistory: 'previously_activated' as const,
+  };
+  const account = {
+    ...createOperationsAccount({
+      id: createOperationsAccountId('account-c1'),
+      principalId: principal.id,
+      status: 'active',
+      loginIdentifierNormalized: 'operator@example.test',
+      createdAt: now,
+      updatedAt: now,
+    }),
+    activationHistory: 'previously_activated' as const,
+  };
   const credential = createOperationsCredentialMetadata({
     id: createOperationsCredentialId('password-c1'),
     accountId: account.id,
@@ -213,31 +219,27 @@ describe('C1 ordered outcomes for the fourteen required scenarios; NOT database 
     const command = pCommand(f);
     expect(planOperationsPrincipalLifecycleCommand(f.principal, command).nextEpoch).toBe(3);
     expect(() =>
-      planOperationsPrincipalLifecycleCommand(
-        f.principal,
-        { ...command, expectedStatus: 'disabled', targetStatus: 'active' },
-        'previously_activated',
-      ),
+      planOperationsPrincipalLifecycleCommand(f.principal, {
+        ...command,
+        expectedStatus: 'disabled',
+        targetStatus: 'active',
+      }),
     ).toThrow('expected_status_mismatch');
     const disabled = { ...f.principal, status: 'disabled' as const, securityEpoch: 3 };
     expect(() =>
-      planOperationsPrincipalLifecycleCommand(
-        disabled,
-        { ...command, expectedStatus: 'disabled', targetStatus: 'active' },
-        'previously_activated',
-      ),
+      planOperationsPrincipalLifecycleCommand(disabled, {
+        ...command,
+        expectedStatus: 'disabled',
+        targetStatus: 'active',
+      }),
     ).toThrow('expected_epoch_mismatch');
     expect(
-      planOperationsPrincipalLifecycleCommand(
-        disabled,
-        {
-          ...command,
-          expectedStatus: 'disabled',
-          targetStatus: 'active',
-          expectedEpoch: createOperationsPrincipalSecurityEpoch(3),
-        },
-        'previously_activated',
-      ).nextEpoch,
+      planOperationsPrincipalLifecycleCommand(disabled, {
+        ...command,
+        expectedStatus: 'disabled',
+        targetStatus: 'active',
+        expectedEpoch: createOperationsPrincipalSecurityEpoch(3),
+      }).nextEpoch,
     ).toBe(4);
   });
   it('05 Account disable vs Create: the new owning-Principal generation and inactive Account reject old creation', () => {
@@ -266,16 +268,12 @@ describe('C1 ordered outcomes for the fourteen required scenarios; NOT database 
       'parent_not_active',
     );
     expect(
-      planOperationsAccountLifecycleCommand(
-        disabled,
-        {
-          ...aCommand(f),
-          expectedStatus: 'disabled',
-          targetStatus: 'active',
-          expectedEpoch: createOperationsPrincipalSecurityEpoch(3),
-        },
-        'previously_activated',
-      ).nextEpoch,
+      planOperationsAccountLifecycleCommand(disabled, {
+        ...aCommand(f),
+        expectedStatus: 'disabled',
+        targetStatus: 'active',
+        expectedEpoch: createOperationsPrincipalSecurityEpoch(3),
+      }).nextEpoch,
     ).toBe(4);
     const recovered = { ...f, principal: { ...f.principal, securityEpoch: 4 } };
     expect(() =>
@@ -357,15 +355,14 @@ describe('C1 ordered outcomes for the fourteen required scenarios; NOT database 
       planOperationsPrincipalLifecycleCommand(
         { ...disabled, status: 'tombstoned', securityEpoch: 3 },
         { ...pCommand(f), expectedStatus: 'disabled', targetStatus: 'active' },
-        'previously_activated',
       ),
     ).toThrow('terminal_state');
     expect(
-      planOperationsPrincipalLifecycleCommand(
-        disabled,
-        { ...pCommand(f), expectedStatus: 'disabled', targetStatus: 'active' },
-        'previously_activated',
-      ).nextEpoch,
+      planOperationsPrincipalLifecycleCommand(disabled, {
+        ...pCommand(f),
+        expectedStatus: 'disabled',
+        targetStatus: 'active',
+      }).nextEpoch,
     ).toBe(3);
     expect(() =>
       planOperationsPrincipalLifecycleCommand(
@@ -447,6 +444,15 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
     ).toThrow('digest_mismatch');
   });
   it('retains distinct accepted branded Epoch, Credential Version and Session Version at the new Port', () => {
+    expectTypeOf<'activationHistory'>().not.toMatchTypeOf<
+      keyof OperationsPrincipalLifecycleCommand
+    >();
+    expectTypeOf<'activationHistory'>().not.toMatchTypeOf<
+      keyof OperationsAccountLifecycleCommand
+    >();
+    expectTypeOf<'activationHistory'>().not.toMatchTypeOf<
+      keyof OperationsCredentialReplacementCommand
+    >();
     expectTypeOf<
       OperationsPrincipalLifecycleCommand['expectedEpoch']
     >().toEqualTypeOf<OperationsPrincipalSecurityEpoch>();
@@ -476,22 +482,31 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
       'infrastructure_failure',
     );
   });
-  it('denies first activation without executing a plan or making pending/invited parents eligible', () => {
+  it('first activates independent Principal/Account history without changing Epoch or making inactive snapshots eligible', () => {
     const f = fixture();
-    expect(() =>
+    expect(
       planOperationsPrincipalLifecycleCommand(
-        { ...f.principal, status: 'pending' },
+        { ...f.principal, status: 'pending', activationHistory: 'never_activated' },
         { ...pCommand(f), expectedStatus: 'pending', targetStatus: 'active' },
-        'never_activated',
       ),
-    ).toThrow('PENDING_FOUNDER_DECISION');
-    expect(() =>
+    ).toMatchObject({
+      nextEpoch: 2,
+      nextActivationHistory: 'previously_activated',
+      activationKind: 'first_activation',
+    });
+    expect(
       planOperationsAccountLifecycleCommand(
-        { ...f, account: { ...f.account, status: 'invited' } },
+        {
+          ...f,
+          account: { ...f.account, status: 'invited', activationHistory: 'never_activated' },
+        },
         { ...aCommand(f), expectedStatus: 'invited', targetStatus: 'active' },
-        'never_activated',
       ),
-    ).toThrow('PENDING_FOUNDER_DECISION');
+    ).toMatchObject({
+      nextEpoch: 2,
+      nextActivationHistory: 'previously_activated',
+      activationKind: 'first_activation',
+    });
     expect(() =>
       assertOperationsSessionCreationContract(
         { ...f, account: { ...f.account, status: 'invited' } },
@@ -526,6 +541,124 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
       ),
     ).toThrow('ownership_mismatch');
   });
+  it('ignores forged activation approval in commands and uses each authoritative entity history', () => {
+    const f = fixture();
+    const forgedPrincipalCommand = {
+      ...pCommand(f),
+      expectedStatus: 'disabled' as const,
+      targetStatus: 'active' as const,
+      activationHistory: 'never_activated',
+      principal: { ...f.principal, activationHistory: 'never_activated' },
+    };
+    expect(() =>
+      planOperationsPrincipalLifecycleCommand(
+        { ...f.principal, status: 'disabled', activationHistory: 'unknown' },
+        forgedPrincipalCommand,
+      ),
+    ).toThrow('activation_history_unknown');
+    const forgedAccountCommand = {
+      ...aCommand(f),
+      expectedStatus: 'disabled' as const,
+      targetStatus: 'active' as const,
+      activationHistory: 'previously_activated',
+      account: { ...f.account, activationHistory: 'previously_activated' },
+    };
+    expect(() =>
+      planOperationsAccountLifecycleCommand(
+        { ...f, account: { ...f.account, status: 'disabled', activationHistory: 'unknown' } },
+        forgedAccountCommand,
+      ),
+    ).toThrow('activation_history_unknown');
+    expect(
+      planOperationsAccountLifecycleCommand(
+        {
+          ...f,
+          account: { ...f.account, status: 'disabled', activationHistory: 'never_activated' },
+        },
+        forgedAccountCommand,
+      ),
+    ).toMatchObject({ nextEpoch: 2, activationKind: 'first_activation' });
+  });
+  it.each(['pending', 'suspended', 'disabled', 'tombstoned'] as const)(
+    'refuses ordinary or allegedly privileged Credential replacement with %s Principal',
+    (status) => {
+      const f = fixture();
+      const command = { ...replacement(f), privileged: true, role: 'administrator' };
+      expect(() =>
+        planOperationsCredentialReplacement(
+          { ...f, principal: { ...f.principal, status } },
+          command,
+        ),
+      ).toThrow('parent_not_active');
+    },
+  );
+  it.each(['invited', 'locked', 'disabled', 'revoked'] as const)(
+    'refuses ordinary or allegedly privileged Credential replacement with %s Account',
+    (status) => {
+      const f = fixture();
+      const command = { ...replacement(f), privileged: true, role: 'administrator' };
+      expect(() =>
+        planOperationsCredentialReplacement({ ...f, account: { ...f.account, status } }, command),
+      ).toThrow('parent_not_active');
+    },
+  );
+  it('does not rewrite either activation history during Credential replacement or carry history writes in its plan', () => {
+    const f = fixture();
+    const original = structuredClone(f);
+    const command = {
+      ...replacement(f),
+      activationHistory: 'never_activated',
+      principalActivationHistory: 'unknown',
+      accountActivationHistory: 'unknown',
+    };
+    const plan = planOperationsCredentialReplacement(f, command);
+    expect(f).toEqual(original);
+    expect(plan).not.toHaveProperty('nextActivationHistory');
+    expect(plan).not.toHaveProperty('principalActivationHistory');
+    expect(plan).not.toHaveProperty('accountActivationHistory');
+    expect(plan).toMatchObject({
+      principalEpoch: 2,
+      nextCredential: { version: 4 },
+      revokeSessionsForCredentialVersion: 3,
+    });
+  });
+  it('requires active parent history consistency for Session eligibility and normal Credential replacement', () => {
+    const f = fixture();
+    expect(() =>
+      assertOperationsSessionCreationContract(
+        { ...f, principal: { ...f.principal, activationHistory: 'unknown' } },
+        create(f),
+      ),
+    ).toThrow('activation_history_inconsistent');
+    expect(() =>
+      planOperationsCredentialReplacement(
+        { ...f, account: { ...f.account, activationHistory: 'never_activated' } },
+        replacement(f),
+      ),
+    ).toThrow('activation_history_inconsistent');
+  });
+  it.each(['pending', 'suspended', 'disabled', 'tombstoned'] as const)(
+    'requires an active Principal for Account activation when Principal is %s',
+    (status) => {
+      const f = fixture();
+      const principal = {
+        ...f.principal,
+        status,
+        activationHistory:
+          status === 'pending' ? ('never_activated' as const) : ('previously_activated' as const),
+      };
+      expect(() =>
+        planOperationsAccountLifecycleCommand(
+          {
+            ...f,
+            principal,
+            account: { ...f.account, status: 'invited', activationHistory: 'never_activated' },
+          },
+          { ...aCommand(f), expectedStatus: 'invited', targetStatus: 'active' },
+        ),
+      ).toThrow(status === 'tombstoned' ? 'terminal_state' : 'parent_not_active');
+    },
+  );
   it('rejects both expiry boundaries and preserves absolute expiry on Rotation and stale Touch', () => {
     const f = fixture();
     const r = record(f);
@@ -658,7 +791,7 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
       'invalid_lock_order',
     );
   });
-  it('does not turn permission denial, CAS, policy pending or infrastructure failures into authentication errors', () => {
+  it('does not turn permission denial, CAS, history conflicts or infrastructure failures into authentication errors', () => {
     expect(
       classifyOperationsLifecycleFailure(new OperationsLifecycleContractError('parent_not_active')),
     ).toBe('not_authenticated');
@@ -677,9 +810,9 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
     ).toBe('cas_conflict');
     expect(
       classifyOperationsLifecycleFailure(
-        new OperationsLifecycleContractError('PENDING_FOUNDER_DECISION'),
+        new OperationsLifecycleContractError('activation_history_unknown'),
       ),
-    ).toBe('policy_pending');
+    ).toBe('state_conflict');
     expect(
       classifyOperationsLifecycleFailure(
         new OperationsLifecycleContractError('principal_not_found'),

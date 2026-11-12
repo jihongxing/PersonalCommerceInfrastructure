@@ -8,7 +8,7 @@
 > **Acceptance ledger update:** 2026-11-13 — PCI-ENG-017-B-E2
 > **Terminal integrity acceptance:** `PCI-ENG-017-B = ACCEPTED`; `PCI-ENG-017-B-E2 = ACCEPTED` (UPDATE/DELETE only)
 > **Scope:** PostgreSQL schema, migrations, repository ports/adapters and disposable PostgreSQL verification
-> **Lifecycle contract update:** 2026-11-13 — PCI-ENG-017-C1 IMPLEMENTATION COMPLETED / AWAITING MAIN CONTROLLER REVIEW; lifecycle transaction adapter NOT IMPLEMENTED
+> **Lifecycle contract update:** 2026-11-13 — C1 ACCEPTED; Founder decisions incorporated in C1-R1 awaiting review; lifecycle/history persistence NOT IMPLEMENTED
 
 This document records the accepted bounded persistence foundations for the Operations Human and Machine
 identity domain. PCI-ENG-015-B remains limited to the three Principal/Account persistence categories;
@@ -325,92 +325,93 @@ Mandatory limits:
 No Creator Auth, Credential or Session logic is changed by E2. All Section 4 governance values remain
 unchanged; acceptance grants no identity, permission, Pilot, production or real-money authority.
 
-## 3.5 PCI-ENG-017-C1 lifecycle transaction Port; persistence not implemented
+## 3.5 PCI-ENG-017-C1-R1 lifecycle transaction and authoritative history contract
 
-Main Controller accepts PCI-ENG-017-C0 and authorizes C1 Domain/Application contracts only.
-`OperationsIdentityLifecycleTransactionPort` adds Principal/Account status commands and Credential
-replacement, and inherits the seven accepted Session methods without changing their signatures.
-It is not wired into the existing PostgreSQL Composition. The existing identity transaction scope
-and standalone Epoch/status repositories remain unchanged and do NOT implement the new atomicity.
+Authority: Main Controller formally accepts C1 and incorporates Founder-approved FD-C1-01 through
+FD-C1-05. The five pending policy placeholders in original C1 are superseded by Domain Baseline 5.5.
+No new PostgreSQL Adapter/Composition, history column, SQL or database operation is implemented.
 
 ```text
-PCI-ENG-017-C0 = ACCEPTED
-PCI-ENG-017-C1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C1 = ACCEPTED
+PCI-ENG-017-C1-R1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
 OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
 PCI-ENG-017-C2 = NOT AUTHORIZED
 PCI-ENG-017-C3 = NOT AUTHORIZED
 ```
 
-### Transaction boundary matrix for a separately authorized C2
+OperationsIdentityLifecycleTransactionPort preserves the seven Session signatures and adds the
+accepted Principal/Account lifecycle and ordinary Credential replacement operations. The separate
+OperationsIdentityLifecycleStateReader specifies transaction-local reads returning existing entities
+refined with their own history markers. It is an Adapter implementation obligation, not a new
+client-facing history setter, external command or implemented database reader. No command may
+supply history/approval to acquire activation rights. Structural snapshot types alone do not prove
+runtime provenance: a future adapter must read the real locked rows and revalidate ownership.
 
-P/A/C/S mean Human Principal, Operations Account, Password Credential and Session. All checks use
-authoritative rows read after acquisition. Sets follow ascending stable IDs within each table.
+### Transaction boundary matrix for separately authorized implementation
 
-| Atomic operation                              | Required locks                                                     | Expected values and commit condition                                                                                                                                    | Failure scope                                            |
-| --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Principal state + Epoch + invalidation        | P -> A set -> C set -> S set for effects; P only for nonterminal N | expected P status/Epoch; approved transition; all status, +1, scoped revocations and technical audit commit together                                                    | entire transaction rollback                              |
-| Account state + owning P Epoch + invalidation | P -> A -> C -> S for effects; P -> A for N                         | revalidate owner IDs, expected A status/P Epoch; all effects and audit commit together                                                                                  | entire transaction rollback                              |
-| Terminal Principal/Account entry              | same target-scope order                                            | status and +1 Epoch occur while OLD Principal is nonterminal; required Credential/Session revocation joins same commit                                                  | never terminalize then separately repair Epoch           |
-| Credential replacement                        | P -> A -> C -> old-version S set                                   | active parents/current Credential; expected Epoch and Credential Version; revoke old, insert exactly +1 and revoke old-version Sessions/audit together; Epoch unchanged | insertion/revocation/audit failure rolls everything back |
-| Session creation                              | P -> A -> current/history C -> insert new S                        | both active owners, matching current Credential Version/Epoch, owner association, valid time, unique 32-byte Digest; Session Version starts at 1                        | no partial Session on failure                            |
-| Session lookup/Touch/Rotation                 | hint only, then P -> A -> C -> S                                   | recheck Digest, live parents/snapshots and time; Rotation compares Digest AND Session Version; immutable absolute expiry                                                | fail closed; CAS loser does not revoke winner            |
-| Single/bulk Session revoke                    | P -> A -> C -> S, stable sets for bulk                             | owner/CAS as accepted; inactive parents or Credential do not prevent revocation; active rows only                                                                       | entire batch rollback, revoked history unchanged         |
+P/A/C/S mean Principal, Account, Password Credential and Session. Acquire P -> A -> C -> S;
+within a table acquire stable row IDs in ascending order. Never lock Account and then its Principal,
+including indirectly through a row Trigger. Routing hints are not authoritative and must be re-read.
 
-New rows have no existing Session row to lock before insertion. N does not need Credential/Session
-locks because it neither reads nor mutates those entities. An unlocked routing hint gives no authority
-and must be revalidated. Account-first then Principal is forbidden, including a parent-locking row
-Trigger entered after Account UPDATE. The declared-trace checker proves only ordering rules for
-provided traces, not that an adapter acquired those locks or is deadlock-free.
+| Atomic operation                | Required locks                          | Expected values and same-commit effects                                                                                                                |
+| ------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Principal lifecycle             | P -> A set -> C set -> S set; N only P  | expected status/Epoch; authoritative P history; whitelist plan; status/history/Epoch, scoped invalidation and audit                                    |
+| Account lifecycle               | P -> A -> C -> S; N only P -> A         | owner association, expected A status/P Epoch; independent A history, P history/state; all planned effects and audit                                    |
+| First activation                | target-scope order                      | never_activated -> previously_activated and active status together; Epoch unchanged; Account requires active P; scoped Session invalidation/audit      |
+| Recovery                        | target-scope order                      | previously_activated proof and +1 expected P Epoch; old Session snapshots cannot revive                                                                |
+| Terminal entry                  | target-scope order                      | status and +1 Epoch written while OLD P nonterminal; active Credential/Session revocations and audit join commit                                       |
+| Ordinary Credential replacement | P -> A -> C -> old-version S set        | both parents active, current Credential, expected Epoch/version; revoke old, insert +1, revoke old-version Sessions/audit; no history or Epoch changes |
+| Session creation                | P -> A -> current/history C -> insert S | active consistent parents, current Credential/version/Epoch, ownership/time and unique 32-byte Digest; Session Version=1                               |
+| Lookup/Touch/Rotation           | hint then P -> A -> C -> S              | live states/history/snapshots/time and Digest; Rotation compares Digest AND Session Version; absolute expiry cannot extend                             |
+| Single/bulk Revoke              | P -> A -> C -> S; stable sets           | accepted owner/CAS rules; inactive parents/Credential do not prevent revocation; revoked history unchanged                                             |
 
-CAS provides at-most-once state effects for a given expected generation; operationId is correlation,
-not a durable deduplication promise. Nonterminal same-status requests are no-ops only with matching
-expectations. Terminal same-status requests reject. Retries after CAS conflict re-read/reconcile;
-unknown commit outcomes never blindly retry increments. Do not invoke root repositories from an
-outer transaction callback: they can use another connection and create partial commits/self-waits.
+First activation and inactive-to-disabled transitions preserve Epoch; active departures, recovery
+and terminal entry increment it. Every operation checks its expected values even if no increment or
+no-op is planned. First activation may never be inferred from Epoch=0. Revoke scoped Sessions during
+first activation to avoid reviving any historical Session at the unchanged generation. New S has no
+existing row to lock. N needs no C/S locks because it reads/mutates neither. Any required step or audit
+failure rolls back the entire operation. Never compose root repositories using independent connections.
 
-### Session consistency and failure-closed taxonomy
+Replays use expected state/Epoch/version, not a promised deduplication store. Terminal repeats reject;
+nonterminal N requires matching expectations. Unknown commit outcomes require reconciliation; do not
+blindly retry increments. Declared lock traces do not prove actual lock acquisition or deadlock freedom.
 
-Eligibility is the conjunction of existing matching active P/A, current active Credential/version,
-active Session, matching P Epoch, and strict-before Idle/Absolute Expiry. Pure contract functions
-accept authoritative snapshots but acquire no locks. C2 obtains these snapshots in the transaction
-and uses trusted server time after waits; a caller-supplied stale snapshot/time is not authority.
+### History persistence obligations and fail-closed semantics
 
-Session Version is persistence CAS metadata, Credential Version is Password history, and Epoch is
-the Principal security generation. Rotation keeps the latter two unchanged. Digest-only persistence
-does not issue credentials. Preserve one opaque credential, SHA-256 Digest, strict CAS, no grace,
-lost-response reauthentication, absolute-expiry immutability and irrevocable Session status.
+Future separately approved persistence must store independent never_activated/previously_activated/
+unknown markers, initialize only new subjects, forbid previously -> never, and preserve unknown
+legacy history until separately authorized evidence review. It must atomically persist status/history/
+necessary Epoch changes and audit. Never derive history from current status or Epoch, accept history
+from request commands, or relabel old inactive rows as new. Schema/migration design, existing-data
+verification and implementation remain NOT IMPLEMENTED; Migrations 0036-0039 remain unchanged.
 
-Failure categories distinguish not_authenticated, not_authorized, known-ID not_found, state_conflict,
-cas_conflict, policy_pending, contract_failure and infrastructure_failure. Missing/inactive
-Credential, stale snapshots, revoked/expired Session and Digest mismatch cannot succeed. Expected
-status/Epoch/version conflicts cannot overwrite. Overflow cannot reset a counter. Database outage,
-deadlock, transaction conflict/failure and unknown commit outcome remain infrastructure failures.
-Errors retain no SQL, parameters, Digest, Verifier or raw driver cause. No HTTP status mapping,
-permission enforcement or authorization runtime is implemented.
-Digest mismatch during lookup/validation remains not_authenticated. Rotation's expected-Digest
-mismatch with a matching Session Version is a credential_digest CAS conflict, preserving the
-accepted Session Port and Adapter semantics.
+Session eligibility requires matching active P/A with consistent histories, active current Credential,
+matching Credential Version and P Epoch, active Session and strict-before Idle/Absolute Expiry. Use
+trusted server time after waits. Preserve Digest-only persistence, one opaque Credential, strict CAS,
+no grace, lost-response reauthentication and immutable absolute expiry. Version brands remain distinct.
+
+Failures distinguish not_authenticated, not_authorized, known-ID not_found, state_conflict,
+cas_conflict, contract_failure and infrastructure_failure. Unknown/inconsistent activation history or
+a forbidden transition is a state conflict, not policy_pending and not successful activation. Outage,
+deadlock, transaction failure/conflict and unknown commit outcome remain infrastructure failures.
+Lookup Digest mismatch remains unauthenticated; Rotation expected-Digest mismatch with matching
+Session Version remains credential_digest CAS conflict. No HTTP mapping or authorization runtime is
+implemented. Errors retain no SQL parameters, Verifier, Digest or raw driver cause.
 
 ### C2/C3 requirements and retained limitations
 
-The first-activation Epoch rule, durable activation-history source, initial-state regressions and
-distinct non-active transitions remain PENDING_FOUNDER_DECISION (Domain Baseline 5.5). Commands
-cannot self-approve history. No physical history column, table or audit sink is invented by C1.
-C2 must present its durable evidence/audit design before adding storage and must preserve history.
+C2 and C3 need separate authorization. Any future history storage design must preserve the approved
+rules and expose authoritative transaction-local reads. C3 must verify real PostgreSQL interleavings
+with separate connections, barriers and observed waits, failure-injection rollback, SQL bypass,
+upgrade/rerun/fresh installation, counter limits and role separation. Pure tests prove no such DB
+properties. Privileged Credential Recovery is explicitly outside C1-R1 and C2/C3 default scope.
 
-C2 requires separate authorization for adapters/composition and any necessary new versioned
-Migration; do not rewrite 0036-0039. C3 requires separate authorization for real PostgreSQL tests,
-upgrade/rerun/fresh installation, ordinary SQL bypass and role separation verification. Use actual
-separate connections, barriers and observed waits for both orders of all fourteen scenarios.
-Inject failures after status/Epoch/Credential/Session/audit steps and prove complete rollback.
-Also test A-to-P inversion, CAS conflicts, counter limits, recovery without Session revival,
-terminal+Epoch ordering, trusted time after waits and unknown commit reconciliation.
-
-Role separation remains unimplemented; Compose still shares DATABASE_URL for Migration/API.
-Administrative privileges can bypass ordinary triggers. Service Principal TRUNCATE remains outside
-017-B protection. Historical illegal restorations are unaudited. C1 changes no SQL, Schema, Snapshot,
-Migration, Adapter, Runtime Role or existing Credential/Session behavior. Historical PostgreSQL test
-counts remain historical and are not a C1 database verification claim.
+Runtime/Migration Roles remain unseparated; Compose shares DATABASE_URL for Migration/API. Database
+administrators can bypass ordinary Trigger protection. Service Principal TRUNCATE remains outside
+017-B protection. Historical illegal restorations are unaudited. No runtime, role, database, Schema,
+Migration, Adapter, Composition or existing Credential/Session persistence behavior changes here.
+Historical PostgreSQL results remain historical and are not new C1-R1 database evidence.
 
 ## 4. Control interpretation
 

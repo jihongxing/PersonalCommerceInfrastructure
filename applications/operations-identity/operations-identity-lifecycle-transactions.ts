@@ -6,11 +6,9 @@ import {
   assertOperationsSessionTouch,
   createOperationsCredentialMetadata,
   OperationsDomainInvariantError,
-  type OperationsAccount,
   type OperationsAccountId,
   type OperationsAccountStatus,
   type OperationsCredentialMetadata,
-  type OperationsHumanPrincipal,
   type OperationsHumanPrincipalId,
   type OperationsHumanPrincipalStatus,
   type OperationsSession,
@@ -21,7 +19,10 @@ import {
   OperationsLifecycleContractError,
   planOperationsAccountTransition,
   planOperationsPrincipalTransition,
-  type OperationsActivationHistory,
+  assertOperationsPrincipalLifecycleState,
+  assertOperationsAccountLifecycleState,
+  type OperationsPrincipalLifecycleState,
+  type OperationsAccountLifecycleState,
   type OperationsLifecycleExpectation,
   type OperationsLifecycleTransitionPlan,
 } from '../../modules/operations-identity/operations-identity-lifecycle-contract.js';
@@ -54,8 +55,8 @@ import {
 
 /** Existing entities, read authoritatively after locking; not a second identity model. */
 export interface OperationsIdentitySecuritySnapshot {
-  readonly principal?: OperationsHumanPrincipal;
-  readonly account?: OperationsAccount;
+  readonly principal?: OperationsPrincipalLifecycleState;
+  readonly account?: OperationsAccountLifecycleState;
   readonly credential?: OperationsCredentialMetadata;
 }
 
@@ -67,19 +68,13 @@ export interface OperationsLifecycleAuditContext {
   readonly occurredAt: Date;
 }
 
-export interface OperationsPrincipalLifecycleCommand extends Omit<
-  OperationsLifecycleExpectation<OperationsHumanPrincipalStatus>,
-  'activationHistory'
-> {
+export interface OperationsPrincipalLifecycleCommand extends OperationsLifecycleExpectation<OperationsHumanPrincipalStatus> {
   readonly principalId: OperationsHumanPrincipalId;
   readonly expectedEpoch: OperationsPrincipalSecurityEpoch;
   readonly audit: OperationsLifecycleAuditContext;
 }
 
-export interface OperationsAccountLifecycleCommand extends Omit<
-  OperationsLifecycleExpectation<OperationsAccountStatus>,
-  'activationHistory'
-> {
+export interface OperationsAccountLifecycleCommand extends OperationsLifecycleExpectation<OperationsAccountStatus> {
   readonly principalId: OperationsHumanPrincipalId;
   readonly accountId: OperationsAccountId;
   readonly expectedEpoch: OperationsPrincipalSecurityEpoch;
@@ -128,8 +123,11 @@ export interface OperationsCredentialReplacementPlan {
  * transaction. Never implement by calling root repositories in
  * sequence. Principal -> Account -> Credential -> Session; sets use ascending stable row IDs.
  *
- * Status methods load authoritative activation history inside the transaction; command input cannot
- * approve first activation. PENDING_FOUNDER_DECISION causes no writes. A tombstone and its Epoch
+ * Status methods read separate Principal/Account activation histories inside the transaction via
+ * its transaction-local read scope. Commands never carry history or an activation approval. First
+ * activation preserves Epoch and changes never_activated to previously_activated; recovery consumes
+ * +1. Unknown/inconsistent history rejects. Status/history/Epoch/effects/audit commit together.
+ * A tombstone and its Epoch
  * change must be written together while OLD is nonterminal, never via a later Epoch repair.
  * Terminal transitions revoke active Password Credentials and Sessions in the target scope.
  *
@@ -143,6 +141,9 @@ export interface OperationsCredentialReplacementPlan {
  * Snapshot checks and writes share locks. Revocation need not require active parents/Credentials.
  * Credential replacement atomically revokes the old Credential, inserts exactly version+1 and
  * revokes Sessions bound to the old version, without changing Principal Epoch.
+ * It requires both parents active, never changes either activation history, and grants no privileged
+ * recovery bypass. Future privileged recovery needs separate authorization, identity verification,
+ * recovery authority and atomicity design; it is not included in C2/C3 by default.
  *
  * Known-ID absence, state/CAS conflict, policy pending, terminal rejection and infrastructure failure
  * remain distinguishable. Never map all failures to unauthorized or expose driver/secret details.
@@ -160,35 +161,42 @@ export interface OperationsIdentityLifecycleTransactionPort extends OperationsSe
   ): Promise<OperationsCredentialReplacementPlan>;
 }
 
+/** Future adapter's transaction-local reads, NOT command/HTTP inputs or standalone root reads.
+ * Implementations must lock/re-read in P -> A order, keep each entity's own persisted history,
+ * preserve unknown legacy history, and never derive history from Epoch/status or initialize old rows.
+ * These declarations provide no storage implementation or runtime proof of snapshot provenance. */
+export interface OperationsIdentityLifecycleStateReader {
+  findPrincipalLifecycleState(
+    principalId: OperationsHumanPrincipalId,
+  ): Promise<OperationsPrincipalLifecycleState | undefined>;
+  findAccountLifecycleState(
+    accountId: OperationsAccountId,
+  ): Promise<OperationsAccountLifecycleState | undefined>;
+}
+
 /** Pure preparation only; the future adapter must read history and execute the plan atomically. */
 export function planOperationsPrincipalLifecycleCommand(
-  principal: OperationsHumanPrincipal | undefined,
+  principal: OperationsPrincipalLifecycleState | undefined,
   command: OperationsPrincipalLifecycleCommand,
-  activationHistory: OperationsActivationHistory = 'unknown',
 ) {
   if (principal === undefined) throw new OperationsLifecycleContractError('principal_not_found');
   if (principal.id !== command.principalId) {
     throw new OperationsLifecycleContractError('ownership_mismatch');
   }
   assertAudit(command.audit, principal.updatedAt);
-  return refineLifecyclePlan(
-    planOperationsPrincipalTransition(principal, { ...command, activationHistory }),
-  );
+  return refineLifecyclePlan(planOperationsPrincipalTransition(principal, command));
 }
 
 export function planOperationsAccountLifecycleCommand(
   snapshot: OperationsIdentitySecuritySnapshot,
   command: OperationsAccountLifecycleCommand,
-  activationHistory: OperationsActivationHistory = 'unknown',
 ) {
   const { principal, account } = requireOwners(snapshot);
   if (principal.id !== command.principalId || account.id !== command.accountId) {
     throw new OperationsLifecycleContractError('ownership_mismatch');
   }
   assertAudit(command.audit, principal.updatedAt, account.updatedAt);
-  return refineLifecyclePlan(
-    planOperationsAccountTransition(principal, account, { ...command, activationHistory }),
-  );
+  return refineLifecyclePlan(planOperationsAccountTransition(principal, account, command));
 }
 
 /** Version and Session invalidation intent only: no verifier generation or database mutation. */
@@ -423,6 +431,8 @@ function requireActiveSecurity(snapshot: OperationsIdentitySecuritySnapshot) {
   if (principal.status !== 'active' || account.status !== 'active') {
     throw new OperationsLifecycleContractError('parent_not_active');
   }
+  assertOperationsPrincipalLifecycleState(principal);
+  assertOperationsAccountLifecycleState(account);
   const credential = snapshot.credential;
   if (credential === undefined) throw new OperationsLifecycleContractError('credential_not_active');
   assertOperationsCredentialMetadata(credential);

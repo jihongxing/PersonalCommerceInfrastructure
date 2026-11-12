@@ -8,7 +8,7 @@
 > **HISTORICAL NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
 > **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
-> 最近执行更新：2026-11-12（PCI-ENG-012 三应用拓扑与 Admin shell）
+> 最近执行更新：2026-11-12（PCI-ENG-015-B-R2 持久化完整性与验证闭合）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -33,6 +33,8 @@ Founder 决策退休。认证、目录操作和人工复核尚未接入 Admin。
 参见 [121 — Operations Admin Web Architecture](./09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)
 和 [122 — Operations Identity Domain Contract](./09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)，
 及[退休测试与门禁清单](../tests/historical/retired-reference-client/README.md)。
+PCI-ENG-015-A 已由 Main Controller 工程验收为 `ACCEPTED`；PCI-ENG-015-B-R2 已完成实现与证据闭合，
+其持久化状态仍为 `IMPLEMENTED / ACCEPTANCE_PENDING`，等待 Main Controller 最终验收。
 
 ```text
 CLIENT-001 Web Client Convergence   Complete

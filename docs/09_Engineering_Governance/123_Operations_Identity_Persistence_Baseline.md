@@ -35,9 +35,12 @@ keys were added and no existing LocalAuth, Session, Creator, Catalog or Actor ta
 
 `adapters/persistence/postgres/postgres-operations-identity-repositories.ts` maps those ports to
 the three tables and rehydrates the branded 015-A domain entities. Duplicate database keys are
-reported as repository conflicts. `PostgresOperationsIdentityTransaction` creates a Human Principal
-and Account in one transaction, so an Account uniqueness or foreign-key failure rolls the Principal
-back as well.
+reported as constraint-specific repository conflicts. Login writes and lookups share the pure
+trim/NFC canonicalizer and preserve case. `PostgresOperationsIdentityTransaction` rejects a
+Principal/Account ID mismatch before insertion and creates both records in one transaction, so an
+Account uniqueness or foreign-key failure rolls the Principal back as well. The formal composition
+entry point is `createPostgresOperationsIdentityComposition`; it is exposed from the existing
+Creator PostgreSQL composition without starting Operations authentication.
 
 The following remain outside this unit and are not implemented:
 
@@ -56,17 +59,19 @@ OPERATIONS_ADMIN_API_INTEGRATION = NOT IMPLEMENTED
 
 | Check                           | Result          | Evidence and limit                                                                                        |
 | ------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
-| 015-A domain contract suite     | PASS, 11/11     | Pure branded IDs, lifecycle and attribution invariants; does not prove persistence                        |
-| PostgreSQL disposable round 1   | PASS, 5/5 tests | Fresh PostgreSQL 17 container, complete migration history, loopback-only dynamic port, random credentials |
-| PostgreSQL disposable round 2   | PASS, 5/5 tests | Independent fresh container/storage and database; duplicate races and transaction rollback included       |
+| 015-A domain contract suite     | PASS, 13/13     | Pure contract invariants and canonical login handling; does not prove persistence                        |
+| PostgreSQL disposable round 1   | PASS, 11/11 tests | Fresh PostgreSQL 17 container, complete migration history, loopback-only dynamic port, tmpfs storage |
+| PostgreSQL disposable round 2   | PASS, 11/11 tests | Independent fresh container/storage and database; duplicate races and transaction rollback included |
 | Migration check                 | PASS            | `pnpm db:check` verified journal/file parity and deferred-capability guard                                |
 | Active runtime/test typechecks  | PASS            | `pnpm typecheck:core` and `pnpm typecheck:active-tests:backend`                                           |
 | Focused lint/format/diff checks | PASS            | New TypeScript files passed ESLint/Prettier; `git diff --check` passed                                    |
 
-The PostgreSQL suite directly verifies valid creation and rehydration, duplicate Principal/Account
-and normalized-login rejection, missing foreign-key rejection, invalid lifecycle/security values,
-restricted Principal deletion, valid Provider/System creation, discriminator rejection, duplicate
-Provider/System IDs, concurrent normalized-login uniqueness and combined transaction rollback.
+The PostgreSQL suite directly verifies valid creation and rehydration, bounded composition, mismatched
+Principal/Account rollback protection, canonical login write/lookup, duplicate Principal/Account and
+normalized-login rejection, explicit NotFound and terminal-status errors, missing foreign-key rejection,
+invalid lifecycle/security values, restricted Principal deletion, valid Provider/System creation,
+missing/both/null discriminator IDs, duplicate Provider/System IDs, concurrent Principal/Provider/System
+uniqueness and combined transaction rollback.
 Tests use real PostgreSQL; mocks, fixtures and simulations are not used as database acceptance
 evidence. The temporary containers and named volumes were removed after each round.
 

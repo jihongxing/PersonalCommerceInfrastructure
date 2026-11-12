@@ -1,7 +1,7 @@
 # 122 - Operations Identity Domain Contract
 
 > **Decision:** `PCI-ENG-014_ARCHITECTURE = APPROVED`
-> **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = IMPLEMENTED / PENDING ACCEPTANCE`
+> **Implementation unit:** `PCI-ENG-015-A_DOMAIN_CONTRACT = ACCEPTED`
 > **Persistence follow-on:** `PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING`
 > **Effective date:** 2026-11-12
 > **Scope:** pure Human Operations and Machine Service Principal domain contracts only
@@ -73,6 +73,8 @@ It provides:
 - discriminated execution attribution for human-direct, human-initiated-system,
   provider-fact-system and system-autonomous execution;
 - pure constructors and invariant validators;
+- `normalizeOperationsLoginIdentifier`, which trims, NFC-normalizes and preserves case for the
+  bounded Operations persistence login identifier contract (maximum 320 Unicode characters);
 - explicit `OperationsDomainInvariantError` failures.
 
 Credential and secret material are deliberately excluded from every domain entity.
@@ -105,7 +107,7 @@ Focused tests are in:
 
 `modules/operations-identity/operations-identity-contract.test.ts`
 
-The 11 focused tests cover branded ID separation, secret exclusion, independent lifecycle states,
+The focused tests cover canonical login identifier handling, branded ID separation, secret exclusion, independent lifecycle states,
 Human Session ownership and expiry, MFA metadata, Provider/System separation, Service Credential
 ownership and all four execution attribution forms. `@ts-expect-error` assertions cover incompatible
 Human, Account and Service IDs and the absence of Human Account fields on Provider principals.
@@ -114,7 +116,7 @@ Verification on the PCI-ENG-015-A branch:
 
 | Check                           | Result                              | What it proves                                        | What it does not prove                          |
 | ------------------------------- | ----------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
-| Focused Vitest                  | PASS, 11/11                         | Pure contract behavior                                | Persistence or runtime auth                     |
+| Focused Vitest                  | PASS, 13/13                         | Pure contract behavior, including login canonicalization | Persistence or runtime auth                     |
 | `tsconfig.build.json` typecheck | PASS                                | Production source compiles                            | Test aggregate health                           |
 | Focused ESLint                  | PASS                                | New files meet lint rules                             | Full repository lint                            |
 | `git diff --check`              | PASS                                | No whitespace errors                                  | Product acceptance                              |

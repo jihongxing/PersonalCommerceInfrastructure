@@ -244,7 +244,7 @@ The contract deliberately remains outside `modules/shared/actors.ts` and does no
 `pilot_operations` runtime. Credential secrets, Session Credential Hashes, authentication, BFF, MFA,
 Permission enforcement, audit runtime and Admin API integration remain unimplemented. Principal,
 Account and Service Principal persistence is recorded by the separately bounded PCI-ENG-015-B unit.
-The contract commit is `e2acf7b`; focused tests pass 11/11. Aggregate active-test typechecking retains
+The contract commit is `e2acf7b`; PCI-ENG-015-A is accepted and focused tests pass 13/13. Aggregate active-test typechecking retains
 pre-existing repository diagnostics and is not claimed closed.
 
 The following Operations implementation values are recorded by the 015-A/015-B bounded units:
@@ -270,8 +270,10 @@ Principal + Account transaction. It does not add credentials, sessions, authenti
 permissions, audit runtime or Admin API behavior.
 
 Migration `0036_operations_principal_persistence.sql` was installed from the complete migration
-history in two independent disposable PostgreSQL rounds. Both rounds passed the five focused
-integration tests, including concurrent uniqueness and rollback. This proves local persistence
+history in two independent disposable PostgreSQL rounds. Both rounds passed 11 focused integration
+tests, including association integrity, canonical login handling, explicit error semantics,
+concurrent uniqueness and rollback. The formal migration runner was run twice on each same database;
+the journal remained at 37 rows. This proves local persistence
 behavior only; it does not establish external Pilot, production or real-money authorization.
 
 ## 6. Authority and Supersession Rules

@@ -57,6 +57,8 @@ Operations Human/Machine 领域合同见
 [122 — Operations Identity Domain Contract](docs/09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)；纯领域合同不接入认证或 Admin API。
 Operations Principal 持久化基线见
 [123 — Operations Identity Persistence Baseline](docs/09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md)；仅记录三张表、Repository 和本地 PostgreSQL 验证，不代表认证、生产或真实资金授权。
+PCI-ENG-015-A 已接受；PCI-ENG-015-B-R2 已完成持久化完整性修复与两轮 PostgreSQL 验证，
+但仍保持 `IMPLEMENTED / ACCEPTANCE_PENDING`，不代表认证、生产或真实资金授权。
 旧测试分类、保留方式和门禁变化见[历史测试清单](tests/historical/retired-reference-client/README.md)。
 
 PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)

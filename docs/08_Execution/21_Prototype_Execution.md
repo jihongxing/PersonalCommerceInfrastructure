@@ -9138,7 +9138,8 @@ No credential, session, authentication, MFA, permission, audit runtime, BFF, Adm
 Pilot, production or real-money behavior was added. Existing LocalAuth, Web sessions, Creator identity,
 Catalog and shared Actor modules were not changed.
 
-Verification: 015-A domain suite 11/11 PASS; `pnpm db:check` PASS; active runtime and backend test
+Verification: 015-A domain suite 13/13 PASS; two independent PostgreSQL 17 tmpfs rounds passed 11/11
+integration tests each; same-database formal migration rerun kept the journal at 37 rows; `pnpm db:check` PASS; active runtime and backend test
 typechecks PASS; focused lint/format/diff checks PASS. Two independent fresh PostgreSQL 17 Podman
 rounds installed the complete migration history and ran 5/5 persistence tests each, covering valid
 rehydration, duplicate and concurrent uniqueness, missing foreign keys, invalid statuses, discriminator
@@ -9147,3 +9148,24 @@ checks, restricted deletion and transaction rollback. Temporary containers and v
 Schema commit: `c5c4349`. Repository commit: `3da7213`. Constraint coverage commit: `60f32e6`.
 Documentation synchronization is separate. Project control mode, incomplete Resume Gate, bounded Stage 2 boundary,
 Pilot/production prohibition and `REAL_MONEY_ENABLED=false` remain unchanged.
+
+## PCI-ENG-015-B-R2 / Persistence Integrity and Verification Closure
+
+> Date: 2026-11-12. Status: implementation and evidence complete; Main Controller acceptance remains
+> pending. Authorization is limited to the existing PCI-ENG-015-B persistence scope.
+
+R2 adds the Principal/Account association guard, trim/NFC login canonicalization with preserved case,
+formal PostgreSQL Operations Identity composition, explicit not-found and constraint-specific conflict
+errors, terminal-status protection, and the missing discriminator and database-race coverage. It does
+not add authentication, credentials, sessions, MFA, permissions, Actor changes, Admin API behavior,
+Pilot, production or real-money behavior.
+
+Two independent fresh `postgres:17-alpine` containers (digest
+`sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193`) used loopback dynamic
+ports `40777` and `39447`, tmpfs database storage, and PostgreSQL `17.10`. The final verification
+container IDs were `6f78b8fb853ae1dc8e1a0d2ef516a92347c9e73eee5b6d475acac540093e9de5` and
+`b09a500e3c7d7c8ad8e46cac77a2045f2bebf3a140d6932b2d74617a0424d817`. Each formal `pnpm db:migrate`
+run exited 0; rerunning on the same database exited 0 with the migration journal unchanged at 37 rows.
+Each round passed 24 total focused tests (13 domain and 11 PostgreSQL), and each task-created container
+was stopped and removed. Existing Podman resources were not modified. The persistence status remains
+`PCI-ENG-015-B_PRINCIPAL_PERSISTENCE = IMPLEMENTED / ACCEPTANCE_PENDING` pending Main Controller acceptance.

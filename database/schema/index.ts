@@ -1,5 +1,10 @@
 export { productEvents } from './product-events.js';
 export { identities } from './identity.js';
+export {
+  operationsHumanPrincipals,
+  operationsAccounts,
+  servicePrincipals,
+} from './operations-identity.js';
 export { accountIdentityMemberships } from './account-identity-membership.js';
 export { commerceProfiles } from './commerce-profile.js';
 export {

@@ -253,6 +253,13 @@
       "when": 1794691200000,
       "tag": "0035_service_policy_versioned_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794477491886,
+      "tag": "0036_operations_principal_persistence",
+      "breakpoints": true
     }
   ]
 }

@@ -10053,3 +10053,57 @@ historical classification tools, role separation and real PostgreSQL concurrency
 unimplemented. The original 14 concurrency contracts remain pure snapshot tests, not SQL evidence.
 No Creator Auth, login, password hash/verify/reset, Credential Recovery, Session issuance Runtime,
 Cookie/BFF, MFA/RBAC, Bootstrap, Admin permissions, Pilot, production or real-money authority is added.
+
+## PCI-ENG-017-C3-1P Isolated PostgreSQL Operations Role Foundation
+
+Date: 2026-11-13. Authority: Main Controller's PCI-ENG-017-C3-1P instruction, authorized only as an
+isolated test-environment prerequisite to C2-1. Status: `IMPLEMENTATION COMPLETED - AWAITING MAIN
+CONTROLLER REVIEW`.
+
+The change adds reusable role initialization and verification tooling in
+`scripts/database/operations-role-permission-verifier.ts` and an independent multi-role PostgreSQL
+test in `tests/integration/operations-role-permissions-postgres.integration.test.ts`. The test uses
+only disposable `business_fixture` tables and `operations_api` / `operations_private` fixture
+functions. It does not modify migrations 0036-0039, create migration 0040, or create Operations
+lifecycle tables/functions.
+
+```ini
+PCI-ENG-017-C3-1P = IMPLEMENTATION COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C2-1 = NOT AUTHORIZED
+PCI-ENG-017-C2-2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+The verified role model is `pci_ops_table_owner` (NOLOGIN table/fixture owner),
+`pci_ops_function_owner` (NOLOGIN function/schema owner with fixed `pg_catalog, pg_temp` function
+search path), `pci_ops_migration` (independent LOGIN with explicit `INHERIT FALSE, SET TRUE`
+membership edges to the two owners), `pci_ops_runtime` (independent restricted LOGIN with only
+`operations_api` USAGE and no function EXECUTE), and `pci_ops_audit_reader` (NOLOGIN, no grants).
+Migration explicitly SET ROLEd to each approved owner and RESET ROLEd; Runtime had no direct or
+transitive owner/migration membership or SET ROLE path.
+
+The real disposable run used image `docker.io/library/postgres:17-alpine`, digest
+`sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a`, container
+`e5bcebf63e4d7ae6e8da2810a2561f54c75990ed4365cf1d886e6a2aaf6ad0e7`, database `pci_ops_roles`,
+loopback port `40233`, 1 GiB tmpfs PostgreSQL storage, PostgreSQL `17.10`, and Podman client/server
+`5.7.1 / 5.7.1`. The migration command was intentionally none because this is fixture-only. The
+independent Vitest command completed `4/4 PASS` with process exit code `0`; all 30 denied cases returned real PostgreSQL
+permission SQLSTATE `42501`. The sanitized role, membership, ACL and per-case record is retained in
+`docs/09_Engineering_Governance/124_Operations_Isolated_Role_Test_Baseline.md` and its adjacent JSON
+evidence record. Cleanup used
+`podman rm --force pci-ops-role-22665c835dd2` and passed; no named or user volume was used.
+
+This evidence proves only disposable role and permission boundaries. It does not prove permissions
+on actual Operations lifecycle tables, production credential separation, lifecycle atomicity, the 14
+business concurrency scenarios, C2-1/C2-2, full C3, Authentication Runtime, MFA, RBAC, Bootstrap,
+Pilot, Production or real-money security. No Creator Auth, Session/Credential Runtime, database role
+in a deployed environment, migration, deployment or production authorization was changed.

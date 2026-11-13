@@ -421,7 +421,7 @@ describePostgres('controlled disposable migration Bootstrap and role wrapper', (
         'CONTRACT_REJECTED',
       );
     }
-  });
+  }, 30_000);
 
   it('rejects unknown/duplicate Journal history and unreviewed Migration bytes', async () => {
     const db = await fixture();

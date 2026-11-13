@@ -5,6 +5,9 @@ export {
   operationsAccounts,
   operationsCredentials,
   operationsSessions,
+  operationsIdentityLifecycleAudits,
+  operationsHumanPrincipalActivationHistories,
+  operationsAccountActivationHistories,
   servicePrincipals,
 } from './operations-identity.js';
 export { accountIdentityMemberships } from './account-identity-membership.js';

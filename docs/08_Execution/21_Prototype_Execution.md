@@ -10107,3 +10107,134 @@ on actual Operations lifecycle tables, production credential separation, lifecyc
 business concurrency scenarios, C2-1/C2-2, full C3, Authentication Runtime, MFA, RBAC, Bootstrap,
 Pilot, Production or real-money security. No Creator Auth, Session/Credential Runtime, database role
 in a deployed environment, migration, deployment or production authorization was changed.
+
+## PCI-ENG-017-C2-1 Activation History Foundation — blocked installation gate
+
+Date: 2026-11-13. Authority: Main Controller's PCI-ENG-017-C2-1 instruction. The instruction
+accepts C1-R2 and C2A, accepts C2-0 as the design baseline, and accepts C3-1P with scope limitation.
+These are later authority statements; the earlier execution entries above remain historical records.
+
+```ini
+PCI-ENG-017-C2-1 = BLOCKED — MIGRATION ROLE INSTALLATION GATE NOT SATISFIED
+PCI-ENG-017-C2-2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+The initial Git baseline was branch `codex/pci-eng-015-b-r2-persistence-closure`, clean HEAD
+`e49437819f1f4aef29579284d7f21a249a8f219a`, parent
+`133d49cdd994c47528c4c4ba7391dbeab98f3e17`. No C2-1 commit has been created. Incomplete,
+unstaged drafts remain in Schema/index, Migration 0040, Snapshot 0040, the Journal and the new
+activation-history integration test. They are not an accepted or verified persistence baseline.
+
+### Installation blocker and retained diagnostic evidence
+
+Task section 8.4 requires a real non-superuser Migration connection, explicit Owner switching and
+RESET ROLE, and requires stopping if the existing runner cannot provide the installation path within
+the permitted boundary. The current `scripts/database/migrate.ts` directly invokes Drizzle without
+role switching. Drizzle initializes/reads its Journal before executing migration SQL. The accepted
+C3-1P fixture grants Migration explicit SET membership to the two owners, but does not provision
+database CREATE, public-schema CREATE, or the existing Operations/Journal ownership and privileges.
+Owner membership alone therefore does not supply a working standard installation path.
+
+A disposable blocking preflight used the existing C3 role initializer and an independently
+authenticated `pci_ops_migration` connection. It called
+`migrate(drizzle(migration), { migrationsFolder: 'database/migrations' })` through a PowerShell
+here-string piped to `node --input-type=module`. It did not grant additional installation privileges.
+
+| Probe                                       | Actual result                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| Initial identity                            | session_user = current_user = pci_ops_migration                                  |
+| Migration database CREATE / public CREATE   | false / false                                                                    |
+| Standard migrator's first Journal statement | CREATE SCHEMA IF NOT EXISTS "drizzle"                                            |
+| Standard migrator result                    | SQLSTATE 42501: permission denied for database pci_c2_1_gate                     |
+| Explicit SET ROLE pci_ops_table_owner       | session_user remained pci_ops_migration; current_user became pci_ops_table_owner |
+| Journal schema creation after that switch   | SQLSTATE 42501: permission denied for database pci_c2_1_gate                     |
+| RESET ROLE                                  | session_user = current_user = pci_ops_migration                                  |
+| Objects after the probe                     | drizzle schema, Principal History and Lifecycle Audit all absent                 |
+| Probe process exit                          | 0, meaning the expected blocker was reproduced; not a successful migration       |
+
+Diagnostic environment only:
+
+- Image: `docker.io/library/postgres:17-alpine`.
+- Image RepoDigests reported by Podman:
+  `sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193` and
+  `sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a`.
+- PostgreSQL server: `17.10`, x86_64 Alpine; Podman client/server: `5.7.1 / 5.7.1`.
+- Container: `342b9b3c5d04b6ec5b9bdd7ed0324a1e21322a8f2a8c9c29cee98c3deb4e7d2e`.
+- Database: `pci_c2_1_gate`; bind: `127.0.0.1:39283`.
+- Storage: 1 GiB tmpfs at `/var/lib/postgresql/data`; no named/user volume.
+- Cleanup: `podman rm --force pci-c2-1-gate-aa3904e27e`, exit 0.
+- Subsequent task-label container query returned `[]`; no task temporary migration directory remained.
+
+This probe did not reach any numbered Migration, create a Journal row, or install 0040. It proves
+the failure of the currently provisioned path, not that an explicitly approved prerequisite
+provisioning/runner design is impossible. No shared or deployed database was connected.
+
+### Incomplete implementation and invalidated test evidence
+
+Before the blocking review, the draft test harness incorrectly installed 0040 through its admin
+connection. That violated task section 8.4; those runs are not compliant acceptance evidence. The
+handoff context reports one passing and four failing integration cases in the latest completed run;
+complete original per-run metadata and logs were not recovered for this ledger. No final C2-1
+Upgrade/Repeat/Fresh, Runtime-denial matrix, rollback matrix, or terminal-row preservation acceptance
+is claimed. The diagnostic evidence above belongs to a separate gate probe and does not supply
+missing metadata for those earlier runs.
+
+The SQL draft has additional unresolved gaps, including missing deferred subject-to-History
+completeness, immediate rather than deferred audit-association validation, conditional ownership
+fallback, unverified fixed creation-function signatures against the actual C2-0 report, and an
+incomplete Function Owner privilege contract. Earlier TypeScript/ESLint results were interim checks;
+no final Build, regression, Migration Check or full verification result is claimed. The draft is not
+ready to apply or commit. Migrations 0036-0039 remain unchanged. The incidental C2-1 edit to
+`scripts/database/operations-role-permission-verifier.ts` was restored to the accepted HEAD content.
+
+Implementation is stopped under sections 8.1/8.4. Main Controller must resolve the prerequisite
+installation design: ownership/ACL preparation for old Operations objects and Drizzle Journal,
+explicit role selection on the migration transaction's actual connection, and RESET ROLE/failure
+handling. Any additional tooling/file authorization must be explicit; no superuser installation
+substitution, Runtime privilege grant, or production/shared configuration change was made to close
+the gate. After that decision, C2-1 still needs implementation correction and all required tests.
+
+No Authentication Runtime, Creator Auth, Session/Credential lifecycle transaction, Recovery,
+MFA/RBAC, Bootstrap, Cookie/BFF or product authorization is delivered. No Push, deployment or
+acceptance declaration was performed. The other three authority documents have not been advanced
+to a completed C2-1 status.
+
+
+## PCI-ENG-017-C2-1 Activation History Persistence Foundation - resumed completion
+
+Authority: PCI Main Controller's PCI-ENG-017-C2-1-RESUME instruction. This section is appended after the earlier blocked C2-1 record and does not rewrite that history.
+
+```ini
+PCI-ENG-017-C2-1 = IMPLEMENTATION COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C2-2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+Migration 0040 uses the accepted C2-1P-R1 Bootstrap and Role-Context Wrapper. Its reviewed fixed policy hash is `679714aee66fed20033a70062b9b8d7cbf8d00a7a0f48a4be63c99eb559fa5ea`; statement phases, Owner roles, Journal insertion and per-migration transactions are fixed in code. Real 0040 SQL executes only in disposable PostgreSQL 17.10 fixtures. No shared or production database is connected.
+
+The delivered foundation contains two independent activation History tables, the Lifecycle Technical Audit table, deferred Principal/Account History completeness checks, append-only Audit protection, protected History paths, status-independent `unknown` legacy backfill, and fixed SECURITY DEFINER `operations_api.create_principal`, `create_account`, and `create_principal_with_account` creation paths.
+
+Principal creation fixes pending/Epoch 0/never_activated; Account creation fixes invited/never_activated. Callers cannot supply status, Epoch, history or origin. Function Owner receives only the approved bounded access; Runtime receives no new lifecycle function EXECUTE or History/Audit access. Existing terminal identity rows remain unchanged.
+
+Final disposable Upgrade and Fresh verification recorded 5 legacy Principals and 5 legacy Accounts as `unknown`/`legacy_backfill`, with 10 independent legacy initialization Audits. The C2-1 test completed 12/12; C2-1P-R1 regression completed 13/13; C3-1P regression completed 4/4. Sanitized evidence is retained at `E:/User/jihx/AppData/Local/Temp/pci-c21-resume-final-evidence.json`.
+
+This unit does not implement lifecycle transaction adapters, activation/recovery/terminal business transitions, Credential or Session lifecycle, Authentication Runtime, MFA, RBAC, BFF, Bootstrap Authority, Pilot, Production or real-money authorization. Migration/Runtime deployment-role separation remains separately governed.

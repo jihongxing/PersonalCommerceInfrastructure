@@ -27,6 +27,20 @@ END $$;
 REVOKE pci_ops_journal_owner FROM pci_ops_bootstrap;
 ALTER ROLE pci_ops_bootstrap NOLOGIN;`;
 
+// A separately reviewed installer/DBA window prepares the two function-owned schemas. The
+// Migration Role never receives Database CREATE and the Bootstrap identity never gains Function
+// Owner membership; this SQL is intentionally fixed and contains no caller-selected identifiers.
+export const operationsSchemaProvisioningSql = `
+CREATE SCHEMA IF NOT EXISTS operations_api;
+CREATE SCHEMA IF NOT EXISTS operations_private;
+ALTER SCHEMA operations_api OWNER TO pci_ops_function_owner;
+ALTER SCHEMA operations_private OWNER TO pci_ops_function_owner;
+REVOKE ALL ON SCHEMA operations_api, operations_private FROM PUBLIC;
+GRANT USAGE ON SCHEMA operations_api TO pci_ops_runtime;
+GRANT USAGE ON SCHEMA operations_private TO pci_ops_table_owner;
+ALTER DEFAULT PRIVILEGES FOR ROLE pci_ops_function_owner IN SCHEMA operations_api REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE pci_ops_function_owner IN SCHEMA operations_private REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;`;
+
 export class InstallationContractError extends Error {
   constructor(readonly rule: string) {
     super(`Operations installation contract rejected: ${rule}`);

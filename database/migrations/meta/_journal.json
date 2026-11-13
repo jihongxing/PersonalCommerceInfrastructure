@@ -281,6 +281,13 @@
       "when": 1794691200002,
       "tag": "0039_operations_identity_terminal_state_protection",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794777600000,
+      "tag": "0040_operations_activation_history_persistence",
+      "breakpoints": true
     }
   ]
 }

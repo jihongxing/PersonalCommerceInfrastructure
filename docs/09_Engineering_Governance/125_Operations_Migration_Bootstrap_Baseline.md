@@ -210,3 +210,32 @@ This unit adds only:
 The seven pre-existing C2-1 draft files remain uncommitted and unchanged. Their presence does not
 make Migration 0040 accepted or runnable. The final state is
 `PCI-ENG-017-C2-1P-R1 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW`.
+
+## PCI-ENG-017-C2-1 Activation History Persistence Foundation - resumed completion
+
+Authority: PCI Main Controller's PCI-ENG-017-C2-1-RESUME instruction. This section is appended after the earlier blocked C2-1 record and does not rewrite that history.
+
+```ini
+PCI-ENG-017-C2-1 = IMPLEMENTATION COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C2-2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+Migration 0040 uses the accepted C2-1P-R1 Bootstrap and Role-Context Wrapper. Its reviewed fixed policy hash is `679714aee66fed20033a70062b9b8d7cbf8d00a7a0f48a4be63c99eb559fa5ea`; statement phases, Owner roles, Journal insertion and per-migration transactions are fixed in code. Real 0040 SQL executes only in disposable PostgreSQL 17.10 fixtures. No shared or production database is connected.
+
+The delivered foundation contains two independent activation History tables, the Lifecycle Technical Audit table, deferred Principal/Account History completeness checks, append-only Audit protection, protected History paths, status-independent `unknown` legacy backfill, and fixed SECURITY DEFINER `operations_api.create_principal`, `create_account`, and `create_principal_with_account` creation paths.
+
+Principal creation fixes pending/Epoch 0/never_activated; Account creation fixes invited/never_activated. Callers cannot supply status, Epoch, history or origin. Function Owner receives only the approved bounded access; Runtime receives no new lifecycle function EXECUTE or History/Audit access. Existing terminal identity rows remain unchanged.
+
+Final disposable Upgrade and Fresh verification recorded 5 legacy Principals and 5 legacy Accounts as `unknown`/`legacy_backfill`, with 10 independent legacy initialization Audits. The C2-1 test completed 12/12; C2-1P-R1 regression completed 13/13; C3-1P regression completed 4/4. Sanitized evidence is retained at `E:/User/jihx/AppData/Local/Temp/pci-c21-resume-final-evidence.json`.
+
+This unit does not implement lifecycle transaction adapters, activation/recovery/terminal business transitions, Credential or Session lifecycle, Authentication Runtime, MFA, RBAC, BFF, Bootstrap Authority, Pilot, Production or real-money authorization. Migration/Runtime deployment-role separation remains separately governed.

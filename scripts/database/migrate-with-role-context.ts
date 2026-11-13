@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { readMigrationFiles } from 'drizzle-orm/migrator';
 import postgres, { type TransactionSql } from 'postgres';
@@ -57,9 +59,25 @@ const legacyHashes: readonly string[] = [
   '344196ebc3a1c91afa710a7f399e55119a394e992915792c882c031f8f817594',
   '7fba8a695294bb2abf2c98e790d72f92b33451909691e5e2b60d72366621e363',
 ];
+const activationHistoryHash = '679714aee66fed20033a70062b9b8d7cbf8d00a7a0f48a4be63c99eb559fa5ea';
+const reviewedMigrationTags = new Map<string, string>([
+  [legacyHashes[0]!, '0036_operations_principal_persistence'],
+  [legacyHashes[1]!, '0037_operations_credential_persistence'],
+  [legacyHashes[2]!, '0038_operations_session_persistence'],
+  [legacyHashes[3]!, '0039_operations_identity_terminal_state_protection'],
+  [activationHistoryHash, '0040_operations_activation_history_persistence'],
+]);
+const activationHistoryFolderMillis = 1_794_777_600_000;
+const legacyFolderMillis = [
+  [36_000, 1_794_477_491_886],
+  [37_000, 1_794_500_821_357],
+  [38_000, 1_794_691_200_001],
+  [39_000, 1_794_691_200_002],
+] as const;
 const digest = (sql: string) => createHash('sha256').update(sql).digest('hex');
 export const approvedInstallationHashes: readonly string[] = Object.freeze([
   ...legacyHashes,
+  activationHistoryHash,
   ...Object.values(installationFixtureSources).map(digest),
 ]);
 
@@ -108,20 +126,37 @@ export async function migrateWithRoleContext(
       /^\/pci_ops_migration_fixture_[a-z0-9_]+$/.test(url.pathname),
     'dedicated disposable Migration connection',
   );
+  const journal = JSON.parse(
+    await readFile(join(migrationsFolder, 'meta/_journal.json'), 'utf8'),
+  ) as {
+    entries?: { tag?: unknown }[];
+  };
   const migrations = readMigrationFiles({ migrationsFolder });
   requireInstallation(migrations.length > 0, 'empty installation manifest');
+  requireInstallation(
+    Array.isArray(journal.entries) && journal.entries.length === migrations.length,
+    'migration filename manifest shape',
+  );
   requireInstallation(
     new Set(migrations.map((m) => m.hash)).size === migrations.length,
     'duplicate manifest hash',
   );
   for (let i = 0; i < migrations.length; i++) {
     const item = migrations[i]!;
+    const tag = journal.entries[i]!.tag;
+    const reviewedTag = reviewedMigrationTags.get(item.hash);
+    if (reviewedTag !== undefined)
+      requireInstallation(tag === reviewedTag, 'reviewed Migration filename/hash binding');
     const legacyIndex = legacyHashes.indexOf(item.hash);
     requireInstallation(
       approvedInstallationHashes.includes(item.hash) &&
         Number.isSafeInteger(item.folderMillis) &&
         (i === 0 || item.folderMillis > migrations[i - 1]!.folderMillis) &&
-        item.folderMillis === (legacyIndex < 0 ? 100_000 : 36_000 + legacyIndex * 1000),
+        (legacyIndex < 0
+          ? item.folderMillis ===
+            (item.hash === activationHistoryHash ? activationHistoryFolderMillis : 100_000)
+          : item.folderMillis === legacyFolderMillis[legacyIndex]![0] ||
+            item.folderMillis === legacyFolderMillis[legacyIndex]![1]),
       'unapproved SQL/hash/order; no fallback identity and no real 0040 policy',
     );
   }
@@ -183,15 +218,51 @@ export async function migrateWithRoleContext(
           );
           const legacy = legacyHashes.includes(migration.hash);
           const foundation = migration.hash === digest(installationFixtureSources.foundation);
+          const activationHistory = migration.hash === activationHistoryHash;
+          const activationHistoryRoles = [
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.function,
+          ] as const;
+          requireInstallation(
+            !activationHistory || migration.sql.length === activationHistoryRoles.length,
+            'reviewed 0040 statement count and phase policy',
+          );
           let previousRole = '';
           for (let i = 0; i < migration.sql.length; i++) {
             const role = legacy
               ? installationRoles.legacyFixture
-              : foundation &&
-                  i >= fixtureTableStatements.length &&
-                  i < fixtureTableStatements.length + fixtureFunctionStatements.length
-                ? installationRoles.function
-                : installationRoles.table;
+              : activationHistory
+                ? activationHistoryRoles[i]!
+                : foundation &&
+                    i >= fixtureTableStatements.length &&
+                    i < fixtureTableStatements.length + fixtureFunctionStatements.length
+                  ? installationRoles.function
+                  : installationRoles.table;
             if (role !== previousRole) {
               const membership = await tx<{ valid: boolean }[]>`SELECT EXISTS(
               SELECT 1 FROM pg_auth_members m JOIN pg_roles member ON member.oid=m.member JOIN pg_roles owner ON owner.oid=m.roleid

@@ -106,7 +106,11 @@ export interface OperationsLifecycleExpectation<Status extends string> {
   readonly expectedEpoch: number;
 }
 
+/** Derived by the planner, never supplied as an approval or bypass in a command. */
+export type OperationsLifecycleSafetyOperation = 'standard' | 'restrictive_unknown';
+
 export interface OperationsLifecycleTransitionPlan<Status extends string> {
+  readonly safetyOperation: OperationsLifecycleSafetyOperation;
   readonly previousStatus: Status;
   readonly targetStatus: Status;
   readonly previousEpoch: number;
@@ -180,7 +184,6 @@ export function planOperationsAccountTransition(
     // An Account operation cannot append an Epoch write to immutable Principal history.
     throw new OperationsLifecycleContractError('terminal_state');
   }
-  assertOperationsPrincipalLifecycleState(principal);
   const plan = planTransition(
     account.status,
     principal.securityEpoch,
@@ -201,10 +204,23 @@ export function planOperationsAccountTransition(
       scope: 'account',
     },
   );
+  // FD-UNKNOWN-01 permits an unknown nonterminal parent only for an actual, whitelisted
+  // restrictive change. No-op and positive paths retain the original strict history checks.
+  const restrictive = isRestrictiveTransition(
+    account.status,
+    input.targetStatus,
+    'locked',
+    'revoked',
+  );
+  if (!(restrictive && principal.activationHistory === 'unknown')) {
+    assertOperationsPrincipalLifecycleState(principal);
+  }
   if (!plan.noOp && input.targetStatus === 'active' && principal.status !== 'active') {
     throw new OperationsLifecycleContractError('parent_not_active');
   }
-  return plan;
+  return restrictive && principal.activationHistory === 'unknown'
+    ? { ...plan, safetyOperation: 'restrictive_unknown' }
+    : plan;
 }
 
 function planTransition<Status extends string>(
@@ -241,11 +257,17 @@ function planTransition<Status extends string>(
   const activating = !noOp && input.targetStatus === 'active';
   if (activating && history === 'unknown')
     throw new OperationsLifecycleContractError('activation_history_unknown');
-  assertActivationHistory(current, history, policy.initial, policy.limited);
+  const restrictiveUnknown =
+    history === 'unknown' &&
+    isRestrictiveTransition(current, input.targetStatus, policy.limited, policy.terminal);
+  if (!restrictiveUnknown) {
+    assertActivationHistory(current, history, policy.initial, policy.limited);
+  }
   const recovering = activating && history === 'previously_activated';
   const firstActivation = activating && history === 'never_activated';
   const incrementEpoch = !noOp && (terminal || current === 'active' || recovering);
   return {
+    safetyOperation: restrictiveUnknown ? 'restrictive_unknown' : 'standard',
     previousStatus: current,
     targetStatus: input.targetStatus,
     previousEpoch: epoch,
@@ -271,6 +293,16 @@ function planTransition<Status extends string>(
               ? 'deactivated'
               : 'status_changed',
   };
+}
+
+/** Called only after the existing whitelist has accepted the requested transition. */
+function isRestrictiveTransition(
+  current: string,
+  target: string,
+  limited: string,
+  terminal: string,
+): boolean {
+  return current !== target && (target === limited || target === 'disabled' || target === terminal);
 }
 
 function assertActivationHistory(

@@ -9967,3 +9967,89 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## DEV-084 / PCI-ENG-017-C1-R2 Unknown Activation History Restrictive Contract
+
+Date: 2026-11-13. Registered before implementation. Authority: Main Controller's C1-R2 instruction
+and Founder decision FD-UNKNOWN-01 = APPROVED. This bounded Domain/Application contract amendment
+permits only the enumerated unknown-history restrictive transitions; it grants no authentication,
+activation, recovery, ordinary Credential replacement or product/runtime authority.
+Affected contracts: Principal/Account lifecycle plans, independent activation histories, Expected
+Status/Epoch, scoped Session revocation and terminal Credential revocation. No new canonical event.
+Acceptance: the eight approved transitions per entity, parent checks, unchanged history, exact Epoch
+effects, positive-operation rejection, no-op/terminal boundaries and the original 14 pure concurrency
+contracts. C1-R1 history and evidence above remain unchanged.
+
+### PCI-ENG-017-C1-R2 implementation record
+
+Authority: Main Controller's PCI-ENG-017-C1-R2 instruction and Founder decision
+FD-UNKNOWN-01 = APPROVED. DEV-084 registers this bounded change. C1-R1 acceptance and its
+historical 155/155 evidence remain unchanged. This section supersedes only the blanket rejection of
+unknown-history restrictive changes; it does not supersede FD-C1-01 through FD-C1-05.
+
+```ini
+FD-UNKNOWN-01 = APPROVED
+PCI-ENG-017-C2A = ACCEPTED
+PCI-ENG-017-C2-0 = ACCEPTED AS DESIGN BASELINE
+PCI-ENG-017-C1-R2 = IMPLEMENTATION COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+OPERATIONS_ACTIVATION_HISTORY_PERSISTENCE = NOT IMPLEMENTED
+OPERATIONS_LIFECYCLE_TRANSACTION_PERSISTENCE = NOT IMPLEMENTED
+PCI-ENG-017-C2-1 = NOT AUTHORIZED
+PCI-ENG-017-C2-2 = NOT AUTHORIZED
+PCI-ENG-017-C3 = NOT AUTHORIZED
+```
+
+| Principal transition (history unknown) | Account transition (history unknown) | Owning Principal Epoch | Active Session scope | Active Credential effect |
+| -------------------------------------- | ------------------------------------ | ---------------------- | -------------------- | ------------------------ |
+| pending -> disabled                    | invited -> disabled                  | unchanged              | target scope revoked | unchanged                |
+| pending -> tombstoned                  | invited -> revoked                   | +1                     | target scope revoked | target scope revoked     |
+| active -> suspended                    | active -> locked                     | +1                     | target scope revoked | unchanged                |
+| active -> disabled                     | active -> disabled                   | +1                     | target scope revoked | unchanged                |
+| active -> tombstoned                   | active -> revoked                    | +1 exactly once        | target scope revoked | target scope revoked     |
+| suspended -> disabled                  | locked -> disabled                   | unchanged              | target scope revoked | unchanged                |
+| suspended -> tombstoned                | locked -> revoked                    | +1                     | target scope revoked | target scope revoked     |
+| disabled -> tombstoned                 | disabled -> revoked                  | +1                     | target scope revoked | target scope revoked     |
+| tombstoned -> any state                | revoked -> any state                 | rejected               | no lifecycle writes  | no lifecycle writes      |
+
+All successful restrictions retain unknown history verbatim and check Expected Status/Epoch,
+ownership and the existing whitelist. Principal scope covers its Sessions; Account scope covers
+only that Account's Sessions. Account changes consume the owning Principal Epoch only when planned;
+they never change its Status or history. Epoch overflow rejects; no wrap, reset or skipped increment.
+
+Account restrictions require an existing matching nonterminal Principal. Its unknown history is
+allowed only for the listed actual restrictive transitions. Known-but-inconsistent or missing/invalid
+history on either owner rejects. A tombstoned Principal blocks every Account lifecycle mutation.
+No force, approved, privileged or caller-provided history can authorize an exception.
+
+First activation, recovery, ordinary Credential replacement and Session Create/Validate/Touch/Rotation
+remain strict: unknown cannot acquire or maintain authentication eligibility. Ordinary replacement
+still requires both parents active with previously_activated histories and matching Credential
+Version/Principal Epoch. Independent Session Revoke remains possible with inactive/unknown/terminal
+parents, without updating their identity rows; revoked Session history remains immutable.
+
+No new unknown same-state success is introduced. Existing legal pending/invited or disabled no-ops
+retain their original parent/history and Expected Status/Epoch checks. Active/suspended/locked unknown
+no-ops still reject; terminal updates, including no-op, always reject.
+
+Plans now expose the closed, derived safetyOperation = standard | restrictive_unknown; this is not a
+request flag or permission. The Application plan retains branded Epoch types and full Session/
+terminal Credential effects. A transaction-local StateReader must return real unknown histories
+without filtering, inference or repair. Future C2-2 must lock P -> A -> C -> S and atomically commit
+status, required Epoch, unchanged history, scoped revocations and required audit, or roll back all.
+
+C1-R2 local verification: Operations Identity 4 files / 325 tests PASS (Domain metadata 21,
+lifecycle Domain 205, lifecycle Application 92, Session Repository Port 7). The unchanged source
+baseline passed 155/155 before edits. The original 14 numbered concurrency contracts all still pass;
+these are ordered pure-snapshot tests, not PostgreSQL concurrency, lock or rollback proof.
+Production/core and API TypeScript, active backend test TypeScript, production TypeScript build,
+changed-file ESLint, TypeScript Prettier and git diff --check passed. Added Markdown sections are
+formatted/checked in isolation; all four full Markdown files already had Prettier differences at HEAD,
+so unrelated historical text is preserved. Full repository lint/test suites and database tests were
+not run. No PostgreSQL Migration, connection, permission or runtime operation was performed.
+
+This unit implements pure Domain/Application contracts and tests only. History persistence, Migration
+0040, Schema/Trigger/function changes, lifecycle PostgreSQL Adapter/transactions, audit storage,
+historical classification tools, role separation and real PostgreSQL concurrency/rollback proof remain
+unimplemented. The original 14 concurrency contracts remain pure snapshot tests, not SQL evidence.
+No Creator Auth, login, password hash/verify/reset, Credential Recovery, Session issuance Runtime,
+Cookie/BFF, MFA/RBAC, Bootstrap, Admin permissions, Pilot, production or real-money authority is added.

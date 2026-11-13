@@ -25,6 +25,7 @@ import {
   type OperationsPrincipalLifecycleCommand,
   type OperationsCredentialReplacementCommand,
   type OperationsLifecycleApplicationPlan,
+  type OperationsIdentitySecuritySnapshot,
 } from '../../applications/operations-identity/operations-identity-lifecycle-transactions.js';
 import { createEncodedPasswordVerifier } from '../../applications/operations-identity/operations-credential-repositories.js';
 import {
@@ -834,4 +835,345 @@ describe('Application fail-closed, immutable contracts and declared lock traces'
       'infrastructure_failure',
     );
   });
+});
+
+describe('FD-UNKNOWN-01 Application plans (no database or concurrency proof)', () => {
+  const principalRestrictions = [
+    ['pending', 'disabled', 2],
+    ['pending', 'tombstoned', 3],
+    ['active', 'suspended', 3],
+    ['active', 'disabled', 3],
+    ['active', 'tombstoned', 3],
+    ['suspended', 'disabled', 2],
+    ['suspended', 'tombstoned', 3],
+    ['disabled', 'tombstoned', 3],
+  ] as const;
+  const accountRestrictions = [
+    ['invited', 'disabled', 2],
+    ['invited', 'revoked', 3],
+    ['active', 'locked', 3],
+    ['active', 'disabled', 3],
+    ['active', 'revoked', 3],
+    ['locked', 'disabled', 2],
+    ['locked', 'revoked', 3],
+    ['disabled', 'revoked', 3],
+  ] as const;
+
+  it.each(principalRestrictions)(
+    'plans P unknown %s -> %s with complete scoped effects',
+    (current, target, epoch) => {
+      const f = fixture();
+      const principal = { ...f.principal, status: current, activationHistory: 'unknown' as const };
+      const original = structuredClone(principal);
+      const command = { ...pCommand(f), expectedStatus: current, targetStatus: target };
+      expect(planOperationsPrincipalLifecycleCommand(principal, command)).toMatchObject({
+        safetyOperation: 'restrictive_unknown',
+        previousStatus: current,
+        targetStatus: target,
+        previousEpoch: 2,
+        nextEpoch: epoch,
+        previousActivationHistory: 'unknown',
+        nextActivationHistory: 'unknown',
+        activationKind: 'none',
+        noOp: false,
+        revokeSessions: 'principal',
+        revokeCredentials: target === 'tombstoned',
+        reauthenticationRequired: true,
+      });
+      expect(principal).toEqual(original);
+      expect(command.audit).toEqual(audit);
+    },
+  );
+
+  it.each(accountRestrictions)(
+    'plans A unknown %s -> %s against an unknown active P',
+    (current, target, epoch) => {
+      const f = fixture();
+      const snapshot = {
+        ...f,
+        principal: { ...f.principal, activationHistory: 'unknown' as const },
+        account: { ...f.account, status: current, activationHistory: 'unknown' as const },
+      };
+      const original = structuredClone(snapshot);
+      expect(
+        planOperationsAccountLifecycleCommand(snapshot, {
+          ...aCommand(f),
+          expectedStatus: current,
+          targetStatus: target,
+        }),
+      ).toMatchObject({
+        safetyOperation: 'restrictive_unknown',
+        previousEpoch: 2,
+        nextEpoch: epoch,
+        previousActivationHistory: 'unknown',
+        nextActivationHistory: 'unknown',
+        activationKind: 'none',
+        revokeSessions: 'account',
+        revokeCredentials: target === 'revoked',
+      });
+      expect(snapshot).toEqual(original);
+    },
+  );
+
+  it.each(['pending', 'active', 'suspended', 'disabled'] as const)(
+    'restricts a known Account with %s/unknown P without granting parent eligibility',
+    (status) => {
+      const f = fixture();
+      const snapshot = {
+        ...f,
+        principal: { ...f.principal, status, activationHistory: 'unknown' as const },
+      };
+      const before = structuredClone(snapshot);
+      expect(planOperationsAccountLifecycleCommand(snapshot, aCommand(f))).toMatchObject({
+        safetyOperation: 'restrictive_unknown',
+        nextEpoch: 3,
+        revokeSessions: 'account',
+        previousActivationHistory: 'previously_activated',
+        nextActivationHistory: 'previously_activated',
+      });
+      expect(snapshot).toEqual(before);
+      expect(() => assertOperationsSessionCreationContract(snapshot, create(f))).toThrow();
+    },
+  );
+
+  it('requires authoritative owners, histories, status and Epoch during restrictions', () => {
+    const f = fixture();
+    const unknown = {
+      ...f,
+      principal: { ...f.principal, activationHistory: 'unknown' as const },
+      account: { ...f.account, activationHistory: 'unknown' as const },
+    };
+    expect(() =>
+      planOperationsAccountLifecycleCommand({ ...unknown, principal: undefined }, aCommand(f)),
+    ).toThrow('principal_not_found');
+    expect(() =>
+      planOperationsAccountLifecycleCommand({ ...unknown, account: undefined }, aCommand(f)),
+    ).toThrow('account_not_found');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(
+        {
+          ...unknown,
+          account: { ...unknown.account, principalId: createOperationsHumanPrincipalId('other') },
+        },
+        aCommand(f),
+      ),
+    ).toThrow('ownership_mismatch');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(
+        { ...unknown, principal: { ...unknown.principal, status: 'tombstoned' } },
+        aCommand(f),
+      ),
+    ).toThrow('terminal_state');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(unknown, {
+        ...aCommand(f),
+        expectedStatus: 'disabled',
+      }),
+    ).toThrow('expected_status_mismatch');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(unknown, {
+        ...aCommand(f),
+        expectedEpoch: createOperationsPrincipalSecurityEpoch(1),
+      }),
+    ).toThrow('expected_epoch_mismatch');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(unknown, {
+        ...aCommand(f),
+        audit: { ...audit, correlationId: '' },
+      }),
+    ).toThrow('invalid_lifecycle_input');
+    for (const key of ['principal', 'account'] as const) {
+      if (key === 'principal') {
+        const missingPrincipal = { ...unknown.principal };
+        Reflect.deleteProperty(missingPrincipal, 'activationHistory');
+        expect(() =>
+          planOperationsAccountLifecycleCommand(
+            { ...unknown, principal: missingPrincipal },
+            aCommand(f),
+          ),
+        ).toThrow('activation_history_inconsistent');
+      } else {
+        const missingAccount = { ...unknown.account };
+        Reflect.deleteProperty(missingAccount, 'activationHistory');
+        expect(() =>
+          planOperationsAccountLifecycleCommand(
+            { ...unknown, account: missingAccount },
+            aCommand(f),
+          ),
+        ).toThrow('activation_history_inconsistent');
+      }
+      expect(() =>
+        planOperationsAccountLifecycleCommand(
+          { ...unknown, [key]: { ...unknown[key], activationHistory: 'never_activated' } },
+          aCommand(f),
+        ),
+      ).toThrow('activation_history_inconsistent');
+    }
+  });
+
+  for (const owner of ['principal', 'account'] as const) {
+    for (const history of ['unknown', 'never_activated'] as const) {
+      for (const operation of ['replacement', 'create', 'validate', 'touch', 'rotation'] as const) {
+        it(`rejects ${operation} with active ${owner}/${history} despite forged approval`, () => {
+          const f = fixture();
+          const snapshot: OperationsIdentitySecuritySnapshot = {
+            ...f,
+            [owner]: { ...f[owner], activationHistory: history },
+          };
+          const commands = {
+            replacement: () =>
+              planOperationsCredentialReplacement(snapshot, {
+                ...replacement(f),
+                ...{
+                  force: true,
+                  approved: true,
+                  privileged: true,
+                  activationHistory: 'previously_activated',
+                },
+              }),
+            create: () => assertOperationsSessionCreationContract(snapshot, create(f)),
+            validate: () =>
+              assertOperationsSessionValidationContract(snapshot, record(f), lookup(f)),
+            touch: () =>
+              planOperationsSessionTouch(snapshot, record(f), {
+                ...lookup(f),
+                nextLastActivityAt: now,
+                nextIdleExpiresAt: f.session.idleExpiresAt,
+              }),
+            rotation: () => planOperationsSessionRotation(snapshot, record(f), rotate(record(f))),
+          };
+          expect(commands[operation]).toThrow('activation_history_inconsistent');
+        });
+      }
+    }
+  }
+
+  it.each(['pending', 'suspended', 'disabled'] as const)(
+    'rejects unknown Principal %s first/recovery activation without trusting request fields',
+    (status) => {
+      const f = fixture();
+      const command = {
+        ...pCommand(f),
+        expectedStatus: status,
+        targetStatus: 'active' as const,
+        force: true,
+        approved: true,
+        safetyOperation: 'restrictive_unknown',
+        activationHistory: 'never_activated',
+      };
+      expect(() =>
+        planOperationsPrincipalLifecycleCommand(
+          { ...f.principal, status, activationHistory: 'unknown' },
+          command,
+        ),
+      ).toThrow('activation_history_unknown');
+    },
+  );
+  it.each(['invited', 'locked', 'disabled'] as const)(
+    'rejects unknown Account %s first/recovery activation',
+    (status) => {
+      const f = fixture();
+      expect(() =>
+        planOperationsAccountLifecycleCommand(
+          { ...f, account: { ...f.account, status, activationHistory: 'unknown' } },
+          { ...aCommand(f), expectedStatus: status, targetStatus: 'active' },
+        ),
+      ).toThrow('activation_history_unknown');
+    },
+  );
+
+  it('preserves terminal and unknown no-op rejection while allowing independent Session cleanup', () => {
+    const f = fixture();
+    const snapshot = {
+      ...f,
+      principal: {
+        ...f.principal,
+        status: 'tombstoned' as const,
+        activationHistory: 'unknown' as const,
+      },
+      account: { ...f.account, status: 'revoked' as const, activationHistory: 'unknown' as const },
+    };
+    expect(() =>
+      planOperationsPrincipalLifecycleCommand(snapshot.principal, {
+        ...pCommand(f),
+        expectedStatus: 'tombstoned',
+        targetStatus: 'tombstoned',
+      }),
+    ).toThrow('terminal_state');
+    expect(() =>
+      planOperationsAccountLifecycleCommand(snapshot, {
+        ...aCommand(f),
+        expectedStatus: 'revoked',
+        targetStatus: 'revoked',
+      }),
+    ).toThrow('terminal_state');
+    const unknown = { ...f.principal, activationHistory: 'unknown' as const };
+    expect(() =>
+      planOperationsPrincipalLifecycleCommand(unknown, { ...pCommand(f), targetStatus: 'active' }),
+    ).toThrow('activation_history_inconsistent');
+    const request = {
+      sessionId: f.session.id,
+      principalId: f.principal.id,
+      accountId: f.account.id,
+      expectedSessionVersion: createOperationsSessionVersion(1),
+      revokedAt: audit.occurredAt,
+    };
+    const revoked = planOperationsSessionRevocation(record(f), request);
+    expect(revoked).toMatchObject({ status: 'revoked', revokedAt: audit.occurredAt });
+    expect(
+      planOperationsSessionRevocation(
+        { ...record(f), session: revoked },
+        {
+          ...request,
+          revokedAt: new Date(audit.occurredAt.getTime() + 1000),
+        },
+      ),
+    ).toEqual(revoked);
+    expect(snapshot.principal).toMatchObject({
+      status: 'tombstoned',
+      securityEpoch: 2,
+      activationHistory: 'unknown',
+    });
+    expect(snapshot.account).toMatchObject({ status: 'revoked', activationHistory: 'unknown' });
+  });
+
+  it('keeps restrictive operation types closed and command history-free', () => {
+    expectTypeOf<OperationsLifecycleApplicationPlan<'disabled'>['safetyOperation']>().toEqualTypeOf<
+      'standard' | 'restrictive_unknown'
+    >();
+    expectTypeOf<
+      Extract<keyof OperationsPrincipalLifecycleCommand, 'activationHistory' | 'approved' | 'force'>
+    >().toEqualTypeOf<never>();
+    expectTypeOf<
+      Extract<
+        keyof OperationsAccountLifecycleCommand,
+        'activationHistory' | 'privileged' | 'isAdmin'
+      >
+    >().toEqualTypeOf<never>();
+  });
+
+  it.each(['operationId', 'correlationId', 'reasonCode'] as const)(
+    'requires %s audit attribution for both unknown restriction scopes',
+    (key) => {
+      const f = fixture();
+      const snapshot = {
+        ...f,
+        principal: { ...f.principal, activationHistory: 'unknown' as const },
+        account: { ...f.account, activationHistory: 'unknown' as const },
+      };
+      const invalidAudit = { ...audit, [key]: '' };
+      expect(() =>
+        planOperationsPrincipalLifecycleCommand(snapshot.principal, {
+          ...pCommand(f),
+          audit: invalidAudit,
+        }),
+      ).toThrow('invalid_lifecycle_input');
+      expect(() =>
+        planOperationsAccountLifecycleCommand(snapshot, {
+          ...aCommand(f),
+          audit: invalidAudit,
+        }),
+      ).toThrow('invalid_lifecycle_input');
+    },
+  );
 });

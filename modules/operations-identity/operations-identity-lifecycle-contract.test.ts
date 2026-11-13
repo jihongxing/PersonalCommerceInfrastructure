@@ -15,6 +15,7 @@ import {
   planOperationsSecurityEpochIncrement,
   type OperationsPrincipalLifecycleState,
   type OperationsAccountLifecycleState,
+  type OperationsLifecycleSafetyOperation,
 } from './operations-identity-lifecycle-contract.js';
 
 // Founder decision tests prove pure plans only, not authoritative storage or SQL transactions.
@@ -149,6 +150,297 @@ describe('FD-C1-01/02 first activation and independent history', () => {
         { expectedStatus: 'invited', targetStatus: 'active', expectedEpoch: 4 },
       ),
     ).toThrow('parent_not_active');
+  });
+});
+
+// FD-UNKNOWN-01 is a pure planning contract, not a database migration or lock proof.
+describe('FD-UNKNOWN-01 complete unknown-history matrices', () => {
+  const principalStates = ['pending', 'active', 'suspended', 'disabled', 'tombstoned'] as const;
+  const accountStates = ['invited', 'active', 'locked', 'disabled', 'revoked'] as const;
+  // Independent specification: N=existing no-op, B=inactive restriction, E=active departure,
+  // T=terminal, U=unknown activation, I=inconsistent no-op, D=forbidden, X=terminal rejection.
+  const expected = [
+    ['N', 'U', 'D', 'B', 'T'],
+    ['D', 'I', 'E', 'E', 'T'],
+    ['D', 'U', 'I', 'B', 'T'],
+    ['D', 'U', 'D', 'N', 'T'],
+    ['X', 'X', 'X', 'X', 'X'],
+  ] as const;
+
+  for (const [row, current] of principalStates.entries()) {
+    for (const [column, target] of principalStates.entries()) {
+      it(`Principal unknown ${current} -> ${target}`, () => {
+        const principal = { ...human(current), activationHistory: 'unknown' as const };
+        const before = structuredClone(principal);
+        const run = () =>
+          planOperationsPrincipalTransition(principal, {
+            expectedStatus: current,
+            targetStatus: target,
+            expectedEpoch: 4,
+          });
+        const outcome = expected[row]![column]!;
+        const errors = {
+          U: 'activation_history_unknown',
+          I: 'activation_history_inconsistent',
+          D: 'transition_not_allowed',
+          X: 'terminal_state',
+        } as const;
+        if (outcome === 'N' || outcome === 'B' || outcome === 'E' || outcome === 'T') {
+          const safetyOperation: OperationsLifecycleSafetyOperation =
+            outcome === 'N' ? 'standard' : 'restrictive_unknown';
+          expect(run()).toMatchObject({
+            safetyOperation,
+            previousStatus: current,
+            targetStatus: target,
+            previousEpoch: 4,
+            nextEpoch: outcome === 'E' || outcome === 'T' ? 5 : 4,
+            previousActivationHistory: 'unknown',
+            nextActivationHistory: 'unknown',
+            activationKind: 'none',
+            noOp: outcome === 'N',
+            revokeSessions: outcome === 'N' ? 'none' : 'principal',
+            revokeCredentials: outcome === 'T',
+            reauthenticationRequired: outcome !== 'N',
+            auditOutcome:
+              outcome === 'N'
+                ? 'no_op'
+                : outcome === 'T'
+                  ? 'terminal'
+                  : outcome === 'E'
+                    ? 'deactivated'
+                    : 'status_changed',
+          });
+        } else expect(run).toThrow(errors[outcome]);
+        expect(principal).toEqual(before);
+      });
+    }
+  }
+  for (const [row, current] of accountStates.entries()) {
+    for (const [column, target] of accountStates.entries()) {
+      it(`Account unknown ${current} -> ${target}`, () => {
+        const principal = human();
+        const child = { ...account(current), activationHistory: 'unknown' as const };
+        const before = structuredClone({ principal, child });
+        const run = () =>
+          planOperationsAccountTransition(principal, child, {
+            expectedStatus: current,
+            targetStatus: target,
+            expectedEpoch: 4,
+          });
+        const outcome = expected[row]![column]!;
+        const errors = {
+          U: 'activation_history_unknown',
+          I: 'activation_history_inconsistent',
+          D: 'transition_not_allowed',
+          X: 'terminal_state',
+        } as const;
+        if (outcome === 'N' || outcome === 'B' || outcome === 'E' || outcome === 'T') {
+          expect(run()).toMatchObject({
+            safetyOperation: outcome === 'N' ? 'standard' : 'restrictive_unknown',
+            previousStatus: current,
+            targetStatus: target,
+            previousEpoch: 4,
+            nextEpoch: outcome === 'E' || outcome === 'T' ? 5 : 4,
+            previousActivationHistory: 'unknown',
+            nextActivationHistory: 'unknown',
+            activationKind: 'none',
+            noOp: outcome === 'N',
+            revokeSessions: outcome === 'N' ? 'none' : 'account',
+            revokeCredentials: outcome === 'T',
+            reauthenticationRequired: outcome !== 'N',
+            auditOutcome:
+              outcome === 'N'
+                ? 'no_op'
+                : outcome === 'T'
+                  ? 'terminal'
+                  : outcome === 'E'
+                    ? 'deactivated'
+                    : 'status_changed',
+          });
+        } else expect(run).toThrow(errors[outcome]);
+        expect({ principal, child }).toEqual(before);
+      });
+    }
+  }
+
+  const accountRestrictions = [
+    ['invited', 'disabled', 4],
+    ['invited', 'revoked', 5],
+    ['active', 'locked', 5],
+    ['active', 'disabled', 5],
+    ['active', 'revoked', 5],
+    ['locked', 'disabled', 4],
+    ['locked', 'revoked', 5],
+    ['disabled', 'revoked', 5],
+  ] as const;
+  for (const parentStatus of ['pending', 'active', 'suspended', 'disabled'] as const) {
+    for (const childHistory of ['known', 'unknown'] as const) {
+      it.each(accountRestrictions)(
+        `P ${parentStatus}/unknown with ${childHistory} A %s -> %s preserves parent state/history`,
+        (current, target, nextEpoch) => {
+          const principal = { ...human(parentStatus), activationHistory: 'unknown' as const };
+          const child =
+            childHistory === 'unknown'
+              ? { ...account(current), activationHistory: 'unknown' as const }
+              : account(current);
+          const before = structuredClone({ principal, child });
+          expect(
+            planOperationsAccountTransition(principal, child, {
+              expectedStatus: current,
+              targetStatus: target,
+              expectedEpoch: 4,
+            }),
+          ).toMatchObject({
+            safetyOperation: 'restrictive_unknown',
+            previousEpoch: 4,
+            nextEpoch,
+            previousActivationHistory: child.activationHistory,
+            nextActivationHistory: child.activationHistory,
+            revokeSessions: 'account',
+            revokeCredentials: target === 'revoked',
+          });
+          expect({ principal, child }).toEqual(before);
+        },
+      );
+    }
+  }
+
+  it('keeps parent history strict for Account no-op and positive activation', () => {
+    const principal = { ...human(), activationHistory: 'unknown' as const };
+    expect(() =>
+      planOperationsAccountTransition(principal, account(), {
+        expectedStatus: 'active',
+        targetStatus: 'active',
+        expectedEpoch: 4,
+      }),
+    ).toThrow('activation_history_inconsistent');
+    expect(() =>
+      planOperationsAccountTransition(principal, account('invited'), {
+        expectedStatus: 'invited',
+        targetStatus: 'active',
+        expectedEpoch: 4,
+      }),
+    ).toThrow('activation_history_inconsistent');
+  });
+
+  it('rejects known-inconsistent parent or child history during restrictions', () => {
+    for (const principal of [
+      { ...human(), activationHistory: 'never_activated' as const },
+      { ...human('pending'), activationHistory: 'previously_activated' as const },
+    ])
+      expect(() =>
+        planOperationsAccountTransition(
+          principal,
+          {
+            ...account(),
+            activationHistory: 'unknown',
+          },
+          { expectedStatus: 'active', targetStatus: 'disabled', expectedEpoch: 4 },
+        ),
+      ).toThrow('activation_history_inconsistent');
+    expect(() =>
+      planOperationsAccountTransition(
+        { ...human(), activationHistory: 'unknown' },
+        {
+          ...account(),
+          activationHistory: 'never_activated',
+        },
+        { expectedStatus: 'active', targetStatus: 'disabled', expectedEpoch: 4 },
+      ),
+    ).toThrow('activation_history_inconsistent');
+  });
+
+  it('rejects missing or illegal target and parent history rather than treating it as unknown', () => {
+    const { activationHistory: omittedPrincipalHistory, ...missingPrincipal } = human();
+    const { activationHistory: omittedAccountHistory, ...missingAccount } = account();
+    expect(omittedPrincipalHistory).toBe('previously_activated');
+    expect(omittedAccountHistory).toBe('previously_activated');
+    const pInput = {
+      expectedStatus: 'active',
+      targetStatus: 'disabled',
+      expectedEpoch: 4,
+    } as const;
+    // @ts-expect-error Legacy input missing history must be rejected at runtime as well as by types.
+    expect(() => planOperationsPrincipalTransition(missingPrincipal, pInput)).toThrow(
+      'activation_history_inconsistent',
+    );
+    // @ts-expect-error Account history cannot be omitted.
+    expect(() => planOperationsAccountTransition(human(), missingAccount, pInput)).toThrow(
+      'activation_history_inconsistent',
+    );
+    // @ts-expect-error Parent history cannot be omitted.
+    expect(() => planOperationsAccountTransition(missingPrincipal, account(), pInput)).toThrow(
+      'activation_history_inconsistent',
+    );
+    const illegal = { ...human(), activationHistory: 'approved' };
+    // @ts-expect-error Arbitrary approval text is not an activation history.
+    expect(() => planOperationsPrincipalTransition(illegal, pInput)).toThrow(
+      'activation_history_inconsistent',
+    );
+  });
+
+  it('retains Expected Status/Epoch checks, overflow rejection and non-increment maximum', () => {
+    const principal = { ...human(), activationHistory: 'unknown' as const };
+    const child = { ...account(), activationHistory: 'unknown' as const };
+    const input = { expectedStatus: 'active', targetStatus: 'disabled', expectedEpoch: 4 } as const;
+    for (const run of [
+      (
+        command:
+          | typeof input
+          | { expectedStatus: 'disabled'; targetStatus: 'disabled'; expectedEpoch: number },
+      ) => planOperationsPrincipalTransition(principal, command),
+      (
+        command:
+          | typeof input
+          | { expectedStatus: 'disabled'; targetStatus: 'disabled'; expectedEpoch: number },
+      ) => planOperationsAccountTransition(principal, child, command),
+    ]) {
+      expect(() => run({ ...input, expectedStatus: 'disabled' })).toThrow(
+        'expected_status_mismatch',
+      );
+    }
+    expect(() =>
+      planOperationsPrincipalTransition(principal, { ...input, expectedEpoch: 3 }),
+    ).toThrow('expected_epoch_mismatch');
+    expect(() =>
+      planOperationsAccountTransition(principal, child, { ...input, expectedEpoch: 3 }),
+    ).toThrow('expected_epoch_mismatch');
+    const maximum = { ...principal, securityEpoch: OPERATIONS_LIFECYCLE_COUNTER_MAX };
+    expect(() =>
+      planOperationsPrincipalTransition(maximum, {
+        ...input,
+        expectedEpoch: OPERATIONS_LIFECYCLE_COUNTER_MAX,
+        targetStatus: 'tombstoned',
+      }),
+    ).toThrow('epoch_exhausted');
+    expect(() =>
+      planOperationsAccountTransition(maximum, child, {
+        ...input,
+        expectedEpoch: OPERATIONS_LIFECYCLE_COUNTER_MAX,
+        targetStatus: 'revoked',
+      }),
+    ).toThrow('epoch_exhausted');
+    expect(
+      planOperationsPrincipalTransition(
+        { ...maximum, status: 'suspended' },
+        {
+          expectedStatus: 'suspended',
+          targetStatus: 'disabled',
+          expectedEpoch: OPERATIONS_LIFECYCLE_COUNTER_MAX,
+        },
+      ).nextEpoch,
+    ).toBe(OPERATIONS_LIFECYCLE_COUNTER_MAX);
+    expect(
+      planOperationsAccountTransition(
+        maximum,
+        { ...child, status: 'locked' },
+        {
+          expectedStatus: 'locked',
+          targetStatus: 'disabled',
+          expectedEpoch: OPERATIONS_LIFECYCLE_COUNTER_MAX,
+        },
+      ).nextEpoch,
+    ).toBe(OPERATIONS_LIFECYCLE_COUNTER_MAX);
   });
 });
 

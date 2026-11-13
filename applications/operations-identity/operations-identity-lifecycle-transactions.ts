@@ -126,7 +126,11 @@ export interface OperationsCredentialReplacementPlan {
  * Status methods read separate Principal/Account activation histories inside the transaction via
  * its transaction-local read scope. Commands never carry history or an activation approval. First
  * activation preserves Epoch and changes never_activated to previously_activated; recovery consumes
- * +1. Unknown/inconsistent history rejects. Status/history/Epoch/effects/audit commit together.
+ * +1. FD-UNKNOWN-01 permits only whitelisted restrictive changes with unknown history unchanged;
+ * safetyOperation=restrictive_unknown is a derived plan, never command authority. Account restrictions
+ * read/validate both owners and may retain a nonterminal unknown parent, but never change its status
+ * or history. Known-inconsistent/missing history and all positive unknown operations still reject.
+ * Original no-op history checks remain strict. Status/history/Epoch/effects/audit commit together.
  * A tombstone and its Epoch
  * change must be written together while OLD is nonterminal, never via a later Epoch repair.
  * Terminal transitions revoke active Password Credentials and Sessions in the target scope.
@@ -164,6 +168,8 @@ export interface OperationsIdentityLifecycleTransactionPort extends OperationsSe
 /** Future adapter's transaction-local reads, NOT command/HTTP inputs or standalone root reads.
  * Implementations must lock/re-read in P -> A order, keep each entity's own persisted history,
  * preserve unknown legacy history, and never derive history from Epoch/status or initialize old rows.
+ * Return unknown faithfully, including legacy active/limited states: the operation-specific planner
+ * decides FD-UNKNOWN-01 restrictions; never filter those rows out or repair their history in a reader.
  * These declarations provide no storage implementation or runtime proof of snapshot provenance. */
 export interface OperationsIdentityLifecycleStateReader {
   findPrincipalLifecycleState(

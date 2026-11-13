@@ -602,3 +602,31 @@ Principal creation fixes pending/Epoch 0/never_activated; Account creation fixes
 Final disposable Upgrade and Fresh verification recorded 5 legacy Principals and 5 legacy Accounts as `unknown`/`legacy_backfill`, with 10 independent legacy initialization Audits. The C2-1 test completed 12/12; C2-1P-R1 regression completed 13/13; C3-1P regression completed 4/4. Sanitized evidence is retained at `E:/User/jihx/AppData/Local/Temp/pci-c21-resume-final-evidence.json`.
 
 This unit does not implement lifecycle transaction adapters, activation/recovery/terminal business transitions, Credential or Session lifecycle, Authentication Runtime, MFA, RBAC, BFF, Bootstrap Authority, Pilot, Production or real-money authorization. Migration/Runtime deployment-role separation remains separately governed.
+
+
+## PCI-ENG-017-C2-1-R2-REV1 External DBA Temporary MAINTAIN and EXCLUSIVE Backfill Barrier
+
+Authority: Founder decision FD-C2-1-R2-01 and the PCI Main Controller REV1 implementation unit. This section is appended after the earlier blocked R2 record and does not rewrite that history.
+
+~~~ini
+PCI-ENG-017-C2-1-R2 = IMPLEMENTATION COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-017-C2-1-R2-REV1 = IMPLEMENTATION COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+FD-C2-1-R2-01 = APPROVED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+~~~
+
+REV1 changes only the installation authorization mechanism. An independently operated DBA may temporarily grant and revoke MAINTAIN for pci_ops_table_owner on public.operations_human_principals and public.operations_accounts. The Bootstrap and Migration identities never receive GRANT/REVOKE capability; Runtime receives neither MAINTAIN nor Table Owner membership; no DBA credential is stored. The wrapper performs a fail-closed preflight and never executes GRANT or REVOKE.
+
+Migration 0040 now acquires operations_human_principals EXCLUSIVE first and operations_accounts EXCLUSIVE second, before any History/Audit backfill. Both locks, the backfill, Journal insert and commit/rollback run in one transaction and one backend PID. The reviewed SQL SHA-256 is 80c6bc3431fcc8f249e79a64cace60c6816f55cd889fce4c77cd4c007bf74ed7. Earlier 679714aee66fed20033a70062b9b8d7cbf8d00a7a0f48a4be63c99eb559fa5ea references remain historical pre-REV1 evidence and are superseded for the current wrapper. Migrations 0036-0039 are unchanged.
+
+The disposable PostgreSQL 17.10 verification completed 20/20 targeted tests: external DBA grant/revoke ACL restoration, fail-closed preflight, upgrade and fresh installation, idempotent rerun, Runtime/Function Owner denial, and Principal/Account writer waits, Account creation serialization, rollback lock release, ordinary SELECT, and Runtime denial. Evidence is retained at E:/Users/jihx/AppData/Local/Temp/pci-c2-1-rev1-evidence.json; the run used only loopback disposable containers and ended with no task-labeled containers. This is not production permission certification and does not prove every possible PostgreSQL schedule.
+
+The external DBA runbook is docs/09_Engineering_Governance/126_Operations_Activation_History_Migration_Runbook.md. Migration 0040 remains a separately reviewed bounded engineering unit; no Authentication Runtime, MFA, RBAC, BFF, Pilot, Production or real-money authority is implied.

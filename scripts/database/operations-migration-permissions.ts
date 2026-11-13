@@ -7,6 +7,7 @@ export const installationRoles = {
   migration: 'pci_ops_migration',
   table: 'pci_ops_table_owner',
   function: 'pci_ops_function_owner',
+  runtime: 'pci_ops_runtime',
   legacyFixture: 'pci_ops_legacy_owner',
 } as const;
 
@@ -105,6 +106,159 @@ export async function verifyInstallationRoles(sql: InstallationSql): Promise<voi
       AND r.rolname <> 'pci_ops_runtime' AND pg_has_role('pci_ops_runtime',r.oid,'MEMBER'))
     AS invalid`;
   requireInstallation(!membership[0]!.invalid, 'Journal/Runtime membership isolation');
+}
+
+/**
+ * Migration 0040 is the only reviewed migration that needs temporary table
+ * maintenance authority. The authority is provisioned outside the wrapper;
+ * this check only proves that the expected, disposable grant is already in
+ * place and that Runtime has not inherited it.
+ */
+export async function verifyActivationHistoryPrerequisites(sql: InstallationSql): Promise<void> {
+  await verifyInstallationRoles(sql);
+  const tables = await sql<{ relname: string; owner: string | null }[]>`
+    SELECT expected.relname::text,
+      pg_get_userbyid(c.relowner) AS owner
+    FROM (VALUES
+      ('operations_human_principals'::name),
+      ('operations_accounts'::name)
+    ) AS expected(relname)
+    LEFT JOIN pg_class c
+      ON c.relname = expected.relname
+    JOIN pg_namespace n
+      ON n.oid = c.relnamespace
+     AND n.nspname = 'public'
+    ORDER BY expected.relname`;
+  requireInstallation(
+    tables.length === 2 && tables.every((table) => table.owner === installationRoles.legacyFixture),
+    'activation-history target table existence and fixed legacy owner',
+  );
+
+  const roles = await sql<
+    {
+      rolname: string;
+      rolcanlogin: boolean;
+      rolinherit: boolean;
+      rolsuper: boolean;
+      rolcreatedb: boolean;
+      rolcreaterole: boolean;
+      rolreplication: boolean;
+      rolbypassrls: boolean;
+    }[]
+  >`SELECT rolname, rolcanlogin, rolinherit, rolsuper, rolcreatedb, rolcreaterole,
+      rolreplication, rolbypassrls
+    FROM pg_roles
+    WHERE rolname IN (
+      ${installationRoles.legacyFixture},
+      ${installationRoles.table},
+      ${installationRoles.function},
+      ${installationRoles.migration},
+      ${installationRoles.runtime}
+    )`;
+  requireInstallation(roles.length === 5, 'activation-history fixed roles exist');
+  const roleByName = new Map(roles.map((role) => [role.rolname, role]));
+  const tableOwner = roleByName.get(installationRoles.table);
+  const functionOwner = roleByName.get(installationRoles.function);
+  const migration = roleByName.get(installationRoles.migration);
+  const runtime = roleByName.get(installationRoles.runtime);
+  requireInstallation(
+    tableOwner &&
+      !tableOwner.rolcanlogin &&
+      !tableOwner.rolinherit &&
+      !tableOwner.rolsuper &&
+      !tableOwner.rolcreatedb &&
+      !tableOwner.rolcreaterole &&
+      !tableOwner.rolreplication &&
+      !tableOwner.rolbypassrls,
+    'Table Owner restricted NOLOGIN role',
+  );
+  requireInstallation(
+    functionOwner &&
+      !functionOwner.rolcanlogin &&
+      !functionOwner.rolinherit &&
+      !functionOwner.rolsuper &&
+      !functionOwner.rolcreatedb &&
+      !functionOwner.rolcreaterole &&
+      !functionOwner.rolreplication &&
+      !functionOwner.rolbypassrls,
+    'Function Owner restricted NOLOGIN role',
+  );
+  requireInstallation(
+    migration?.rolcanlogin &&
+      !migration.rolinherit &&
+      !migration.rolsuper &&
+      !migration.rolcreatedb &&
+      !migration.rolcreaterole &&
+      !migration.rolreplication &&
+      !migration.rolbypassrls,
+    'Migration independent restricted LOGIN role',
+  );
+  requireInstallation(
+    runtime?.rolcanlogin &&
+      !runtime.rolinherit &&
+      !runtime.rolsuper &&
+      !runtime.rolcreatedb &&
+      !runtime.rolcreaterole &&
+      !runtime.rolreplication &&
+      !runtime.rolbypassrls,
+    'Runtime independent restricted LOGIN role',
+  );
+
+  const privileges = await sql<
+    {
+      table_owner_principal: boolean;
+      table_owner_account: boolean;
+      runtime_principal: boolean;
+      runtime_account: boolean;
+      function_principal: boolean;
+      function_account: boolean;
+      migration_table_membership: boolean;
+      runtime_table_membership: boolean;
+      runtime_legacy_membership: boolean;
+      runtime_function_membership: boolean;
+      table_maintain_membership: boolean;
+      migration_maintain_membership: boolean;
+      runtime_maintain_membership: boolean;
+      function_maintain_membership: boolean;
+    }[]
+  >`SELECT
+      has_table_privilege(${installationRoles.table}, 'public.operations_human_principals', 'MAINTAIN') AS table_owner_principal,
+      has_table_privilege(${installationRoles.table}, 'public.operations_accounts', 'MAINTAIN') AS table_owner_account,
+      has_table_privilege(${installationRoles.runtime}, 'public.operations_human_principals', 'MAINTAIN') AS runtime_principal,
+      has_table_privilege(${installationRoles.runtime}, 'public.operations_accounts', 'MAINTAIN') AS runtime_account,
+      has_table_privilege(${installationRoles.function}, 'public.operations_human_principals', 'MAINTAIN') AS function_principal,
+      has_table_privilege(${installationRoles.function}, 'public.operations_accounts', 'MAINTAIN') AS function_account,
+      pg_has_role(${installationRoles.migration}, ${installationRoles.table}, 'MEMBER') AS migration_table_membership,
+      pg_has_role(${installationRoles.runtime}, ${installationRoles.table}, 'MEMBER') AS runtime_table_membership,
+      pg_has_role(${installationRoles.runtime}, ${installationRoles.legacyFixture}, 'MEMBER') AS runtime_legacy_membership,
+      pg_has_role(${installationRoles.runtime}, ${installationRoles.function}, 'MEMBER') AS runtime_function_membership,
+      pg_has_role(${installationRoles.table}, 'pg_maintain', 'MEMBER') AS table_maintain_membership,
+      pg_has_role(${installationRoles.migration}, 'pg_maintain', 'MEMBER') AS migration_maintain_membership,
+      pg_has_role(${installationRoles.runtime}, 'pg_maintain', 'MEMBER') AS runtime_maintain_membership,
+      pg_has_role(${installationRoles.function}, 'pg_maintain', 'MEMBER') AS function_maintain_membership`;
+  const privilege = privileges[0];
+  requireInstallation(
+    privilege?.table_owner_principal && privilege.table_owner_account,
+    'temporary MAINTAIN exists for both activation-history tables',
+  );
+  requireInstallation(
+    !privilege.runtime_principal &&
+      !privilege.runtime_account &&
+      !privilege.function_principal &&
+      !privilege.function_account,
+    'Runtime and Function Owner have no temporary MAINTAIN',
+  );
+  requireInstallation(
+    privilege.migration_table_membership &&
+      !privilege.runtime_table_membership &&
+      !privilege.runtime_legacy_membership &&
+      !privilege.runtime_function_membership &&
+      !privilege.table_maintain_membership &&
+      !privilege.migration_maintain_membership &&
+      !privilege.runtime_maintain_membership &&
+      !privilege.function_maintain_membership,
+    'fixed SET membership, pg_maintain isolation and Runtime isolation',
+  );
 }
 
 export async function verifyJournal(

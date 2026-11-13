@@ -11,12 +11,14 @@ import {
   installationRoles,
   requireInstallation,
   requireInstallationIdentity,
+  verifyActivationHistoryPrerequisites,
   verifyJournal,
 } from './operations-migration-permissions.js';
 
 const breakpoint = '\n--> statement-breakpoint\n';
 // These deliberately small installation probes are not the C2-1 History/Audit model.
-// Their exact bytes, stage boundaries and roles are fixed here for review. Real 0040 has no policy.
+// Their exact bytes, stage boundaries and roles are fixed here for review. Migration 0040 has a
+// separate fixed policy below and requires an external DBA temporary MAINTAIN grant.
 const fixtureTableStatements = [
   'CREATE TABLE public.pci_install_fixture_history (principal_id varchar(128) PRIMARY KEY REFERENCES public.operations_human_principals(principal_id) ON DELETE RESTRICT)',
   'CREATE TABLE public.pci_install_fixture_audit (stage text, pid integer, session_name name, current_name name)',
@@ -59,7 +61,7 @@ const legacyHashes: readonly string[] = [
   '344196ebc3a1c91afa710a7f399e55119a394e992915792c882c031f8f817594',
   '7fba8a695294bb2abf2c98e790d72f92b33451909691e5e2b60d72366621e363',
 ];
-const activationHistoryHash = '679714aee66fed20033a70062b9b8d7cbf8d00a7a0f48a4be63c99eb559fa5ea';
+const activationHistoryHash = '80c6bc3431fcc8f249e79a64cace60c6816f55cd889fce4c77cd4c007bf74ed7';
 const reviewedMigrationTags = new Map<string, string>([
   [legacyHashes[0]!, '0036_operations_principal_persistence'],
   [legacyHashes[1]!, '0037_operations_credential_persistence'],
@@ -219,6 +221,19 @@ export async function migrateWithRoleContext(
           const legacy = legacyHashes.includes(migration.hash);
           const foundation = migration.hash === digest(installationFixtureSources.foundation);
           const activationHistory = migration.hash === activationHistoryHash;
+          if (activationHistory) {
+            await emit(
+              tx,
+              'activation-history-permission-preflight-before',
+              'verify temporary MAINTAIN and fixed role boundary',
+            );
+            await verifyActivationHistoryPrerequisites(tx);
+            await emit(
+              tx,
+              'activation-history-permission-preflight-after',
+              'verify temporary MAINTAIN and fixed role boundary',
+            );
+          }
           const activationHistoryRoles = [
             installationRoles.table,
             installationRoles.table,

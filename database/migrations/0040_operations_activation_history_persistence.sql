@@ -1,5 +1,7 @@
 -- PCI-ENG-017-C2-1: activation history and lifecycle technical audit foundation.
 -- Existing identity rows are classified as unknown; no identity row is updated.
+LOCK TABLE public.operations_human_principals IN EXCLUSIVE MODE;
+LOCK TABLE public.operations_accounts IN EXCLUSIVE MODE;
 CREATE TABLE public.operations_identity_lifecycle_audits (
   audit_id varchar(128) PRIMARY KEY NOT NULL,
   operation_id varchar(128) NOT NULL,

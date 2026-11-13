@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
-import postgres, { type Sql } from 'postgres';
+import postgres, { type Sql, type TransactionSql } from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bootstrapMigrationPrerequisites } from '../../scripts/database/bootstrap-migration-prerequisites.js';
@@ -38,6 +38,8 @@ type Fixture = {
   readonly port: string;
   readonly admin: Sql;
   readonly bootstrap: Sql;
+  readonly dba: Sql;
+  readonly writer: Sql;
   readonly migration: Sql;
   readonly runtime: Sql;
   readonly url: string;
@@ -49,6 +51,7 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
   const fixtures: Fixture[] = [];
   const tempFolders: string[] = [];
   const evidence: MigrationEvidence[] = [];
+  const permissionEvidence: Record<string, unknown>[] = [];
   let legacyPrincipalsBefore: unknown;
   let legacyAccountsBefore: unknown;
   let manifest = '';
@@ -113,6 +116,7 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
     const postgresPassword = randomBytes(24).toString('base64url');
     const migrationPassword = randomBytes(24).toString('base64url');
     const runtimePassword = randomBytes(24).toString('base64url');
+    const dbaPassword = randomBytes(24).toString('base64url');
     const containerId = await podman([
       'run',
       '--rm',
@@ -152,7 +156,7 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
       `CREATE ROLE ${installationRoles.bootstrap} LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '${bootstrapPassword}'`,
     );
     await admin.unsafe(
-      `CREATE ROLE ${installationRoles.legacyFixture} NOLOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`,
+      `CREATE ROLE ${installationRoles.legacyFixture} LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD '${dbaPassword}'`,
     );
     await admin.unsafe(`GRANT CREATE ON SCHEMA public TO ${installationRoles.legacyFixture}`);
     await admin.unsafe(operationsSchemaProvisioningSql);
@@ -168,6 +172,8 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
       port,
       admin,
       bootstrap,
+      dba: connect(name, installationRoles.legacyFixture, dbaPassword, port),
+      writer: connect(name, installationRoles.legacyFixture, dbaPassword, port),
       migration: connect(name, installationRoles.migration, migrationPassword, port),
       runtime: connect(name, 'pci_ops_runtime', runtimePassword, port),
       url: `postgres://${installationRoles.migration}:${q(migrationPassword)}@127.0.0.1:${port}/${name}`,
@@ -184,8 +190,198 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
     return fixture;
   }
 
-  async function runMigrations(fixture: Fixture): Promise<void> {
-    await migrateWithRoleContext(fixture.url, manifest, (event) => evidence.push(event));
+  async function runMigrations(
+    fixture: Fixture,
+    record: (event: MigrationEvidence) => void = (event) => evidence.push(event),
+  ): Promise<void> {
+    await migrateWithRoleContext(fixture.url, manifest, record);
+  }
+
+  async function prepareLegacyFixture(label: string): Promise<Fixture> {
+    const fixture = await startFixture(label);
+    await runLegacy(fixture);
+    await grantPostLegacyAccess(fixture);
+    await seedLegacy(fixture);
+    await assertMaintainPrivilege(fixture, false);
+    await maintainPrivilege(fixture, true);
+    return fixture;
+  }
+
+  async function waitForPrincipalLock(fixture: Fixture): Promise<number> {
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      for (let index = evidence.length - 1; index >= 0; index -= 1) {
+        const event = evidence[index]!;
+        if (
+          event.database === fixture.name &&
+          event.event === 'sql-before' &&
+          event.statement?.includes(
+            'LOCK TABLE public.operations_human_principals IN EXCLUSIVE MODE',
+          )
+        )
+          return event.pid;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error('Migration did not reach the Principal EXCLUSIVE lock statement');
+  }
+
+  async function assertPrincipalLockBlocked(
+    fixture: Fixture,
+    migrationPid: number,
+    writerPid: number,
+  ): Promise<void> {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const locks = await fixture.admin<
+        { pid: number; mode: string; granted: boolean; blocking_pids: number[] }[]
+      >`SELECT l.pid, l.mode, l.granted, pg_blocking_pids(l.pid) AS blocking_pids
+        FROM pg_locks l
+        JOIN pg_class c ON c.oid=l.relation
+        JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname='operations_human_principals'
+          AND l.pid=${migrationPid} AND l.mode='ExclusiveLock'`;
+      if (locks.some((lock) => !lock.granted && lock.blocking_pids.includes(writerPid))) return;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error('Principal EXCLUSIVE lock was not observed waiting on the writer');
+  }
+
+  async function waitForAccountLock(fixture: Fixture): Promise<number> {
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      for (let index = evidence.length - 1; index >= 0; index -= 1) {
+        const event = evidence[index]!;
+        if (
+          event.database === fixture.name &&
+          event.event === 'sql-before' &&
+          event.statement?.includes('LOCK TABLE public.operations_accounts IN EXCLUSIVE MODE')
+        )
+          return event.pid;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error('Migration did not reach the Account EXCLUSIVE lock statement');
+  }
+
+  async function assertAccountLockBlocked(
+    fixture: Fixture,
+    migrationPid: number,
+    writerPid: number,
+  ): Promise<void> {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const locks = await fixture.admin<
+        { pid: number; mode: string; granted: boolean; blocking_pids: number[] }[]
+      >`SELECT l.pid, l.mode, l.granted, pg_blocking_pids(l.pid) AS blocking_pids
+        FROM pg_locks l
+        JOIN pg_class c ON c.oid=l.relation
+        JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname='operations_accounts'
+          AND l.pid=${migrationPid} AND l.mode='ExclusiveLock'`;
+      if (locks.some((lock) => !lock.granted && lock.blocking_pids.includes(writerPid))) return;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    throw new Error('Account EXCLUSIVE lock was not observed waiting on the writer');
+  }
+
+  async function startHeldLegacyWriter(
+    fixture: Fixture,
+    action: (tx: TransactionSql) => Promise<void>,
+  ): Promise<{ pid: number; release: () => void; promise: Promise<unknown> }> {
+    let releaseWriter!: () => void;
+    const writerReleased = new Promise<void>((resolve) => {
+      releaseWriter = resolve;
+    });
+    let writerReady!: () => void;
+    const writerStarted = new Promise<void>((resolve) => {
+      writerReady = resolve;
+    });
+    let writerPid = 0;
+    const promise = fixture.writer.begin(async (tx) => {
+      await tx.unsafe(`SET LOCAL ROLE ${installationRoles.legacyFixture}`);
+      writerPid = (await tx<{ pid: number }[]>`SELECT pg_backend_pid() AS pid`)[0]!.pid;
+      await action(tx);
+      writerReady();
+      await writerReleased;
+    });
+    await writerStarted;
+    return { pid: writerPid, release: releaseWriter, promise };
+  }
+
+  async function maintainPrivilege(fixture: Fixture, expected: boolean): Promise<void> {
+    const beforeIdentity = await fixture.dba<
+      { session_user: string; current_user: string; pid: number; database: string }[]
+    >`SELECT session_user, current_user, pg_backend_pid() AS pid, current_database() AS database`;
+    await fixture.dba.unsafe(`SET ROLE ${installationRoles.legacyFixture}`);
+    const executingIdentity = await fixture.dba<
+      { session_user: string; current_user: string; pid: number; database: string }[]
+    >`SELECT session_user, current_user, pg_backend_pid() AS pid, current_database() AS database`;
+    await fixture.dba.unsafe(
+      expected
+        ? 'GRANT MAINTAIN ON TABLE public.operations_human_principals, public.operations_accounts TO pci_ops_table_owner'
+        : 'REVOKE MAINTAIN ON TABLE public.operations_human_principals, public.operations_accounts FROM pci_ops_table_owner',
+    );
+    await fixture.dba.unsafe('RESET ROLE');
+    const afterIdentity = await fixture.dba<
+      { session_user: string; current_user: string; pid: number; database: string }[]
+    >`SELECT session_user, current_user, pg_backend_pid() AS pid, current_database() AS database`;
+    const rows = await fixture.admin<
+      {
+        principal_maintain: boolean;
+        account_maintain: boolean;
+        principal_acl: string | null;
+        account_acl: string | null;
+      }[]
+    >`SELECT
+      has_table_privilege('pci_ops_table_owner','public.operations_human_principals','MAINTAIN') AS principal_maintain,
+      has_table_privilege('pci_ops_table_owner','public.operations_accounts','MAINTAIN') AS account_maintain,
+      (SELECT relacl::text FROM pg_class WHERE oid='public.operations_human_principals'::regclass) AS principal_acl,
+      (SELECT relacl::text FROM pg_class WHERE oid='public.operations_accounts'::regclass) AS account_acl`;
+    expect(rows[0]).toMatchObject({ principal_maintain: expected, account_maintain: expected });
+    permissionEvidence.push({
+      fixture: fixture.name,
+      action: expected ? 'GRANT_MAINTAIN' : 'REVOKE_MAINTAIN',
+      expected,
+      recorded_at: new Date().toISOString(),
+      before_identity: beforeIdentity[0],
+      executing_identity: executingIdentity[0],
+      after_identity: afterIdentity[0],
+      acl: rows[0],
+    });
+  }
+
+  async function assertMaintainPrivilege(fixture: Fixture, expected: boolean): Promise<void> {
+    const rows = await fixture.admin<
+      { principal_maintain: boolean; account_maintain: boolean }[]
+    >`SELECT
+      has_table_privilege('pci_ops_table_owner','public.operations_human_principals','MAINTAIN') AS principal_maintain,
+      has_table_privilege('pci_ops_table_owner','public.operations_accounts','MAINTAIN') AS account_maintain`;
+    const roleMatrix = await fixture.admin`
+      SELECT rolname, rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
+      FROM pg_roles
+      WHERE rolname IN ('pci_ops_legacy_owner','pci_ops_table_owner','pci_ops_migration','pci_ops_runtime','pci_ops_function_owner','pci_ops_journal_owner')
+      ORDER BY rolname`;
+    const membershipMatrix = await fixture.admin`
+      SELECT member.rolname AS member, granted.rolname AS granted_role,
+             m.inherit_option, m.set_option
+      FROM pg_auth_members m
+      JOIN pg_roles member ON member.oid=m.member
+      JOIN pg_roles granted ON granted.oid=m.roleid
+      WHERE member.rolname IN ('pci_ops_migration','pci_ops_runtime','pci_ops_table_owner')
+         OR granted.rolname IN ('pci_ops_table_owner','pci_ops_legacy_owner','pg_maintain')
+      ORDER BY member.rolname, granted.rolname`;
+    const databaseOwner = await fixture.admin`
+      SELECT pg_get_userbyid(datdba) AS database_owner,
+             EXISTS (SELECT 1 FROM pg_roles WHERE rolname='pg_maintain') AS pg_maintain_exists
+      FROM pg_database WHERE datname=current_database()`;
+    expect(rows).toEqual([{ principal_maintain: expected, account_maintain: expected }]);
+    permissionEvidence.push({
+      fixture: fixture.name,
+      action: 'ACL_CHECK',
+      expected,
+      recorded_at: new Date().toISOString(),
+      acl: rows[0],
+      role_matrix: roleMatrix,
+      membership_matrix: membershipMatrix,
+      database_owner: databaseOwner[0],
+    });
   }
 
   async function runLegacy(fixture: Fixture): Promise<void> {
@@ -237,13 +433,21 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
       await upgrade.admin`SELECT * FROM public.operations_human_principals ORDER BY principal_id`;
     legacyAccountsBefore =
       await upgrade.admin`SELECT * FROM public.operations_accounts ORDER BY account_id`;
-    await runMigrations(upgrade);
+    await assertMaintainPrivilege(upgrade, false);
+    await maintainPrivilege(upgrade, true);
+    try {
+      await runMigrations(upgrade);
+    } finally {
+      await maintainPrivilege(upgrade, false);
+    }
   }, 180_000);
 
   afterAll(async () => {
     const evidencePath = process.env.PCI_C2_1_EVIDENCE_PATH;
     for (const fixture of fixtures) {
       await fixture.bootstrap.end({ timeout: 1 }).catch(() => undefined);
+      await fixture.dba.end({ timeout: 1 }).catch(() => undefined);
+      await fixture.writer.end({ timeout: 1 }).catch(() => undefined);
       await fixture.migration.end({ timeout: 1 }).catch(() => undefined);
       await fixture.runtime.end({ timeout: 1 }).catch(() => undefined);
       await fixture.admin.end({ timeout: 1 }).catch(() => undefined);
@@ -262,7 +466,11 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
       await mkdir(dirname(evidencePath), { recursive: true });
       await writeFile(
         evidencePath,
-        JSON.stringify({ image, imageDigest, podmanVersions, environment, evidence }, null, 2),
+        JSON.stringify(
+          { image, imageDigest, podmanVersions, environment, permissionEvidence, evidence },
+          null,
+          2,
+        ),
       );
     }
     for (const folder of tempFolders) await rm(folder, { recursive: true, force: true });
@@ -445,6 +653,181 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
     expect(acls.some((row) => row.grantee === 'PUBLIC')).toBe(false);
   });
 
+  it('holds the Principal EXCLUSIVE barrier until a concurrent legacy writer commits', async () => {
+    const concurrent = await startFixture('concurrent');
+    await runLegacy(concurrent);
+    await grantPostLegacyAccess(concurrent);
+    await seedLegacy(concurrent);
+    await assertMaintainPrivilege(concurrent, false);
+    await maintainPrivilege(concurrent, true);
+
+    let releaseWriter!: () => void;
+    const writerReleased = new Promise<void>((resolve) => {
+      releaseWriter = resolve;
+    });
+    let writerReady!: () => void;
+    const writerStarted = new Promise<void>((resolve) => {
+      writerReady = resolve;
+    });
+    let writerPid = 0;
+    const writer = concurrent.writer.begin(async (tx) => {
+      await tx.unsafe(`SET LOCAL ROLE ${installationRoles.legacyFixture}`);
+      writerPid = (await tx<{ pid: number }[]>`SELECT pg_backend_pid() AS pid`)[0]!.pid;
+      await tx.unsafe(
+        "INSERT INTO public.operations_human_principals (principal_id,status,security_epoch) VALUES ('concurrent-p','pending',0)",
+      );
+      writerReady();
+      await writerReleased;
+    });
+    await writerStarted;
+
+    let migrationSettled = false;
+    const migration = runMigrations(concurrent).finally(() => {
+      migrationSettled = true;
+    });
+    const migrationPid = await waitForPrincipalLock(concurrent);
+    await assertPrincipalLockBlocked(concurrent, migrationPid, writerPid);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(migrationSettled).toBe(false);
+    releaseWriter();
+    await writer;
+    await migration;
+    await maintainPrivilege(concurrent, false);
+    expect(
+      await concurrent.admin`SELECT activation_history FROM public.operations_human_principal_activation_histories WHERE principal_id='concurrent-p'`,
+    ).toEqual([{ activation_history: 'unknown' }]);
+  }, 180_000);
+
+  it('waits for a Principal SELECT FOR UPDATE writer without deadlock', async () => {
+    const fixture = await prepareLegacyFixture('principal_update');
+    const held = await startHeldLegacyWriter(fixture, async (tx) => {
+      await tx`SELECT principal_id FROM public.operations_human_principals WHERE principal_id='legacy-p-pending' FOR UPDATE`;
+      await tx`UPDATE public.operations_human_principals SET status='suspended' WHERE principal_id='legacy-p-pending'`;
+    });
+    const migration = runMigrations(fixture);
+    const migrationPid = await waitForPrincipalLock(fixture);
+    await assertPrincipalLockBlocked(fixture, migrationPid, held.pid);
+    held.release();
+    await held.promise;
+    await migration;
+    await maintainPrivilege(fixture, false);
+    expect(
+      await fixture.admin`SELECT status,activation_history FROM public.operations_human_principals p JOIN public.operations_human_principal_activation_histories h USING (principal_id) WHERE p.principal_id='legacy-p-pending'`,
+    ).toEqual([{ status: 'suspended', activation_history: 'unknown' }]);
+  }, 180_000);
+
+  it('waits for an Account SELECT FOR UPDATE writer and backfills the committed row', async () => {
+    const fixture = await prepareLegacyFixture('account_update');
+    const held = await startHeldLegacyWriter(fixture, async (tx) => {
+      await tx`SELECT account_id FROM public.operations_accounts WHERE account_id='legacy-a-invited' FOR UPDATE`;
+      await tx`UPDATE public.operations_accounts SET status='locked' WHERE account_id='legacy-a-invited'`;
+    });
+    const migration = runMigrations(fixture);
+    const migrationPid = await waitForAccountLock(fixture);
+    await assertAccountLockBlocked(fixture, migrationPid, held.pid);
+    held.release();
+    await held.promise;
+    await migration;
+    await maintainPrivilege(fixture, false);
+    expect(
+      await fixture.admin`SELECT status,activation_history FROM public.operations_accounts a JOIN public.operations_account_activation_histories h USING (account_id) WHERE a.account_id='legacy-a-invited'`,
+    ).toEqual([{ status: 'locked', activation_history: 'unknown' }]);
+  }, 180_000);
+
+  it('serializes Account creation after a Principal row lock without partial History', async () => {
+    const fixture = await prepareLegacyFixture('account_create');
+    const held = await startHeldLegacyWriter(fixture, async (tx) => {
+      await tx`INSERT INTO public.operations_human_principals (principal_id,status,security_epoch) VALUES ('concurrent-principal','pending',0)`;
+      await tx`INSERT INTO public.operations_accounts (account_id,principal_id,login_identifier_normalized,status) VALUES ('concurrent-account','concurrent-principal','concurrent-account@example.test','invited')`;
+    });
+    const migration = runMigrations(fixture);
+    const migrationPid = await waitForPrincipalLock(fixture);
+    await assertPrincipalLockBlocked(fixture, migrationPid, held.pid);
+    held.release();
+    await held.promise;
+    await migration;
+    await maintainPrivilege(fixture, false);
+    expect(
+      await fixture.admin`SELECT activation_history FROM public.operations_account_activation_histories WHERE account_id='concurrent-account'`,
+    ).toEqual([{ activation_history: 'unknown' }]);
+  }, 180_000);
+
+  it('rolls back partial History/Audit work and releases both table locks', async () => {
+    const fixture = await prepareLegacyFixture('rollback');
+    let injected = false;
+    const migration = runMigrations(fixture, (event) => {
+      evidence.push(event);
+      if (
+        !injected &&
+        event.event === 'sql-after' &&
+        event.statement?.includes('INSERT INTO public.operations_identity_lifecycle_audits')
+      ) {
+        injected = true;
+        throw new Error('REV1 rollback injection after Audit backfill');
+      }
+    });
+    await waitForPrincipalLock(fixture);
+    let writerReady!: () => void;
+    const writerStarted = new Promise<void>((resolve) => {
+      writerReady = resolve;
+    });
+    const writer = fixture.writer.begin(async (tx) => {
+      await tx.unsafe(`SET LOCAL ROLE ${installationRoles.legacyFixture}`);
+      writerReady();
+      await tx`INSERT INTO public.operations_human_principals (principal_id,status,security_epoch) VALUES ('rollback-writer','pending',0)`;
+    });
+    await writerStarted;
+    await expect(migration).rejects.toMatchObject({
+      sqlstate: 'CLIENT_ERROR',
+      commitOutcome: 'not_committed',
+    });
+    await writer;
+    await maintainPrivilege(fixture, false);
+    expect(
+      await fixture.admin`SELECT count(*)::int AS n FROM drizzle.__drizzle_migrations`,
+    ).toEqual([{ n: 4 }]);
+    expect(
+      await fixture.admin`SELECT to_regclass('public.operations_identity_lifecycle_audits') AS name`,
+    ).toEqual([{ name: null }]);
+    expect(
+      await fixture.admin`SELECT count(*)::int AS n FROM public.operations_human_principals WHERE principal_id='rollback-writer'`,
+    ).toEqual([{ n: 1 }]);
+  }, 180_000);
+
+  it('allows ordinary SELECT while both EXCLUSIVE locks are held', async () => {
+    const fixture = await prepareLegacyFixture('select');
+    const migration = runMigrations(fixture);
+    const migrationPid = await waitForPrincipalLock(fixture);
+    const selectResult = await fixture.admin`
+      SELECT count(*)::int AS principals FROM public.operations_human_principals`;
+    expect(selectResult).toEqual([{ principals: 5 }]);
+    expect(migrationPid).toBeGreaterThan(0);
+    await migration;
+    await maintainPrivilege(fixture, false);
+  }, 180_000);
+
+  it('keeps Runtime denied and restores ACL after the temporary DBA window', async () => {
+    const fixture = await prepareLegacyFixture('permissions');
+    await fixture.runtime.unsafe('BEGIN');
+    try {
+      await expect(
+        fixture.runtime.unsafe(
+          'LOCK TABLE public.operations_human_principals, public.operations_accounts IN EXCLUSIVE MODE',
+        ),
+      ).rejects.toMatchObject({ code: '42501' });
+    } finally {
+      await fixture.runtime.unsafe('ROLLBACK');
+    }
+    await expect(
+      fixture.runtime.unsafe(`SET ROLE ${installationRoles.table}`),
+    ).rejects.toMatchObject({ code: '42501' });
+    await runMigrations(fixture);
+    await maintainPrivilege(fixture, false);
+    expect(
+      await fixture.admin`SELECT has_table_privilege('pci_ops_runtime','public.operations_human_principals','MAINTAIN') AS principal_maintain, has_table_privilege('pci_ops_runtime','public.operations_accounts','MAINTAIN') AS account_maintain`,
+    ).toEqual([{ principal_maintain: false, account_maintain: false }]);
+  }, 180_000);
+
   it('reruns 0040 without duplicate History or Audit rows', async () => {
     const fixture = fixtures[0]!;
     await runMigrations(fixture);
@@ -459,11 +842,38 @@ describeWithDatabase('Operations activation history PostgreSQL foundation', () =
     ).toEqual([{ n: 15 }]);
   });
 
+  it('fails closed before 0040 SQL when the external DBA grant is absent', async () => {
+    const blocked = await startFixture('blocked');
+    await runLegacy(blocked);
+    await grantPostLegacyAccess(blocked);
+    await seedLegacy(blocked);
+    await assertMaintainPrivilege(blocked, false);
+    await expect(runMigrations(blocked)).rejects.toMatchObject({ sqlstate: 'CONTRACT_REJECTED' });
+    expect(
+      await blocked.admin`SELECT count(*)::int AS n FROM drizzle.__drizzle_migrations`,
+    ).toEqual([{ n: 4 }]);
+    expect(
+      await blocked.admin`SELECT to_regclass('public.operations_identity_lifecycle_audits') AS name`,
+    ).toEqual([{ name: null }]);
+    await maintainPrivilege(blocked, true);
+    try {
+      await runMigrations(blocked);
+    } finally {
+      await maintainPrivilege(blocked, false);
+    }
+  }, 180_000);
+
   it('performs Fresh installation with the same fixed Owner and Journal strategy', async () => {
     const fresh = await startFixture('fresh');
     await runLegacy(fresh);
     await grantPostLegacyAccess(fresh);
-    await runMigrations(fresh);
+    await assertMaintainPrivilege(fresh, false);
+    await maintainPrivilege(fresh, true);
+    try {
+      await runMigrations(fresh);
+    } finally {
+      await maintainPrivilege(fresh, false);
+    }
     expect(
       await fresh.admin`SELECT count(*)::int AS n FROM public.operations_human_principal_activation_histories`,
     ).toEqual([{ n: 0 }]);

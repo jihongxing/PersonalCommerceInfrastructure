@@ -284,6 +284,8 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
     PCI-ENG-014 已采纳的 Operations Human/Machine 身份领域合同；只实现纯领域类型和校验，不包含认证、持久化或 Admin API。
 63. [123 — Operations Identity Persistence Baseline](./09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md)
     记录 PCI-ENG-015-B 的三张 Operations Principal 持久化表、Repository 边界、迁移与两轮真实 PostgreSQL 验证；不授权认证、Session、权限或 Admin API。
+64. [126 — Operations Activation History Migration Runbook](./09_Engineering_Governance/126_Operations_Activation_History_Migration_Runbook.md)
+    记录 PCI-ENG-017-C2-1-R2-REV1 的外部 DBA 临时 MAINTAIN 授权、EXCLUSIVE backfill barrier、权限回收与失败状态控制。
 
 配套治理文档：
 

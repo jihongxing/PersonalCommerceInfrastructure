@@ -9,6 +9,13 @@ import type { OperationsAuthContextProvider } from '../../../applications/core/p
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
 import {
+  createServicePolicyReadService,
+  type AuditReadFilters,
+  type CatalogReadFilters,
+  type CatalogReadKind,
+} from '../../../applications/service-policy/service-policy-read-service.js';
+import { requireOperationsHumanPermission } from '../../../applications/operations-identity/operations-human-authentication.js';
+import {
   CapabilityCatalogItemSchema,
   ServiceCatalogResponseSchema,
   ServiceOfferingTemplateSchema,
@@ -16,6 +23,10 @@ import {
   ServicePolicyAdminWorkspaceSchema,
   ServicePolicyAuditSchema,
   ServicePolicyPublishVersionSchema,
+  OperationsAuditDetailResponseSchema,
+  OperationsAuditReadResponseSchema,
+  OperationsCatalogDetailResponseSchema,
+  OperationsCatalogReadResponseSchema,
 } from '../../../contracts/api/v1/service-policy-contracts.js';
 import { ApiErrorEnvelopeSchema } from '../../../contracts/api/v1/system-contracts.js';
 
@@ -25,6 +36,23 @@ interface AuthenticatedRequest extends FastifyRequest {
 }
 
 const IdParamsSchema = Type.Object({ id: Type.String({ minLength: 1 }) });
+const CatalogKindParamsSchema = Type.Object({
+  kind: Type.Union([Type.Literal('capabilities'), Type.Literal('templates')]),
+});
+const CatalogQuerySchema = Type.Object({
+  page: Type.Optional(Type.String()),
+  pageSize: Type.Optional(Type.String()),
+  q: Type.Optional(Type.String()),
+  status: Type.Optional(Type.String()),
+  riskTier: Type.Optional(Type.String()),
+});
+const AuditQuerySchema = Type.Object({
+  page: Type.Optional(Type.String()),
+  pageSize: Type.Optional(Type.String()),
+  q: Type.Optional(Type.String()),
+  entityType: Type.Optional(Type.String()),
+  action: Type.Optional(Type.String()),
+});
 
 export function registerServicePolicyRoutes(
   server: FastifyInstance,
@@ -33,8 +61,12 @@ export function registerServicePolicyRoutes(
     readonly operationsAuthContextProvider: OperationsAuthContextProvider;
     readonly catalogRepository: ServicePolicyCatalogRepository;
     readonly adminService: ServicePolicyAdminService;
+    readonly humanOperationsAuthContextProvider?: OperationsAuthContextProvider;
   },
 ): void {
+  const readService = createServicePolicyReadService({
+    repository: dependencies.catalogRepository,
+  });
   const authenticateCreator = async (request: AuthenticatedRequest): Promise<void> => {
     request.authContext = await dependencies.authContextProvider.resolveActorContext({
       accessToken: extractBearerToken(request.headers.authorization),
@@ -67,6 +99,183 @@ export function registerServicePolicyRoutes(
     }
     return request.operationsContext;
   };
+
+  const authenticateHumanRead = async (request: AuthenticatedRequest): Promise<void> => {
+    if (dependencies.humanOperationsAuthContextProvider === undefined) {
+      throw new ApplicationError({
+        category: 'unavailable',
+        code: 'operations_human_runtime_unavailable',
+        message: 'Operations Human authentication is temporarily unavailable.',
+      });
+    }
+    request.operationsContext =
+      await dependencies.humanOperationsAuthContextProvider.resolveActorContext({
+        accessToken: extractBearerToken(request.headers.authorization),
+        correlationId: request.id,
+      });
+  };
+
+  const requireReadPermission = (
+    request: AuthenticatedRequest,
+    permission: 'catalog:read' | 'audit:read',
+  ) => {
+    if (request.operationsContext === undefined)
+      throw new ApplicationError({
+        category: 'authentication',
+        code: 'missing_operations_auth_context',
+        message: 'Authenticated operations request requires an Actor Context.',
+      });
+    requireOperationsHumanPermission(request.operationsContext, permission);
+  };
+
+  const parsePage = (value: string | undefined, fallback: number, maximum: number): number => {
+    const parsed = value === undefined ? fallback : Number(value);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > maximum)
+      throw new ApplicationError({
+        category: 'validation',
+        code: 'invalid_pagination',
+        message: 'Pagination is invalid.',
+      });
+    return parsed;
+  };
+
+  const parseCatalogFilters = (query: Record<string, string | undefined>): CatalogReadFilters => ({
+    page: parsePage(query.page, 1, 10_000),
+    pageSize: parsePage(query.pageSize, 20, 100),
+    ...(query.q === undefined ? {} : { query: query.q }),
+    ...(query.status === undefined ? {} : { status: parseStatus(query.status) }),
+    ...(query.riskTier === undefined ? {} : { riskTier: parseRiskTier(query.riskTier) }),
+  });
+
+  const parseAuditFilters = (query: Record<string, string | undefined>): AuditReadFilters => ({
+    page: parsePage(query.page, 1, 10_000),
+    pageSize: parsePage(query.pageSize, 20, 100),
+    ...(query.q === undefined ? {} : { query: query.q }),
+    ...(query.entityType === undefined ? {} : { entityType: parseEntityType(query.entityType) }),
+    ...(query.action === undefined ? {} : { action: parseAction(query.action) }),
+  });
+
+  function invalidFilter(name: string): never {
+    throw new ApplicationError({
+      category: 'validation',
+      code: 'invalid_read_filter',
+      message: `Invalid ${name} filter.`,
+    });
+  }
+  function parseStatus(value: string): CatalogReadFilters['status'] {
+    return ['draft', 'active', 'paused', 'retired'].includes(value)
+      ? (value as CatalogReadFilters['status'])
+      : invalidFilter('status');
+  }
+  function parseRiskTier(value: string): CatalogReadFilters['riskTier'] {
+    return ['low', 'review', 'prohibited'].includes(value)
+      ? (value as CatalogReadFilters['riskTier'])
+      : invalidFilter('riskTier');
+  }
+  function parseEntityType(value: string): AuditReadFilters['entityType'] {
+    return ['capability', 'template', 'release'].includes(value)
+      ? (value as AuditReadFilters['entityType'])
+      : invalidFilter('entityType');
+  }
+  function parseAction(value: string): AuditReadFilters['action'] {
+    return ['updated', 'published'].includes(value)
+      ? (value as AuditReadFilters['action'])
+      : invalidFilter('action');
+  }
+
+  server.get(
+    '/api/v1/operations/admin/catalog/:kind',
+    {
+      schema: {
+        operationId: 'listOperationsAdminCatalog',
+        params: CatalogKindParamsSchema,
+        querystring: CatalogQuerySchema,
+        response: {
+          200: OperationsCatalogReadResponseSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-read'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => {
+      requireReadPermission(request, 'catalog:read');
+      const params = request.params as { kind: CatalogReadKind };
+      return readService.listCatalog(
+        params.kind,
+        parseCatalogFilters(request.query as Record<string, string | undefined>),
+      );
+    },
+  );
+
+  server.get(
+    '/api/v1/operations/admin/catalog/:kind/:id',
+    {
+      schema: {
+        operationId: 'getOperationsAdminCatalogItem',
+        params: Type.Intersect([CatalogKindParamsSchema, IdParamsSchema]),
+        response: {
+          200: OperationsCatalogDetailResponseSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-read'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => {
+      requireReadPermission(request, 'catalog:read');
+      const params = request.params as { kind: CatalogReadKind; id: string };
+      return readService.getCatalog(params.kind, params.id);
+    },
+  );
+
+  server.get(
+    '/api/v1/operations/admin/audit',
+    {
+      schema: {
+        operationId: 'listOperationsAdminAudit',
+        querystring: AuditQuerySchema,
+        response: {
+          200: OperationsAuditReadResponseSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-read'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => {
+      requireReadPermission(request, 'audit:read');
+      return readService.listAudit(
+        parseAuditFilters(request.query as Record<string, string | undefined>),
+      );
+    },
+  );
+
+  server.get(
+    '/api/v1/operations/admin/audit/:id',
+    {
+      schema: {
+        operationId: 'getOperationsAdminAudit',
+        params: IdParamsSchema,
+        response: {
+          200: OperationsAuditDetailResponseSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-read'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => {
+      requireReadPermission(request, 'audit:read');
+      return readService.getAudit((request.params as { id: string }).id);
+    },
+  );
 
   server.get(
     '/api/v1/creator/service-catalog',

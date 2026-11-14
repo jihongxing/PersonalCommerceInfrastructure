@@ -47,7 +47,9 @@ const tags = [
 ];
 export class OperationsAdminFixture {
   readonly image = 'docker.m.daocloud.io/library/postgres:17.10-alpine';
-  readonly name = `pci-018br1-${randomBytes(5).toString('hex')}`;
+  readonly name: string;
+  readonly taskLabel: string;
+  readonly includeCatalogFixture: boolean;
   readonly secrets = {
     postgres: randomBytes(24).toString('base64url'),
     migration: randomBytes(24).toString('base64url'),
@@ -67,6 +69,16 @@ export class OperationsAdminFixture {
   folder = '';
   admin!: Sql;
   private created = false;
+  constructor(
+    options: { readonly taskLabel?: string; readonly includeCatalogFixture?: boolean } = {},
+  ) {
+    this.taskLabel = options.taskLabel ?? 'PCI-ENG-018-B-R1';
+    this.includeCatalogFixture = options.includeCatalogFixture ?? false;
+    this.name = `${this.taskLabel === 'PCI-ENG-018-C' ? 'pci-018c' : 'pci-018br1'}-${randomBytes(5).toString('hex')}`;
+  }
+  get postgresEvidenceFileName(): string {
+    return `${this.taskLabel}-${this.name}-postgres.json`;
+  }
   private async podman(args: string[], env = process.env) {
     const result = await runProcess('podman', args, env);
     (this.evidence.commands as ProcessEvidence[]).push(result);
@@ -87,7 +99,9 @@ export class OperationsAdminFixture {
     return client;
   }
   async start() {
-    this.folder = await mkdtemp(join(tmpdir(), 'pci-018br1-'));
+    this.folder = await mkdtemp(
+      join(tmpdir(), this.taskLabel === 'PCI-ENG-018-C' ? 'pci-018c-' : 'pci-018br1-'),
+    );
     this.evidence.podman = JSON.parse(
       await this.podman(['version', '--format', 'json']),
     ) as unknown;
@@ -101,7 +115,7 @@ export class OperationsAdminFixture {
         '--name',
         this.name,
         '--label',
-        'pci.task=PCI-ENG-018-B-R1',
+        `pci.task=${this.taskLabel}`,
         '--image-volume=ignore',
         '--publish',
         '127.0.0.1::5432',
@@ -204,6 +218,9 @@ export class OperationsAdminFixture {
         'REVOKE MAINTAIN ON public.operations_human_principals,public.operations_accounts FROM pci_ops_table_owner',
       );
     }
+    if (this.includeCatalogFixture || process.env.PCI_INCLUDE_CATALOG_FIXTURE === '1') {
+      await this.installCatalogReadFixture(admin);
+    }
     (this.evidence.databases as unknown[]).push({
       name,
       journal: await admin`SELECT * FROM drizzle.__drizzle_migrations ORDER BY id`,
@@ -215,6 +232,50 @@ export class OperationsAdminFixture {
       migration,
       url: this.url(name, 'migration'),
       runtimeUrl: this.url(name, 'runtime'),
+    };
+  }
+
+  private async installCatalogReadFixture(database: Sql): Promise<void> {
+    const catalogMigration = await readFile(
+      resolve('database/migrations/0034_database_managed_service_policy.sql'),
+      'utf8',
+    );
+    await database.unsafe(catalogMigration);
+    await database.unsafe(
+      'GRANT SELECT ON public.service_policy_releases,public.service_policy_capabilities,public.service_policy_templates,public.service_policy_audits TO pci_ops_runtime',
+    );
+    await database.unsafe(
+      `INSERT INTO public.service_policy_audits
+        (id, actor_id, entity_type, entity_id, action, before_state, after_state, reason, policy_version, occurred_at, correlation_id)
+       VALUES ('catalog-browser-audit', 'fixture-platform-system', 'capability', 'capability-dance-teaching', 'updated',
+         '{"status":"draft"}'::jsonb, '{"status":"active"}'::jsonb, 'Disposable read-only browser fixture', 'v1', now(), 'catalog-browser-correlation')
+       ON CONFLICT (id) DO NOTHING`,
+    );
+    this.evidence.catalogFixture = {
+      installed: true,
+      tables: await database`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name LIKE 'service_policy_%'
+        ORDER BY table_name
+      `,
+      rows: await database`
+        SELECT 'capabilities' AS relation, count(*)::int AS count FROM public.service_policy_capabilities
+        UNION ALL SELECT 'templates', count(*)::int FROM public.service_policy_templates
+        UNION ALL SELECT 'audits', count(*)::int FROM public.service_policy_audits
+      `,
+      runtimePrivileges: await database`
+        SELECT table_name,
+          has_table_privilege('pci_ops_runtime', format('public.%I', table_name), 'SELECT') AS select
+        FROM (VALUES
+          ('service_policy_releases'),
+          ('service_policy_capabilities'),
+          ('service_policy_templates'),
+          ('service_policy_audits')
+        ) AS tables(table_name)
+        ORDER BY table_name
+      `,
     };
   }
   async failureDatabase(kind: 'sqlFailure' | 'commitFailure') {
@@ -246,7 +307,7 @@ export class OperationsAdminFixture {
       '{{.ID}} {{.Names}}',
     ]);
     this.evidence.finishedAt = new Date().toISOString();
-    const evidencePath = `docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-${this.name}.json`;
+    const evidencePath = `docs/09_Engineering_Governance/evidence/${this.postgresEvidenceFileName}`;
     const serialized = JSON.stringify(this.evidence, null, 2);
     if (Object.values(this.secrets).some((secret) => serialized.includes(secret)))
       throw new Error('Evidence contains secret');

@@ -739,3 +739,57 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## 25. PCI-ENG-018-C — Catalog and Audit Read-Only Vertical Slice
+
+This appended record supersedes the earlier planned status for 018-C. It records the
+Founder-authorized read-only delivery and does not authorize Catalog writes, Offering or
+Customer Request changes, identity administration, RBAC, MFA, Pilot or Production.
+
+| Surface | Delivered evidence | Boundary |
+| --- | --- | --- |
+| Shared API Catalog read | `GET /api/v1/operations/admin/catalog/capabilities`, `GET /api/v1/operations/admin/catalog/templates`, and `GET .../:kind/:id` in `adapters/transport/http/service-policy-routes.ts`; PostgreSQL `PostgresServicePolicyCatalogRepository` supplies the snapshot | Human Operations Session plus `catalog:read`; no write route is exposed by the Admin read surface |
+| Shared API Audit read | `GET /api/v1/operations/admin/audit` and `GET .../audit/:id`; service sanitizes nested sensitive keys and classifies execution attribution | Human Operations Session plus `audit:read`; no audit mutation/delete path |
+| Admin BFF | Same-origin Next routes under `apps/admin-web/app/api/operations/catalog` and `.../audit`; only the HttpOnly opaque Session cookie is forwarded | Browser cannot provide Principal or Permission headers; API remains authoritative |
+| Admin Web | Capabilities/Templates list, filters, pagination, detail; Audit list, filters, pagination, detail; loading, empty, unauthorized, not-found and failure states | Read-only presentation of API DTOs; no database access or static credential |
+
+The API checks the Operations Human context at the route boundary and calls
+`requireOperationsHumanPermission` for every read. Catalog data is read from the disposable
+PostgreSQL `service_policy_*` tables through the PostgreSQL repository, not from fixture data in
+the browser. Audit responses redact password, verifier, Session, digest, secret, token and private
+key fields before transport. Execution attribution is returned as `human_operations`,
+`provider_service`, `platform_system` or `unknown` and is displayed with the actor identifier.
+
+Focused evidence is retained in
+`evidence/PCI-ENG-018-C-browser-1794674987921.json` and
+`evidence/PCI-ENG-018-C-pci-018c-313fdd6079-postgres.json`. The browser run used real Next,
+BFF, Fastify, Operations Human Authentication, PostgreSQL 17.10 and the gstack browser. It
+verified anonymous redirect, forged-header rejection, HttpOnly cookie/storage isolation, real
+Catalog list/detail, real Audit list/detail and Platform System attribution, logout 503/network
+failure preservation, successful retry revocation, cookie clearing and post-logout redirect.
+The browser process exited 0; the disposable PostgreSQL fixture recorded ten capabilities, ten
+templates, one audit row, Runtime SELECT ACLs on the four Catalog tables, container cleanup and no
+remaining task container.
+
+Focused software evidence: Admin Web tests 21/21 PASS; read API integration 3/3 PASS; Active
+Backend Test TypeScript, Admin Web TypeScript, Admin Web ESLint and Prettier PASS. The historical
+full repository result remains **1253 PASS, 2 FAIL, 1 collection failure, 218 pending/skipped** and
+full lint remains **459 errors**. These wider results remain **UNCLASSIFIED / NOT PROVEN
+PRE-EXISTING** and are not relabeled by this slice.
+
+```ini
+PCI-ENG-018-C = CATALOG & AUDIT READ-ONLY ADMIN VERTICAL SLICE COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read
+CATALOG_ADMIN_WRITES = NOT IMPLEMENTED
+AUDIT_MUTATION = NOT IMPLEMENTED
+MFA_PRODUCTION = REQUIRED_NOT_IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

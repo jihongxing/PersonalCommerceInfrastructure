@@ -5,13 +5,13 @@ export const sections = [
     slug: 'capabilities',
     label: '能力目录',
     english: 'Capability Catalog',
-    description: '平台能力目录的状态与选择开关。',
+    description: '只读查看真实平台能力目录与当前状态。',
   },
   {
     slug: 'templates',
     label: '服务模板',
     english: 'Service Templates',
-    description: '服务模板与已批准的发布范围。',
+    description: '只读查看真实服务模板与已批准的发布范围。',
   },
   {
     slug: 'policy-versions',
@@ -35,6 +35,6 @@ export const sections = [
     slug: 'audit',
     label: '操作审计',
     english: 'Audit Records',
-    description: '目录管理操作的可追溯记录。',
+    description: '只读查看目录管理操作与执行归因。',
   },
 ] as const;

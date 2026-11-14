@@ -122,7 +122,7 @@ function AuthenticatedAdminShell({
         <div className="sidebar-note">
           <span className="status-dot" aria-hidden="true" />
           <div>
-            基础框架<small>运营功能尚未开放</small>
+            只读数据已开放<small>Catalog / Audit</small>
           </div>
         </div>
       </aside>

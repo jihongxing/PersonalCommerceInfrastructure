@@ -15,6 +15,7 @@ import {
   type PostgresDatabaseConnection,
 } from '../../adapters/persistence/postgres/postgres-database.js';
 import { createPostgresOperationsIdentityComposition } from '../../adapters/persistence/postgres/postgres-operations-identity-composition.js';
+import { PostgresServicePolicyCatalogRepository } from '../../adapters/persistence/postgres/postgres-service-policy-catalog-repository.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 
 // All browser actions use the repository-mandated gstack /browse driver.
@@ -22,7 +23,11 @@ import { createApiServer } from '../../apps/api/src/create-api-server.js';
 // failures are injected in an external test proxy, never in production code.
 const browser = process.env.PCI_BROWSE_EXECUTABLE;
 assert(browser, 'Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.');
-const fixture = new OperationsAdminFixture();
+const runCatalogAudit = process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1';
+const fixture = new OperationsAdminFixture({
+  taskLabel: runCatalogAudit ? 'PCI-ENG-018-C' : 'PCI-ENG-018-B-R1',
+  includeCatalogFixture: runCatalogAudit,
+});
 const secrets = [randomBytes(32).toString('base64url')];
 const password = secrets[0]!;
 const evidence: Record<string, unknown> = {
@@ -77,13 +82,14 @@ try {
     databaseUrl: db.url,
     loginIdentifier: 'browser-operator@example.test',
     password,
-    evidenceRef: 'PCI-ENG-018-B-R1/browser-disposable',
+    evidenceRef: `${fixture.taskLabel}/browser-disposable`,
     decisionRef: 'FD-018-B-BOOTSTRAP-01',
   });
   connection = createPostgresDatabase(db.runtimeUrl);
   const composition = createPostgresOperationsIdentityComposition(connection.database);
   api = await createApiServer({
     operationsHumanAuthenticationRuntime: composition.humanAuthenticationRuntime,
+    servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(connection.database),
   });
   const apiOrigin = await api.listen({ host: '127.0.0.1', port: 0 });
   proxy = createServer((request, response) => {
@@ -228,6 +234,35 @@ try {
   assert.notEqual(session.body.principalId, 'forged');
   assert.deepEqual(session.body.permissions, ['catalog:read', 'audit:read']);
   check('authoritative identity', session);
+  if (runCatalogAudit) {
+    await browse('goto', origin + '/capabilities');
+    await poll('JSON.stringify(location.pathname)', '/capabilities');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    check(
+      'catalog list',
+      await js(
+        'JSON.stringify({path:location.pathname,rows:document.querySelectorAll("tbody tr").length,writeControls:[...document.querySelectorAll("button")].map(b=>b.textContent)})',
+      ),
+    );
+    await browse('click', 'tbody tr:first-child button.text-button');
+    await poll('JSON.stringify(!!document.querySelector("[aria-label=\\"Catalog 详情\\"]"))', true);
+    check(
+      'catalog detail',
+      await js(
+        'JSON.stringify({detail:!!document.querySelector("[aria-label=\\"Catalog 详情\\"]")})',
+      ),
+    );
+    await browse('goto', origin + '/audit');
+    await poll('JSON.stringify(location.pathname)', '/audit');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    await browse('click', 'tbody tr:first-child button.text-button');
+    await poll('JSON.stringify(!!document.querySelector("[aria-label=\\"Audit 详情\\"]"))', true);
+    const auditView = (await js(
+      'JSON.stringify({path:location.pathname,detail:!!document.querySelector("[aria-label=\\"Audit 详情\\"]"),platform:document.body.innerText.includes("Platform System")})',
+    )) as { path: string; detail: boolean; platform: boolean };
+    assert.equal(auditView.platform, true);
+    check('audit list and detail', auditView);
+  }
   for (const mode of ['503', 'network'] as const) {
     fault = mode;
     await browse('click', 'button.logout-button');
@@ -287,11 +322,11 @@ try {
   if (api) await api.close();
   if (connection) await connection.close();
   await fixture.close();
-  evidence.postgresEvidence = `PCI-ENG-018-B-R1-${fixture.name}.json`;
+  evidence.postgresEvidence = fixture.postgresEvidenceFileName;
   evidence.finishedAt = new Date().toISOString();
   const serialized = redact(JSON.stringify(evidence, null, 2));
   await writeFile(
-    `docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-${Date.now()}.json`,
+    `docs/09_Engineering_Governance/evidence/${fixture.taskLabel}-browser-${Date.now()}.json`,
     serialized + '\n',
     { flag: 'wx' },
   );

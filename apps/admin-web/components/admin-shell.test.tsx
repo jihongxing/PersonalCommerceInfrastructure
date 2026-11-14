@@ -96,16 +96,39 @@ describe('Operations shell', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
   });
 
-  it.each(sections.filter((section) => section.slug))(
-    'keeps $english unavailable without fabricated data or management actions',
-    async (section) => {
-      render(await SectionPage({ params: Promise.resolve({ section: section.slug }) }));
-      expect(screen.getByRole('heading', { level: 1, name: section.label })).toBeVisible();
-      expect(screen.getByText('待实施 · 暂不可用')).toBeVisible();
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
-      expect(screen.queryByRole('table')).not.toBeInTheDocument();
-    },
-  );
+  it.each(
+    sections.filter(
+      (section) =>
+        section.slug !== '' && !['capabilities', 'templates', 'audit'].includes(section.slug),
+    ),
+  )('keeps $english unavailable without fabricated data or management actions', async (section) => {
+    render(await SectionPage({ params: Promise.resolve({ section: section.slug }) }));
+    expect(screen.getByRole('heading', { level: 1, name: section.label })).toBeVisible();
+    expect(screen.getByText('待实施 · 暂不可用')).toBeVisible();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['capabilities', '能力目录'],
+    ['templates', '服务模板'],
+    ['audit', '操作审计'],
+  ] as const)('renders the real read-only surface for %s', async (slug, label) => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify(
+          slug === 'audit'
+            ? { items: [], page: 1, pageSize: 20, total: 0 }
+            : { policyVersion: 'v1', kind: slug, items: [], page: 1, pageSize: 20, total: 0 },
+        ),
+        { status: 200 },
+      ),
+    );
+    render(await SectionPage({ params: Promise.resolve({ section: slug }) }));
+    expect(screen.getByRole('heading', { level: 1, name: label })).toBeVisible();
+    expect(await screen.findByText(/没有匹配|没有匹配的审计/)).toBeVisible();
+    expect(screen.queryByText('待实施 · 暂不可用')).not.toBeInTheDocument();
+  });
 
   it('exposes a safe retry without rendering exception details', () => {
     const reset = vi.fn();

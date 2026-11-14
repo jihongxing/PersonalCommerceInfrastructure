@@ -2850,6 +2850,51 @@ PROJECT STATUS = SUSPENDED
 REAL_MONEY_ENABLED = false
 ```
 
+## PCI-ENG-018-C Catalog and Audit Read-Only Admin Vertical Slice
+
+This section is appended after the 018-B-R1 record and records the bounded read-only delivery.
+It does not rewrite earlier 018-B evidence and does not authorize Catalog writes, identity
+management, RBAC, MFA, Pilot, Production or real-money operations.
+
+```ini
+PCI-ENG-018-C = CATALOG & AUDIT READ-ONLY ADMIN VERTICAL SLICE COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read
+CATALOG_ADMIN_WRITES = NOT IMPLEMENTED
+AUDIT_MUTATION = NOT IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+The delivered read routes are `GET /api/v1/operations/admin/catalog/:kind`,
+`GET /api/v1/operations/admin/catalog/:kind/:id`, `GET /api/v1/operations/admin/audit` and
+`GET /api/v1/operations/admin/audit/:id`. Every route resolves the Human Operations Session and
+checks its fixed read permission. Next BFF routes forward only the opaque HttpOnly Session cookie.
+The Admin Web renders real Catalog and Audit lists/detail, filtering, pagination, loading/empty/
+unauthorized/not-found/failure states and execution attribution. No browser database access,
+static Operations token, mutation control, audit update or audit deletion was added.
+
+Focused evidence is retained at
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-C-browser-1794674987921.json` and
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-C-pci-018c-313fdd6079-postgres.json`.
+The browser process exited 0 using real Next/BFF/Fastify/PostgreSQL 17.10 and gstack browser.
+The disposable database installed the existing `0034_database_managed_service_policy.sql`,
+contained ten capabilities, ten templates and one audit row, granted Runtime SELECT only on the
+four Catalog tables, and was destroyed with no remaining task container. Browser checks covered
+login, forged identity headers, Catalog list/detail, Audit list/detail, attribution, logout
+failure preservation, successful revocation and post-logout denial.
+
+Targeted verification passed: Admin Web 21/21, read API integration 3/3, Active Backend Test
+TypeScript, Admin Web TypeScript, Admin Web ESLint and Prettier. The previously reported full
+repository result remains 1253 PASS, 2 FAIL, 1 collection failure, 218 pending/skipped, and full
+lint remains 459 errors. Those results remain `UNCLASSIFIED / NOT PROVEN PRE-EXISTING`.
+
 该文件仅为 Founder 决策准备材料；不改变冻结的 Product Direction、任何 ADR、VS-01 合同、
 产品行为、持久化、API、状态转换、Canonical Event、认证、授权或公开表面。
 

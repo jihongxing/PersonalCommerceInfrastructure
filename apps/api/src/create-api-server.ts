@@ -389,6 +389,7 @@ export async function createApiServer(
       dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
     catalogRepository: servicePolicyCatalogRepository,
     adminService: servicePolicyAdminService,
+    humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
   });
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,

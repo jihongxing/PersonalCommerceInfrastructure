@@ -10,11 +10,9 @@ export default function Overview() {
         <p>统一查看目录、服务政策与运营记录。</p>
       </div>
       <section className="notice" aria-label="当前开放范围">
-        <span className="availability">基础框架已建立</span>
-        <h2>运营功能尚未开放</h2>
-        <p>
-          当前版本已接入 Operations Session。Catalog 与 Audit 真实数据页面将在后续有界单元中开放。
-        </p>
+        <span className="availability">内部只读能力已开放</span>
+        <h2>Catalog 与 Audit 已接入</h2>
+        <p>当前版本通过 Operations Session 查询真实 Catalog 与 Audit 数据，不提供业务写操作。</p>
       </section>
       <div className="section-heading">
         <h2>工作区域</h2>
@@ -31,7 +29,7 @@ export default function Overview() {
               </span>
               <h3>{section.label}</h3>
               <p>{section.description}</p>
-              <span className="card-status">准备中</span>
+              <span className="card-status">只读</span>
             </Link>
           ))}
       </div>

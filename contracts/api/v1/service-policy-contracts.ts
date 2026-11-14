@@ -26,6 +26,7 @@ export const CapabilityCatalogItemSchema = Type.Object(
     vertical: Type.String({ minLength: 1 }),
     name: Type.String({ minLength: 1 }),
     description: Type.String({ minLength: 1 }),
+    aliases: Type.Optional(Type.Array(Type.String())),
     riskTier: RiskTierSchema,
     releaseScope: ReleaseScopeSchema,
     version: Type.String({ minLength: 1 }),
@@ -83,6 +84,14 @@ export const ServicePolicyAuditSchema = Type.Object(
   {
     id: Type.String({ minLength: 1 }),
     actorId: Type.String({ minLength: 1 }),
+    actorCategory: Type.Optional(
+      Type.Union([
+        Type.Literal('human_operations'),
+        Type.Literal('provider_service'),
+        Type.Literal('platform_system'),
+        Type.Literal('unknown'),
+      ]),
+    ),
     entityType: Type.Union([
       Type.Literal('capability'),
       Type.Literal('template'),
@@ -118,3 +127,32 @@ export const ServiceCatalogResponseSchema = Type.Object(
   },
   { additionalProperties: false },
 );
+
+const CatalogReadKindSchema = Type.Union([Type.Literal('capabilities'), Type.Literal('templates')]);
+
+const PageSchema = Type.Object({
+  page: Type.Integer({ minimum: 1 }),
+  pageSize: Type.Integer({ minimum: 1, maximum: 100 }),
+  total: Type.Integer({ minimum: 0 }),
+});
+
+export const OperationsCatalogReadResponseSchema = Type.Intersect([
+  PageSchema,
+  Type.Object({
+    policyVersion: Type.String({ minLength: 1 }),
+    kind: CatalogReadKindSchema,
+    items: Type.Array(Type.Union([CapabilityCatalogItemSchema, ServiceOfferingTemplateSchema])),
+  }),
+]);
+
+export const OperationsCatalogDetailResponseSchema = Type.Union([
+  CapabilityCatalogItemSchema,
+  ServiceOfferingTemplateSchema,
+]);
+
+export const OperationsAuditReadResponseSchema = Type.Intersect([
+  PageSchema,
+  Type.Object({ items: Type.Array(ServicePolicyAuditSchema) }),
+]);
+
+export const OperationsAuditDetailResponseSchema = ServicePolicyAuditSchema;

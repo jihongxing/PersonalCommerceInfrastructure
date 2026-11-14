@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import { PendingSection } from '../../components/pending-section';
+import { CatalogReadPanel } from '../../components/catalog-read-panel';
+import { AuditReadPanel } from '../../components/audit-read-panel';
 import { sections } from '../../lib/sections';
 
 export function generateStaticParams() {
@@ -12,6 +14,30 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
   const { section: slug } = await params;
   const section = sections.find((entry) => entry.slug === slug && entry.slug !== '');
   if (!section) notFound();
+  if (slug === 'capabilities' || slug === 'templates') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <CatalogReadPanel kind={slug} />
+      </>
+    );
+  }
+  if (slug === 'audit') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <AuditReadPanel />
+      </>
+    );
+  }
   return (
     <>
       <div className="page-heading">

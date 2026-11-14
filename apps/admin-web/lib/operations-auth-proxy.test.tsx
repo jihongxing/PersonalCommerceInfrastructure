@@ -78,7 +78,7 @@ describe('Operations BFF boundary', () => {
         principalId: 'real-p',
         accountId: 'real-a',
         sessionId: 'real-s',
-        permissions: ['catalog:read', 'audit:read'],
+        permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
       }),
     );
     const result = await proxyOperationsAuthRequest(
@@ -100,7 +100,7 @@ describe('Operations BFF boundary', () => {
         principalId: 'p',
         accountId: 'a',
         sessionId: 's',
-        permissions: ['catalog:read', 'audit:read'],
+        permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
         credential,
       }),
     );

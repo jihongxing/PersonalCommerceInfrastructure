@@ -13,6 +13,10 @@ export class InMemoryCommerceActionRepository
     return Promise.resolve(action === undefined ? undefined : structuredClone(action));
   }
 
+  public findAll(): Promise<readonly CommerceAction[]> {
+    return Promise.resolve(structuredClone([...this.actions.values()]));
+  }
+
   public findByOwnerId(ownerId: string): Promise<readonly CommerceAction[]> {
     return Promise.resolve(
       structuredClone([...this.actions.values()].filter((action) => action.creatorId === ownerId)),

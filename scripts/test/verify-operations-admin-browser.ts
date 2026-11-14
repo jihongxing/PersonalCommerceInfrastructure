@@ -16,6 +16,14 @@ import {
 } from '../../adapters/persistence/postgres/postgres-database.js';
 import { createPostgresOperationsIdentityComposition } from '../../adapters/persistence/postgres/postgres-operations-identity-composition.js';
 import { PostgresServicePolicyCatalogRepository } from '../../adapters/persistence/postgres/postgres-service-policy-catalog-repository.js';
+import {
+  PostgresCommerceActionRepository,
+  PostgresCommerceIdentityRepository,
+  PostgresCapabilityRepository,
+  PostgresDistributionAssetRepository,
+  PostgresOfferingRepository,
+} from '../../adapters/persistence/postgres/postgres-creator-identity-repositories.js';
+import { createOperationsFlowReadService } from '../../applications/operations-admin/operations-flow-read-service.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 
 // All browser actions use the repository-mandated gstack /browse driver.
@@ -23,10 +31,13 @@ import { createApiServer } from '../../apps/api/src/create-api-server.js';
 // failures are injected in an external test proxy, never in production code.
 const browser = process.env.PCI_BROWSE_EXECUTABLE;
 assert(browser, 'Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.');
-const runCatalogAudit = process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1';
+const runCatalogAudit =
+  process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1' || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
+const runFlow = process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
 const fixture = new OperationsAdminFixture({
-  taskLabel: runCatalogAudit ? 'PCI-ENG-018-C' : 'PCI-ENG-018-B-R1',
+  taskLabel: runFlow ? 'PCI-ENG-018-E' : runCatalogAudit ? 'PCI-ENG-018-C' : 'PCI-ENG-018-B-R1',
   includeCatalogFixture: runCatalogAudit,
+  includeFlowFixture: runFlow,
 });
 const secrets = [randomBytes(32).toString('base64url')];
 const password = secrets[0]!;
@@ -78,6 +89,12 @@ let failure: unknown;
 try {
   await fixture.start();
   const db = await fixture.database();
+  const flowSnapshot = async () => db.admin`
+    SELECT 'offerings' AS relation, count(*)::int AS count, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) AS hash FROM public.service_offerings t
+    UNION ALL SELECT 'requests', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) FROM public.commerce_actions t
+    UNION ALL SELECT 'distribution', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY offering_id)) FROM public.distribution_assets t
+  `;
+  const flowBefore = runFlow ? await flowSnapshot() : undefined;
   await initializeFirstOperationsAccount({
     databaseUrl: db.url,
     loginIdentifier: 'browser-operator@example.test',
@@ -87,9 +104,17 @@ try {
   });
   connection = createPostgresDatabase(db.runtimeUrl);
   const composition = createPostgresOperationsIdentityComposition(connection.database);
+  const operationsFlowReadService = createOperationsFlowReadService({
+    offeringRepository: new PostgresOfferingRepository(connection.database),
+    distributionAssetRepository: new PostgresDistributionAssetRepository(connection.database),
+    identityRepository: new PostgresCommerceIdentityRepository(connection.database),
+    capabilityRepository: new PostgresCapabilityRepository(connection.database),
+    commerceActionRepository: new PostgresCommerceActionRepository(connection.database),
+  });
   api = await createApiServer({
     operationsHumanAuthenticationRuntime: composition.humanAuthenticationRuntime,
     servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(connection.database),
+    operationsFlowReadService,
   });
   const apiOrigin = await api.listen({ host: '127.0.0.1', port: 0 });
   proxy = createServer((request, response) => {
@@ -232,7 +257,12 @@ try {
   )) as { status: number; body: { sessionId: string; principalId: string; permissions: string[] } };
   assert.equal(session.status, 200);
   assert.notEqual(session.body.principalId, 'forged');
-  assert.deepEqual(session.body.permissions, ['catalog:read', 'audit:read']);
+  assert.deepEqual(session.body.permissions, [
+    'catalog:read',
+    'audit:read',
+    'offering:read',
+    'request:read',
+  ]);
   check('authoritative identity', session);
   if (runCatalogAudit) {
     await browse('goto', origin + '/capabilities');
@@ -262,6 +292,92 @@ try {
     )) as { path: string; detail: boolean; platform: boolean };
     assert.equal(auditView.platform, true);
     check('audit list and detail', auditView);
+  }
+  if (runFlow) {
+    await browse('goto', origin + '/offerings');
+    await poll('JSON.stringify(location.pathname)', '/offerings');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    check(
+      'offering list',
+      await js(
+        'JSON.stringify({path:location.pathname,rows:document.querySelectorAll("tbody tr").length,writeMethods:[...document.querySelectorAll("button")].map(b=>b.textContent)})',
+      ),
+    );
+    await browse('click', 'tbody tr:first-child button.text-button');
+    await poll(
+      'JSON.stringify(!!document.querySelector("[aria-label=\\"Offering 详情\\"]"))',
+      true,
+    );
+    check(
+      'offering detail',
+      await js(
+        'JSON.stringify({detail:!!document.querySelector("[aria-label=\\"Offering 详情\\"]"),published:document.body.innerText.includes("published")})',
+      ),
+    );
+    await browse('goto', origin + '/requests?state=submitted');
+    await poll('JSON.stringify(location.pathname)', '/requests');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    check(
+      'request list',
+      await js(
+        'JSON.stringify({path:location.pathname,rows:document.querySelectorAll("tbody tr").length})',
+      ),
+    );
+    await browse('click', 'tbody tr:first-child button.text-button');
+    await poll(
+      'JSON.stringify(!!document.querySelector("[aria-label=\\"Customer Request 详情\\"]"))',
+      true,
+    );
+    check(
+      'request detail and creator decision',
+      await js(
+        'JSON.stringify({detail:!!document.querySelector("[aria-label=\\"Customer Request 详情\\"]"),submitted:document.body.innerText.includes("submitted"),decision:document.body.innerText.includes("not_recorded")})',
+      ),
+    );
+    const relation = (await js(
+      'JSON.stringify({link:document.querySelector("[aria-label=\\"Customer Request 详情\\"] a")?.getAttribute("href"),contentWithheld:document.body.innerText.includes("不返回原文")})',
+    )) as { link: string; contentWithheld: boolean };
+    assert.equal(relation.link, '/offerings?id=offering-flow-fixture');
+    assert.equal(relation.contentWithheld, true);
+    await browse('click', '[aria-label="Customer Request 详情"] a');
+    await poll(
+      'JSON.stringify(!!document.querySelector("[aria-label=\\"Offering 详情\\"]"))',
+      true,
+    );
+    check(
+      'Request to Offering to Capability association',
+      await js(
+        'JSON.stringify({path:location.pathname,capability:document.body.innerText.includes("capability-flow-fixture"),catalog:document.body.innerText.includes("capability-dance-teaching")})',
+      ),
+    );
+    for (const decision of ['confirmed', 'declined']) {
+      await browse('goto', origin + '/requests?state=' + decision);
+      await poll('JSON.stringify(!!document.querySelector("table"))', true);
+      await browse('click', 'tbody tr:first-child button.text-button');
+      await poll(
+        'JSON.stringify(!!document.querySelector("[aria-label=\\"Customer Request 详情\\"]"))',
+        true,
+      );
+      const state = (await js(
+        'JSON.stringify({text:document.querySelector("[aria-label=\\"Customer Request 详情\\"]")?.textContent})',
+      )) as { text: string };
+      assert(state.text.includes(decision));
+      check('persisted Creator decision ' + decision, { recordedState: decision, shown: true });
+    }
+    const dto = (await js(
+      "JSON.stringify(await fetch('/api/operations/requests/request-flow-fixture').then(async r=>({status:r.status,body:await r.json()})))",
+    )) as { status: number; body: Record<string, unknown> };
+    assert.equal(dto.status, 200);
+    assert(!('requestMessage' in dto.body) && !('resultAccessToken' in dto.body));
+    check('sensitive Request fields omitted', {
+      status: dto.status,
+      responseKeys: Object.keys(dto.body),
+    });
+    await browse('goto', origin + '/audit');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    const flowAfter = await flowSnapshot();
+    assert.deepEqual(flowAfter, flowBefore);
+    check('business rows unchanged by reads', { before: flowBefore, after: flowAfter });
   }
   for (const mode of ['503', 'network'] as const) {
     fault = mode;

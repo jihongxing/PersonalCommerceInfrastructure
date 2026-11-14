@@ -151,6 +151,7 @@ export async function startApi(): Promise<ApiRuntime> {
             contractService: composition.contractService,
             servicePolicyCatalogRepository: composition.servicePolicyCatalogRepository,
             servicePolicyAdminService: composition.servicePolicyAdminService,
+            operationsFlowReadService: composition.operationsFlowReadService,
             currentUserIdentityService: composition.currentUserIdentityService,
             selfServiceIdentityInitializationService:
               composition.selfServiceIdentityInitializationService,

@@ -2850,6 +2850,56 @@ PROJECT STATUS = SUSPENDED
 REAL_MONEY_ENABLED = false
 ```
 
+## PCI-ENG-018-E - Offering and Customer Request Flow Visibility
+
+Founder-authorized read-only Admin Web extension. Existing Catalog/Audit read surfaces are reused;
+no Offering, Request, Creator decision, fulfillment, RBAC, MFA or production authorization is added.
+
+Implemented GET surfaces:
+
+- `/api/v1/operations/admin/offerings` and `/api/v1/operations/admin/offerings/:id`.
+- `/api/v1/operations/admin/requests` and `/api/v1/operations/admin/requests/:id`.
+- Same-origin Admin BFF routes and Admin Web pages at `/offerings` and `/requests`.
+
+The fixed first-account Operations permission policy now returns `catalog:read`, `audit:read`,
+`offering:read` and `request:read`. Every new API read resolves the Human Operations Session and
+checks its specific permission. Browser Principal/Permission headers are ignored. Existing Offering
+state, Distribution Asset presence and Commerce Action state are displayed from PostgreSQL; no
+state or Creator decision is inferred. Result access tokens and private contact methods are not
+returned to the Admin Web.
+
+Focused verification:
+
+- Operations flow API permission/read-only tests: PASS.
+- Active TypeScript and backend test TypeScript: PASS.
+- Changed-file ESLint and Admin Web lint: PASS.
+- Real browser flow: PASS, process exit `0`; Login -> Catalog -> Offering list/detail -> Request
+  list/detail -> persisted Creator decision state -> Audit -> Logout.
+- PostgreSQL evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-018-E-pci-018e-2b75fab303-postgres.json`.
+- Browser evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-018-E-browser-1794679076829.json`.
+
+The disposable PostgreSQL fixture used PostgreSQL 17.10, Podman 5.7.1, bind `127.0.0.1:40321`,
+one Offering, one Request, and Runtime SELECT grants on existing flow tables. Container cleanup
+reported no remaining task container. Historical full-suite and full-lint results remain
+`UNCLASSIFIED / NOT PROVEN PRE-EXISTING`.
+
+```ini
+PCI-ENG-018-E = OFFERING & CUSTOMER REQUEST FLOW VISIBILITY COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read,offering:read,request:read
+OFFERING_ADMIN_WRITES = NOT IMPLEMENTED
+REQUEST_ADMIN_WRITES = NOT IMPLEMENTED
+CREATOR_DECISION_PROXY = NOT IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
 ## PCI-ENG-018-C Catalog and Audit Read-Only Admin Vertical Slice
 
 This section is appended after the 018-B-R1 record and records the bounded read-only delivery.
@@ -10449,6 +10499,66 @@ scenario was pursued. This delivery awaits acceptance and is not Production Read
 
 ```ini
 PCI-ENG-018-B-R1 = OPERATIONS ADMIN RUNTIME BLOCKERS RESOLVED — AWAITING MAIN CONTROLLER ACCEPTANCE
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+## DEV-086 / PCI-ENG-018-E — Offering and Request Read-Only Visibility Closure
+
+Founder approved `offering:read` and `request:read` for the first internal Operations Account;
+`catalog:read` and `audit:read` remain approved. This is an explicitly bounded extension to the
+Admin observation surface for FR-006–FR-042. It changes no Offering/Request state machine,
+Creator decision authority, Canonical Event, or existing Creator/public HTTP contract.
+
+The final implementation and complete changed-file manifest are recorded in
+[PCI-ENG-018-E evidence index](../09_Engineering_Governance/evidence/PCI-ENG-018-E-index.md).
+This later closure supplements the earlier initial E test record; the earlier evidence is retained.
+
+Delivered: four GET-only Operations API endpoints for Offering/Request list/detail; explicit DTOs;
+existing PostgreSQL repository reads and API startup composition; existing BFF authentication;
+`/offerings` and `/requests` list/detail/filter/pagination/error states; Request → Offering →
+Capability/Catalog association. The fixed grants are now issued only for server-proven initial-admin
+bootstrap provenance, rather than inherited by future/unproven accounts. Runtime database roles
+and real database ACLs are not changed.
+
+Existing database creation/update timestamps are displayed in UTC. Publication/decision times are
+not inferred. Missing or inconsistent associations remain visible. Request free text, result access
+tokens, private contacts and security credentials are not returned; details explain the withheld text.
+
+Final verification: backend/API/Domain regression **78/78 PASS**; Admin component/BFF **37/37 PASS**;
+active production, backend-test and Admin-test TypeScript, changed backend/Admin ESLint,
+changed-code Prettier, backend/Admin Build all PASS. Exact commands and actual exit codes are in
+`PCI-ENG-018-E-checks-1794681357716.json`; an initial lint error and its successful correction are retained.
+
+Real Next/BFF/Fastify/Session/PostgreSQL/gstack browser chain: PASS, process exit 0. Final evidence:
+`PCI-ENG-018-E-browser-1794681665150.json`,
+`PCI-ENG-018-E-browser-process-1794681586958.json`, and
+`PCI-ENG-018-E-pci-018e-87086d61c2-postgres.json`, all in the governance evidence directory.
+The fixture contains one Offering, one Distribution Asset and three Requests in existing submitted,
+confirmed and declined states. Reads preserve all three business-table counts and hashes. The
+Request detail links to its actual Offering and Capability/Catalog relation. Logout revokes the
+Session; the old credential is rejected. Container removal exits 0 and the residue query is empty.
+
+This is internal verification only. Application-level collection pagination is not large-scale SQL
+paging. Initial-admin grants depend on current 0041 history provenance and fail closed if it changes.
+The full persistence opt-in suite and full-repository migration/lint/suite were not rerun. Historical
+`1253 PASS / 2 FAIL / 1 collection failure / 218 pending-skipped` and `459` full-lint errors remain
+**UNCLASSIFIED / NOT PROVEN PRE-EXISTING**. No Schema/Migration, Creator Auth, business writes,
+MFA, general RBAC, or production authorization changed. No commit or push was created.
+
+```ini
+PCI-ENG-018-E = OFFERING & CUSTOMER REQUEST FLOW VISIBILITY COMPLETED — AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read,offering:read,request:read
+OFFERING_ADMIN_WRITES = NOT IMPLEMENTED
+REQUEST_ADMIN_WRITES = NOT IMPLEMENTED
+CREATOR_DECISION_PROXY = NOT IMPLEMENTED
 PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
 FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
 VS-01 = FROZEN

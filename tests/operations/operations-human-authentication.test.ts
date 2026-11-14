@@ -19,7 +19,11 @@ import {
   requireOperationsHumanPermission,
   type OperationsHumanAuthenticationSnapshot,
 } from '../../applications/operations-identity/operations-human-authentication.js';
-import type { OperationsSessionRepository } from '../../applications/operations-identity/operations-session-repositories.js';
+import {
+  createOperationsSessionVersion,
+  type OperationsSessionPersistenceRecord,
+  type OperationsSessionRepository,
+} from '../../applications/operations-identity/operations-session-repositories.js';
 import {
   createOperationsAccountId,
   createOperationsCredentialId,
@@ -136,19 +140,72 @@ describe('Operations Human eligibility matrix', () => {
 });
 
 describe('Fixed first-operator permission policy', () => {
+  it.each([true, false, undefined])(
+    'restricts runtime grants to server-proven initial admin (%s)',
+    async (isInitialAdmin) => {
+      const snapshot = {
+        ...activeSnapshot,
+        ...(isInitialAdmin === undefined ? {} : { isInitialAdmin }),
+      };
+      let record: OperationsSessionPersistenceRecord;
+      const runtime = createOperationsHumanAuthenticationRuntime({
+        store: {
+          findByLoginIdentifier: () => Promise.resolve(snapshot),
+          findByIdentity: () => Promise.resolve(snapshot),
+          findSessionForLogout: () => Promise.resolve(undefined),
+        },
+        passwordVerifier: {
+          hash: vi.fn(),
+          verify: () => Promise.resolve(true),
+          verifyDummy: () => Promise.resolve(false),
+        },
+        sessionRepository: {
+          createSession: (input) => {
+            record = { ...input, sessionVersion: createOperationsSessionVersion(1) };
+            return Promise.resolve(record);
+          },
+          findActiveSessionByCredentialDigest: () => Promise.resolve(record),
+          validateAndTouchSession: () => Promise.resolve(record),
+          rotateSession: vi.fn(),
+          revokeSession: vi.fn(),
+          revokeAllSessionsForAccount: vi.fn(),
+          revokeAllSessionsForPrincipal: vi.fn(),
+        },
+        now: () => date,
+      });
+      const result = await runtime.login({
+        loginIdentifier: 'operator@example.test',
+        password: 'correct password value',
+        correlationId: 'policy',
+      });
+      const expected =
+        isInitialAdmin === true
+          ? ['catalog:read', 'audit:read', 'offering:read', 'request:read']
+          : [];
+      expect(result.permissions).toEqual(expected);
+      const context = await runtime.resolveActorContext({
+        accessToken: result.credential,
+        correlationId: 'policy',
+      });
+      expect(context.actor).toMatchObject({ kind: 'operations_human', permissions: expected });
+    },
+  );
   const human = createActorContext({
     actor: {
       kind: 'operations_human',
       principalId,
       accountId,
       sessionId: 'test-session',
-      permissions: ['catalog:read', 'audit:read'],
+      permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
     },
     correlationId: 'policy',
   });
-  it.each(['catalog:read', 'audit:read'])('allows %s', (permission) => {
-    expect(() => requireOperationsHumanPermission(human, permission)).not.toThrow();
-  });
+  it.each(['catalog:read', 'audit:read', 'offering:read', 'request:read'])(
+    'allows %s',
+    (permission) => {
+      expect(() => requireOperationsHumanPermission(human, permission)).not.toThrow();
+    },
+  );
   it.each(['catalog:write', 'audit:write', 'accounts:create', 'unknown'])(
     'denies %s with authorization semantics',
     (permission) => {

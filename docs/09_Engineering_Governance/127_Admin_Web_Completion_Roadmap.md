@@ -793,3 +793,83 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## 26. PCI-ENG-018-E - Offering and Customer Request Flow Visibility
+
+This bounded read-only extension adds observation of the existing Offering and Customer Request
+flow. It does not authorize Offering or Request writes, Creator decisions, fulfillment, RBAC, MFA,
+Production, Pilot or real-money activity.
+
+| Surface | Delivered evidence | Boundary |
+| --- | --- | --- |
+| Operations permissions | The fixed first-account allowlist now contains `catalog:read`, `audit:read`, `offering:read` and `request:read`; unknown permissions remain denied | These permissions are limited to the first internal account policy; no permission-management API or general RBAC was added |
+| Offering API | `GET /api/v1/operations/admin/offerings` and `GET /api/v1/operations/admin/offerings/:id` in `adapters/transport/http/operations-flow-read-routes.ts` | Reads existing `service_offerings` and optional `distribution_assets`; no create, update, publish, unpublish or delete route |
+| Request API | `GET /api/v1/operations/admin/requests` and `GET /api/v1/operations/admin/requests/:id` in the same route module | Reads existing `commerce_actions` and Offering/Creator associations; Creator decision is shown only from the persisted `submitted`/`confirmed`/`declined` state |
+| Application read model | `applications/operations-admin/operations-flow-read-service.ts` composes Offering, Distribution, Commerce Identity, Customer and Commerce Action repositories | No new domain state or workflow is created; sensitive result access tokens and private contact methods are not returned |
+| Admin BFF and UI | Same-origin routes under `apps/admin-web/app/api/operations/offerings` and `.../requests`; `offering-read-panel.tsx` and `request-read-panel.tsx` provide list/detail/filter/pagination/error states | Only the opaque HttpOnly Session cookie crosses the BFF; pages are read-only and cannot act as Creator |
+
+The persisted Offering state is `draft`, `published`, `unpublished` or `archived`. Distribution is
+shown only when a `distribution_assets` row exists; otherwise the UI reports that no independent
+distribution record is available. Request state and Creator decision are derived from the existing
+Commerce Action state. No delivery, viewing, timeout or decision event is inferred.
+
+Focused E2E evidence is retained in
+`evidence/PCI-ENG-018-E-browser-1794679076829.json` and
+`evidence/PCI-ENG-018-E-pci-018e-2b75fab303-postgres.json`. The real Next/BFF/Fastify/Operations
+Session/PostgreSQL/gstack browser flow passed with process exit `0`; it covered forged-header
+rejection, Catalog, Offering list/detail, Request list/detail, persisted `submitted` and
+`not_recorded` Creator decision state, Audit, logout retry and post-logout denial. PostgreSQL was
+17.10 with Podman 5.7.1, dynamic bind `127.0.0.1:40321`, container cleanup with no remaining task
+container, and Runtime SELECT ACLs only on the six existing flow tables in the disposable fixture.
+
+Focused software checks passed: active TypeScript, backend test TypeScript, changed-file ESLint,
+Admin Web lint, focused API tests and the browser flow. The historical full-repository result
+remains `1253 PASS, 2 FAIL, 1 collection failure, 218 pending/skipped` and full lint remains `459`
+errors; those results remain `UNCLASSIFIED / NOT PROVEN PRE-EXISTING`.
+
+```ini
+PCI-ENG-018-E = OFFERING & CUSTOMER REQUEST FLOW VISIBILITY COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read,offering:read,request:read
+OFFERING_ADMIN_WRITES = NOT IMPLEMENTED
+REQUEST_ADMIN_WRITES = NOT IMPLEMENTED
+CREATOR_DECISION_PROXY = NOT IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+### 26.1 Final implementation and evidence closure
+
+The final E read slice is now available at `/offerings` and `/requests`, with inline detail links
+(`?id=...`), filters, bounded pagination, explicit 401/403/404/error states and UTC timestamps.
+A Request links to its actual Offering; the Offering resolves Capability/Catalog associations.
+Missing associations remain visible and are not matched by guesses. Request free text is withheld
+because it can contain private contact details. Persisted submitted/confirmed/declined states are
+shown without inferring delivery, viewing or decision timestamps.
+
+Server-side grants require the existing 0041 initial-admin history provenance. Future/unproven
+accounts receive no implicit admin permission set; missing provenance fails closed. The API startup
+explicitly supplies the PostgreSQL read service. No production ACL or database object changed.
+
+Final focused checks: backend/API/Domain 78/78 PASS; Admin component/BFF 37/37 PASS; active and
+backend/Admin-test TypeScript, changed backend/Admin ESLint, code Prettier, backend/Admin Build PASS.
+The final browser process exits 0 with real Next/BFF/Fastify/Session/PostgreSQL data, all three
+persisted Request decision states, linked flow navigation and safe logout. Business-table counts
+and hashes remain unchanged. The disposable PostgreSQL 17.10 container was removed successfully.
+
+See [the final E evidence index](evidence/PCI-ENG-018-E-index.md) for the complete file manifest,
+source findings, actual commands/exit codes, PostgreSQL provenance, earlier retained runs and
+limitations. The earlier evidence pair in section 26 describes the initial one-Request run; the
+final three-Request artifacts are `PCI-ENG-018-E-browser-1794681665150.json` and
+`PCI-ENG-018-E-pci-018e-87086d61c2-postgres.json`.
+
+This closes the read-only E implementation for Main Controller review. The next choice is a bounded
+review of remaining operational visibility, exception identification and read-only statistics.
+Catalog Controls and every business write continue to require separate authorization. Existing
+full-suite/full-lint risks and all governance/production gates above remain unchanged.

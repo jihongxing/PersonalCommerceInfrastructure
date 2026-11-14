@@ -15,7 +15,14 @@ const sessionProperties = {
   principalId: Type.String({ minLength: 1 }),
   accountId: Type.String({ minLength: 1 }),
   sessionId: Type.String({ minLength: 1 }),
-  permissions: Type.Array(Type.Union([Type.Literal('catalog:read'), Type.Literal('audit:read')])),
+  permissions: Type.Array(
+    Type.Union([
+      Type.Literal('catalog:read'),
+      Type.Literal('audit:read'),
+      Type.Literal('offering:read'),
+      Type.Literal('request:read'),
+    ]),
+  ),
 };
 export const OperationsCurrentSessionResponseSchema = Type.Object(sessionProperties, {
   additionalProperties: false,

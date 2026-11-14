@@ -50,6 +50,7 @@ export class OperationsAdminFixture {
   readonly name: string;
   readonly taskLabel: string;
   readonly includeCatalogFixture: boolean;
+  readonly includeFlowFixture: boolean;
   readonly secrets = {
     postgres: randomBytes(24).toString('base64url'),
     migration: randomBytes(24).toString('base64url'),
@@ -70,11 +71,22 @@ export class OperationsAdminFixture {
   admin!: Sql;
   private created = false;
   constructor(
-    options: { readonly taskLabel?: string; readonly includeCatalogFixture?: boolean } = {},
+    options: {
+      readonly taskLabel?: string;
+      readonly includeCatalogFixture?: boolean;
+      readonly includeFlowFixture?: boolean;
+    } = {},
   ) {
     this.taskLabel = options.taskLabel ?? 'PCI-ENG-018-B-R1';
     this.includeCatalogFixture = options.includeCatalogFixture ?? false;
-    this.name = `${this.taskLabel === 'PCI-ENG-018-C' ? 'pci-018c' : 'pci-018br1'}-${randomBytes(5).toString('hex')}`;
+    this.includeFlowFixture = options.includeFlowFixture ?? false;
+    const prefix =
+      this.taskLabel === 'PCI-ENG-018-C'
+        ? 'pci-018c'
+        : this.taskLabel === 'PCI-ENG-018-E'
+          ? 'pci-018e'
+          : 'pci-018br1';
+    this.name = `${prefix}-${randomBytes(5).toString('hex')}`;
   }
   get postgresEvidenceFileName(): string {
     return `${this.taskLabel}-${this.name}-postgres.json`;
@@ -100,7 +112,14 @@ export class OperationsAdminFixture {
   }
   async start() {
     this.folder = await mkdtemp(
-      join(tmpdir(), this.taskLabel === 'PCI-ENG-018-C' ? 'pci-018c-' : 'pci-018br1-'),
+      join(
+        tmpdir(),
+        this.taskLabel === 'PCI-ENG-018-C'
+          ? 'pci-018c-'
+          : this.taskLabel === 'PCI-ENG-018-E'
+            ? 'pci-018e-'
+            : 'pci-018br1-',
+      ),
     );
     this.evidence.podman = JSON.parse(
       await this.podman(['version', '--format', 'json']),
@@ -221,6 +240,7 @@ export class OperationsAdminFixture {
     if (this.includeCatalogFixture || process.env.PCI_INCLUDE_CATALOG_FIXTURE === '1') {
       await this.installCatalogReadFixture(admin);
     }
+    if (this.includeFlowFixture) await this.installFlowReadFixture(admin);
     (this.evidence.databases as unknown[]).push({
       name,
       journal: await admin`SELECT * FROM drizzle.__drizzle_migrations ORDER BY id`,
@@ -274,6 +294,72 @@ export class OperationsAdminFixture {
           ('service_policy_templates'),
           ('service_policy_audits')
         ) AS tables(table_name)
+        ORDER BY table_name
+      `,
+    };
+  }
+
+  private async installFlowReadFixture(database: Sql): Promise<void> {
+    // The Operations fixture starts at migration 0036. Install the already
+    // accepted commerce tables locally so E exercises real PostgreSQL rows.
+    for (const migration of [
+      '0000_solid_otto_octavius.sql',
+      '0001_chemical_vampiro.sql',
+      '0002_green_sauron.sql',
+      '0003_m4_distribution_assets.sql',
+      '0004_m5_customer_requests.sql',
+      '0005_m6_request_result_access.sql',
+      '0013_vs02l01_appearance_offering.sql',
+      '0033_controlled_service_policy.sql',
+    ]) {
+      await database.unsafe(await readFile(resolve('database/migrations', migration), 'utf8'));
+    }
+    await database.unsafe(
+      'GRANT SELECT ON public.commerce_identities,public.creator_capabilities,public.service_offerings,public.distribution_assets,public.commerce_actions TO pci_ops_runtime',
+    );
+    await database.unsafe(`
+      INSERT INTO public.commerce_identities (creator_id, display_name, bio, social_links, state)
+      VALUES ('creator-flow-fixture', 'Flow Fixture Creator', 'Read-only E fixture', '[]'::jsonb, 'published')
+      ON CONFLICT (creator_id) DO NOTHING;
+      INSERT INTO public.creator_capabilities (id, creator_id, name, description, catalog_item_id, catalog_status)
+      VALUES ('capability-flow-fixture', 'creator-flow-fixture', 'Flow Capability', 'Flow fixture capability', 'capability-dance-teaching', 'approved')
+      ON CONFLICT (id) DO NOTHING;
+      INSERT INTO public.service_offerings
+        (id, creator_id, capability_ids, title, description, availability_description, request_instructions, state, policy_status, policy_version)
+      VALUES ('offering-flow-fixture', 'creator-flow-fixture', '["capability-flow-fixture"]'::jsonb,
+        'Flow Fixture Offering', 'Read-only E offering', 'Available for fixture requests', 'Submit a request', 'published', 'approved', 'v1')
+      ON CONFLICT (id) DO NOTHING;
+      INSERT INTO public.distribution_assets (offering_id, public_url, state)
+      VALUES ('offering-flow-fixture', 'https://example.test/offerings/offering-flow-fixture', 'distributed')
+      ON CONFLICT (offering_id) DO NOTHING;
+      INSERT INTO public.customers (id, contact_name, contact_method)
+      VALUES ('customer-flow-fixture', 'Fixture Customer', 'fixture-customer@example.test')
+      ON CONFLICT (id) DO NOTHING;
+      INSERT INTO public.commerce_actions
+        (id, customer_id, creator_id, offering_id, request_message, result_access_token, state)
+      VALUES ('request-flow-fixture', 'customer-flow-fixture', 'creator-flow-fixture', 'offering-flow-fixture',
+        'Please review this fixture request.', 'fixture-result-access-token', 'submitted')
+      ON CONFLICT (id) DO NOTHING;
+      INSERT INTO public.commerce_actions
+        (id, customer_id, creator_id, offering_id, request_message, result_access_token, state)
+      VALUES ('request-confirmed-fixture', 'customer-flow-fixture', 'creator-flow-fixture', 'offering-flow-fixture',
+        'Private fixture text: phone 555-0100', 'fixture-confirmed-result-token', 'confirmed'),
+        ('request-declined-fixture', 'customer-flow-fixture', 'creator-flow-fixture', 'offering-flow-fixture',
+        'Private fixture text: phone 555-0100', 'fixture-declined-result-token', 'declined')
+      ON CONFLICT (id) DO NOTHING;
+    `);
+    this.evidence.flowFixture = {
+      installed: true,
+      counts: await database`
+        SELECT 'offerings' AS relation, count(*)::int AS count FROM public.service_offerings WHERE id = 'offering-flow-fixture'
+        UNION ALL SELECT 'requests', count(*)::int FROM public.commerce_actions
+      `,
+      runtimePrivileges: await database`
+        SELECT table_name, has_table_privilege('pci_ops_runtime', format('public.%I', table_name), 'SELECT') AS select,
+          has_table_privilege('pci_ops_runtime', format('public.%I', table_name), 'INSERT') AS insert,
+          has_table_privilege('pci_ops_runtime', format('public.%I', table_name), 'UPDATE') AS update,
+          has_table_privilege('pci_ops_runtime', format('public.%I', table_name), 'DELETE') AS delete
+        FROM (VALUES ('commerce_identities'), ('creator_capabilities'), ('service_offerings'), ('distribution_assets'), ('customers'), ('commerce_actions')) AS tables(table_name)
         ORDER BY table_name
       `,
     };

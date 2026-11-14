@@ -1,0 +1,16 @@
+import { cookies } from 'next/headers';
+import { proxyOperationsReadRequest } from '../../../../lib/operations-read-proxy';
+import { getAdminServerConfiguration } from '../../../../lib/server-configuration';
+
+const COOKIE_NAME = 'pci_operations_session';
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const credential = (await cookies()).get(COOKIE_NAME)?.value;
+  return proxyOperationsReadRequest(
+    request,
+    `/api/v1/operations/admin/requests${url.search}`,
+    getAdminServerConfiguration(),
+    credential,
+  );
+}

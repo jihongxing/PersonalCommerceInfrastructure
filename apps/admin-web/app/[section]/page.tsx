@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { PendingSection } from '../../components/pending-section';
 import { CatalogReadPanel } from '../../components/catalog-read-panel';
 import { AuditReadPanel } from '../../components/audit-read-panel';
+import { OfferingReadPanel } from '../../components/offering-read-panel';
+import { RequestReadPanel } from '../../components/request-read-panel';
 import { sections } from '../../lib/sections';
 
 export function generateStaticParams() {
@@ -35,6 +37,30 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
           <p>{section.description}</p>
         </div>
         <AuditReadPanel />
+      </>
+    );
+  }
+  if (slug === 'offerings') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <OfferingReadPanel />
+      </>
+    );
+  }
+  if (slug === 'requests') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <RequestReadPanel />
       </>
     );
   }

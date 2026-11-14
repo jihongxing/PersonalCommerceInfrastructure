@@ -30,6 +30,7 @@ import {
   serviceOfferings,
 } from '../../../database/schema/creator-identity.js';
 import type { ProductDatabase } from './postgres-database.js';
+import type { OperationsReadSource } from '../../../applications/operations-admin/operations-flow-read-service.js';
 
 function toIdentity(row: typeof commerceIdentities.$inferSelect): CommerceIdentity {
   return {
@@ -101,6 +102,11 @@ export class PostgresCommerceIdentityRepository implements CommerceIdentityRepos
       .where(eq(commerceIdentities.creatorId, id));
     const row = rows[0];
     return row === undefined ? undefined : toIdentity(row);
+  }
+
+  public async findAll(): Promise<readonly CommerceIdentity[]> {
+    const rows = await this.database.select().from(commerceIdentities);
+    return rows.map(toIdentity);
   }
 
   public findByOwnerId(ownerId: string): Promise<readonly CommerceIdentity[]> {
@@ -235,6 +241,25 @@ export class PostgresOfferingRepository implements OfferingRepository {
       .where(eq(serviceOfferings.id, id));
     const row = rows[0];
     return row === undefined ? undefined : toOffering(row);
+  }
+
+  public async findAll(): Promise<readonly OperationsReadSource<Offering>[]> {
+    const rows = await this.database.select().from(serviceOfferings);
+    return rows.map((row) => ({
+      ...toOffering(row),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    }));
+  }
+
+  public async findReadById(id: string): Promise<OperationsReadSource<Offering> | undefined> {
+    const [row] = await this.database
+      .select()
+      .from(serviceOfferings)
+      .where(eq(serviceOfferings.id, id));
+    return row === undefined
+      ? undefined
+      : { ...toOffering(row), createdAt: row.createdAt, updatedAt: row.updatedAt };
   }
 
   public async findByOwnerId(ownerId: string): Promise<readonly Offering[]> {
@@ -401,6 +426,25 @@ export class PostgresCommerceActionRepository implements CommerceActionRepositor
       .where(eq(commerceActions.id, id));
     const row = rows[0];
     return row === undefined ? undefined : toCommerceAction(row);
+  }
+
+  public async findAll(): Promise<readonly OperationsReadSource<CommerceAction>[]> {
+    const rows = await this.database.select().from(commerceActions);
+    return rows.map((row) => ({
+      ...toCommerceAction(row),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    }));
+  }
+
+  public async findReadById(id: string): Promise<OperationsReadSource<CommerceAction> | undefined> {
+    const [row] = await this.database
+      .select()
+      .from(commerceActions)
+      .where(eq(commerceActions.id, id));
+    return row === undefined
+      ? undefined
+      : { ...toCommerceAction(row), createdAt: row.createdAt, updatedAt: row.updatedAt };
   }
 
   public async findByOwnerId(ownerId: string): Promise<readonly CommerceAction[]> {

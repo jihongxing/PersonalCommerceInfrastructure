@@ -17,6 +17,10 @@ export class InMemoryEntityCollectionRepository<Entity>
     return Promise.resolve(entity === undefined ? undefined : structuredClone(entity));
   }
 
+  public findAll(): Promise<readonly Entity[]> {
+    return Promise.resolve(structuredClone([...this.entities.values()]));
+  }
+
   public findByOwnerId(ownerId: string): Promise<readonly Entity[]> {
     return Promise.resolve(
       structuredClone(

@@ -11,8 +11,11 @@ export default function Overview() {
       </div>
       <section className="notice" aria-label="当前开放范围">
         <span className="availability">内部只读能力已开放</span>
-        <h2>Catalog 与 Audit 已接入</h2>
-        <p>当前版本通过 Operations Session 查询真实 Catalog 与 Audit 数据，不提供业务写操作。</p>
+        <h2>只读业务流程已接入</h2>
+        <p>
+          当前版本通过 Operations Session 查询真实 Catalog、Offering、Request 与 Audit
+          数据，不提供业务写操作。
+        </p>
       </section>
       <div className="section-heading">
         <h2>工作区域</h2>

@@ -20,7 +20,7 @@ describe('Operations Human authentication API', () => {
           accountId: createOperationsAccountId('account-1'),
           sessionId: createOperationsSessionId('session-1'),
           absoluteExpiresAt: new Date('2030-01-01T00:00:00.000Z'),
-          permissions: ['catalog:read', 'audit:read'],
+          permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
         });
       },
       resolveActorContext(request) {
@@ -34,7 +34,7 @@ describe('Operations Human authentication API', () => {
               principalId: 'principal-1',
               accountId: 'account-1',
               sessionId: 'session-1',
-              permissions: ['catalog:read', 'audit:read'],
+              permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
             },
             correlationId: request.correlationId,
           }),
@@ -63,7 +63,7 @@ describe('Operations Human authentication API', () => {
       expect(session.statusCode).toBe(200);
       expect(session.json()).toMatchObject({
         accountId: 'account-1',
-        permissions: ['catalog:read', 'audit:read'],
+        permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
       });
 
       const logout = await server.inject({

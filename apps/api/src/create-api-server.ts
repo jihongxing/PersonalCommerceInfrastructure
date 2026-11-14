@@ -64,6 +64,7 @@ import type { LocalAuthService } from '../../../applications/account-identity-me
 import { registerBrowserTracingRoutes } from '../../../adapters/transport/http/browser-tracing-routes.js';
 import { registerPublicCommerceHomepageRoutes } from '../../../adapters/transport/http/public-commerce-homepage-routes.js';
 import { registerOperationsHumanAuthenticationRoutes } from '../../../adapters/transport/http/operations-human-authentication-routes.js';
+import { registerOperationsFlowReadRoutes } from '../../../adapters/transport/http/operations-flow-read-routes.js';
 import type { PublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { createPublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
@@ -71,6 +72,7 @@ import type { PostgresDatabaseConnection } from '../../../adapters/persistence/p
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
+import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
 
 export interface ApiServerDependencies {
   readonly publicHomepageService?: PublicHomepageService;
@@ -107,6 +109,7 @@ export interface ApiServerDependencies {
   readonly rateLimitMax?: number;
   readonly servicePolicyCatalogRepository?: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService?: ServicePolicyAdminService;
+  readonly operationsFlowReadService?: OperationsFlowReadService;
 }
 
 export async function createApiServer(
@@ -389,6 +392,10 @@ export async function createApiServer(
       dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
     catalogRepository: servicePolicyCatalogRepository,
     adminService: servicePolicyAdminService,
+    humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
+  });
+  registerOperationsFlowReadRoutes(server, {
+    service: dependencies.operationsFlowReadService ?? composition.operationsFlowReadService,
     humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
   });
   registerCustomerRequestRoutes(server, {

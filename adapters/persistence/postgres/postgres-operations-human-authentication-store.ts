@@ -22,6 +22,7 @@ import type {
 import type { ProductDatabase } from './postgres-database.js';
 
 interface AuthenticationRow extends Record<string, unknown> {
+  is_initial_admin: boolean;
   principal_id: string;
   principal_status: string;
   principal_security_epoch: number;
@@ -110,7 +111,10 @@ function query(loginIdentifier?: string, identity?: { principalId: string; accou
       c.created_at AS credential_created_at,
       c.revoked_at,
       ph.activation_history AS principal_history,
-      ah.activation_history AS account_history
+      ah.activation_history AS account_history,
+      (ph.origin = 'new_subject' AND ah.origin = 'new_subject'
+        AND ph.last_history_audit_id ~ '^first-principal-[0-9a-f]{32}$'
+        AND ah.last_history_audit_id ~ '^first-account-[0-9a-f]{32}$') AS is_initial_admin
     FROM operations_human_principals p
     JOIN operations_accounts a ON a.principal_id = p.principal_id
     JOIN operations_credentials c ON c.account_id = a.account_id
@@ -155,6 +159,7 @@ function toSnapshot(row: AuthenticationRow): OperationsHumanAuthenticationSnapsh
     verifier: createEncodedPasswordVerifier(row.verifier),
   };
   return {
+    isInitialAdmin: row.is_initial_admin,
     principal,
     account,
     credential,

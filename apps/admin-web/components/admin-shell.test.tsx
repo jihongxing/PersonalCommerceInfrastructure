@@ -26,7 +26,7 @@ vi.stubGlobal(
           principalId: 'principal-1',
           accountId: 'account-1',
           sessionId: 'session-1',
-          permissions: ['catalog:read', 'audit:read'],
+          permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
         }),
         { status: 200, headers: { 'content-type': 'application/json' } },
       ),
@@ -58,7 +58,7 @@ describe('Operations shell', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
     expect(screen.queryByText('Second route')).not.toBeInTheDocument();
   });
-  it('has seven navigation destinations, an active area and a session control', async () => {
+  it('has nine navigation destinations, an active area and a session control', async () => {
     render(
       <AdminShell>
         <Overview />
@@ -66,7 +66,7 @@ describe('Operations shell', () => {
     );
     expect(screen.getByText('正在验证 Session')).toBeVisible();
     const navigation = await screen.findByRole('navigation', { name: '运营管理导航' });
-    expect(navigation.querySelectorAll('a')).toHaveLength(7);
+    expect(navigation.querySelectorAll('a')).toHaveLength(9);
     expect(screen.getByRole('link', { name: '服务模板', current: 'page' })).toHaveAttribute(
       'href',
       '/templates',
@@ -99,7 +99,8 @@ describe('Operations shell', () => {
   it.each(
     sections.filter(
       (section) =>
-        section.slug !== '' && !['capabilities', 'templates', 'audit'].includes(section.slug),
+        section.slug !== '' &&
+        !['capabilities', 'templates', 'audit', 'offerings', 'requests'].includes(section.slug),
     ),
   )('keeps $english unavailable without fabricated data or management actions', async (section) => {
     render(await SectionPage({ params: Promise.resolve({ section: section.slug }) }));
@@ -113,6 +114,8 @@ describe('Operations shell', () => {
     ['capabilities', '能力目录'],
     ['templates', '服务模板'],
     ['audit', '操作审计'],
+    ['offerings', '服务 Offering'],
+    ['requests', 'Customer Request'],
   ] as const)('renders the real read-only surface for %s', async (slug, label) => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(

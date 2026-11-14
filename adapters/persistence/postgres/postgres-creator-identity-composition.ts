@@ -148,6 +148,10 @@ import {
 } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
 import {
+  createOperationsFlowReadService,
+  type OperationsFlowReadService,
+} from '../../../applications/operations-admin/operations-flow-read-service.js';
+import {
   createPostgresOperationsIdentityComposition,
   type PostgresOperationsIdentityComposition,
 } from './postgres-operations-identity-composition.js';
@@ -204,6 +208,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
+  readonly operationsFlowReadService: OperationsFlowReadService;
 }
 
 export function createPostgresCreatorIdentityComposition(
@@ -262,6 +267,13 @@ export function createPostgresCreatorIdentityComposition(
   const servicePolicyCatalogRepository = new PostgresServicePolicyCatalogRepository(
     database.database,
   );
+  const operationsFlowReadService = createOperationsFlowReadService({
+    offeringRepository,
+    distributionAssetRepository,
+    capabilityRepository,
+    identityRepository,
+    commerceActionRepository,
+  });
   const idGenerator = new UuidIdGenerator();
   const unitOfWork = new PostgresUnitOfWork(database.database);
   const accountIdentityMembershipService = createAccountIdentityMembershipService({
@@ -564,5 +576,6 @@ export function createPostgresCreatorIdentityComposition(
       repository: servicePolicyCatalogRepository,
     }),
     operationsIdentityPersistence,
+    operationsFlowReadService,
   };
 }

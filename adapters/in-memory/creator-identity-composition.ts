@@ -131,6 +131,10 @@ import {
   type ServicePolicyAdminService,
 } from '../../applications/service-policy/service-policy-admin-service.js';
 import type { ServicePolicyCatalogRepository } from '../../applications/service-policy/service-policy-repositories.js';
+import {
+  createOperationsFlowReadService,
+  type OperationsFlowReadService,
+} from '../../applications/operations-admin/operations-flow-read-service.js';
 
 export interface CreatorIdentityComposition {
   readonly authContextProvider: AuthContextProvider;
@@ -159,6 +163,7 @@ export interface CreatorIdentityComposition {
   readonly notificationAdapter: InMemoryNotificationAdapter;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
+  readonly operationsFlowReadService: OperationsFlowReadService;
 }
 
 export function createInMemoryCreatorIdentityComposition(
@@ -208,6 +213,13 @@ export function createInMemoryCreatorIdentityComposition(
   const servicePolicyCatalogRepository = new InMemoryServicePolicyCatalogRepository(
     initialServicePolicyCatalog,
   );
+  const operationsFlowReadService = createOperationsFlowReadService({
+    offeringRepository,
+    distributionAssetRepository,
+    capabilityRepository,
+    identityRepository,
+    commerceActionRepository,
+  });
   const productEventStore = new InMemoryProductEventStore();
   const unitOfWork = new InMemoryUnitOfWork(
     [
@@ -506,5 +518,6 @@ export function createInMemoryCreatorIdentityComposition(
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),
+    operationsFlowReadService,
   };
 }

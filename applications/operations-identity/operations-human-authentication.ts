@@ -26,11 +26,18 @@ import {
   type OperationsSessionSnapshot,
 } from './operations-session-repositories.js';
 
-export const OPERATIONS_HUMAN_PERMISSIONS = ['catalog:read', 'audit:read'] as const;
+export const OPERATIONS_HUMAN_PERMISSIONS = [
+  'catalog:read',
+  'audit:read',
+  'offering:read',
+  'request:read',
+] as const;
 export type OperationsHumanPermission = (typeof OPERATIONS_HUMAN_PERMISSIONS)[number];
 export type OperationsActivationHistory = 'never_activated' | 'previously_activated' | 'unknown';
 
 export interface OperationsHumanAuthenticationSnapshot {
+  /** Server-owned 0041 bootstrap provenance; absent/false grants no admin permissions. */
+  readonly isInitialAdmin?: boolean;
   readonly principal: OperationsHumanPrincipal;
   readonly account: OperationsAccount;
   readonly credential: OperationsPasswordCredentialRecord;
@@ -167,7 +174,7 @@ export function createOperationsHumanAuthenticationRuntime(dependencies: {
         accountId: snapshot.account.id,
         sessionId: stored.session.id,
         absoluteExpiresAt: stored.session.absoluteExpiresAt,
-        permissions: OPERATIONS_HUMAN_PERMISSIONS,
+        permissions: snapshot.isInitialAdmin === true ? OPERATIONS_HUMAN_PERMISSIONS : [],
       };
     },
 
@@ -208,7 +215,7 @@ export function createOperationsHumanAuthenticationRuntime(dependencies: {
           principalId: touched.session.principalId,
           accountId: touched.session.accountId,
           sessionId: touched.session.id,
-          permissions: OPERATIONS_HUMAN_PERMISSIONS,
+          permissions: snapshot.isInitialAdmin === true ? OPERATIONS_HUMAN_PERMISSIONS : [],
         },
         accountId: touched.session.accountId,
         correlationId: request.correlationId,

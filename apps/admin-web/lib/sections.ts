@@ -37,4 +37,16 @@ export const sections = [
     english: 'Audit Records',
     description: '只读查看目录管理操作与执行归因。',
   },
+  {
+    slug: 'offerings',
+    label: '服务 Offering',
+    english: 'Service Offerings',
+    description: '只读查看 Offering 状态、Creator 关联与分发记录。',
+  },
+  {
+    slug: 'requests',
+    label: 'Customer Request',
+    english: 'Customer Requests',
+    description: '只读查看 Request 状态、关联 Offering 与 Creator 决策。',
+  },
 ] as const;

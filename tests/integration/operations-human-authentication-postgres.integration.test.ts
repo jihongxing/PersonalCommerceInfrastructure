@@ -218,7 +218,12 @@ suite('Operations Admin restricted PostgreSQL 17.10 acceptance', () => {
   });
   it('authenticates with Argon2id, keeps password bytes, stores only digest and fixed timeouts', async () => {
     const result = await login();
-    expect(result.permissions).toEqual(['catalog:read', 'audit:read']);
+    expect(result.permissions).toEqual([
+      'catalog:read',
+      'audit:read',
+      'offering:read',
+      'request:read',
+    ]);
     const digest = createHash('sha256').update(result.credential).digest('hex');
     const rows =
       await db.admin`SELECT encode(credential_digest,'hex')=${digest} AS digest_matches,status,session_version,extract(epoch FROM idle_expires_at-created_at)::int AS idle_seconds,extract(epoch FROM absolute_expires_at-created_at)::int AS absolute_seconds FROM operations_sessions WHERE session_id=${result.sessionId}`;

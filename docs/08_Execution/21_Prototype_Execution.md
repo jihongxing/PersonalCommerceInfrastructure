@@ -10266,3 +10266,151 @@ Migration 0040 now acquires operations_human_principals EXCLUSIVE first and oper
 The disposable PostgreSQL 17.10 verification completed 20/20 targeted tests: external DBA grant/revoke ACL restoration, fail-closed preflight, upgrade and fresh installation, idempotent rerun, Runtime/Function Owner denial, and Principal/Account writer waits, Account creation serialization, rollback lock release, ordinary SELECT, and Runtime denial. Evidence is retained at E:/Users/jihx/AppData/Local/Temp/pci-c2-1-rev1-evidence.json; the run used only loopback disposable containers and ended with no task-labeled containers. This is not production permission certification and does not prove every possible PostgreSQL schedule.
 
 The external DBA runbook is docs/09_Engineering_Governance/126_Operations_Activation_History_Migration_Runbook.md. Migration 0040 remains a separately reviewed bounded engineering unit; no Authentication Runtime, MFA, RBAC, BFF, Pilot, Production or real-money authority is implied.
+
+## PCI-ENG-018-B Operations Admin Runtime Vertical Slice
+
+Authority: Founder-approved PCI-ENG-018-B. This section records the bounded runtime delivery after the Admin Web roadmap and does not rewrite earlier PCI-ENG-017 history.
+
+```ini
+PCI-ENG-018-A = COMPLETED - AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-018-B = IMPLEMENTED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_RUNTIME = INTERNAL_VALIDATION_ONLY
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read
+MFA_LOCAL_DEVELOPMENT = NOT_REQUIRED
+MFA_INTERNAL_VALIDATION = NOT_REQUIRED
+MFA_PRODUCTION = REQUIRED_NOT_IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+The delivered bounded unit includes an Argon2id Operations Password verifier, a controlled transactional first-account initializer, login/Session/logout routes, Session-backed actor context, the fixed read permissions, an Admin Web same-origin BFF with one opaque host-only HttpOnly cookie, and a protected Admin Shell. It reuses accepted Operations Principal, Account, Credential and Session persistence and adds only Migration 0041 for minimum Runtime ACL; it does not expose a browser token. The initializer creates no Session and refuses to run after an existing Operations Principal or Account is present.
+
+Core/API TypeScript, Admin Web TypeScript, Admin tests, Argon2id unit verification, Admin lint, Prettier, build, Migration Check and the revised Admin boundary scan passed. Disposable PostgreSQL 17.10 bootstrap and Runtime acceptance passed with the restricted 0041 Runtime ACL; the container was destroyed after the run. The active backend test aggregate remains blocked by existing web-v2 matcher type errors. Catalog/Audit data screens, MFA, RBAC, Production, Pilot and real-money authority remain outside this unit.
+
+### PCI-ENG-018-B Pre-Commit Review — Superseding Finding
+
+The preceding completion/cleanup statements were premature. They remain historical execution
+claims and are superseded by this review; no Main Controller acceptance is implied.
+
+```ini
+PCI-ENG-018-B = BLOCKED — MAIN CONTROLLER REVIEW REQUIRED
+OPERATIONS_ADMIN_RUNTIME = PARTIAL_UNCOMMITTED_NOT_ACCEPTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+`scripts/database/initialize-first-operations-account.ts:43-79` directly inserts active identities
+and previously_activated histories. It does not perform the Founder-required initial creation and
+ordered first activation. Migration 0040's audit CHECK (`:33`) and validator (`:82-86`) have no
+explicit first-activation operation; existing creation functions (`:201-243`) establish only
+pending/invited + never_activated. A dedicated bootstrap function is authorized, but the permissible
+first-activation audit encoding/additive schema extension requires Main Controller determination.
+No relabeling as creation/backfill or frozen-schema change was selected silently.
+
+In the existing disposable PostgreSQL 17.10 fixture, a transaction using the real create_principal
+function and a candidate first_activated audit failed with SQLSTATE 23514 in
+validate_identity_lifecycle_audit; psql exited 3 before COMMIT. A new connection returned zero rows
+across Principal, Account, both History tables, Audit, Credential and Session, confirming rollback.
+The candidate operation is a probe, not an approved database contract. This superuser-installed
+fixture does not prove restricted-wrapper installation. Seven pci-018b-auth-* containers were
+still running; explicit task-container/volume cleanup now exited 0, and the final query returned
+no task containers (exit 0). Earlier cleanup claims must not be reused as evidence.
+
+Other confirmed gaps include 0041 missing from the wrapper allowlist/owner phase policy, ordinary
+non-TTY password input, logout failure presented as success, client-only shell protection, and
+missing browser/full negative-path acceptance. Active backend test TypeScript passed; the wider
+active-tests aggregate failed later in web-v2. Full lint was reported as 459 errors with no proven
+parent comparison. Narrow prior PASS counts do not constitute complete 018-B acceptance.
+
+See `docs/09_Engineering_Governance/129_Operations_Admin_Runtime_Completion.md` and its linked
+`evidence/PCI-ENG-018-B-blocker-evidence.json` for source references, exact SQL, stdout/stderr,
+true process exit codes, PostgreSQL/Podman provenance and cleanup results. Implementation and
+commit closure stopped under 018-B Sections 5 (B2) and 15. HEAD remains
+70d7f4f35aa0313b244d075eaf4415b8328e75a2; staging is empty, the partial changes are retained, and
+the worktree is not clean. No production, Pilot, real-money, general C2-2/C3 or 018-C work occurred.
+
+## DEV-085 / PCI-ENG-018-B-R1 Operations Admin Runtime and Controlled Bootstrap
+
+Authority: Founder-approved PCI-ENG-018-B, FD-018-B-BOOTSTRAP-01 and Main Controller's R1 decision.
+This entry records the already-authorized bounded Operations authentication/authorization behavior;
+it does not revise frozen VS-01 product flows, FR-001–FR-053 or canonical commerce events. The earlier
+018-B completion and blocking records above remain historical; this R1 record follows them.
+
+Affected objects/contracts: independent Human Operations Principal/Account, encoded Argon2id
+Credential, opaque Session digest, independent activation histories and lifecycle Audits. Affected
+commands are dedicated first-account bootstrap, login, Session validation/touch and logout. New
+Audit operation types are explicit first activation, not new VS-01 canonical commerce events.
+Fixed permissions are only catalog:read and audit:read. No Catalog/Offering/Request mutation or
+other product behavior is added. Creator LocalAuth and Creator decisions are unchanged.
+
+The original 23514 probe is retained. 0040's Audit operation CHECK and validator cannot express
+first activation (R1 category B); additive 0041 implements the expressly authorized minimum.
+0036–0040 are unchanged. Dedicated Migration-only initialization uses one transaction and a fixed
+guard: pending/Epoch 0 Principal, invited Account, both never_activated, then Principal first
+activation, Account first activation, separate correct Audit/History links, active Credential v1,
+verification and COMMIT. There are four Audits, no automatic Session and no fabricated Human Actor.
+All intermediate failure rolls back; repeated/concurrent initialization cannot replace identities.
+Unknown History remains restrictive. Runtime cannot execute initializer/guard or general lifecycle
+writes. Wrapper SQL and Journal are atomic; actual SQL/COMMIT failures exit 1 with rollback evidence.
+
+The completed internal slice includes independent Argon2id hash/verify; minimum 15 code points;
+no password trim/normalization/truncation; TTY-only no-echo bootstrap; API authority over states,
+histories, versions and Epoch; 8h idle/24h absolute Session; fixed read permissions; Admin same-origin
+BFF; one opaque host-only HttpOnly cookie; login and gated shell. Logout clears the cookie only
+after confirmed revocation/absence; API/network failure reports failure and offers retry.
+
+| Verification                                           | Retained result                                                                  |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Operations unit / HTTP contract                        | 27/27 PASS; process 0                                                            |
+| Admin component / BFF                                  | 21/21 PASS; process 0                                                            |
+| Actual restricted-role PostgreSQL 17.10                | 12/12 PASS; process 0                                                            |
+| Real Next/BFF/Fastify/Argon2id/PostgreSQL browser flow | PASS; process 0; logout 503/network fault and successful retry included          |
+| Core/API/backend-test/Admin/Admin-test TypeScript      | PASS                                                                             |
+| Changed backend ESLint / Admin ESLint / code Prettier  | PASS                                                                             |
+| API build / Admin build and boundary / Migration Check | PASS                                                                             |
+| Full suite without external database                   | 1253 PASS / 2 FAIL / 218 pending-skipped, plus one collection failure; process 1 |
+| Full lint                                              | 459 errors / 0 warnings; process 1                                               |
+
+Full-suite failures are directional/import-boundary assertions and unresolved optimization-test
+import. Full suite predates the final Shell route/retry change; targeted Admin verification then
+passed. No parent comparison was performed for full-suite/lint failures: **UNCLASSIFIED / NOT PROVEN
+PRE-EXISTING**. All failed attempts are retained. No full opt-in persistence regression or all-repository
+0000–0041 fresh install was performed. Operations subset 0036–0041 and its repeat Journal were verified.
+
+PostgreSQL provenance, exact commands/exit codes, SQL/role/PID/ACL, four Audits, rollback and container
+cleanup are linked from `docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-index.md`.
+The current report is `129_Operations_Admin_Runtime_Completion.md`, local runbook is
+`128_Operations_Admin_Runtime_Runbook.md`, 0041 contract is `130_Operations_Initial_Admin_Bootstrap.md`,
+and next delivery sequence is recorded in `127_Admin_Web_Completion_Roadmap.md`.
+
+No real/shared database or real Operations account was initialized. Production API omits Human
+Operations Runtime until separately accepted MFA; no bypass switch exists. No general lifecycle,
+recovery, MFA, RBAC, Catalog/Audit data screen or business write was implemented. No closed 017-E1
+scenario was pursued. This delivery awaits acceptance and is not Production Ready.
+
+```ini
+PCI-ENG-018-B-R1 = OPERATIONS ADMIN RUNTIME BLOCKERS RESOLVED — AWAITING MAIN CONTROLLER ACCEPTANCE
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

@@ -1,0 +1,1266 @@
+{
+  "task": "PCI-ENG-018-B-R1",
+  "status": "OPERATIONS ADMIN RUNTIME BLOCKERS RESOLVED — AWAITING MAIN CONTROLLER ACCEPTANCE",
+  "baseline": {
+    "branch": "codex/pci-eng-015-b-r2-persistence-closure",
+    "head": "70d7f4f35aa0313b244d075eaf4415b8328e75a2",
+    "parent": "0cc6b1e74e6d608138d07132a419d6df5a881cc6"
+  },
+  "limits": [
+    "No full opt-in persistence regression rerun",
+    "Operations subset 0036–0041 only, not fresh 0000–0041 installation",
+    "Full-suite and lint failures UNCLASSIFIED / NOT PROVEN PRE-EXISTING",
+    "Full suite precedes final Shell route/retry adjustment; targeted Admin verification follows",
+    "No real/shared bootstrap or Production/Pilot/Real Money authorization"
+  ],
+  "migration0041": {
+    "file": "database/migrations/0041_operations_initial_admin_bootstrap.sql",
+    "sha256": "a4f9445de19f685e0386826a565ba2c4d469818507d0f1686675a5a395ff3aec",
+    "lineEndings": "CRLF; preserve identical tested SQL blob bytes when staging"
+  },
+  "originalBlockedReport": {
+    "source": "129_Operations_Admin_Runtime_Completion.md",
+    "suffixStart": "# PCI-ENG-018-B — Operations Admin Runtime Completion Report",
+    "utf8SuffixSHA256": "39013bc7539dbba3ee86ddaa0565661f92dd66c72c7b01b0f1e350129618684c",
+    "note": "Hash records the preserved historical suffix at closure; original blocker JSON separately hashed below."
+  },
+  "focusedCommands": [
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/0",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--write",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/admin-web/app/globals.css",
+        "apps/admin-web/app/page.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "package.json",
+        "pnpm-lock.yaml",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "apps/admin-web/app/api/operations/auth/_proxy.ts",
+        "apps/admin-web/app/api/operations/auth/login/route.ts",
+        "apps/admin-web/app/api/operations/auth/logout/route.ts",
+        "apps/admin-web/app/api/operations/auth/session/route.ts",
+        "apps/admin-web/app/login/page.tsx",
+        "apps/admin-web/instrumentation.ts",
+        "apps/admin-web/lib/operations-auth-proxy.test.tsx",
+        "apps/admin-web/lib/operations-auth-proxy.ts",
+        "apps/admin-web/lib/server-configuration.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/1",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:core"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/2",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:api"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/3",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:active-tests:backend"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/4",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/5",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web:tests"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/6",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "test:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/7",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "eslint",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts",
+        "--no-error-on-unmatched-pattern"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/8",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "lint:admin-web"
+      ],
+      "exitCode": 1
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/9",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--check",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/admin-web/app/globals.css",
+        "apps/admin-web/app/page.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "package.json",
+        "pnpm-lock.yaml",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "apps/admin-web/app/api/operations/auth/_proxy.ts",
+        "apps/admin-web/app/api/operations/auth/login/route.ts",
+        "apps/admin-web/app/api/operations/auth/logout/route.ts",
+        "apps/admin-web/app/api/operations/auth/session/route.ts",
+        "apps/admin-web/app/login/page.tsx",
+        "apps/admin-web/instrumentation.ts",
+        "apps/admin-web/lib/operations-auth-proxy.test.tsx",
+        "apps/admin-web/lib/operations-auth-proxy.ts",
+        "apps/admin-web/lib/server-configuration.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/10",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "vitest",
+        "run",
+        "tests/operations",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "--reporter=json",
+        "--outputFile=docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-unit-final.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/11",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "build:api"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/12",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "db:check"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-final.json",
+      "jsonPointer": "/results/13",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "verify:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/0",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--write",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/1",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "lint:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/2",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "test:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/3",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/4",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web:tests"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-admin-final.json",
+      "jsonPointer": "/results/5",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "verify:admin-web"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "actualOuterProcesses": [
+    {
+      "source": "PCI-ENG-018-B-R1-postgres-final-process.json",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "--reporter=json",
+        "--outputFile=docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-final.json"
+      ],
+      "environmentOverrides": {
+        "PCI_RUN_OPERATIONS_AUTH_POSTGRES": "1",
+        "DATABASE_URL": "unset/empty; disposable fixture creates its own loopback URLs"
+      },
+      "exitCode": 0,
+      "jsonPointer": ""
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-browser-final-process.json",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/test/verify-operations-admin-browser.ts"
+      ],
+      "exitCode": 0,
+      "jsonPointer": ""
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-quality-checks.json",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "test",
+        "--reporter=json",
+        "--outputFile=docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-full-suite.json"
+      ],
+      "exitCode": 1,
+      "jsonPointer": "/results/11"
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-full-lint-final.json",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "lint"
+      ],
+      "exitCode": 1,
+      "jsonPointer": ""
+    }
+  ],
+  "finalNamedTests": [
+    {
+      "source": "PCI-ENG-018-B-R1-unit-final.json",
+      "file": "tests/operations/operations-bootstrap-input.test.ts",
+      "tests": [
+        {
+          "name": "Bootstrap hidden input fidelity retains whitespace and Unicode across split UTF-8 chunks",
+          "status": "passed"
+        },
+        {
+          "name": "Bootstrap hidden input fidelity handles Windows Backspace and DEL by code point",
+          "status": "passed"
+        },
+        {
+          "name": "Bootstrap hidden input fidelity fails without committing on cancellation, control sequences or incomplete input",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-unit-final.json",
+      "file": "tests/operations/operations-human-authentication.test.ts",
+      "tests": [
+        {
+          "name": "Operations Argon2id password verifier hashes and verifies a password without accepting short passwords",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal pending without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal suspended without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal disabled without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal tombstoned without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account invited without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account locked without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account disabled without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account revoked without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal history unknown without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account history unknown without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Principal history never_activated without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects Account history never_activated without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Human eligibility matrix rejects revoked Credential without creating a Session",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy allows catalog:read",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy allows audit:read",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy denies catalog:write with authorization semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy denies audit:write with authorization semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy denies accounts:create with authorization semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy denies unknown with authorization semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy refuses non-Human actor 'platform' with authentication semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy refuses non-Human actor 'pilot_operations' with authentication semantics",
+          "status": "passed"
+        },
+        {
+          "name": "Fixed first-operator permission policy refuses non-Human actor 'creator' with authentication semantics",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-unit-final.json",
+      "file": "tests/integration/operations-human-authentication-api.test.ts",
+      "tests": [
+        {
+          "name": "Operations Human authentication API supports BFF login, session validation and logout revocation",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-postgres-final.json",
+      "file": "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+      "tests": [
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance rejects malformed bootstrap Argon2id encoding before any identity mutation",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance rolls back all first-activation work on an actual credential INSERT failure",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance fails closed if public schema becomes writable by an untrusted role",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance serializes first bootstrap, records ordered creation and first activation, repeats without effects",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance enforces restricted owner/initializer ACL and column-only Runtime session writes",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance authenticates with Argon2id, keeps password bytes, stores only digest and fixed timeouts",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance denies invalid Principal/Account and unknown history without treating Creator auth as Operations auth",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance rejects stale Epoch / Credential Version and expired sessions; enforces CAS",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance revokes server sessions and safely repeats logout for already revoked / absent credentials",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance creates independent digest-only Sessions for concurrent valid logins",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance returns nonzero child process exit codes for SQL and COMMIT failures with SQL+Journal rollback",
+          "status": "passed"
+        },
+        {
+          "name": "Operations Admin restricted PostgreSQL 17.10 acceptance runs real HTTP authentication and refuses spoofed identity headers",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "browserChecks": [
+    "browser",
+    "anonymous redirect",
+    "forged headers without Session",
+    "authenticated shell",
+    "cookie metadata",
+    "JavaScript/storage isolation",
+    "authoritative identity",
+    "logout 503 preserves UI/cookie/server Session",
+    "logout network preserves UI/cookie/server Session",
+    "confirmed retry revokes and clears",
+    "postlogout protected access"
+  ],
+  "wrapperProcesses": [
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/0",
+      "database": "pci_ops_migration_fixture_admin_1",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\legacy"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/1",
+      "database": "pci_ops_migration_fixture_admin_1",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\complete"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/2",
+      "database": "pci_ops_migration_fixture_admin_2",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\legacy"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/3",
+      "database": "pci_ops_migration_fixture_admin_2",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\complete"
+      ],
+      "exitCode": 0
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/4",
+      "database": "pci_ops_migration_fixture_failure_3",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\sqlFailure"
+      ],
+      "exitCode": 1
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/5",
+      "database": "pci_ops_migration_fixture_failure_4",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\commitFailure"
+      ],
+      "exitCode": 1
+    },
+    {
+      "source": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "jsonPointer": "/wrapper/6",
+      "database": "pci_ops_migration_fixture_admin_1",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "scripts/database/run-controlled-migration.ts",
+        "E:\\User\\jihx\\AppData\\Local\\Temp\\pci-018br1-pmEDlN\\complete"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "PCI-ENG-018-B-R1-admin-final.json",
+      "bytes": 4869,
+      "sha256": "7ecab3c04aea3e4670b1d9c35c8df3b2ec32242bfe303e4a84a0c7b2e42be7db",
+      "purpose": "Final Admin 21/21, lint/types/build/boundary process records; supersedes the earlier Shell lint failure.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-attempt-01.json",
+      "bytes": 187508,
+      "sha256": "510d9b17e557824f2e467eb1748ff2c07fb5eb91c5eb5a402a9e151c3e802b58",
+      "purpose": "Historical wrapper attempt: second wrapper child exited 1 (42601); not a passing acceptance run.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-1794661518491.json",
+      "bytes": 17612,
+      "sha256": "19875dca2a85590321c7d0f371dfabe133ef3812ebc01120c297ef2b43912be4",
+      "purpose": "Historical browser FAIL: shell not reached; corrected browser-origin configuration in later runs.",
+      "result": "FAIL",
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-1794661701895.json",
+      "bytes": 15085,
+      "sha256": "410ac2e94500060236d323d61a5dde4dd01920eb5315bfad54ab31b198d5ac01",
+      "purpose": "Historical browser FAIL: replay of a redacted cookie marker; corrected harness in later runs.",
+      "result": "FAIL",
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-1794662074034.json",
+      "bytes": 16020,
+      "sha256": "1945c620b6dbf442b38cc859d9b299bb5eab35751702002a9b9feec1c230142b",
+      "purpose": "Earlier browser PASS; final repeated PASS has a separately retained outer process exit.",
+      "result": "PASS",
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-1794663410698.json",
+      "bytes": 16187,
+      "sha256": "3b69dd6b5511ab0cc9423fc28240340259535f32265238fd30f69e50ab01e875",
+      "purpose": "Final real browser PASS; 11 named checks, real Next/BFF/API/Argon2id/PostgreSQL, injected logout faults.",
+      "result": "PASS",
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-final-process-missing-driver.json",
+      "bytes": 754,
+      "sha256": "f7ed55a51347505d08e1b7e9be499f538b5679787643e081c91d622e2048280c",
+      "purpose": "Historical browser process failure, exit 1: required browse driver configuration absent.",
+      "result": null,
+      "outerProcessExitCode": 1,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-browser-final-process.json",
+      "bytes": 346,
+      "sha256": "b10a23dd7a46f79bc2f7d1ffa3f4d4b1168287dbac8b23faa6d76791573d137b",
+      "purpose": "Final browser actual outer process exit 0.",
+      "result": null,
+      "outerProcessExitCode": 0,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-evidence.json",
+      "bytes": 207426,
+      "sha256": "139f0dcaeded93ef52bf97297c9fc74530b2682d30cde4934093104cdafa9810",
+      "purpose": "Historical fixture/development evidence; individual wrapper exits retained; not final aggregate acceptance.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-full-lint-final.json",
+      "bytes": 82146,
+      "sha256": "b7f22f9b603bf0c510f91d803c7d6e262930d8c6a69f4ac294b1ac95bea3dc01",
+      "purpose": "Full lint exit 1; 459 errors / 0 warnings. UNCLASSIFIED / NOT PROVEN PRE-EXISTING.",
+      "result": null,
+      "outerProcessExitCode": 1,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-full-suite.json",
+      "bytes": 540029,
+      "sha256": "6ea52716a8d0bc480cf6a87fc0a46422f2abf44edcff665169a674264d4ed659",
+      "purpose": "Full-suite Vitest report: 1253 passed / 2 failed / 218 pending, plus collection failure; process exit 1 in quality-checks.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": { "passed": 1253, "failed": 2, "pending": 218 }
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "bytes": 409058,
+      "sha256": "9aac9cbac557147a20dc401b66570ae828ad9b2663260ebd8b93f6132d3a2450",
+      "purpose": "Final PostgreSQL acceptance fixture: real SQL, roles/PIDs/ACL, bootstrap, failures/rollback, provenance and cleanup.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-9552358f66.json",
+      "bytes": 408510,
+      "sha256": "3e4ca4872d65bb4b3870f6dd32552ecf0924832c149aac427d802945ed4e25a1",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-bb374ea1e8.json",
+      "bytes": 408051,
+      "sha256": "a1339442d873382f9a987f9e43fe54e2ac687325ac28f2f5d914ea2692829d2a",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-beca8bc60a.json",
+      "bytes": 209552,
+      "sha256": "9df1dcd918a3567a50b5c722799c92961a02b659027aa67028a9bb2fd0249148",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-c8e26b877b.json",
+      "bytes": 408051,
+      "sha256": "d17d7585913cce74d470060435cf96de0263a352afdac8fdd5dbaa5ad9888cb1",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-cfad15ea5f.json",
+      "bytes": 95801,
+      "sha256": "18b1050a97ee957fc59c6f079783bfa3563316c11107628ada6e1cc7af00ee5b",
+      "purpose": "Historical fixture with wrapper CLIENT_ERROR exit 1; retained, not final acceptance.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-d478d8ccd0.json",
+      "bytes": 209552,
+      "sha256": "77caf74a8bfb61570b308853511d17021f56e0f92a63098193350093a255f9b0",
+      "purpose": "Final browser independent PostgreSQL fixture; provenance and container cleanup.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-d7c46ee969.json",
+      "bytes": 209552,
+      "sha256": "98e948d67b0159c1871da5dd8fad99a187ed455cec7096019a2b70ef0e17259f",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-deff895ecb.json",
+      "bytes": 409058,
+      "sha256": "11a13c5af5b1ac368896e5862683b2bf50c3c58e926e47d4a255fc8f4a17fd1b",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-pci-018br1-f6268648ed.json",
+      "bytes": 209552,
+      "sha256": "c0782561ab1e88af5e1288a9da363883841cc1dc60ff63fa6583f9e94eafc36a",
+      "purpose": "Historical independent fixture record; individual commands/SQL/results/cleanup retained. No aggregate PASS inferred.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-attempt-03.json",
+      "bytes": 1294,
+      "sha256": "b96c3ab5276cc1fd053ef1a9772454e493a84f7fdd958116b89c7a3ca1adbe84",
+      "purpose": "Historical PostgreSQL process attempt, exit 1; superseded by later corrected run.",
+      "result": null,
+      "outerProcessExitCode": 1,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-attempt-04.json",
+      "bytes": 1849,
+      "sha256": "13e873ad9aae047a283f454f0332570efe8225897ce9d32e99084a925b733d31",
+      "purpose": "Historical PostgreSQL process attempt, exit 1; superseded by later corrected run.",
+      "result": null,
+      "outerProcessExitCode": 1,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-attempt-05.json",
+      "bytes": 1253,
+      "sha256": "88cb1595ab206f9abf3f87a52e3756107dca9b4c344ce85bdbf0486f4af91097",
+      "purpose": "Historical PostgreSQL process attempt, exit 1; superseded by later corrected run.",
+      "result": null,
+      "outerProcessExitCode": 1,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-attempt-06.json",
+      "bytes": 498,
+      "sha256": "016f4a93f9ca4c89e2b0084636b0003df75823c42ec4ce54cdf395fb0906f59f",
+      "purpose": "Earlier PostgreSQL process attempt, exit 0; final reporter/outer process retained separately.",
+      "result": null,
+      "outerProcessExitCode": 0,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-attempt-07.json",
+      "bytes": 5654,
+      "sha256": "828e7f63941aa4424f650711501db7483b2ca6b0d8e16e5cb18e9132391db30c",
+      "purpose": "Earlier 12/12 PostgreSQL reporter; final repeated run provides explicit outer process record.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": { "passed": 12, "failed": 0, "pending": 0 }
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-final-process.json",
+      "bytes": 910,
+      "sha256": "37eca499a1c87867e07a47e7bf2987debe74e28da39c88d85bc384208c5ceae7",
+      "purpose": "Final PostgreSQL actual outer exit 0, command/environment and fixture link.",
+      "result": null,
+      "outerProcessExitCode": 0,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-postgres-final.json",
+      "bytes": 5659,
+      "sha256": "15d7ddb6df3e35cad55c946c9a6fbdde0d44be2d3a53909bbbd6e1cdf42d39a0",
+      "purpose": "Final PostgreSQL 12/12 named test results; real fixture, no mock database.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": { "passed": 12, "failed": 0, "pending": 0 }
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-quality-checks.json",
+      "bytes": 103952,
+      "sha256": "01204f00972088632608123349b2a60057e4f4d9217e110ffbbe59ac6ef8c4f2",
+      "purpose": "Historical quality run including intermediate type/lint/format failures and actual full-suite exit 1.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-quality-final.json",
+      "bytes": 19490,
+      "sha256": "806b986874d573a0f87e804a68ae8c745e3ccc4e217fbc7cf86fe05d5a504f1a",
+      "purpose": "Final backend/unit/type/format/build/migration processes; Admin lint failure superseded by admin-final.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-unit-final.json",
+      "bytes": 9722,
+      "sha256": "adc06c0157a9866e0218d76d76adc1887f1a56ca4405bc1575b7e64b12cedb99",
+      "purpose": "Final 27/27 named unit/HTTP tests; actual exit 0 in quality-final.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": { "passed": 27, "failed": 0, "pending": 0 }
+    },
+    {
+      "file": "PCI-ENG-018-B-R1-unit-results.json",
+      "bytes": 9716,
+      "sha256": "6e518a4759bb8f30950f9b0dd7678e73e02a94e13630761317efd7680870ca85",
+      "purpose": "Earlier 27/27 reporter retained; use unit-final for final focused results.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": { "passed": 27, "failed": 0, "pending": 0 }
+    },
+    {
+      "file": "PCI-ENG-018-B-blocker-evidence.json",
+      "bytes": 13928,
+      "sha256": "5603cce1ab45e7052b50e7da65bd0b23c7017b3e2b6d6125860d8a7bc3f219f9",
+      "purpose": "Preserved original blocked probe; item 2 is the 23514 activation Audit failure, not acceptance PASS.",
+      "result": null,
+      "outerProcessExitCode": null,
+      "vitest": null
+    }
+  ],
+  "reviewedChangedFiles": [
+    {
+      "path": "adapters/auth/operations/argon2id-password-hasher.ts",
+      "status": "A"
+    },
+    {
+      "path": "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+      "status": "A"
+    },
+    {
+      "path": "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+      "status": "M"
+    },
+    {
+      "path": "adapters/transport/http/operations-human-authentication-routes.ts",
+      "status": "A"
+    },
+    {
+      "path": "applications/operations-identity/operations-human-authentication.ts",
+      "status": "A"
+    },
+    {
+      "path": "apps/admin-web/app/api/operations/auth/_proxy.ts",
+      "status": "A"
+    },
+    {
+      "path": "apps/admin-web/app/api/operations/auth/login/route.ts",
+      "status": "A"
+    },
+    {
+      "path": "apps/admin-web/app/api/operations/auth/logout/route.ts",
+      "status": "A"
+    },
+    {
+      "path": "apps/admin-web/app/api/operations/auth/session/route.ts",
+      "status": "A"
+    },
+    { "path": "apps/admin-web/app/globals.css", "status": "M" },
+    { "path": "apps/admin-web/app/login/page.tsx", "status": "A" },
+    { "path": "apps/admin-web/app/page.tsx", "status": "M" },
+    { "path": "apps/admin-web/components/admin-shell.test.tsx", "status": "M" },
+    { "path": "apps/admin-web/components/admin-shell.tsx", "status": "M" },
+    { "path": "apps/admin-web/instrumentation.ts", "status": "A" },
+    {
+      "path": "apps/admin-web/lib/operations-auth-proxy.test.tsx",
+      "status": "A"
+    },
+    { "path": "apps/admin-web/lib/operations-auth-proxy.ts", "status": "A" },
+    { "path": "apps/admin-web/lib/server-configuration.ts", "status": "A" },
+    { "path": "apps/api/src/create-api-server.ts", "status": "M" },
+    { "path": "apps/api/src/main.ts", "status": "M" },
+    {
+      "path": "contracts/api/v1/operations-human-authentication-contracts.ts",
+      "status": "A"
+    },
+    {
+      "path": "database/migrations/0041_operations_initial_admin_bootstrap.sql",
+      "status": "A"
+    },
+    { "path": "database/migrations/meta/0041_snapshot.json", "status": "A" },
+    { "path": "database/migrations/meta/_journal.json", "status": "M" },
+    { "path": "database/schema/operations-identity.ts", "status": "M" },
+    { "path": "docs/08_Execution/21_Prototype_Execution.md", "status": "M" },
+    {
+      "path": "docs/09_Engineering_Governance/127_Admin_Web_Completion_Roadmap.md",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/128_Operations_Admin_Runtime_Runbook.md",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/129_Operations_Admin_Runtime_Completion.md",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/130_Operations_Initial_Admin_Bootstrap.md",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-admin-final.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-attempt-01.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-1794661518491.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-1794661701895.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-1794662074034.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-1794663410698.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-final-process-missing-driver.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-browser-final-process.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-evidence.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-full-lint-final.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-full-suite.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-index.md",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-manifest.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-9552358f66.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-bb374ea1e8.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-beca8bc60a.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-c8e26b877b.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-cfad15ea5f.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-d478d8ccd0.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-d7c46ee969.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-deff895ecb.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-pci-018br1-f6268648ed.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-attempt-03.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-attempt-04.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-attempt-05.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-attempt-06.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-attempt-07.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-final-process.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-final.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-quality-checks.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-quality-final.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-unit-final.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-unit-results.json",
+      "status": "A"
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-blocker-evidence.json",
+      "status": "A"
+    },
+    { "path": "modules/shared/actors.ts", "status": "M" },
+    { "path": "package.json", "status": "M" },
+    { "path": "pnpm-lock.yaml", "status": "M" },
+    {
+      "path": "scripts/database/initialize-first-operations-account.ts",
+      "status": "A"
+    },
+    { "path": "scripts/database/migrate-with-role-context.ts", "status": "M" },
+    { "path": "scripts/database/run-controlled-migration.ts", "status": "A" },
+    { "path": "scripts/test/operations-admin-fixture.ts", "status": "A" },
+    { "path": "scripts/test/verify-admin-web.mjs", "status": "M" },
+    {
+      "path": "scripts/test/verify-operations-admin-browser.ts",
+      "status": "A"
+    },
+    {
+      "path": "tests/integration/operations-human-authentication-api.test.ts",
+      "status": "A"
+    },
+    {
+      "path": "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+      "status": "A"
+    },
+    {
+      "path": "tests/operations/operations-bootstrap-input.test.ts",
+      "status": "A"
+    },
+    {
+      "path": "tests/operations/operations-human-authentication.test.ts",
+      "status": "A"
+    },
+    {
+      "path": "tests/persistence/operations-session-postgres.integration.test.ts",
+      "status": "M"
+    }
+  ],
+  "commitClosureChecks": {
+    "note": "0041, original evidence and historical report suffix preserve tested raw CRLF bytes. Default cached check treats CR as trailing whitespace; command-local cr-at-eol preserves actual blank-at-eol/EOF/space-before-tab checks. No Git configuration is changed.",
+    "checks": [
+      { "command": ["git", "diff", "--check"], "exitCode": 0 },
+      {
+        "command": ["git", "diff", "--cached", "--check"],
+        "exitCode": 2,
+        "diagnosticLines": 664,
+        "classification": "CRLF carriage-return diagnostics; no diagnostics when CRLF is recognized"
+      },
+      {
+        "command": [
+          "git",
+          "-c",
+          "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+          "diff",
+          "--cached",
+          "--check"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "indexVerification": {
+      "originalArtifactCount": 33,
+      "originalArtifactHashes": "all match retained byte counts and SHA256",
+      "migration0041SHA256": "a4f9445de19f685e0386826a565ba2c4d469818507d0f1686675a5a395ff3aec",
+      "originalBlockedReportSuffix": "matches retained UTF-8 suffix SHA256",
+      "reviewedPaths": 79,
+      "unstagedPaths": 0,
+      "untrackedPaths": 0
+    }
+  }
+}

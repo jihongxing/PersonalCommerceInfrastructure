@@ -12,7 +12,9 @@ export default function Overview() {
       <section className="notice" aria-label="当前开放范围">
         <span className="availability">基础框架已建立</span>
         <h2>运营功能尚未开放</h2>
-        <p>当前仅提供导航与页面框架。身份验证尚未接入，工作台不加载运营数据，也不提供管理操作。</p>
+        <p>
+          当前版本已接入 Operations Session。Catalog 与 Audit 真实数据页面将在后续有界单元中开放。
+        </p>
       </section>
       <div className="section-heading">
         <h2>工作区域</h2>
@@ -29,7 +31,7 @@ export default function Overview() {
               </span>
               <h3>{section.label}</h3>
               <p>{section.description}</p>
-              <span className="card-status">尚未开放</span>
+              <span className="card-status">准备中</span>
             </Link>
           ))}
       </div>

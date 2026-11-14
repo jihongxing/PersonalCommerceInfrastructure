@@ -42,6 +42,52 @@ button {
   border-radius: 6px;
   min-height: 44px;
 }
+.logout-button {
+  min-height: 28px;
+  margin-left: 10px;
+  padding: 3px 9px;
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+}
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login-card {
+  width: min(100%, 420px);
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 36px rgb(18 61 54 / 8%);
+}
+.login-help {
+  margin-bottom: 24px;
+  color: var(--muted);
+}
+.login-card form {
+  display: grid;
+  gap: 18px;
+}
+.login-card label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+.login-card input {
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+.form-error {
+  color: #9b3329;
+}
 .admin-shell {
   min-height: 100dvh;
   display: grid;

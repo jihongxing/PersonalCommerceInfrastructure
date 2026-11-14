@@ -63,12 +63,14 @@ import { registerLocalAuthRoutes } from '../../../adapters/transport/http/local-
 import type { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
 import { registerBrowserTracingRoutes } from '../../../adapters/transport/http/browser-tracing-routes.js';
 import { registerPublicCommerceHomepageRoutes } from '../../../adapters/transport/http/public-commerce-homepage-routes.js';
+import { registerOperationsHumanAuthenticationRoutes } from '../../../adapters/transport/http/operations-human-authentication-routes.js';
 import type { PublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { createPublicHomepageService } from '../../../applications/public-commerce-homepage/public-commerce-homepage-service.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
 import type { PostgresDatabaseConnection } from '../../../adapters/persistence/postgres/postgres-database.js';
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
+import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 
 export interface ApiServerDependencies {
   readonly publicHomepageService?: PublicHomepageService;
@@ -86,6 +88,7 @@ export interface ApiServerDependencies {
   readonly customerRequestService?: CustomerRequestService;
   readonly qrCodeGenerator?: IQrCodeGenerator;
   readonly operationsAuthContextProvider?: OperationsAuthContextProvider;
+  readonly operationsHumanAuthenticationRuntime?: OperationsHumanAuthenticationRuntime;
   readonly recordExternalObservation?: RecordExternalObservationUseCase;
   readonly paidCommerceService?: PaidCommerceService;
   readonly localCommerceSimulationService?: LocalCommerceSimulationService;
@@ -131,6 +134,7 @@ export async function createApiServer(
     dependencies.serviceOfferingService !== undefined ||
     dependencies.customerRequestService !== undefined ||
     dependencies.operationsAuthContextProvider !== undefined ||
+    dependencies.operationsHumanAuthenticationRuntime !== undefined ||
     dependencies.recordExternalObservation !== undefined ||
     dependencies.paidCommerceService !== undefined ||
     dependencies.localPaidCommerceProductService !== undefined ||
@@ -313,6 +317,12 @@ export async function createApiServer(
         },
       }),
   });
+  if (dependencies.operationsHumanAuthenticationRuntime !== undefined) {
+    registerOperationsHumanAuthenticationRoutes(
+      server,
+      dependencies.operationsHumanAuthenticationRuntime,
+    );
+  }
   if (dependencies.browserTracingEndpoint !== undefined) {
     registerBrowserTracingRoutes(server, {
       endpoint: dependencies.browserTracingEndpoint,

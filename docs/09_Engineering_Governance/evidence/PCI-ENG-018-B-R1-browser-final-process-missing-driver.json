@@ -1,0 +1,13 @@
+{
+  "startedBy": "PCI-ENG-018-B-R1 final AdminShell verification",
+  "command": [
+    "D:\\dev\\nodejs\\node.exe",
+    "--import",
+    "tsx",
+    "scripts/test/verify-operations-admin-browser.ts"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "stdout": "",
+  "stderr": "node:internal/modules/run_main:123\r\n    triggerUncaughtException(\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.\r\n    at <anonymous> (D:\\codeSpace\\PersonalCommerceInfrastructure\\scripts\\test\\verify-operations-admin-browser.ts:24:1) {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: undefined,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v22.23.2\r\n"
+}

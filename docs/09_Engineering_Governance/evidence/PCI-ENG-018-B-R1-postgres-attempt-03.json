@@ -1,0 +1,12 @@
+{
+  "command": [
+    "D:\\dev\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/integration/operations-human-authentication-postgres.integration.test.ts"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "stdout": "\n RUN  v4.1.10 D:/codeSpace/PersonalCommerceInfrastructure\n\n ❯ tests/integration/operations-human-authentication-postgres.integration.test.ts (9 tests | 9 skipped) 7301ms\n\n Test Files  1 failed (1)\n      Tests  9 skipped (9)\n   Start at  20:38:13\n   Duration  12.33s (transform 1.34s, setup 0ms, import 4.77s, tests 7.30s, environment 0ms)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  tests/integration/operations-human-authentication-postgres.integration.test.ts > Operations Admin restricted PostgreSQL 17.10 acceptance\nError: Controlled migration failed: {\"event\":\"failed\",\"sqlstate\":\"CLIENT_ERROR\",\"commitOutcome\":\"not_committed\"}\n\n ❯ OperationsAdminFixture.migrate scripts/test/operations-admin-fixture.ts:85:54\n\n ❯ OperationsAdminFixture.database scripts/test/operations-admin-fixture.ts:103:11\n ❯ tests/integration/operations-human-authentication-postgres.integration.test.ts:26:31\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

@@ -131,6 +131,12 @@ export async function startApi(): Promise<ApiRuntime> {
             customerRequestService: composition.customerRequestService,
             qrCodeGenerator: new QrCodeGeneratorImpl(),
             operationsAuthContextProvider: composition.operationsAuthContextProvider,
+            ...(configuration.environment === 'production'
+              ? {}
+              : {
+                  operationsHumanAuthenticationRuntime:
+                    composition.operationsIdentityPersistence.humanAuthenticationRuntime,
+                }),
             recordExternalObservation: composition.recordExternalObservation,
             paidCommerceService: composition.paidCommerceService,
             ...(composition.localCommerceSimulationService === undefined

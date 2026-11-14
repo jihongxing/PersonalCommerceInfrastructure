@@ -1,0 +1,180 @@
+[
+  {
+    "name": "provenance",
+    "executable": "podman",
+    "arguments": [
+      "inspect",
+      "db752e1accbe",
+      "--format",
+      "{{.Id}} {{.ImageName}} {{.ImageDigest}} {{json .NetworkSettings.Ports}} {{json .Mounts}}"
+    ],
+    "stdin": "",
+    "exitCode": 0,
+    "stdout": "db752e1accbe50f4541dc5237c0a18979e2ced9bdbfcb32b023d0345b39fcc63 docker.m.daocloud.io/library/postgres:17.10-alpine sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a {\"5432/tcp\":[{\"HostIp\":\"127.0.0.1\",\"HostPort\":\"40645\"}]} [{\"Type\":\"volume\",\"Name\":\"6f414667d78721f74d1ec1d0e342a0d31d64927b0aef7e4c840afce6675f5aaf\",\"Source\":\"/home/user/.local/share/containers/storage/volumes/6f414667d78721f74d1ec1d0e342a0d31d64927b0aef7e4c840afce6675f5aaf/_data\",\"Destination\":\"/var/lib/postgresql/data\",\"Driver\":\"local\",\"Mode\":\"\",\"Options\":[\"nodev\",\"exec\",\"nosuid\",\"rbind\"],\"RW\":true,\"Propagation\":\"rprivate\"}]\n",
+    "stderr": ""
+  },
+  {
+    "name": "catalog-and-role-evidence",
+    "executable": "podman",
+    "arguments": [
+      "exec",
+      "-i",
+      "db752e1accbe",
+      "psql",
+      "-X",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-v",
+      "ON_ERROR_STOP=1"
+    ],
+    "stdin": "SELECT version(),session_user,current_user,pg_backend_pid(),current_database();\nSELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='operations_identity_lifecycle_audits_operation_type_check';\nSELECT tableowner,tablename FROM pg_tables WHERE schemaname='public' AND tablename IN ('operations_human_principals','operations_accounts','operations_identity_lifecycle_audits');\nSELECT p.proname,r.rolname AS owner,p.prosecdef,p.proacl,\nhas_function_privilege('pci_ops_runtime',p.oid,'EXECUTE') AS runtime_execute\nFROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_roles r ON r.oid=p.proowner\nWHERE n.nspname='operations_api' AND p.proname IN ('create_principal','create_account','create_principal_with_account');",
+    "exitCode": 0,
+    "stdout": "                                         version                                          | session_user | current_user | pg_backend_pid | current_database \n------------------------------------------------------------------------------------------+--------------+--------------+----------------+------------------\n PostgreSQL 17.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit | postgres     | postgres     |            119 | postgres\n(1 row)\n\n                          conname                          |                                                                                  pg_get_constraintdef                                                                                   \n-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n operations_identity_lifecycle_audits_operation_type_check | CHECK (((operation_type)::text = ANY ((ARRAY['principal_created'::character varying, 'account_created'::character varying, 'legacy_history_initialized'::character varying])::text[])))\n(1 row)\n\n tableowner |              tablename               \n------------+--------------------------------------\n postgres   | operations_accounts\n postgres   | operations_human_principals\n postgres   | operations_identity_lifecycle_audits\n(3 rows)\n\n            proname            |  owner   | prosecdef |        proacl         | runtime_execute \n-------------------------------+----------+-----------+-----------------------+-----------------\n create_account                | postgres | t         | {postgres=X/postgres} | f\n create_principal              | postgres | t         | {postgres=X/postgres} | f\n create_principal_with_account | postgres | t         | {postgres=X/postgres} | f\n(3 rows)\n\n",
+    "stderr": ""
+  },
+  {
+    "name": "first-activation-audit-rejected",
+    "executable": "podman",
+    "arguments": [
+      "exec",
+      "-i",
+      "db752e1accbe",
+      "psql",
+      "-X",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-v",
+      "ON_ERROR_STOP=1"
+    ],
+    "stdin": "\\set VERBOSITY verbose\nBEGIN;\nSELECT operations_api.create_principal('018b-blocker-principal','018b-blocker-create','018b-blocker-correlation','disposable-contract-probe');\nUPDATE operations_human_principals SET status='active' WHERE principal_id='018b-blocker-principal';\nINSERT INTO operations_identity_lifecycle_audits\n(audit_id,operation_id,correlation_id,principal_id,subject_type,subject_id,operation_type,before_status,after_status,before_activation_history,after_activation_history,before_principal_epoch,after_principal_epoch,result,reason_code,event_occurred_at)\nVALUES ('018b-blocker-audit','018b-blocker-activate','018b-blocker-correlation','018b-blocker-principal','human_principal','018b-blocker-principal','first_activated','pending','active','never_activated','previously_activated',0,0,'success','disposable-first-activation',clock_timestamp());\nCOMMIT;",
+    "exitCode": 3,
+    "stdout": "BEGIN\n    create_principal    \n------------------------\n 018b-blocker-principal\n(1 row)\n\nUPDATE 1\n",
+    "stderr": "ERROR:  23514: Invalid principal audit association\nCONTEXT:  PL/pgSQL function operations_private.validate_identity_lifecycle_audit() line 8 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3897\n"
+  },
+  {
+    "name": "rollback-confirmation",
+    "executable": "podman",
+    "arguments": [
+      "exec",
+      "-i",
+      "db752e1accbe",
+      "psql",
+      "-X",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-v",
+      "ON_ERROR_STOP=1"
+    ],
+    "stdin": "SELECT (SELECT count(*) FROM operations_human_principals) AS principals,\n(SELECT count(*) FROM operations_accounts) AS accounts,\n(SELECT count(*) FROM operations_human_principal_activation_histories) AS principal_histories,\n(SELECT count(*) FROM operations_account_activation_histories) AS account_histories,\n(SELECT count(*) FROM operations_identity_lifecycle_audits) AS audits,\n(SELECT count(*) FROM operations_credentials) AS credentials,\n(SELECT count(*) FROM operations_sessions) AS sessions;",
+    "exitCode": 0,
+    "stdout": " principals | accounts | principal_histories | account_histories | audits | credentials | sessions \n------------+----------+---------------------+-------------------+--------+-------------+----------\n          0 |        0 |                   0 |                 0 |      0 |           0 |        0\n(1 row)\n\n",
+    "stderr": ""
+  },
+  {
+    "name": "podman-version",
+    "executable": "podman",
+    "arguments": ["version", "--format", "json"],
+    "exitCode": 0,
+    "stdout": "{\"Client\":{\"APIVersion\":\"5.7.1\",\"Version\":\"5.7.1\",\"GoVersion\":\"go1.25.5\",\"GitCommit\":\"f845d14e941889ba4c071f35233d09b29d363c75\",\"BuiltTime\":\"Wed Dec 10 22:54:51 2025\",\"Built\":1765378491,\"OsArch\":\"windows/amd64\",\"Os\":\"windows\"},\"Server\":{\"APIVersion\":\"5.7.1\",\"Version\":\"5.7.1\",\"GoVersion\":\"go1.25.4 X:nodwarf5\",\"GitCommit\":\"f845d14e941889ba4c071f35233d09b29d363c75\",\"BuiltTime\":\"Tue Dec  9 08:00:00 2025\",\"Built\":1765238400,\"OsArch\":\"linux/amd64\",\"Os\":\"linux\"}}\n",
+    "stderr": ""
+  },
+  {
+    "name": "task-containers-before-cleanup",
+    "executable": "podman",
+    "arguments": ["ps", "-a", "--filter", "name=pci-018b-auth-", "--format", "{{.ID}} {{.Names}}"],
+    "exitCode": 0,
+    "stdout": "d991023bfb7d pci-018b-auth-6a93f047\n7fcd9e198707 pci-018b-auth-0e4395f3\n9f3d35988090 pci-018b-auth-948384f5\n6a067e379fee pci-018b-auth-cd558eaf\n1b77dc9deaaf pci-018b-auth-1108042c\ne3be3c1618de pci-018b-auth-a3394bb0\ndb752e1accbe pci-018b-auth-b62b09eb\n",
+    "stderr": ""
+  },
+  {
+    "name": "task-container-and-volume-cleanup",
+    "executable": "podman",
+    "arguments": [
+      "rm",
+      "--force",
+      "--volumes",
+      "d991023bfb7d",
+      "7fcd9e198707",
+      "9f3d35988090",
+      "6a067e379fee",
+      "1b77dc9deaaf",
+      "e3be3c1618de",
+      "db752e1accbe"
+    ],
+    "exitCode": 0,
+    "stdout": "d991023bfb7d\n7fcd9e198707\n9f3d35988090\n6a067e379fee\n1b77dc9deaaf\ne3be3c1618de\ndb752e1accbe\n",
+    "stderr": ""
+  },
+  {
+    "name": "task-containers-after-cleanup",
+    "executable": "podman",
+    "arguments": ["ps", "-a", "--filter", "name=pci-018b-auth-", "--format", "{{.ID}} {{.Names}}"],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "git-baseline",
+    "executable": "git",
+    "arguments": ["log", "-1", "--format=%H%n%P%n%s"],
+    "exitCode": 0,
+    "stdout": "70d7f4f35aa0313b244d075eaf4415b8328e75a2\n0cc6b1e74e6d608138d07132a419d6df5a881cc6\nfeat: add external DBA activation history barrier\n",
+    "stderr": ""
+  },
+  {
+    "name": "git-branch",
+    "executable": "git",
+    "arguments": ["branch", "--show-current"],
+    "exitCode": 0,
+    "stdout": "codex/pci-eng-015-b-r2-persistence-closure\n",
+    "stderr": ""
+  },
+  {
+    "name": "git-worktree",
+    "executable": "git",
+    "arguments": ["status", "--porcelain=v1", "--untracked-files=all"],
+    "exitCode": 0,
+    "stdout": " M adapters/persistence/postgres/postgres-operations-identity-composition.ts\n M apps/admin-web/app/globals.css\n M apps/admin-web/app/page.tsx\n M apps/admin-web/components/admin-shell.test.tsx\n M apps/admin-web/components/admin-shell.tsx\n M apps/api/src/create-api-server.ts\n M apps/api/src/main.ts\n M database/migrations/meta/_journal.json\n M docs/08_Execution/21_Prototype_Execution.md\n M modules/shared/actors.ts\n M package.json\n M pnpm-lock.yaml\n M scripts/database/migrate-with-role-context.ts\n M scripts/test/verify-admin-web.mjs\n M tests/persistence/operations-session-postgres.integration.test.ts\n?? adapters/auth/operations/argon2id-password-hasher.ts\n?? adapters/persistence/postgres/postgres-operations-human-authentication-store.ts\n?? adapters/transport/http/operations-human-authentication-routes.ts\n?? applications/operations-identity/operations-human-authentication.ts\n?? apps/admin-web/app/api/operations/auth/_proxy.ts\n?? apps/admin-web/app/api/operations/auth/login/route.ts\n?? apps/admin-web/app/api/operations/auth/logout/route.ts\n?? apps/admin-web/app/api/operations/auth/session/route.ts\n?? apps/admin-web/app/login/page.tsx\n?? database/migrations/0041_operations_admin_runtime_permissions.sql\n?? docs/09_Engineering_Governance/127_Admin_Web_Completion_Roadmap.md\n?? docs/09_Engineering_Governance/128_Operations_Admin_Runtime_Runbook.md\n?? docs/09_Engineering_Governance/129_Operations_Admin_Runtime_Completion.md\n?? docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-blocker-evidence.json\n?? scripts/database/initialize-first-operations-account.ts\n?? tests/integration/operations-human-authentication-api.test.ts\n?? tests/integration/operations-human-authentication-postgres.integration.test.ts\n?? tests/operations/operations-human-authentication.test.ts\n",
+    "stderr": ""
+  },
+  {
+    "name": "git-staged",
+    "executable": "git",
+    "arguments": ["diff", "--cached", "--name-only"],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "git-diff-check",
+    "executable": "git",
+    "arguments": ["diff", "--check"],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": "warning: in the working copy of 'adapters/persistence/postgres/postgres-operations-identity-composition.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/admin-web/app/globals.css', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/admin-web/app/page.tsx', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/admin-web/components/admin-shell.test.tsx', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/admin-web/components/admin-shell.tsx', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/api/src/create-api-server.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'apps/api/src/main.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'database/migrations/meta/_journal.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/08_Execution/21_Prototype_Execution.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'modules/shared/actors.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'pnpm-lock.yaml', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'scripts/database/migrate-with-role-context.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'tests/persistence/operations-session-postgres.integration.test.ts', LF will be replaced by CRLF the next time Git touches it\n"
+  },
+  {
+    "name": "frozen-migrations-unchanged",
+    "executable": "git",
+    "arguments": [
+      "diff",
+      "--exit-code",
+      "HEAD",
+      "--",
+      "database/migrations/0036_operations_principal_persistence.sql",
+      "database/migrations/0037_operations_credential_persistence.sql",
+      "database/migrations/0038_operations_session_persistence.sql",
+      "database/migrations/0039_operations_identity_terminal_state_protection.sql",
+      "database/migrations/0040_operations_activation_history_persistence.sql"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

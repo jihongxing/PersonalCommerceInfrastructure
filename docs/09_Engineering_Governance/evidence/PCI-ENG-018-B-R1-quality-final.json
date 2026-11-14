@@ -1,0 +1,279 @@
+{
+  "startedAt": "2026-11-14T13:27:54.651Z",
+  "scope": "Final targeted checks after type/lint fixes. Admin ESLint uses its own documented app configuration.",
+  "results": [
+    {
+      "name": "format changed code",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--write",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/admin-web/app/globals.css",
+        "apps/admin-web/app/page.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "package.json",
+        "pnpm-lock.yaml",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "apps/admin-web/app/api/operations/auth/_proxy.ts",
+        "apps/admin-web/app/api/operations/auth/login/route.ts",
+        "apps/admin-web/app/api/operations/auth/logout/route.ts",
+        "apps/admin-web/app/api/operations/auth/session/route.ts",
+        "apps/admin-web/app/login/page.tsx",
+        "apps/admin-web/instrumentation.ts",
+        "apps/admin-web/lib/operations-auth-proxy.test.tsx",
+        "apps/admin-web/lib/operations-auth-proxy.ts",
+        "apps/admin-web/lib/server-configuration.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "adapters/persistence/postgres/postgres-operations-identity-composition.ts 86ms (unchanged)\napps/admin-web/app/globals.css 99ms (unchanged)\napps/admin-web/app/page.tsx 31ms (unchanged)\napps/admin-web/components/admin-shell.test.tsx 43ms (unchanged)\napps/admin-web/components/admin-shell.tsx 50ms (unchanged)\napps/api/src/create-api-server.ts 119ms (unchanged)\napps/api/src/main.ts 43ms (unchanged)\ndatabase/schema/operations-identity.ts 77ms (unchanged)\nmodules/shared/actors.ts 8ms (unchanged)\npackage.json 24ms (unchanged)\nscripts/database/migrate-with-role-context.ts 110ms (unchanged)\nscripts/test/verify-admin-web.mjs 26ms (unchanged)\ntests/persistence/operations-session-postgres.integration.test.ts 143ms (unchanged)\nadapters/auth/operations/argon2id-password-hasher.ts 6ms (unchanged)\nadapters/persistence/postgres/postgres-operations-human-authentication-store.ts 12ms (unchanged)\nadapters/transport/http/operations-human-authentication-routes.ts 9ms (unchanged)\napplications/operations-identity/operations-human-authentication.ts 33ms (unchanged)\napps/admin-web/app/api/operations/auth/_proxy.ts 2ms (unchanged)\napps/admin-web/app/api/operations/auth/login/route.ts 2ms (unchanged)\napps/admin-web/app/api/operations/auth/logout/route.ts 2ms (unchanged)\napps/admin-web/app/api/operations/auth/session/route.ts 2ms (unchanged)\napps/admin-web/app/login/page.tsx 9ms (unchanged)\napps/admin-web/instrumentation.ts 2ms (unchanged)\napps/admin-web/lib/operations-auth-proxy.test.tsx 29ms\napps/admin-web/lib/operations-auth-proxy.ts 14ms (unchanged)\napps/admin-web/lib/server-configuration.ts 6ms (unchanged)\ncontracts/api/v1/operations-human-authentication-contracts.ts 5ms (unchanged)\nscripts/database/initialize-first-operations-account.ts 15ms\nscripts/database/run-controlled-migration.ts 4ms (unchanged)\nscripts/test/operations-admin-fixture.ts 37ms (unchanged)\nscripts/test/verify-operations-admin-browser.ts 48ms (unchanged)\ntests/integration/operations-human-authentication-api.test.ts 7ms (unchanged)\ntests/integration/operations-human-authentication-postgres.integration.test.ts 65ms\ntests/operations/operations-bootstrap-input.test.ts 8ms (unchanged)\ntests/operations/operations-human-authentication.test.ts 15ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "name": "core TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:core"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:core D:\\codeSpace\\PersonalCommerceInfrastructure\n> tsc -p tsconfig.build.json --noEmit\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "API TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:api"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:api D:\\codeSpace\\PersonalCommerceInfrastructure\n> tsc -p tsconfig.api.build.json --noEmit\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "backend test TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:active-tests:backend"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:active-tests:backend D:\\codeSpace\\PersonalCommerceInfrastructure\n> tsc -p tsconfig.active-tests.json --noEmit\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web typecheck\n\n\n> admin-web@0.1.0 typecheck D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> tsc --noEmit\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin test TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web:tests"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:admin-web:tests D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web typecheck:tests\n\n\n> admin-web@0.1.0 typecheck:tests D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> tsc -p tsconfig.tests.json\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin tests",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "test:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 test:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web test\n\n\n> admin-web@0.1.0 test D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> vitest run\n\n\n RUN  v5.1.0 D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web\n\n\n Test Files  2 passed (2)\n      Tests  19 passed (19)\n   Start at  21:28:41\n   Duration  3.05s (environment 63%, setup 21%, tests 9%, import 3%, transform 3%)\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "changed backend ESLint",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "eslint",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts",
+        "--no-error-on-unmatched-pattern"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "Admin ESLint",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "lint:admin-web"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 lint:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web lint\n\n\n> admin-web@0.1.0 lint D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> eslint .\n\n\nD:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\\components\\admin-shell.tsx\n  21:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nD:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\\components\\admin-shell.tsx:21:5\n  19 |   useEffect(() => {\n  20 |     if (pathname === '/login') return;\n> 21 |     setSession(undefined);\n     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect\n  22 |     setSessionError(false);\n  23 |     let cancelled = false;\n  24 |     void fetch('/api/operations/auth/session', { credentials: 'same-origin', cache: 'no-store' })  react-hooks/set-state-in-effect\n\n✖ 1 problem (1 error, 0 warnings)\n\nD:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web:\r\n ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  admin-web@0.1.0 lint: `eslint .`\nExit status 1\n ELIFECYCLE  Command failed with exit code 1.\n",
+      "stderr": ""
+    },
+    {
+      "name": "changed Prettier",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--check",
+        "adapters/persistence/postgres/postgres-operations-identity-composition.ts",
+        "apps/admin-web/app/globals.css",
+        "apps/admin-web/app/page.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/api/src/create-api-server.ts",
+        "apps/api/src/main.ts",
+        "database/schema/operations-identity.ts",
+        "modules/shared/actors.ts",
+        "package.json",
+        "pnpm-lock.yaml",
+        "scripts/database/migrate-with-role-context.ts",
+        "scripts/test/verify-admin-web.mjs",
+        "tests/persistence/operations-session-postgres.integration.test.ts",
+        "adapters/auth/operations/argon2id-password-hasher.ts",
+        "adapters/persistence/postgres/postgres-operations-human-authentication-store.ts",
+        "adapters/transport/http/operations-human-authentication-routes.ts",
+        "applications/operations-identity/operations-human-authentication.ts",
+        "apps/admin-web/app/api/operations/auth/_proxy.ts",
+        "apps/admin-web/app/api/operations/auth/login/route.ts",
+        "apps/admin-web/app/api/operations/auth/logout/route.ts",
+        "apps/admin-web/app/api/operations/auth/session/route.ts",
+        "apps/admin-web/app/login/page.tsx",
+        "apps/admin-web/instrumentation.ts",
+        "apps/admin-web/lib/operations-auth-proxy.test.tsx",
+        "apps/admin-web/lib/operations-auth-proxy.ts",
+        "apps/admin-web/lib/server-configuration.ts",
+        "contracts/api/v1/operations-human-authentication-contracts.ts",
+        "scripts/database/initialize-first-operations-account.ts",
+        "scripts/database/run-controlled-migration.ts",
+        "scripts/test/operations-admin-fixture.ts",
+        "scripts/test/verify-operations-admin-browser.ts",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+        "tests/operations/operations-bootstrap-input.test.ts",
+        "tests/operations/operations-human-authentication.test.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "name": "unit and HTTP tests",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "vitest",
+        "run",
+        "tests/operations",
+        "tests/integration/operations-human-authentication-api.test.ts",
+        "--reporter=json",
+        "--outputFile=docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-unit-final.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "JSON report written to D:/codeSpace/PersonalCommerceInfrastructure/docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-unit-final.json\n",
+      "stderr": ""
+    },
+    {
+      "name": "API build",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "build:api"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 build:api D:\\codeSpace\\PersonalCommerceInfrastructure\n> tsc -p tsconfig.api.build.json\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Migration check",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "db:check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 db:check D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm build && node scripts/database/check-migrations.mjs\n\n\n> personal-commerce-infrastructure@0.2.0 build D:\\codeSpace\\PersonalCommerceInfrastructure\n> tsc -p tsconfig.build.json\n\nMigration check passed: 0000_solid_otto_octavius.sql, 0001_chemical_vampiro.sql, 0002_green_sauron.sql, 0003_m4_distribution_assets.sql, 0004_m5_customer_requests.sql, 0005_m6_request_result_access.sql, 0006_cr06_external_fact_idempotency.sql, 0007_vs02_canonical_events.sql, 0008_vs02_paid_commerce.sql, 0009_vs02d_activation_readiness.sql, 0010_vs02e_provider_fact_history.sql, 0011_dec013_commercial_lifecycle.sql, 0012_v02h_operations_audit.sql, 0013_vs02l01_appearance_offering.sql, 0014_vs02l02_reservation_commerce.sql, 0015_vs02l03_contract_commerce.sql, 0016_stage2_identity_core.sql, 0017_stage2_account_identity_membership.sql, 0018_stage2_commerce_profile_core.sql, 0019_stage2_legacy_subject_mapping.sql, 0020_stage2_commerce_reference_core.sql, 0021_stage2_external_platform_account_core.sql, 0022_stage2_commerce_relationship_core.sql, 0023_stage2_commerce_relationship_provenance.sql, 0024_stage2_commerce_relationship_self_declared_unique.sql, 0025_add_idempotency_constraints.sql, 0026_m6_fulfillment_code_infrastructure.sql, 0027_local_auth.sql, 0028_identity_owned_commerce_reference.sql, 0029_public_commerce_homepage.sql, 0030_time_scheduled_public_homepages.sql, 0031_local_password_recovery.sql, 0032_password_recovery_queue.sql, 0033_controlled_service_policy.sql, 0034_database_managed_service_policy.sql, 0035_service_policy_versioned_keys.sql, 0036_operations_principal_persistence.sql, 0037_operations_credential_persistence.sql, 0038_operations_session_persistence.sql, 0039_operations_identity_terminal_state_protection.sql, 0040_operations_activation_history_persistence.sql, 0041_operations_initial_admin_bootstrap.sql",
+      "stderr": ""
+    },
+    {
+      "name": "Admin build and boundary",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "verify:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 verify:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> node scripts/test/verify-admin-web.mjs\n\n\n> admin-web@0.1.0 build D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> next build\n\n▲ Next.js 16.4.5 (Turbopack)\n✓ Running next.config.ts took 88ms\n\n  Creating an optimized production build ...\n✓ Compiled successfully in 753ms\n  Running TypeScript ...\n  Finished TypeScript in 2.8s ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/13) ...\n  Generating static pages using 5 workers (3/13) \r\n  Generating static pages using 5 workers (6/13) \r\n  Generating static pages using 5 workers (9/13) \r\n✓ Generating static pages using 5 workers (13/13) in 508ms\n  Finalizing page optimization ...\n\nRoute (app)\n┌ ○ /\n├ ○ /_not-found\n├   /[section]\n│ ├ ● /capabilities\n│ ├ ● /templates\n│ ├ ● /policy-versions\n│ └ ● [+3 more paths]\n├ ƒ /api/operations/auth/login\n├ ƒ /api/operations/auth/logout\n├ ƒ /api/operations/auth/session\n└ ○ /login\n\n\n○  (Static)   prerendered as static content\n●  (SSG)      prerendered as static HTML (uses generateStaticParams)\nƒ  (Dynamic)  server-rendered on demand\n\nAdmin shell security check passed: 16 runtime source files, 14 browser assets; no server sentinel found.\n",
+      "stderr": ""
+    }
+  ]
+}

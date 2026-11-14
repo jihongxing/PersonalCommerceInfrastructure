@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
 import { readdir, readFile } from 'node:fs/promises';
-import { basename, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 
@@ -19,20 +19,28 @@ async function files(directory) {
   return nested.flat();
 }
 
-// Shell-only boundary: future authentication/API integration must deliberately revise this gate.
+// Admin may use a same-origin BFF. Browser code may call only the BFF; server route handlers may
+// call the shared API and must not import persistence or hold static Operations credentials.
 const runtimeFiles = (
   await Promise.all(['app', 'components', 'lib'].map((dir) => files(resolve(app, dir))))
 )
   .flat()
   .filter((path) => /[.][cm]?[jt]sx?$/.test(path) && !/[.]test[.]/.test(path));
-const forbidden =
-  /\b(?:fetch|XMLHttpRequest|WebSocket|localStorage|sessionStorage|indexedDB)\b|process[.]env|NEXT_PUBLIC_|use server|\b(?:postgres|drizzle-orm|OPERATIONS_ACCESS_TOKEN|JWT_SECRET|DATABASE_URL)\b/;
+const clientFiles = runtimeFiles.filter(
+  (path) => !path.includes('app\\api\\') && !path.includes('app/api/'),
+);
+const clientForbidden =
+  /\b(?:XMLHttpRequest|WebSocket|localStorage|sessionStorage|indexedDB)\b|NEXT_PUBLIC_|\b(?:postgres|drizzle-orm|OPERATIONS_ACCESS_TOKEN|JWT_SECRET|DATABASE_URL)\b/;
+const serverForbidden =
+  /\b(?:postgres|drizzle-orm|OPERATIONS_ACCESS_TOKEN|JWT_SECRET|DATABASE_URL)\b/;
+for (const path of clientFiles) {
+  if (clientForbidden.test(await readFile(path, 'utf8'))) {
+    throw new Error(`Admin browser boundary violation: ${path}`);
+  }
+}
 for (const path of runtimeFiles) {
-  if (
-    forbidden.test(await readFile(path, 'utf8')) ||
-    ['route.ts', 'route.js'].includes(basename(path))
-  ) {
-    throw new Error(`Admin shell boundary violation: ${path}`);
+  if (serverForbidden.test(await readFile(path, 'utf8'))) {
+    throw new Error(`Admin server boundary violation: ${path}`);
   }
 }
 
@@ -45,6 +53,8 @@ const result = spawnSync('pnpm --filter admin-web build', {
   env: {
     ...process.env,
     NEXT_TELEMETRY_DISABLED: '1',
+    ADMIN_API_ORIGIN: 'http://127.0.0.1:8080',
+    ADMIN_WEB_ORIGIN: 'https://admin.example.invalid',
     OPERATIONS_ACCESS_TOKEN: sentinel,
     JWT_SECRET: sentinel,
     DATABASE_URL: sentinel,

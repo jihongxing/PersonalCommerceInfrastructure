@@ -1,0 +1,13 @@
+{
+  "startedBy": "PCI-ENG-018-B-R1 final AdminShell verification",
+  "command": [
+    "D:\\dev\\nodejs\\node.exe",
+    "--import",
+    "tsx",
+    "scripts/test/verify-operations-admin-browser.ts"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "Real Admin Web + BFF + API + restricted PostgreSQL browser acceptance PASS.\n",
+  "stderr": ""
+}

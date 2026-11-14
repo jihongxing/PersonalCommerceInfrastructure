@@ -89,7 +89,7 @@ databaseDescribe('Operations Session PostgreSQL persistence', () => {
     const before = await connection.database.execute(
       sql`SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id`,
     );
-    expect(before).toHaveLength(40);
+    expect(before).toHaveLength(41);
     await migrate(connection.database, { migrationsFolder: 'database/migrations' });
     const after = await connection.database.execute(
       sql`SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id`,

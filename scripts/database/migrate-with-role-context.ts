@@ -62,14 +62,18 @@ const legacyHashes: readonly string[] = [
   '7fba8a695294bb2abf2c98e790d72f92b33451909691e5e2b60d72366621e363',
 ];
 const activationHistoryHash = '80c6bc3431fcc8f249e79a64cace60c6816f55cd889fce4c77cd4c007bf74ed7';
+const initialAdminBootstrapHash =
+  'a4f9445de19f685e0386826a565ba2c4d469818507d0f1686675a5a395ff3aec';
 const reviewedMigrationTags = new Map<string, string>([
   [legacyHashes[0]!, '0036_operations_principal_persistence'],
   [legacyHashes[1]!, '0037_operations_credential_persistence'],
   [legacyHashes[2]!, '0038_operations_session_persistence'],
   [legacyHashes[3]!, '0039_operations_identity_terminal_state_protection'],
   [activationHistoryHash, '0040_operations_activation_history_persistence'],
+  [initialAdminBootstrapHash, '0041_operations_initial_admin_bootstrap'],
 ]);
 const activationHistoryFolderMillis = 1_794_777_600_000;
+const initialAdminBootstrapFolderMillis = 1_794_777_600_001;
 const legacyFolderMillis = [
   [36_000, 1_794_477_491_886],
   [37_000, 1_794_500_821_357],
@@ -80,6 +84,7 @@ const digest = (sql: string) => createHash('sha256').update(sql).digest('hex');
 export const approvedInstallationHashes: readonly string[] = Object.freeze([
   ...legacyHashes,
   activationHistoryHash,
+  initialAdminBootstrapHash,
   ...Object.values(installationFixtureSources).map(digest),
 ]);
 
@@ -156,7 +161,11 @@ export async function migrateWithRoleContext(
         (i === 0 || item.folderMillis > migrations[i - 1]!.folderMillis) &&
         (legacyIndex < 0
           ? item.folderMillis ===
-            (item.hash === activationHistoryHash ? activationHistoryFolderMillis : 100_000)
+            (item.hash === activationHistoryHash
+              ? activationHistoryFolderMillis
+              : item.hash === initialAdminBootstrapHash
+                ? initialAdminBootstrapFolderMillis
+                : 100_000)
           : item.folderMillis === legacyFolderMillis[legacyIndex]![0] ||
             item.folderMillis === legacyFolderMillis[legacyIndex]![1]),
       'unapproved SQL/hash/order; no fallback identity and no real 0040 policy',
@@ -267,17 +276,32 @@ export async function migrateWithRoleContext(
             !activationHistory || migration.sql.length === activationHistoryRoles.length,
             'reviewed 0040 statement count and phase policy',
           );
+          const initialAdmin = migration.hash === initialAdminBootstrapHash;
+          const initialAdminRoles = [
+            installationRoles.legacyFixture,
+            installationRoles.table,
+            installationRoles.function,
+            installationRoles.function,
+            installationRoles.legacyFixture,
+            installationRoles.table,
+          ];
+          requireInstallation(
+            !initialAdmin || migration.sql.length === initialAdminRoles.length,
+            'reviewed 0041 phase policy',
+          );
           let previousRole = '';
           for (let i = 0; i < migration.sql.length; i++) {
-            const role = legacy
-              ? installationRoles.legacyFixture
-              : activationHistory
-                ? activationHistoryRoles[i]!
-                : foundation &&
-                    i >= fixtureTableStatements.length &&
-                    i < fixtureTableStatements.length + fixtureFunctionStatements.length
-                  ? installationRoles.function
-                  : installationRoles.table;
+            const role = initialAdmin
+              ? initialAdminRoles[i]!
+              : legacy
+                ? installationRoles.legacyFixture
+                : activationHistory
+                  ? activationHistoryRoles[i]!
+                  : foundation &&
+                      i >= fixtureTableStatements.length &&
+                      i < fixtureTableStatements.length + fixtureFunctionStatements.length
+                    ? installationRoles.function
+                    : installationRoles.table;
             if (role !== previousRole) {
               const membership = await tx<{ valid: boolean }[]>`SELECT EXISTS(
               SELECT 1 FROM pg_auth_members m JOIN pg_roles member ON member.oid=m.member JOIN pg_roles owner ON owner.oid=m.roleid

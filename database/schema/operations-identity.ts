@@ -225,7 +225,7 @@ export const operationsIdentityLifecycleAudits = pgTable(
     ),
     check(
       'operations_identity_lifecycle_audits_operation_type_check',
-      sql`${table.operationType} in ('principal_created', 'account_created', 'legacy_history_initialized')`,
+      sql`${table.operationType} in ('principal_created', 'account_created', 'legacy_history_initialized', 'principal_first_activated', 'account_first_activated')`,
     ),
     check(
       'operations_identity_lifecycle_audits_history_check',

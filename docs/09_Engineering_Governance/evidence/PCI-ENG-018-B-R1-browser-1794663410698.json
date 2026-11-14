@@ -1,0 +1,492 @@
+{
+  "startedAt": "2026-11-14T13:36:17.082Z",
+  "driver": "gstack /browse",
+  "commands": [
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({userAgent:navigator.userAgent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:63762/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:63762/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,protectedShell:!!document.querySelector(\"nav\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/login\",\"protectedShell\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":401,\"body\":{\"error\":\"Request could not be confirmed. Please retry.\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[autocomplete=\"username\"]",
+        "browser-operator@example.test"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[autocomplete=\"username\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[type=\"password\"]",
+        "[REDACTED]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[type=\"password\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:63762/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"nav[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,navigation:!!document.querySelector(\"nav\"),identity:document.querySelector(\".session-state\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"navigation\":true,\"identity\":\"operations-account-0d135678-96b6-49cd-bc9b-39fc4b14dff1退出\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794749795.606611,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({cookie:document.cookie,local:Object.keys(localStorage),session:Object.keys(sessionStorage)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"cookie\":\"\",\"local\":[],\"session\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"principalId\":\"operations-principal-02fb8be6-e1d7-4bbc-b61b-14c1d04e885e\",\"accountId\":\"operations-account-0d135678-96b6-49cd-bc9b-39fc4b14dff1\",\"sessionId\":\"fff516e2-0af8-4603-9f42-e3c1c69921c0\",\"permissions\":[\"catalog:read\",\"audit:read\"]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:63762/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[role=alert]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,shell:!!document.querySelector(\"nav\"),alert:document.querySelector(\"[role=alert]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"shell\":true,\"alert\":\"退出未确认，服务端登录可能仍有效。请重试退出。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794749795.606611,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:63762/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[role=alert]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,shell:!!document.querySelector(\"nav\"),alert:document.querySelector(\"[role=alert]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"shell\":true,\"alert\":\"退出未确认，服务端登录可能仍有效。请重试退出。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794749795.606611,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:63762/login\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:63762/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:63762/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "browser",
+      "value": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+      }
+    },
+    {
+      "name": "anonymous redirect",
+      "value": {
+        "path": "/login",
+        "protectedShell": false
+      }
+    },
+    {
+      "name": "forged headers without Session",
+      "value": {
+        "status": 401,
+        "body": {
+          "error": "Request could not be confirmed. Please retry."
+        }
+      }
+    },
+    {
+      "name": "authenticated shell",
+      "value": {
+        "path": "/",
+        "navigation": true,
+        "identity": "operations-account-0d135678-96b6-49cd-bc9b-39fc4b14dff1退出"
+      }
+    },
+    {
+      "name": "cookie metadata",
+      "value": {
+        "name": "pci_operations_session",
+        "value": "[REDACTED]",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "expires": 1794749795.606611,
+        "httpOnly": true,
+        "secure": false,
+        "sameSite": "Lax"
+      }
+    },
+    {
+      "name": "JavaScript/storage isolation",
+      "value": {
+        "cookie": "",
+        "local": [],
+        "session": []
+      }
+    },
+    {
+      "name": "authoritative identity",
+      "value": {
+        "status": 200,
+        "body": {
+          "principalId": "operations-principal-02fb8be6-e1d7-4bbc-b61b-14c1d04e885e",
+          "accountId": "operations-account-0d135678-96b6-49cd-bc9b-39fc4b14dff1",
+          "sessionId": "fff516e2-0af8-4603-9f42-e3c1c69921c0",
+          "permissions": [
+            "catalog:read",
+            "audit:read"
+          ]
+        }
+      }
+    },
+    {
+      "name": "logout 503 preserves UI/cookie/server Session",
+      "value": {
+        "state": {
+          "path": "/",
+          "shell": true,
+          "alert": "退出未确认，服务端登录可能仍有效。请重试退出。"
+        },
+        "database": [
+          {
+            "status": "active"
+          }
+        ],
+        "cookieRetained": true
+      }
+    },
+    {
+      "name": "logout network preserves UI/cookie/server Session",
+      "value": {
+        "state": {
+          "path": "/",
+          "shell": true,
+          "alert": "退出未确认，服务端登录可能仍有效。请重试退出。"
+        },
+        "database": [
+          {
+            "status": "active"
+          }
+        ],
+        "cookieRetained": true
+      }
+    },
+    {
+      "name": "confirmed retry revokes and clears",
+      "value": {
+        "database": [
+          {
+            "status": "revoked"
+          }
+        ],
+        "cookieCleared": true,
+        "oldCredentialStatus": 401
+      }
+    },
+    {
+      "name": "postlogout protected access",
+      "value": "redirect /login"
+    }
+  ],
+  "proxy": [
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "fault": "503"
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "fault": "network"
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "status": 204
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    }
+  ],
+  "origins": {
+    "api": "http://127.0.0.1:63760",
+    "proxy": "http://127.0.0.1:63761",
+    "admin": "http://127.0.0.1:63762"
+  },
+  "result": "PASS",
+  "nextCleanup": {
+    "command": [
+      "taskkill",
+      "/PID",
+      "1884",
+      "/T",
+      "/F"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "SUCCESS: The process with PID 11844 (child process of PID 1884) has been terminated.\r\nSUCCESS: The process with PID 5068 (child process of PID 1884) has been terminated.\r\nSUCCESS: The process with PID 1884 (child process of PID 23404) has been terminated.\r\n",
+    "stderr": ""
+  },
+  "next": {
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n- Local:         http://127.0.0.1:63762\n- Network:       http://127.0.0.1:63762\n✓ Ready in 909ms\n✓ Running next.config.ts took 69ms\n\n GET /login 200 in 637ms (next.js: 295ms, application-code: 342ms)\n GET / 200 in 113ms (next.js: 13ms, application-code: 100ms)\n GET /api/operations/auth/session 401 in 276ms (next.js: 118ms, application-code: 158ms)\n GET /api/operations/auth/session 401 in 102ms (next.js: 4ms, application-code: 98ms)\n GET /login 200 in 49ms (next.js: 6ms, application-code: 42ms)\n GET /api/operations/auth/session 401 in 36ms (next.js: 1.7ms, application-code: 34ms)\n POST /api/operations/auth/login 200 in 169ms (next.js: 29ms, application-code: 140ms)\n GET / 200 in 40ms (next.js: 4ms, application-code: 36ms)\n GET / 200 in 32ms (next.js: 3ms, application-code: 29ms)\n GET /api/operations/auth/session 200 in 75ms (next.js: 1.8ms, application-code: 73ms)\n GET /api/operations/auth/session 200 in 95ms (next.js: 1.2ms, application-code: 94ms)\n GET /api/operations/auth/session 200 in 89ms (next.js: 2ms, application-code: 87ms)\n POST /api/operations/auth/logout 503 in 45ms (next.js: 32ms, application-code: 13ms)\n POST /api/operations/auth/logout 503 in 33ms (next.js: 1.2ms, application-code: 31ms)\n POST /api/operations/auth/logout 204 in 70ms (next.js: 1.6ms, application-code: 68ms)\n GET /login 200 in 64ms (next.js: 5ms, application-code: 59ms)\n GET /login 200 in 65ms (next.js: 29ms, application-code: 36ms)\n GET / 200 in 87ms (next.js: 1.3ms, application-code: 86ms)\n GET /api/operations/auth/session 401 in 22ms (next.js: 1.8ms, application-code: 20ms)\n GET /api/operations/auth/session 401 in 32ms (next.js: 2ms, application-code: 29ms)\n GET /login 200 in 33ms (next.js: 2ms, application-code: 31ms)\n",
+    "stderr": ""
+  },
+  "postgresEvidence": "PCI-ENG-018-B-R1-pci-018br1-d478d8ccd0.json",
+  "finishedAt": "2026-11-14T13:36:50.698Z"
+}

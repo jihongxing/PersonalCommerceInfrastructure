@@ -1,0 +1,82 @@
+{
+  "startedAt": "2026-11-14T13:33:48.940Z",
+  "scope": "Admin shell route validation and React lint closure",
+  "results": [
+    {
+      "name": "format shell",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "exec",
+        "prettier",
+        "--write",
+        "apps/admin-web/components/admin-shell.tsx",
+        "apps/admin-web/components/admin-shell.test.tsx"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "apps/admin-web/components/admin-shell.tsx 137ms (unchanged)\napps/admin-web/components/admin-shell.test.tsx 46ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin ESLint",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "lint:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 lint:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web lint\n\n\n> admin-web@0.1.0 lint D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> eslint .\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin tests",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "test:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 test:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web test\n\n\n> admin-web@0.1.0 test D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> vitest run\n\n\n RUN  v5.1.0 D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web\n\n\n Test Files  2 passed (2)\n      Tests  21 passed (21)\n   Start at  21:33:57\n   Duration  2.63s (environment 57%, setup 22%, tests 12%, transform 5%, import 4%)\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web typecheck\n\n\n> admin-web@0.1.0 typecheck D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> tsc --noEmit\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin test TypeScript",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "typecheck:admin-web:tests"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 typecheck:admin-web:tests D:\\codeSpace\\PersonalCommerceInfrastructure\n> pnpm --filter admin-web typecheck:tests\n\n\n> admin-web@0.1.0 typecheck:tests D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> tsc -p tsconfig.tests.json\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "Admin build and boundary",
+      "command": [
+        "D:\\dev\\nodejs\\node.exe",
+        "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+        "verify:admin-web"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n> personal-commerce-infrastructure@0.2.0 verify:admin-web D:\\codeSpace\\PersonalCommerceInfrastructure\n> node scripts/test/verify-admin-web.mjs\n\n\n> admin-web@0.1.0 build D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\admin-web\n> next build\n\n▲ Next.js 16.4.5 (Turbopack)\n✓ Running next.config.ts took 45ms\n\n  Creating an optimized production build ...\n✓ Compiled successfully in 662ms\n  Running TypeScript ...\n  Finished TypeScript in 2.9s ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/13) ...\n  Generating static pages using 5 workers (3/13) \r\n  Generating static pages using 5 workers (6/13) \r\n  Generating static pages using 5 workers (9/13) \r\n✓ Generating static pages using 5 workers (13/13) in 753ms\n  Finalizing page optimization ...\n\nRoute (app)\n┌ ○ /\n├ ○ /_not-found\n├   /[section]\n│ ├ ● /capabilities\n│ ├ ● /templates\n│ ├ ● /policy-versions\n│ └ ● [+3 more paths]\n├ ƒ /api/operations/auth/login\n├ ƒ /api/operations/auth/logout\n├ ƒ /api/operations/auth/session\n└ ○ /login\n\n\n○  (Static)   prerendered as static content\n●  (SSG)      prerendered as static HTML (uses generateStaticParams)\nƒ  (Dynamic)  server-rendered on demand\n\nAdmin shell security check passed: 16 runtime source files, 14 browser assets; no server sentinel found.\n",
+      "stderr": ""
+    }
+  ]
+}

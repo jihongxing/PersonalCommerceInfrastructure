@@ -1,0 +1,25 @@
+{
+  "startedAt": "2026-11-14T13:47:48.088Z",
+  "finishedAt": "2026-11-14T13:48:08.972Z",
+  "command": [
+    "D:\\dev\\nodejs\\node.exe",
+    "E:/Users/jihx/AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs",
+    "exec",
+    "vitest",
+    "run",
+    "tests/integration/operations-human-authentication-postgres.integration.test.ts",
+    "--reporter=json",
+    "--outputFile=docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-final.json"
+  ],
+  "environmentOverrides": {
+    "PCI_RUN_OPERATIONS_AUTH_POSTGRES": "1",
+    "DATABASE_URL": "unset/empty; disposable fixture creates its own loopback URLs"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "stdout": "JSON report written to D:/codeSpace/PersonalCommerceInfrastructure/docs/09_Engineering_Governance/evidence/PCI-ENG-018-B-R1-postgres-final.json\n",
+  "stderr": "",
+  "postgresEvidence": [
+    "PCI-ENG-018-B-R1-pci-018br1-2e18ebc6a8.json"
+  ]
+}

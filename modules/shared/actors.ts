@@ -13,6 +13,13 @@ export type Actor =
   | {
       readonly kind: 'pilot_operations';
       readonly operatorId: string;
+    }
+  | {
+      readonly kind: 'operations_human';
+      readonly principalId: string;
+      readonly accountId: string;
+      readonly sessionId: string;
+      readonly permissions: readonly string[];
     };
 
 export function assertCreatorOwnership(

@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { Type } from 'typebox';
+import type { CatalogQueryRepository } from '../../../applications/operations-admin/operations-query-repository.js';
 
 import { extractBearerToken } from '../../auth/transport/bearer-token.js';
 import { ApplicationError } from '../../../applications/core/application-error.js';
@@ -42,14 +43,14 @@ const CatalogKindParamsSchema = Type.Object({
 const CatalogQuerySchema = Type.Object({
   page: Type.Optional(Type.String()),
   pageSize: Type.Optional(Type.String()),
-  q: Type.Optional(Type.String()),
+  q: Type.Optional(Type.String({ maxLength: 160 })),
   status: Type.Optional(Type.String()),
   riskTier: Type.Optional(Type.String()),
 });
 const AuditQuerySchema = Type.Object({
   page: Type.Optional(Type.String()),
   pageSize: Type.Optional(Type.String()),
-  q: Type.Optional(Type.String()),
+  q: Type.Optional(Type.String({ maxLength: 160 })),
   entityType: Type.Optional(Type.String()),
   action: Type.Optional(Type.String()),
 });
@@ -60,12 +61,14 @@ export function registerServicePolicyRoutes(
     readonly authContextProvider: AuthContextProvider;
     readonly operationsAuthContextProvider: OperationsAuthContextProvider;
     readonly catalogRepository: ServicePolicyCatalogRepository;
+    readonly readQueries?: CatalogQueryRepository;
     readonly adminService: ServicePolicyAdminService;
     readonly humanOperationsAuthContextProvider?: OperationsAuthContextProvider;
   },
 ): void {
   const readService = createServicePolicyReadService({
     repository: dependencies.catalogRepository,
+    queries: dependencies.readQueries,
   });
   const authenticateCreator = async (request: AuthenticatedRequest): Promise<void> => {
     request.authContext = await dependencies.authContextProvider.resolveActorContext({

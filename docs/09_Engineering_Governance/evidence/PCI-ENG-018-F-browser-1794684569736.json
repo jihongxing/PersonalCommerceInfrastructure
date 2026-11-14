@@ -1,0 +1,2096 @@
+{
+  "startedAt": "2026-11-14T19:28:13.336Z",
+  "driver": "gstack /browse",
+  "commands": [
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({userAgent:navigator.userAgent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,protectedShell:!!document.querySelector(\"nav\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/login\",\"protectedShell\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":401,\"body\":{\"error\":\"Request could not be confirmed. Please retry.\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[autocomplete=\"username\"]",
+        "browser-operator@example.test"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[autocomplete=\"username\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[type=\"password\"]",
+        "[REDACTED]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[type=\"password\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:57611/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"nav[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,navigation:!!document.querySelector(\"nav\"),identity:document.querySelector(\".session-state\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"navigation\":true,\"identity\":\"operations-account-19503a66-61e5-4785-bd5a-930c7d07f2b9退出\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794770910.283056,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({cookie:document.cookie,local:Object.keys(localStorage),session:Object.keys(sessionStorage)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"cookie\":\"\",\"local\":[],\"session\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"principalId\":\"operations-principal-804c2176-478c-49b1-a58b-b3c5ad7c0792\",\"accountId\":\"operations-account-19503a66-61e5-4785-bd5a-930c7d07f2b9\",\"sessionId\":\"d058c48a-afd8-45ce-838a-e66f4738f6ab\",\"permissions\":[\"catalog:read\",\"audit:read\",\"offering:read\",\"request:read\"]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\".metric-number\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/overview').then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"queriedAt\":\"2026-11-14T19:28:33.591Z\",\"consistency\":\"repeatable_read_snapshot\",\"modules\":{\"catalog\":{\"total\":20,\"states\":{\"capability:active\":10,\"template:active\":10},\"source\":\"service_policy_capabilities + service_policy_templates\",\"scope\":\"current published policy release (fallback v1); types are disjoint\",\"exact\":true,\"policyVersion\":\"v1\"},\"offering\":{\"total\":1,\"states\":{\"published\":1},\"source\":\"service_offerings\",\"scope\":\"all persisted records\",\"exact\":true},\"request\":{\"total\":3,\"states\":{\"declined\":1,\"submitted\":1,\"confirmed\":1},\"source\":\"commerce_actions\",\"scope\":\"all persisted records\",\"exact\":true},\"audit\":{\"total\":1,\"states\":{\"updated\":1},\"source\":\"service_policy_audits\",\"scope\":\"all persisted records\",\"exact\":true}},\"recentActivity\":[{\"kind\":\"audit\",\"id\":\"catalog-browser-audit\",\"name\":\"updated\",\"state\":\"capability\",\"relatedId\":\"capability-dance-teaching\",\"occurredAt\":\"2026-11-14T19:28:19.557Z\",\"actorId\":\"fixture-platform-system\",\"actorCategory\":\"platform_system\"}]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "viewport",
+        "390x844"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Viewport set to 390x844\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(document.documentElement.scrollWidth<=innerWidth)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "viewport",
+        "1280x900"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Viewport set to 1280x900\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/search"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/search (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"input[placeholder=\\\"业务 ID、名称或状态\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[placeholder=\"业务 ID、名称或状态\"]",
+        "capability-dance-teaching"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[placeholder=\"业务 ID、名称或状态\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector('a[href=\"/capabilities?id=capability-dance-teaching\"]'))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector('a[href=\"/capabilities?id=capability-dance-teaching\"]'))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "a[href=\"/capabilities?id=capability-dance-teaching\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked a[href=\"/capabilities?id=capability-dance-teaching\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector(\"aside[aria-label]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/capabilities\",\"search\":\"?id=capability-dance-teaching\",\"detail\":\"舞蹈教学关闭IDcapability-dance-teachingSlugdance-teaching状态active风险low发布范围vs01版本v1业务域舞蹈与表演别名Private Dance Lesson, Dance lesson, 舞蹈私教可被创作者选择是允许发布是描述教授舞蹈动作、基础训练和编舞方法。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/search"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/search (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"input[placeholder=\\\"业务 ID、名称或状态\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[placeholder=\"业务 ID、名称或状态\"]",
+        "offering-flow-fixture"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[placeholder=\"业务 ID、名称或状态\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector('a[href=\"/offerings?id=offering-flow-fixture\"]'))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "a[href=\"/offerings?id=offering-flow-fixture\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked a[href=\"/offerings?id=offering-flow-fixture\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector(\"aside[aria-label]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/offerings\",\"search\":\"?page=1&pageSize=20&id=offering-flow-fixture\",\"detail\":\"Flow Fixture Offering关闭IDoffering-flow-fixtureCreatorFlow Fixture Creator (creator-flow-fixture)状态publishedCapability / CatalogFlow Capability (capability-flow-fixture) Catalog: capability-dance-teachingTemplate暂无记录政策状态approved v1 发布/分发记录distributed: https://example.test/offerings/offering-flow-fixture创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC发布时间暂无独立时间记录描述Read-only E offering可请求条件Available for fixture requests请求说明Submit a request\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/search"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/search (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"input[placeholder=\\\"业务 ID、名称或状态\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[placeholder=\"业务 ID、名称或状态\"]",
+        "request-flow-fixture"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[placeholder=\"业务 ID、名称或状态\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector('a[href=\"/requests?id=request-flow-fixture\"]'))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "a[href=\"/requests?id=request-flow-fixture\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked a[href=\"/requests?id=request-flow-fixture\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector(\"aside[aria-label]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/requests\",\"search\":\"?page=1&pageSize=20&id=request-flow-fixture\",\"detail\":\"request-flow-fixture关闭Requestrequest-flow-fixtureOfferingFlow Fixture Offering (offering-flow-fixture)Creator IdentityFlow Fixture Creator (creator-flow-fixture)Customercustomer-flow-fixture当前状态submittedCreator 决策not_recorded创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC决策时间暂无独立时间记录Request 内容自由文本可能包含私密联系方式，当前只读范围不返回原文。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/search"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/search (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"input[placeholder=\\\"业务 ID、名称或状态\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "fill",
+        "input[placeholder=\"业务 ID、名称或状态\"]",
+        "catalog-browser-audit"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[placeholder=\"业务 ID、名称或状态\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector('a[href=\"/audit?id=catalog-browser-audit\"]'))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "a[href=\"/audit?id=catalog-browser-audit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked a[href=\"/audit?id=catalog-browser-audit\"] → now at http://127.0.0.1:57611/search\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"aside[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector(\"aside[aria-label]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/audit\",\"search\":\"?id=catalog-browser-audit\",\"detail\":\"审计详情关闭时间2026年11月15日 03:28执行归因Platform Systemfixture-platform-system关联对象capability / capability-dance-teaching原因Disposable read-only browser fixtureBefore{\\n  \\\"status\\\": \\\"draft\\\"\\n}After{\\n  \\\"status\\\": \\\"active\\\"\\n}\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/capabilities"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/capabilities (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/capabilities\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,rows:document.querySelectorAll(\"tbody tr\").length,writeControls:[...document.querySelectorAll(\"button\")].map(b=>b.textContent)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/capabilities\",\"rows\":10,\"writeControls\":[\"退出\",\"查询\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"查看详情\",\"上一页\",\"下一页\"]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/capabilities\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Catalog 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({detail:!!document.querySelector(\"[aria-label=\\\"Catalog 详情\\\"]\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"detail\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/audit"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/audit (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/audit\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/audit\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Audit 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,detail:!!document.querySelector(\"[aria-label=\\\"Audit 详情\\\"]\"),platform:document.body.innerText.includes(\"Platform System\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/audit\",\"detail\":true,\"platform\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/offerings"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/offerings (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/offerings\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,rows:document.querySelectorAll(\"tbody tr\").length,writeMethods:[...document.querySelectorAll(\"button\")].map(b=>b.textContent)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/offerings\",\"rows\":1,\"writeMethods\":[\"退出\",\"查询\",\"查看详情\",\"上一页\",\"下一页\"]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/offerings?page=1&pageSize=20&id=offering-flow-fixture\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Offering 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({detail:!!document.querySelector(\"[aria-label=\\\"Offering 详情\\\"]\"),published:document.body.innerText.includes(\"published\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"detail\":true,\"published\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/requests?state=submitted"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/requests?state=submitted (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/requests\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,rows:document.querySelectorAll(\"tbody tr\").length})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/requests\",\"rows\":1}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/requests?page=1&pageSize=20&state=submitted&id=request-flow-fixture\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({detail:!!document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\"),submitted:document.body.innerText.includes(\"submitted\"),decision:document.body.innerText.includes(\"not_recorded\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"detail\":true,\"submitted\":true,\"decision\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({link:document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"] a\")?.getAttribute(\"href\"),contentWithheld:document.body.innerText.includes(\"不返回原文\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"link\":\"/offerings?id=offering-flow-fixture\",\"contentWithheld\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "[aria-label=\"Customer Request 详情\"] a"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked [aria-label=\"Customer Request 详情\"] a → now at http://127.0.0.1:57611/requests?page=1&pageSize=20&state=submitted&id=request-flow-fixture\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Offering 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,capability:document.body.innerText.includes(\"capability-flow-fixture\"),catalog:document.body.innerText.includes(\"capability-dance-teaching\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/offerings\",\"capability\":true,\"catalog\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/requests?state=confirmed"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/requests?state=confirmed (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/requests?page=1&pageSize=20&state=confirmed&id=request-confirmed-fixture\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({text:document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"text\":\"request-confirmed-fixture关闭Requestrequest-confirmed-fixtureOfferingFlow Fixture Offering (offering-flow-fixture)Creator IdentityFlow Fixture Creator (creator-flow-fixture)Customercustomer-flow-fixture当前状态confirmedCreator 决策confirmed创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC决策时间暂无独立时间记录Request 内容自由文本可能包含私密联系方式，当前只读范围不返回原文。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/requests?state=declined"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/requests?state=declined (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "tbody tr:first-child button.text-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked tbody tr:first-child button.text-button → now at http://127.0.0.1:57611/requests?page=1&pageSize=20&state=declined&id=request-declined-fixture\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({text:document.querySelector(\"[aria-label=\\\"Customer Request 详情\\\"]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"text\":\"request-declined-fixture关闭Requestrequest-declined-fixtureOfferingFlow Fixture Offering (offering-flow-fixture)Creator IdentityFlow Fixture Creator (creator-flow-fixture)Customercustomer-flow-fixture当前状态declinedCreator 决策declined创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC决策时间暂无独立时间记录Request 内容自由文本可能包含私密联系方式，当前只读范围不返回原文。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/requests/request-flow-fixture').then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"id\":\"request-flow-fixture\",\"offeringId\":\"offering-flow-fixture\",\"offering\":{\"id\":\"offering-flow-fixture\",\"title\":\"Flow Fixture Offering\",\"state\":\"published\"},\"creator\":{\"id\":\"creator-flow-fixture\",\"displayName\":\"Flow Fixture Creator\"},\"customer\":{\"id\":\"customer-flow-fixture\"},\"state\":\"submitted\",\"creatorDecision\":\"not_recorded\",\"requestContentVisibility\":\"withheld\",\"createdAt\":\"2026-11-14T19:28:19.622Z\",\"updatedAt\":\"2026-11-14T19:28:19.622Z\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/audit"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/audit (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"table\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:57611/audit\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[role=alert]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,shell:!!document.querySelector(\"nav\"),alert:document.querySelector(\"[role=alert]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/audit\",\"shell\":true,\"alert\":\"退出未确认，服务端登录可能仍有效。请重试退出。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794770910.283056,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:57611/audit\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"[role=alert]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,shell:!!document.querySelector(\"nav\"),alert:document.querySelector(\"[role=alert]\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/audit\",\"shell\":true,\"alert\":\"退出未确认，服务端登录可能仍有效。请重试退出。\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794770910.283056,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "click",
+        "button.logout-button"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button.logout-button → now at http://127.0.0.1:57611/audit\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "goto",
+        "http://127.0.0.1:57611/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:57611/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "browser",
+      "value": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+      }
+    },
+    {
+      "name": "anonymous redirect",
+      "value": {
+        "path": "/login",
+        "protectedShell": false
+      }
+    },
+    {
+      "name": "forged headers without Session",
+      "value": {
+        "status": 401,
+        "body": {
+          "error": "Request could not be confirmed. Please retry."
+        }
+      }
+    },
+    {
+      "name": "authenticated shell",
+      "value": {
+        "path": "/",
+        "navigation": true,
+        "identity": "operations-account-19503a66-61e5-4785-bd5a-930c7d07f2b9退出"
+      }
+    },
+    {
+      "name": "cookie metadata",
+      "value": {
+        "name": "pci_operations_session",
+        "value": "[REDACTED]",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "expires": 1794770910.283056,
+        "httpOnly": true,
+        "secure": false,
+        "sameSite": "Lax"
+      }
+    },
+    {
+      "name": "JavaScript/storage isolation",
+      "value": {
+        "cookie": "",
+        "local": [],
+        "session": []
+      }
+    },
+    {
+      "name": "authoritative identity",
+      "value": {
+        "status": 200,
+        "body": {
+          "principalId": "operations-principal-804c2176-478c-49b1-a58b-b3c5ad7c0792",
+          "accountId": "operations-account-19503a66-61e5-4785-bd5a-930c7d07f2b9",
+          "sessionId": "d058c48a-afd8-45ce-838a-e66f4738f6ab",
+          "permissions": [
+            "catalog:read",
+            "audit:read",
+            "offering:read",
+            "request:read"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Overview real snapshot",
+      "value": {
+        "status": 200,
+        "body": {
+          "queriedAt": "2026-11-14T19:28:33.591Z",
+          "consistency": "repeatable_read_snapshot",
+          "modules": {
+            "catalog": {
+              "total": 20,
+              "states": {
+                "capability:active": 10,
+                "template:active": 10
+              },
+              "source": "service_policy_capabilities + service_policy_templates",
+              "scope": "current published policy release (fallback v1); types are disjoint",
+              "exact": true,
+              "policyVersion": "v1"
+            },
+            "offering": {
+              "total": 1,
+              "states": {
+                "published": 1
+              },
+              "source": "service_offerings",
+              "scope": "all persisted records",
+              "exact": true
+            },
+            "request": {
+              "total": 3,
+              "states": {
+                "declined": 1,
+                "submitted": 1,
+                "confirmed": 1
+              },
+              "source": "commerce_actions",
+              "scope": "all persisted records",
+              "exact": true
+            },
+            "audit": {
+              "total": 1,
+              "states": {
+                "updated": 1
+              },
+              "source": "service_policy_audits",
+              "scope": "all persisted records",
+              "exact": true
+            }
+          },
+          "recentActivity": [
+            {
+              "kind": "audit",
+              "id": "catalog-browser-audit",
+              "name": "updated",
+              "state": "capability",
+              "relatedId": "capability-dance-teaching",
+              "occurredAt": "2026-11-14T19:28:19.557Z",
+              "actorId": "fixture-platform-system",
+              "actorCategory": "platform_system"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "responsive overview",
+      "value": {
+        "width": 390,
+        "noHorizontalOverflow": true
+      }
+    },
+    {
+      "name": "Search to Catalog detail",
+      "value": {
+        "path": "/capabilities",
+        "search": "?id=capability-dance-teaching",
+        "detail": "舞蹈教学关闭IDcapability-dance-teachingSlugdance-teaching状态active风险low发布范围vs01版本v1业务域舞蹈与表演别名Private Dance Lesson, Dance lesson, 舞蹈私教可被创作者选择是允许发布是描述教授舞蹈动作、基础训练和编舞方法。"
+      }
+    },
+    {
+      "name": "Search to Offering detail",
+      "value": {
+        "path": "/offerings",
+        "search": "?page=1&pageSize=20&id=offering-flow-fixture",
+        "detail": "Flow Fixture Offering关闭IDoffering-flow-fixtureCreatorFlow Fixture Creator (creator-flow-fixture)状态publishedCapability / CatalogFlow Capability (capability-flow-fixture) Catalog: capability-dance-teachingTemplate暂无记录政策状态approved v1 发布/分发记录distributed: https://example.test/offerings/offering-flow-fixture创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC发布时间暂无独立时间记录描述Read-only E offering可请求条件Available for fixture requests请求说明Submit a request"
+      }
+    },
+    {
+      "name": "Search to Request detail",
+      "value": {
+        "path": "/requests",
+        "search": "?page=1&pageSize=20&id=request-flow-fixture",
+        "detail": "request-flow-fixture关闭Requestrequest-flow-fixtureOfferingFlow Fixture Offering (offering-flow-fixture)Creator IdentityFlow Fixture Creator (creator-flow-fixture)Customercustomer-flow-fixture当前状态submittedCreator 决策not_recorded创建时间2026/11/14 19:28:19 UTC最后更新时间2026/11/14 19:28:19 UTC决策时间暂无独立时间记录Request 内容自由文本可能包含私密联系方式，当前只读范围不返回原文。"
+      }
+    },
+    {
+      "name": "Search to Audit detail",
+      "value": {
+        "path": "/audit",
+        "search": "?id=catalog-browser-audit",
+        "detail": "审计详情关闭时间2026年11月15日 03:28执行归因Platform Systemfixture-platform-system关联对象capability / capability-dance-teaching原因Disposable read-only browser fixtureBefore{\n  \"status\": \"draft\"\n}After{\n  \"status\": \"active\"\n}"
+      }
+    },
+    {
+      "name": "catalog list",
+      "value": {
+        "path": "/capabilities",
+        "rows": 10,
+        "writeControls": [
+          "退出",
+          "查询",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "查看详情",
+          "上一页",
+          "下一页"
+        ]
+      }
+    },
+    {
+      "name": "catalog detail",
+      "value": {
+        "detail": true
+      }
+    },
+    {
+      "name": "audit list and detail",
+      "value": {
+        "path": "/audit",
+        "detail": true,
+        "platform": true
+      }
+    },
+    {
+      "name": "offering list",
+      "value": {
+        "path": "/offerings",
+        "rows": 1,
+        "writeMethods": [
+          "退出",
+          "查询",
+          "查看详情",
+          "上一页",
+          "下一页"
+        ]
+      }
+    },
+    {
+      "name": "offering detail",
+      "value": {
+        "detail": true,
+        "published": true
+      }
+    },
+    {
+      "name": "request list",
+      "value": {
+        "path": "/requests",
+        "rows": 1
+      }
+    },
+    {
+      "name": "request detail and creator decision",
+      "value": {
+        "detail": true,
+        "submitted": true,
+        "decision": true
+      }
+    },
+    {
+      "name": "Request to Offering to Capability association",
+      "value": {
+        "path": "/offerings",
+        "capability": true,
+        "catalog": true
+      }
+    },
+    {
+      "name": "persisted Creator decision confirmed",
+      "value": {
+        "recordedState": "confirmed",
+        "shown": true
+      }
+    },
+    {
+      "name": "persisted Creator decision declined",
+      "value": {
+        "recordedState": "declined",
+        "shown": true
+      }
+    },
+    {
+      "name": "sensitive Request fields omitted",
+      "value": {
+        "status": 200,
+        "responseKeys": [
+          "id",
+          "offeringId",
+          "offering",
+          "creator",
+          "customer",
+          "state",
+          "creatorDecision",
+          "requestContentVisibility",
+          "createdAt",
+          "updatedAt"
+        ]
+      }
+    },
+    {
+      "name": "business rows unchanged by reads",
+      "value": {
+        "before": [
+          {
+            "relation": "offerings",
+            "count": 1,
+            "hash": "0ccaa755f57394148a38e2af89bd5e3e"
+          },
+          {
+            "relation": "requests",
+            "count": 3,
+            "hash": "e6aeb6e7cf401fc3243ad6a4d60e8e5c"
+          },
+          {
+            "relation": "distribution",
+            "count": 1,
+            "hash": "d2592436f9c1ec960ad66e606c5abbfc"
+          }
+        ],
+        "after": [
+          {
+            "relation": "offerings",
+            "count": 1,
+            "hash": "0ccaa755f57394148a38e2af89bd5e3e"
+          },
+          {
+            "relation": "requests",
+            "count": 3,
+            "hash": "e6aeb6e7cf401fc3243ad6a4d60e8e5c"
+          },
+          {
+            "relation": "distribution",
+            "count": 1,
+            "hash": "d2592436f9c1ec960ad66e606c5abbfc"
+          }
+        ]
+      }
+    },
+    {
+      "name": "logout 503 preserves UI/cookie/server Session",
+      "value": {
+        "state": {
+          "path": "/audit",
+          "shell": true,
+          "alert": "退出未确认，服务端登录可能仍有效。请重试退出。"
+        },
+        "database": [
+          {
+            "status": "active"
+          }
+        ],
+        "cookieRetained": true
+      }
+    },
+    {
+      "name": "logout network preserves UI/cookie/server Session",
+      "value": {
+        "state": {
+          "path": "/audit",
+          "shell": true,
+          "alert": "退出未确认，服务端登录可能仍有效。请重试退出。"
+        },
+        "database": [
+          {
+            "status": "active"
+          }
+        ],
+        "cookieRetained": true
+      }
+    },
+    {
+      "name": "confirmed retry revokes and clears",
+      "value": {
+        "database": [
+          {
+            "status": "revoked"
+          }
+        ],
+        "cookieCleared": true,
+        "oldCredentialStatus": 401
+      }
+    },
+    {
+      "name": "postlogout protected access",
+      "value": "redirect /login"
+    }
+  ],
+  "proxy": [
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/overview",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/overview",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/search?q=capability-dance-teaching&module=all&page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities/capability-dance-teaching",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities/capability-dance-teaching",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/search?q=offering-flow-fixture&module=all&page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings/offering-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/search?q=request-flow-fixture&module=all&page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests/request-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/search?q=catalog-browser-audit&module=all&page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit/catalog-browser-audit",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit/catalog-browser-audit",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/capabilities/capability-choreography-guidance",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit/catalog-browser-audit",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings/offering-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests?page=1&pageSize=20&state=submitted",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests/request-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/offerings/offering-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests?page=1&pageSize=20&state=confirmed",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests/request-confirmed-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests?page=1&pageSize=20&state=declined",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests/request-declined-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/requests/request-flow-fixture",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/audit?page=1&pageSize=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "fault": "503"
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "fault": "network"
+    },
+    {
+      "path": "/api/v1/operations/auth/logout",
+      "status": 204
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401
+    }
+  ],
+  "origins": {
+    "api": "http://127.0.0.1:57609",
+    "proxy": "http://127.0.0.1:57610",
+    "admin": "http://127.0.0.1:57611"
+  },
+  "result": "PASS",
+  "nextCleanup": {
+    "command": [
+      "taskkill",
+      "/PID",
+      "4512",
+      "/T",
+      "/F"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "SUCCESS: The process with PID 10008 (child process of PID 4512) has been terminated.\r\nSUCCESS: The process with PID 17596 (child process of PID 4512) has been terminated.\r\nSUCCESS: The process with PID 4512 (child process of PID 20336) has been terminated.\r\n",
+    "stderr": ""
+  },
+  "next": {
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n- Local:         http://127.0.0.1:57611\n- Network:       http://127.0.0.1:57611\n✓ Ready in 769ms\n✓ Running next.config.ts took 67ms\n\n GET /login 200 in 560ms (next.js: 240ms, application-code: 320ms)\n GET / 200 in 58ms (next.js: 11ms, application-code: 47ms)\n GET /api/operations/auth/session 401 in 92ms (next.js: 2ms, application-code: 90ms)\n GET /api/operations/auth/session 401 in 209ms (next.js: 81ms, application-code: 128ms)\n GET /login 200 in 104ms (next.js: 7ms, application-code: 97ms)\n GET /api/operations/auth/session 401 in 32ms (next.js: 1.5ms, application-code: 31ms)\n POST /api/operations/auth/login 200 in 142ms (next.js: 32ms, application-code: 110ms)\n GET / 200 in 23ms (next.js: 2ms, application-code: 21ms)\n GET / 200 in 28ms (next.js: 4ms, application-code: 25ms)\n GET /api/operations/auth/session 200 in 76ms (next.js: 1.7ms, application-code: 74ms)\n GET /api/operations/auth/session 200 in 81ms (next.js: 2.0ms, application-code: 79ms)\n GET /api/operations/overview 200 in 137ms (next.js: 31ms, application-code: 106ms)\n GET /api/operations/auth/session 200 in 61ms (next.js: 1.5ms, application-code: 59ms)\n GET /api/operations/overview 200 in 119ms (next.js: 1.9ms, application-code: 117ms)\n GET /search 200 in 1311ms (next.js: 16ms, generate-params: 1179ms, application-code: 116ms)\n GET /api/operations/auth/session 200 in 92ms (next.js: 1.9ms, application-code: 90ms)\n GET /api/operations/auth/session 200 in 94ms (next.js: 1.8ms, application-code: 92ms)\n GET /api/operations/search?q=capability-dance-teaching&module=all&page=1&pageSize=20 200 in 205ms (next.js: 100ms, application-code: 105ms)\n GET /capabilities?id=capability-dance-teaching 200 in 51ms (next.js: 3ms, generate-params: 11ms, application-code: 37ms)\n GET /api/operations/auth/session 200 in 82ms (next.js: 3ms, application-code: 80ms)\n GET /api/operations/auth/session 200 in 90ms (next.js: 1.3ms, application-code: 88ms)\n GET /api/operations/catalog/capabilities?page=1&pageSize=20 200 in 1392ms (next.js: 1236ms, application-code: 156ms)\n GET /api/operations/catalog/capabilities?page=1&pageSize=20 200 in 1357ms (next.js: 1186ms, application-code: 171ms)\n GET /api/operations/catalog/capabilities/capability-dance-teaching 200 in 1239ms (next.js: 1092ms, application-code: 147ms)\n GET /api/operations/catalog/capabilities/capability-dance-teaching 200 in 1326ms (next.js: 1143ms, application-code: 183ms)\n GET /search 200 in 157ms (next.js: 1.4ms, generate-params: 82ms, application-code: 73ms)\n GET /api/operations/auth/session 200 in 205ms (next.js: 1.6ms, application-code: 203ms)\n GET /api/operations/auth/session 200 in 219ms (next.js: 2ms, application-code: 216ms)\n GET /api/operations/search?q=offering-flow-fixture&module=all&page=1&pageSize=20 200 in 210ms (next.js: 2ms, application-code: 208ms)\n GET /offerings?id=offering-flow-fixture 200 in 60ms (next.js: 2ms, generate-params: 10ms, application-code: 48ms)\n GET /api/operations/auth/session 200 in 95ms (next.js: 1.6ms, application-code: 93ms)\n GET /api/operations/auth/session 200 in 105ms (next.js: 2ms, application-code: 103ms)\n GET /api/operations/offerings?page=1&pageSize=20 200 in 187ms (next.js: 44ms, application-code: 143ms)\n GET /api/operations/offerings/offering-flow-fixture 200 in 1571ms (next.js: 1465ms, application-code: 107ms)\n GET /search 200 in 74ms (next.js: 3ms, generate-params: 10ms, application-code: 61ms)\n GET /api/operations/auth/session 200 in 106ms (next.js: 1.2ms, application-code: 105ms)\n GET /api/operations/auth/session 200 in 132ms (next.js: 1.5ms, application-code: 130ms)\n GET /api/operations/search?q=request-flow-fixture&module=all&page=1&pageSize=20 200 in 121ms (next.js: 1.5ms, application-code: 120ms)\n GET /requests?id=request-flow-fixture 200 in 54ms (next.js: 3ms, generate-params: 10ms, application-code: 41ms)\n GET /api/operations/auth/session 200 in 224ms (next.js: 1.4ms, application-code: 222ms)\n GET /api/operations/auth/session 200 in 251ms (next.js: 1.3ms, application-code: 249ms)\n GET /api/operations/requests?page=1&pageSize=20 200 in 172ms (next.js: 47ms, application-code: 125ms)\n GET /api/operations/requests/request-flow-fixture 200 in 1610ms (next.js: 1521ms, application-code: 89ms)\n GET /search 200 in 66ms (next.js: 1.6ms, generate-params: 8ms, application-code: 56ms)\n GET /api/operations/auth/session 200 in 114ms (next.js: 1.9ms, application-code: 112ms)\n GET /api/operations/auth/session 200 in 116ms (next.js: 4ms, application-code: 112ms)\n GET /api/operations/search?q=catalog-browser-audit&module=all&page=1&pageSize=20 200 in 123ms (next.js: 2ms, application-code: 121ms)\n GET /audit?id=catalog-browser-audit 200 in 47ms (next.js: 3ms, generate-params: 9ms, application-code: 36ms)\n GET /api/operations/auth/session 200 in 93ms (next.js: 1.5ms, application-code: 91ms)\n GET /api/operations/auth/session 200 in 106ms (next.js: 1.4ms, application-code: 104ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 140ms (next.js: 38ms, application-code: 102ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 112ms (next.js: 1.6ms, application-code: 111ms)\n GET /api/operations/audit/catalog-browser-audit 200 in 1389ms (next.js: 1249ms, application-code: 140ms)\n GET /api/operations/audit/catalog-browser-audit 200 in 1356ms (next.js: 1200ms, application-code: 156ms)\n GET /capabilities 200 in 112ms (next.js: 1.2ms, generate-params: 9ms, application-code: 102ms)\n GET /api/operations/auth/session 200 in 90ms (next.js: 1.4ms, application-code: 89ms)\n GET /api/operations/auth/session 200 in 109ms (next.js: 2.0ms, application-code: 107ms)\n GET /api/operations/catalog/capabilities?page=1&pageSize=20 200 in 205ms (next.js: 108ms, application-code: 97ms)\n GET /api/operations/catalog/capabilities?page=1&pageSize=20 200 in 108ms (next.js: 2ms, application-code: 106ms)\n GET /api/operations/catalog/capabilities/capability-choreography-guidance 200 in 133ms (next.js: 22ms, application-code: 111ms)\n GET /audit 200 in 165ms (next.js: 2ms, generate-params: 96ms, application-code: 66ms)\n GET /api/operations/auth/session 200 in 88ms (next.js: 3ms, application-code: 85ms)\n GET /api/operations/auth/session 200 in 92ms (next.js: 1.3ms, application-code: 91ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 121ms (next.js: 1.6ms, application-code: 119ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 133ms (next.js: 1.6ms, application-code: 131ms)\n GET /api/operations/audit/catalog-browser-audit 200 in 124ms (next.js: 13ms, application-code: 111ms)\n GET /offerings 200 in 72ms (next.js: 1.6ms, generate-params: 9ms, application-code: 61ms)\n GET /api/operations/auth/session 200 in 125ms (next.js: 1.6ms, application-code: 123ms)\n GET /api/operations/auth/session 200 in 130ms (next.js: 3ms, application-code: 127ms)\n GET /api/operations/offerings?page=1&pageSize=20 200 in 96ms (next.js: 1.8ms, application-code: 94ms)\n GET /api/operations/offerings/offering-flow-fixture 200 in 127ms (next.js: 15ms, application-code: 112ms)\n GET /requests?state=submitted 200 in 95ms (next.js: 1.8ms, generate-params: 11ms, application-code: 82ms)\n GET /api/operations/auth/session 200 in 109ms (next.js: 2ms, application-code: 107ms)\n GET /api/operations/auth/session 200 in 123ms (next.js: 1.6ms, application-code: 121ms)\n GET /api/operations/requests?page=1&pageSize=20&state=submitted 200 in 127ms (next.js: 2ms, application-code: 125ms)\n GET /api/operations/requests/request-flow-fixture 200 in 129ms (next.js: 12ms, application-code: 117ms)\n GET /offerings?id=offering-flow-fixture 200 in 53ms (next.js: 5ms, generate-params: 9ms, application-code: 39ms)\n GET /api/operations/auth/session 200 in 230ms (next.js: 1.3ms, application-code: 229ms)\n GET /api/operations/auth/session 200 in 260ms (next.js: 1.6ms, application-code: 258ms)\n GET /api/operations/offerings?page=1&pageSize=20 200 in 132ms (next.js: 1.8ms, application-code: 131ms)\n GET /api/operations/offerings/offering-flow-fixture 200 in 128ms (next.js: 12ms, application-code: 116ms)\n GET /requests?state=confirmed 200 in 281ms (next.js: 1.9ms, generate-params: 163ms, application-code: 117ms)\n GET /api/operations/auth/session 200 in 108ms (next.js: 1.5ms, application-code: 106ms)\n GET /api/operations/auth/session 200 in 117ms (next.js: 2ms, application-code: 115ms)\n GET /api/operations/requests?page=1&pageSize=20&state=confirmed 200 in 103ms (next.js: 5ms, application-code: 99ms)\n GET /api/operations/requests/request-confirmed-fixture 200 in 242ms (next.js: 11ms, application-code: 230ms)\n GET /requests?state=declined 200 in 58ms (next.js: 1.7ms, generate-params: 8ms, application-code: 48ms)\n GET /api/operations/auth/session 200 in 234ms (next.js: 1.4ms, application-code: 233ms)\n GET /api/operations/auth/session 200 in 212ms (next.js: 1.4ms, application-code: 211ms)\n GET /api/operations/requests?page=1&pageSize=20&state=declined 200 in 137ms (next.js: 2ms, application-code: 135ms)\n GET /api/operations/requests/request-declined-fixture 200 in 110ms (next.js: 13ms, application-code: 97ms)\n GET /api/operations/requests/request-flow-fixture 200 in 104ms (next.js: 10ms, application-code: 94ms)\n GET /audit 200 in 74ms (next.js: 1.5ms, generate-params: 10ms, application-code: 62ms)\n GET /api/operations/auth/session 200 in 112ms (next.js: 5ms, application-code: 106ms)\n GET /api/operations/auth/session 200 in 151ms (next.js: 1.6ms, application-code: 149ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 143ms (next.js: 1.5ms, application-code: 142ms)\n GET /api/operations/audit?page=1&pageSize=20 200 in 175ms (next.js: 1.8ms, application-code: 173ms)\n POST /api/operations/auth/logout 503 in 102ms (next.js: 57ms, application-code: 45ms)\n POST /api/operations/auth/logout 503 in 43ms (next.js: 1.7ms, application-code: 42ms)\n POST /api/operations/auth/logout 204 in 69ms (next.js: 1.6ms, application-code: 68ms)\n GET /login 200 in 49ms (next.js: 3ms, application-code: 46ms)\n GET /login 200 in 80ms (next.js: 4ms, application-code: 76ms)\n GET / 200 in 73ms (next.js: 1.4ms, application-code: 71ms)\n GET /api/operations/auth/session 401 in 53ms (next.js: 1.7ms, application-code: 51ms)\n GET /api/operations/auth/session 401 in 46ms (next.js: 1.9ms, application-code: 44ms)\n GET /login 200 in 107ms (next.js: 3ms, application-code: 104ms)\n",
+    "stderr": ""
+  },
+  "postgresEvidence": "PCI-ENG-018-F-pci-018br1-75cb0e3957-postgres.json",
+  "finishedAt": "2026-11-14T19:29:29.735Z"
+}

@@ -37,6 +37,18 @@ vi.stubGlobal(
 describe('Operations shell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(fetch).mockImplementation(async (input) =>
+      Response.json(
+        input === '/api/operations/overview'
+          ? { queriedAt: '2030-01-01T00:00:00Z', modules: {} }
+          : {
+              principalId: 'principal-1',
+              accountId: 'account-1',
+              sessionId: 'session-1',
+              permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
+            },
+      ),
+    );
     navigation.pathname = '/templates';
   });
   it('withholds protected content when session validation fails and allows a retry', async () => {
@@ -58,7 +70,7 @@ describe('Operations shell', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
     expect(screen.queryByText('Second route')).not.toBeInTheDocument();
   });
-  it('has nine navigation destinations, an active area and a session control', async () => {
+  it('has ten navigation destinations, an active area and a session control', async () => {
     render(
       <AdminShell>
         <Overview />
@@ -66,7 +78,7 @@ describe('Operations shell', () => {
     );
     expect(screen.getByText('正在验证 Session')).toBeVisible();
     const navigation = await screen.findByRole('navigation', { name: '运营管理导航' });
-    expect(navigation.querySelectorAll('a')).toHaveLength(9);
+    expect(navigation.querySelectorAll('a')).toHaveLength(10);
     expect(screen.getByRole('link', { name: '服务模板', current: 'page' })).toHaveAttribute(
       'href',
       '/templates',
@@ -75,7 +87,7 @@ describe('Operations shell', () => {
       'href',
       '#main-content',
     );
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '业务检索' })).toBeVisible();
     expect(await screen.findByRole('button', { name: '退出' })).toBeVisible();
   });
 
@@ -100,7 +112,9 @@ describe('Operations shell', () => {
     sections.filter(
       (section) =>
         section.slug !== '' &&
-        !['capabilities', 'templates', 'audit', 'offerings', 'requests'].includes(section.slug),
+        !['search', 'capabilities', 'templates', 'audit', 'offerings', 'requests'].includes(
+          section.slug,
+        ),
     ),
   )('keeps $english unavailable without fabricated data or management actions', async (section) => {
     render(await SectionPage({ params: Promise.resolve({ section: section.slug }) }));

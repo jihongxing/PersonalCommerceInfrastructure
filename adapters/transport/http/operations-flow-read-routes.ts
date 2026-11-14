@@ -68,7 +68,7 @@ export function registerOperationsFlowReadRoutes(
   const query = Type.Object({
     page: Type.Optional(Type.String()),
     pageSize: Type.Optional(Type.String()),
-    q: Type.Optional(Type.String()),
+    q: Type.Optional(Type.String({ maxLength: 160 })),
     state: Type.Optional(Type.String()),
   });
   const params = Type.Object({ id: Type.String({ minLength: 1 }) });

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "browser",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "--import",
+      "tsx",
+      "scripts/test/verify-operations-admin-browser.ts"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {
+      "PCI_RUN_OPERATIONS_ADMIN_F": "1",
+      "PCI_BROWSE_EXECUTABLE": "E:/Users/jihx/.codex/skills/gstack/browse/dist/browse.exe"
+    },
+    "startedAt": "2026-11-14T19:28:09.500Z",
+    "finishedAt": "2026-11-14T19:29:29.780Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "Real Admin Web + BFF + API + restricted PostgreSQL browser acceptance PASS.\n",
+    "stderr": ""
+  }
+]

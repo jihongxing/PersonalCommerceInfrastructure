@@ -2850,6 +2850,70 @@ PROJECT STATUS = SUSPENDED
 REAL_MONEY_ENABLED = false
 ```
 
+## DEV-087 / PCI-ENG-018-F - Operations Overview, Cross-Module Search and Server-Side Query
+
+This bounded read-only unit upgrades the accepted Admin Web surfaces into a unified Operations
+Overview and search workspace. It does not add a business write, a new permission, a schema change,
+or a new authentication path. The existing allowlist remains `catalog:read`, `offering:read`,
+`request:read`, and `audit:read`.
+
+Delivered:
+
+- `GET /api/v1/operations/admin/overview` returns only modules readable by the current Human
+  Operations Session. Each module summary includes exact count, state grouping, source, scope,
+  policy version where applicable, and the `transaction_timestamp()` of a PostgreSQL Repeatable Read
+  snapshot. Recent activity is limited to existing audit fields and actor attribution.
+- `GET /api/v1/operations/admin/search?q=...` performs bounded, server-side cross-module search.
+  The service checks each selected module permission independently. Search fields are IDs, public
+  names, state, approved associations, and safe audit identifiers. Request free text, contacts,
+  credentials, Session data, private keys, and audit JSON are excluded from the search predicate.
+- Catalog, Audit, Offering, and Customer Request read projections now use the PostgreSQL query port
+  for `WHERE`, stable `ORDER BY`, `LIMIT`, `OFFSET`, and `COUNT`. Offering associations are loaded
+  after page selection. No N+1 collection read or application-layer full-collection paging remains
+  on the PostgreSQL composition; the existing in-memory composition remains available for tests.
+- The Admin Web home page presents Overview metrics, recent activity, and the search entry point.
+  Search results link to existing detail pages. Loading, empty, error, 401/403, bounded pagination,
+  UTC timestamps, and responsive narrow-screen behavior are explicit. All routes remain GET-only.
+
+Evidence is retained in the governance evidence directory:
+
+- PostgreSQL 17.10 query and pagination fixture: `PCI-ENG-018-F-pci-018br1-7a2fb09d20-postgres.json`;
+  browser disposable PostgreSQL provenance: `PCI-ENG-018-F-pci-018br1-75cb0e3957-postgres.json`.
+- Real Next/BFF/Fastify/Session/PostgreSQL/gstack browser process exit `0`, with 29 checks including
+  Login, Overview, responsive layout, four search-to-detail paths, existing read pages, no writes,
+  logout retry, revocation, and post-logout denial:
+  `PCI-ENG-018-F-browser-1794684569736.json` and
+  `PCI-ENG-018-F-browser-process-1794684569780.json`.
+- Final focused TypeScript, PostgreSQL, API, Admin test and ESLint results are in
+  `PCI-ENG-018-F-checks-closure-final-1794685271954.json` and `PCI-ENG-018-F-lint-1794684478248.json`.
+
+Verification: PostgreSQL query acceptance **10/10 PASS**; Admin Web tests **43/43 PASS**; production
+and active backend-test TypeScript **PASS**; changed query/API ESLint and Admin ESLint **PASS**;
+Admin Web production build **PASS**; changed-file Prettier and `git diff --check` **PASS**. The
+PostgreSQL fixture created 137 rows per queried collection and verified seven pages, exact totals,
+stable ordering, SQL filtering, fixed per-page query shape, permission isolation, safe fields,
+repeatable-read Overview counts, and unchanged business-row hashes. PostgreSQL 17.10 and Podman
+5.7.1 were disposable; cleanup left no container residue. No Schema/Migration, Credential/Session,
+Creator Auth, RBAC, business write, Pilot, Production, or Real Money authorization changed.
+
+The full repository historical failures and full-lint findings remain outside this unit and are not
+claimed resolved. This unit is ready for Main Controller acceptance.
+
+```ini
+PCI-ENG-018-F = OPERATIONS OVERVIEW & CROSS-MODULE VISIBILITY COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
+OPERATIONS_ADMIN_PERMISSIONS = catalog:read,audit:read,offering:read,request:read
+OPERATIONS_ADMIN_WRITES = NOT AUTHORIZED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
 ## PCI-ENG-018-E - Offering and Customer Request Flow Visibility
 
 Founder-authorized read-only Admin Web extension. Existing Catalog/Audit read surfaces are reused;

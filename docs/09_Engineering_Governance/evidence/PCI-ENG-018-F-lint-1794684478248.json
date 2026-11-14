@@ -1,0 +1,47 @@
+[
+  {
+    "name": "changed-eslint",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/eslint/bin/eslint.js",
+      "adapters/persistence/postgres/postgres-operations-query-repository.ts",
+      "adapters/persistence/postgres/postgres-creator-identity-composition.ts",
+      "adapters/transport/http/operations-workspace-read-routes.ts",
+      "adapters/transport/http/operations-flow-read-routes.ts",
+      "adapters/transport/http/service-policy-routes.ts",
+      "applications/operations-admin/operations-query-repository.ts",
+      "applications/operations-admin/operations-workspace-read-service.ts",
+      "applications/operations-admin/operations-flow-read-service.ts",
+      "applications/service-policy/service-policy-read-service.ts",
+      "apps/api/src/create-api-server.ts",
+      "apps/api/src/main.ts",
+      "contracts/api/v1/operations-workspace-contracts.ts",
+      "scripts/test/verify-operations-admin-browser.ts",
+      "tests/integration/operations-workspace-postgres.integration.test.ts"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {},
+    "startedAt": "2026-11-14T19:27:33.461Z",
+    "finishedAt": "2026-11-14T19:27:58.248Z",
+    "exitCode": 1,
+    "signal": null,
+    "stdout": "\nD:\\codeSpace\\PersonalCommerceInfrastructure\\tests\\integration\\operations-workspace-postgres.integration.test.ts\n   59:44  error  Unsafe spread of an `any` value in an array                         @typescript-eslint/no-unsafe-assignment\n   63:7   error  Async method 'resolveActorContext' has no 'await' expression        @typescript-eslint/require-await\n  279:24  error  Unsafe argument of type `any` assigned to a parameter of type `{}`  @typescript-eslint/no-unsafe-argument\n  279:40  error  Unsafe member access .modules on an `any` value                     @typescript-eslint/no-unsafe-member-access\n  290:26  error  Unsafe member access .total on an `any` value                       @typescript-eslint/no-unsafe-member-access\n  291:26  error  Unsafe member access .items on an `any` value                       @typescript-eslint/no-unsafe-member-access\n  296:12  error  Unsafe call of an `any` typed value                                 @typescript-eslint/no-unsafe-call\n  296:26  error  Unsafe member access .items on an `any` value                       @typescript-eslint/no-unsafe-member-access\n\n✖ 8 problems (8 errors, 0 warnings)\n\n",
+    "stderr": ""
+  },
+  {
+    "name": "admin-eslint",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/eslint/bin/eslint.js",
+      "."
+    ],
+    "cwd": "D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web",
+    "environment": {},
+    "startedAt": "2026-11-14T19:27:33.480Z",
+    "finishedAt": "2026-11-14T19:27:41.348Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  }
+]

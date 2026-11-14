@@ -24,6 +24,7 @@ import {
   PostgresOfferingRepository,
 } from '../../adapters/persistence/postgres/postgres-creator-identity-repositories.js';
 import { createOperationsFlowReadService } from '../../applications/operations-admin/operations-flow-read-service.js';
+import { PostgresOperationsQueryRepository } from '../../adapters/persistence/postgres/postgres-operations-query-repository.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 
 // All browser actions use the repository-mandated gstack /browse driver.
@@ -31,11 +32,20 @@ import { createApiServer } from '../../apps/api/src/create-api-server.js';
 // failures are injected in an external test proxy, never in production code.
 const browser = process.env.PCI_BROWSE_EXECUTABLE;
 assert(browser, 'Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.');
+const runWorkspace = process.env.PCI_RUN_OPERATIONS_ADMIN_F === '1';
 const runCatalogAudit =
-  process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1' || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
-const runFlow = process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
+  runWorkspace ||
+  process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1' ||
+  process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
+const runFlow = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
 const fixture = new OperationsAdminFixture({
-  taskLabel: runFlow ? 'PCI-ENG-018-E' : runCatalogAudit ? 'PCI-ENG-018-C' : 'PCI-ENG-018-B-R1',
+  taskLabel: runWorkspace
+    ? 'PCI-ENG-018-F'
+    : runFlow
+      ? 'PCI-ENG-018-E'
+      : runCatalogAudit
+        ? 'PCI-ENG-018-C'
+        : 'PCI-ENG-018-B-R1',
   includeCatalogFixture: runCatalogAudit,
   includeFlowFixture: runFlow,
 });
@@ -104,7 +114,9 @@ try {
   });
   connection = createPostgresDatabase(db.runtimeUrl);
   const composition = createPostgresOperationsIdentityComposition(connection.database);
+  const operationsQueryRepository = new PostgresOperationsQueryRepository(connection.client);
   const operationsFlowReadService = createOperationsFlowReadService({
+    queries: operationsQueryRepository,
     offeringRepository: new PostgresOfferingRepository(connection.database),
     distributionAssetRepository: new PostgresDistributionAssetRepository(connection.database),
     identityRepository: new PostgresCommerceIdentityRepository(connection.database),
@@ -115,6 +127,7 @@ try {
     operationsHumanAuthenticationRuntime: composition.humanAuthenticationRuntime,
     servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(connection.database),
     operationsFlowReadService,
+    operationsQueryRepository,
   });
   const apiOrigin = await api.listen({ host: '127.0.0.1', port: 0 });
   proxy = createServer((request, response) => {
@@ -264,6 +277,50 @@ try {
     'request:read',
   ]);
   check('authoritative identity', session);
+  if (runWorkspace) {
+    await poll('JSON.stringify(!!document.querySelector(".metric-number"))', true);
+    const overview = (await js(
+      "JSON.stringify(await fetch('/api/operations/overview').then(async r=>({status:r.status,body:await r.json()})))",
+    )) as {
+      status: number;
+      body: { modules: { offering: { total: number }; request: { total: number } } };
+    };
+    assert.equal(overview.status, 200);
+    assert.equal(overview.body.modules.offering.total, 1);
+    assert.equal(overview.body.modules.request.total, 3);
+    check('Overview real snapshot', overview);
+    await browse('viewport', '390x844');
+    assert.equal(
+      await js('JSON.stringify(document.documentElement.scrollWidth<=innerWidth)'),
+      true,
+    );
+    check('responsive overview', { width: 390, noHorizontalOverflow: true });
+    await browse('viewport', '1280x900');
+    const searches = [
+      ['Catalog', 'capability-dance-teaching', 'capabilities'],
+      ['Offering', 'offering-flow-fixture', 'offerings'],
+      ['Request', 'request-flow-fixture', 'requests'],
+      ['Audit', 'catalog-browser-audit', 'audit'],
+    ] as const;
+    for (const [module, id, path] of searches) {
+      await browse('goto', origin + '/search');
+      await poll(
+        'JSON.stringify(!!document.querySelector("input[placeholder=\\"业务 ID、名称或状态\\"]"))',
+        true,
+      );
+      await browse('fill', 'input[placeholder="业务 ID、名称或状态"]', id);
+      await browse('click', 'button[type="submit"]');
+      await poll(`JSON.stringify(!!document.querySelector('a[href="/${path}?id=${id}"]'))`, true);
+      await browse('click', `a[href="/${path}?id=${id}"]`);
+      await poll('JSON.stringify(!!document.querySelector("aside[aria-label]"))', true);
+      check(
+        'Search to ' + module + ' detail',
+        await js(
+          'JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector("aside[aria-label]")?.textContent})',
+        ),
+      );
+    }
+  }
   if (runCatalogAudit) {
     await browse('goto', origin + '/capabilities');
     await poll('JSON.stringify(location.pathname)', '/capabilities');

@@ -70,6 +70,9 @@ import { createPublicHomepageService } from '../../../applications/public-commer
 import { ApplicationError } from '../../../applications/core/application-error.js';
 import type { PostgresDatabaseConnection } from '../../../adapters/persistence/postgres/postgres-database.js';
 import type { ServicePolicyCatalogRepository } from '../../../applications/service-policy/service-policy-repositories.js';
+import type { OperationsQueryRepository } from '../../../applications/operations-admin/operations-query-repository.js';
+import { createOperationsWorkspaceReadService } from '../../../applications/operations-admin/operations-workspace-read-service.js';
+import { registerOperationsWorkspaceReadRoutes } from '../../../adapters/transport/http/operations-workspace-read-routes.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
@@ -110,6 +113,7 @@ export interface ApiServerDependencies {
   readonly servicePolicyCatalogRepository?: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService?: ServicePolicyAdminService;
   readonly operationsFlowReadService?: OperationsFlowReadService;
+  readonly operationsQueryRepository?: OperationsQueryRepository;
 }
 
 export async function createApiServer(
@@ -391,12 +395,22 @@ export async function createApiServer(
     operationsAuthContextProvider:
       dependencies.operationsAuthContextProvider ?? composition.operationsAuthContextProvider,
     catalogRepository: servicePolicyCatalogRepository,
+    readQueries: dependencies.operationsQueryRepository,
     adminService: servicePolicyAdminService,
     humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
   });
   registerOperationsFlowReadRoutes(server, {
-    service: dependencies.operationsFlowReadService ?? composition.operationsFlowReadService,
+    service:
+      dependencies.operationsQueryRepository ??
+      dependencies.operationsFlowReadService ??
+      composition.operationsFlowReadService,
     humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
+  });
+  registerOperationsWorkspaceReadRoutes(server, {
+    service: dependencies.operationsQueryRepository
+      ? createOperationsWorkspaceReadService(dependencies.operationsQueryRepository)
+      : undefined,
+    auth: dependencies.operationsHumanAuthenticationRuntime,
   });
   registerCustomerRequestRoutes(server, {
     service: dependencies.customerRequestService ?? composition.customerRequestService,

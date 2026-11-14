@@ -60,15 +60,6 @@ export function AuditReadPanel() {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    // Defer the first request to the microtask queue so the effect only starts
-    // the external fetch; state updates remain in its async completion path.
-    void Promise.resolve().then(() => load());
-    // The filter values are intentionally captured by submit handlers, not by
-    // the one-time initial load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const detail = async (id: string) => {
     try {
       const response = await fetch(`/api/operations/audit/${encodeURIComponent(id)}`, {
@@ -88,6 +79,19 @@ export function AuditReadPanel() {
       setError('failed');
     }
   };
+  useEffect(() => {
+    // Defer the first request to the microtask queue so the effect only starts
+    // the external fetch; state updates remain in its async completion path.
+    void Promise.resolve().then(async () => {
+      await load();
+      const id = new URL(window.location.href).searchParams.get('id');
+      if (id) await detail(id);
+    });
+    // The filter values are intentionally captured by submit handlers, not by
+    // the one-time initial load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <section className="data-panel" aria-label="Audit 数据">
       <form

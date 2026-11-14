@@ -1,6 +1,12 @@
 // Navigation metadata only; it grants no backend permission.
 export const sections = [
-  { slug: '', label: '概览', english: 'Overview', description: '管理工作台的当前开放范围。' },
+  { slug: '', label: '概览', english: 'Overview', description: '真实业务指标与近期运营事件。' },
+  {
+    slug: 'search',
+    label: '全局检索',
+    english: 'Global Search',
+    description: '检索已授权模块中的真实业务记录。',
+  },
   {
     slug: 'capabilities',
     label: '能力目录',

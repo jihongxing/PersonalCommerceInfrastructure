@@ -570,3 +570,41 @@ footer {
     padding: 20px;
   }
 }
+
+.metric-number {
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+  margin: 10px 0;
+}
+.metric-number small {
+  font-size: 14px;
+  color: var(--muted);
+}
+.metric-states > div {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+.metric-states dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.search-results {
+  list-style: none;
+  padding: 0;
+}
+.search-results li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.search-results a {
+  color: var(--accent);
+  font-weight: 600;
+}
+.search-results p {
+  margin: 4px 0;
+}
+.search-results time {
+  color: var(--muted);
+}

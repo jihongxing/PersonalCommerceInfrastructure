@@ -61,14 +61,6 @@ export function CatalogReadPanel({ kind }: { kind: CatalogKind }) {
     }
   };
 
-  useEffect(() => {
-    // Defer the first request to the microtask queue so the effect only starts
-    // the external fetch; state updates remain in its async completion path.
-    void Promise.resolve().then(() => load());
-    // The shell revalidates the Session on navigation; this panel loads its data once per area.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind]);
-
   const detail = async (id: string) => {
     setSelected(null);
     try {
@@ -89,6 +81,18 @@ export function CatalogReadPanel({ kind }: { kind: CatalogKind }) {
       setError('failed');
     }
   };
+
+  useEffect(() => {
+    // Defer the first request to the microtask queue so the effect only starts
+    // the external fetch; state updates remain in its async completion path.
+    void Promise.resolve().then(async () => {
+      await load();
+      const id = new URL(window.location.href).searchParams.get('id');
+      if (id) await detail(id);
+    });
+    // The shell revalidates the Session on navigation; this panel loads its data once per area.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind]);
 
   return (
     <section className="data-panel" aria-label="Catalog 数据">

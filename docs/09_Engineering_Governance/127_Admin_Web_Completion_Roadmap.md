@@ -873,3 +873,43 @@ This closes the read-only E implementation for Main Controller review. The next 
 review of remaining operational visibility, exception identification and read-only statistics.
 Catalog Controls and every business write continue to require separate authorization. Existing
 full-suite/full-lint risks and all governance/production gates above remain unchanged.
+
+## 27. PCI-ENG-018-F - Operations Overview and Cross-Module Visibility
+
+The first unified workspace slice is implemented as a read-only extension of the accepted E
+surface. It uses the existing Human Operations Session and four fixed read permissions. The new
+query port is `applications/operations-admin/operations-query-repository.ts`; the PostgreSQL
+implementation is `adapters/persistence/postgres/postgres-operations-query-repository.ts`.
+
+The Overview is a repeatable-read PostgreSQL snapshot. It returns only authorized modules and records
+the query timestamp, source, scope, and exact-count flag. Catalog totals cover the current published
+policy version's capabilities and templates. Offering totals cover persisted `service_offerings`.
+Request totals cover persisted `commerce_actions`. Audit totals cover persisted operations audit
+records and recent activity is ordered by authoritative `occurred_at`, with stable `id` tie-breaker.
+No pending, timeout, unread, escalation, or intervention state is invented.
+
+Global Search is a bounded GET route. It searches only safe identifiers, public names, state and
+approved associations. Each selected module is independently authorized; `module=all` expands only
+to permissions held by the current Human Operations actor. Search results preserve object kind and
+ID, use stable ordering, and link to the existing detail pages. Sensitive request text, customer
+contacts, verifier/session material, private keys and audit state JSON are neither searched nor
+returned.
+
+Catalog, Audit, Offering and Request list queries now execute filtering, sorting, count and page
+selection in PostgreSQL. Projection joins occur after page selection, and the disposable fixture
+verified seven pages over 137 rows for each collection, no duplicate or missing IDs, SQL state
+filters, bounded result sizes, and unchanged row hashes. No index migration was needed; the query
+plan and current indexes are retained in the PostgreSQL evidence. The in-memory read composition is
+kept for existing tests and does not change the production PostgreSQL path.
+
+The Admin home now contains Overview metrics, recent activity and Global Search. Existing detail
+pages remain read-only. The real browser evidence covers Login, Overview, narrow-screen layout,
+Catalog/Offering/Request/Audit search navigation, existing read pages, explicit error handling,
+logout retry, Session revocation and post-logout denial. The complete evidence file names and exit
+codes are recorded in `21_Prototype_Execution.md` and the `PCI-ENG-018-F-*` files under the governance
+evidence directory.
+
+This unit does not authorize Catalog, Offering, Request or Creator decision writes, permission
+management, new RBAC, schema/migration work, authentication changes, Pilot, Production or real
+money. The historical full-suite and full-lint quality risks remain unclassified and are not claimed
+resolved.

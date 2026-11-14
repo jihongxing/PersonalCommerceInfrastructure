@@ -9,6 +9,7 @@ import type { OfferingRepository } from '../service-offering/offering-repositori
 import type { CommerceAction } from '../../modules/customer-request/commerce-action.js';
 import type { Offering } from '../../modules/service-offering/offering.js';
 import type { CommerceIdentity } from '../../modules/creator-commerce-identity/commerce-identity.js';
+import type { FlowQueryRepository } from './operations-query-repository.js';
 
 export type OperationsOfferingState = 'draft' | 'published' | 'unpublished' | 'archived';
 export type OperationsRequestState = 'draft' | 'submitted' | 'confirmed' | 'declined';
@@ -68,6 +69,7 @@ type ReadCollectionRepository<Entity> = {
 };
 
 export function createOperationsFlowReadService(dependencies: {
+  readonly queries?: FlowQueryRepository;
   readonly offeringRepository: Pick<OfferingRepository, 'findById'> &
     ReadCollectionRepository<Offering>;
   readonly distributionAssetRepository: Pick<DistributionAssetRepository, 'findById'>;
@@ -84,6 +86,7 @@ export function createOperationsFlowReadService(dependencies: {
       readonly query?: string;
       readonly state?: OperationsOfferingState;
     }): Promise<OperationsPage<OperationsOfferingRead>> {
+      if (dependencies.queries) return dependencies.queries.listOfferings(input);
       const offerings = await dependencies.offeringRepository.findAll();
       const identities = new Map(
         (await dependencies.identityRepository.findAll()).map((identity) => [
@@ -119,6 +122,7 @@ export function createOperationsFlowReadService(dependencies: {
     },
 
     async getOffering(id: string): Promise<OperationsOfferingRead> {
+      if (dependencies.queries) return dependencies.queries.getOffering(id);
       const offering = await (dependencies.offeringRepository.findReadById?.(id) ??
         dependencies.offeringRepository.findById(id));
       if (offering === undefined) throw notFound('offering');
@@ -137,6 +141,7 @@ export function createOperationsFlowReadService(dependencies: {
       readonly query?: string;
       readonly state?: OperationsRequestState;
     }): Promise<OperationsPage<OperationsRequestRead>> {
+      if (dependencies.queries) return dependencies.queries.listRequests(input);
       const actions = await dependencies.commerceActionRepository.findAll();
       const [offerings, identities] = await Promise.all([
         dependencies.offeringRepository.findAll(),
@@ -171,6 +176,7 @@ export function createOperationsFlowReadService(dependencies: {
     },
 
     async getRequest(id: string): Promise<OperationsRequestRead> {
+      if (dependencies.queries) return dependencies.queries.getRequest(id);
       const action = await (dependencies.commerceActionRepository.findReadById?.(id) ??
         dependencies.commerceActionRepository.findById(id));
       if (action === undefined) throw notFound('request');

@@ -1,0 +1,157 @@
+[
+  {
+    "name": "production-core-types",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.build.json",
+      "--noEmit"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.091Z",
+    "finishedAt": "2026-11-14T19:41:11.482Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "production-api-types",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.api.build.json",
+      "--noEmit"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.106Z",
+    "finishedAt": "2026-11-14T19:41:10.379Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "active-backend-test-types",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.active-tests.json",
+      "--noEmit"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.115Z",
+    "finishedAt": "2026-11-14T19:41:11.954Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "admin-types",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    "cwd": "D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.213Z",
+    "finishedAt": "2026-11-14T19:40:55.744Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "admin-test-types",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.tests.json"
+    ],
+    "cwd": "D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.341Z",
+    "finishedAt": "2026-11-14T19:40:56.564Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "admin-tests",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run"
+    ],
+    "cwd": "D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.350Z",
+    "finishedAt": "2026-11-14T19:40:59.704Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "\n RUN  v5.1.0 D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web\n\n\n Test Files  4 passed (4)\n      Tests  43 passed (43)\n   Start at  03:40:47\n   Duration  12.36s (environment 72%, setup 14%, tests 11%, import 2%, transform 1%)\n\n",
+    "stderr": ""
+  },
+  {
+    "name": "admin-build",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/next/dist/bin/next",
+      "build"
+    ],
+    "cwd": "D:/codeSpace/PersonalCommerceInfrastructure/apps/admin-web",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.359Z",
+    "finishedAt": "2026-11-14T19:41:08.700Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n✓ Running next.config.ts took 487ms\n\n  Creating an optimized production build ...\n✓ Compiled successfully in 4.4s\n  Running TypeScript ...\n  Finished TypeScript in 10.3s ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/21) ...\n  Generating static pages using 5 workers (5/21) \r\n  Generating static pages using 5 workers (10/21) \r\n  Generating static pages using 5 workers (15/21) \r\n✓ Generating static pages using 5 workers (21/21) in 1880ms\n  Finalizing page optimization ...\n\nRoute (app)\n┌ ○ /\n├ ○ /_not-found\n├   /[section]\n│ ├ ● /search\n│ ├ ● /capabilities\n│ ├ ● /templates\n│ └ ● [+6 more paths]\n├ ƒ /api/operations/audit\n├ ƒ /api/operations/audit/[id]\n├ ƒ /api/operations/auth/login\n├ ƒ /api/operations/auth/logout\n├ ƒ /api/operations/auth/session\n├ ƒ /api/operations/catalog/[kind]\n├ ƒ /api/operations/catalog/[kind]/[id]\n├ ƒ /api/operations/offerings\n├ ƒ /api/operations/offerings/[id]\n├ ƒ /api/operations/overview\n├ ƒ /api/operations/requests\n├ ƒ /api/operations/requests/[id]\n├ ƒ /api/operations/search\n└ ○ /login\n\n\n○  (Static)   prerendered as static content\n●  (SSG)      prerendered as static HTML (uses generateStaticParams)\nƒ  (Dynamic)  server-rendered on demand\n\n",
+    "stderr": ""
+  },
+  {
+    "name": "changed-prettier",
+    "command": [
+      "D:\\dev\\nodejs\\node.exe",
+      "node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "adapters/persistence/postgres/postgres-operations-query-repository.ts",
+      "adapters/transport/http/operations-workspace-read-routes.ts",
+      "applications/operations-admin/operations-query-repository.ts",
+      "applications/operations-admin/operations-workspace-read-service.ts",
+      "applications/operations-admin/operations-flow-read-service.ts",
+      "applications/service-policy/service-policy-read-service.ts",
+      "apps/admin-web/app/[section]/page.tsx",
+      "apps/admin-web/app/globals.css",
+      "apps/admin-web/app/page.tsx",
+      "apps/admin-web/components/admin-shell.test.tsx",
+      "apps/admin-web/components/audit-read-panel.tsx",
+      "apps/admin-web/components/catalog-read-panel.tsx",
+      "apps/admin-web/components/workspace-overview.tsx",
+      "apps/admin-web/components/workspace-search.tsx",
+      "apps/admin-web/components/workspace.test.tsx",
+      "apps/api/src/create-api-server.ts",
+      "apps/api/src/main.ts",
+      "contracts/api/v1/operations-workspace-contracts.ts",
+      "scripts/test/verify-operations-admin-browser.ts",
+      "tests/integration/operations-workspace-postgres.integration.test.ts"
+    ],
+    "cwd": "D:\\codeSpace\\PersonalCommerceInfrastructure",
+    "environment": {},
+    "startedAt": "2026-11-14T19:40:44.370Z",
+    "finishedAt": "2026-11-14T19:40:53.827Z",
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+    "stderr": ""
+  }
+]

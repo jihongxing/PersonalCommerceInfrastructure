@@ -142,6 +142,7 @@ import {
   type ContractService,
 } from '../../../applications/contract-commerce/contract-service.js';
 import { PostgresServicePolicyCatalogRepository } from './postgres-service-policy-catalog-repository.js';
+import { PostgresOperationsQueryRepository } from './postgres-operations-query-repository.js';
 import {
   createServicePolicyAdminService,
   type ServicePolicyAdminService,
@@ -209,6 +210,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
   readonly operationsFlowReadService: OperationsFlowReadService;
+  readonly operationsQueryRepository: PostgresOperationsQueryRepository;
 }
 
 export function createPostgresCreatorIdentityComposition(
@@ -267,7 +269,9 @@ export function createPostgresCreatorIdentityComposition(
   const servicePolicyCatalogRepository = new PostgresServicePolicyCatalogRepository(
     database.database,
   );
+  const operationsQueryRepository = new PostgresOperationsQueryRepository(database.client);
   const operationsFlowReadService = createOperationsFlowReadService({
+    queries: operationsQueryRepository,
     offeringRepository,
     distributionAssetRepository,
     capabilityRepository,
@@ -577,5 +581,6 @@ export function createPostgresCreatorIdentityComposition(
     }),
     operationsIdentityPersistence,
     operationsFlowReadService,
+    operationsQueryRepository,
   };
 }

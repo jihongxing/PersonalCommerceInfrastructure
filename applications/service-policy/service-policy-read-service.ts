@@ -1,4 +1,5 @@
 import { ApplicationError } from '../core/application-error.js';
+import type { CatalogQueryRepository } from '../operations-admin/operations-query-repository.js';
 import type {
   CapabilityCatalogItem,
   CatalogItemStatus,
@@ -53,12 +54,14 @@ export interface AuditReadFilters {
 
 export function createServicePolicyReadService(dependencies: {
   readonly repository: ServicePolicyCatalogRepository;
+  readonly queries?: CatalogQueryRepository;
 }) {
   return {
     async listCatalog(
       kind: CatalogReadKind,
       filters: CatalogReadFilters,
     ): Promise<CatalogReadResult> {
+      if (dependencies.queries) return dependencies.queries.listCatalog(kind, filters);
       const snapshot = await dependencies.repository.getSnapshot();
       const source = kind === 'capabilities' ? snapshot.capabilities : snapshot.templates;
       const query = filters.query?.trim().toLocaleLowerCase('zh-CN');
@@ -95,6 +98,7 @@ export function createServicePolicyReadService(dependencies: {
     },
 
     async getCatalog(kind: CatalogReadKind, id: string) {
+      if (dependencies.queries) return dependencies.queries.getCatalog(kind, id);
       const snapshot = await dependencies.repository.getSnapshot();
       const item = (kind === 'capabilities' ? snapshot.capabilities : snapshot.templates).find(
         (candidate) => candidate.id === id,
@@ -113,6 +117,7 @@ export function createServicePolicyReadService(dependencies: {
     },
 
     async listAudit(filters: AuditReadFilters): Promise<AuditReadResult> {
+      if (dependencies.queries) return dependencies.queries.listAudit(filters);
       const records = await dependencies.repository.listAudit();
       const query = filters.query?.trim().toLocaleLowerCase('zh-CN');
       const filtered = records.filter(
@@ -129,6 +134,7 @@ export function createServicePolicyReadService(dependencies: {
     },
 
     async getAudit(id: string) {
+      if (dependencies.queries) return dependencies.queries.getAudit(id);
       const record = (await dependencies.repository.listAudit()).find(
         (candidate) => candidate.id === id,
       );
@@ -154,7 +160,7 @@ function page<T>(items: readonly T[], pageNumber: number, pageSize: number) {
   };
 }
 
-function sanitizeAuditRecord(record: ServicePolicyAuditRecord): SafeAuditRecord {
+export function sanitizeAuditRecord(record: ServicePolicyAuditRecord): SafeAuditRecord {
   return {
     ...record,
     actorCategory: classifyAuditActor(record.actorId),
@@ -164,7 +170,7 @@ function sanitizeAuditRecord(record: ServicePolicyAuditRecord): SafeAuditRecord 
   };
 }
 
-function classifyAuditActor(actorId: string): AuditActorCategory {
+export function classifyAuditActor(actorId: string): AuditActorCategory {
   const normalized = actorId.trim().toLocaleLowerCase('en-US');
   if (/^(provider|service)[-_]/u.test(normalized)) return 'provider_service';
   if (

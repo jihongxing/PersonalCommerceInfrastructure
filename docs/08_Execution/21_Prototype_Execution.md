@@ -11018,3 +11018,38 @@ PCI-ENG-020-A_P1 = CWD-002 — FULFILLMENT WORKFLOW EXPOSED OUTSIDE VS-01 STOP B
 PCI-ENG-020-A_COMMIT = NONE
 PCI-ENG-020-A_PUSH = NONE
 ```
+
+## PCI-ENG-020-B1 / Creator Session Security Boundary
+
+This implementation removes browser-readable Creator access and refresh token persistence and routes
+Creator Web API traffic through the same-origin Next.js BFF at `apps/web-v2/app/api/[...path]/route.ts`.
+The browser receives only an opaque session cookie and a readable double-submit CSRF cookie. API
+credentials are held server-side in the additive `creator_web_sessions` table, encrypted with
+AES-256-GCM, and protected by a refresh-token hash compare-and-swap for concurrent rotation.
+Creator authentication and authorization remain authoritative in the Shared API; Operations
+Identity tables and runtime are not reused.
+
+Login, signup, session restore, refresh-on-401, logout, password-reset session clearing, expiry,
+revocation and reload are represented by the BFF lifecycle. The browser API client uses same-origin
+credentials and never reads or writes localStorage/sessionStorage credentials or adds a bearer
+header. Auth responses are sanitized before returning to the browser. Mutating BFF requests require
+an allowed Origin and CSRF header; foreign Origin and invalid CSRF requests are rejected.
+
+Validation evidence: `pnpm --dir apps/web-v2 typecheck` passed; `pnpm --dir apps/web-v2 build`
+passed; `pnpm --dir apps/web-v2 lint` passed with existing non-blocking warnings; focused BFF
+client/auth tests passed `10 files / 17 tests`; Customer Request application and Creator Identity
+integration tests passed `2 files / 22 tests`; and migration journal validation passed with
+`0042_creator_web_sessions.sql`. A real Browser + Next + Shared API + PostgreSQL run was not
+available in this workspace, so cookie flags and cross-instance rotation remain pending runtime
+acceptance evidence.
+
+```ini
+PCI-ENG-020-B1 = CREATOR SESSION SECURITY REMEDIATION — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-B1_SCOPE = apps/web-v2 same-origin BFF + Creator-only persistent session store
+PCI-ENG-020-B1_SCHEMA_MIGRATION = 0042_creator_web_sessions.sql — additive, reversible
+PCI-ENG-020-B1_BROWSER_TOKENS = NONE — no localStorage/sessionStorage or browser Authorization
+PCI-ENG-020-B1_CSRF_ORIGIN = IMPLEMENTED — focused client coverage; real browser pending
+PCI-ENG-020-B1_BROWSER_EVIDENCE = UNVERIFIED — real Browser + Next + BFF + PostgreSQL pending
+PCI-ENG-020-B1_ADMIN_EXPANSION = NONE
+PCI-ENG-020-B1_PUSH = NONE
+```

@@ -1,81 +1,44 @@
 /**
- * 简单的客户端认证会话管理
+ * Browser-side authentication state.
  *
- * 会话由 apps/api 签发和刷新。
+ * Creator credentials are owned by the same-origin BFF and live only in its
+ * server-side session store. This module intentionally never reads or writes
+ * localStorage/sessionStorage and never exposes a bearer token to callers.
  */
-
-const STORAGE_KEY = 'pci.auth.session';
 
 export interface AuthSession {
-  accessToken: string;
-  refreshToken?: string;
   userEmail: string;
-  expiresAt: number;
 }
 
-/**
- * 从 localStorage 获取会话
- */
+let currentSession: AuthSession | null = null;
+
 export function getSession(): AuthSession | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const session = JSON.parse(raw) as AuthSession;
-
-    // 检查是否过期
-    // Session timestamps are stored as Unix seconds to match the API contract.
-    if (session.expiresAt && Math.floor(Date.now() / 1000) > session.expiresAt && !session.refreshToken) {
-      clearSession();
-      return null;
-    }
-
-    return session;
-  } catch {
-    clearSession();
-    return null;
-  }
+  return currentSession;
 }
 
-/**
- * 保存会话到 localStorage
- */
-export function setSession(session: AuthSession): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+// Accept legacy-shaped callers during the migration, but discard credentials.
+export function setSession(session: { userEmail?: unknown; user?: { email?: unknown } }): void {
+  const email =
+    typeof session.userEmail === 'string'
+      ? session.userEmail
+      : typeof session.user?.email === 'string'
+        ? session.user.email
+        : undefined;
+  currentSession = email ? { userEmail: email } : null;
 }
 
-/**
- * 清除会话
- */
 export function clearSession(): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  localStorage.removeItem(STORAGE_KEY);
+  currentSession = null;
 }
 
-/**
- * 检查是否已登录
- */
 export function isAuthenticated(): boolean {
-  return getSession() !== null;
+  return currentSession !== null;
 }
 
 /**
- * 获取 Bearer Token（用于 API 请求）
+ * Retained as a compatibility shim for retired callers. BFF requests use the
+ * HttpOnly cookie and must never add an Authorization header in the browser.
  */
-export function getBearerToken(): string | null {
-  const session = getSession();
-  return session ? session.accessToken : null;
+export function getBearerToken(): null {
+  return null;
 }

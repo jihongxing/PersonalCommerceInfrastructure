@@ -295,6 +295,13 @@
       "when": 1794777600001,
       "tag": "0041_operations_initial_admin_bootstrap",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794777600002,
+      "tag": "0042_creator_web_sessions",
+      "breakpoints": true
     }
   ]
 }

@@ -72,8 +72,8 @@ export class XSSProtectionManager {
  * CSRF 防护管理器
  */
 export class CSRFProtectionManager {
-  private static readonly CSRF_TOKEN_KEY = 'x-csrf-token';
   private static readonly CSRF_HEADER_KEY = 'X-CSRF-Token';
+  private static token: string | null = null;
 
   /**
    * 生成 CSRF token
@@ -86,23 +86,18 @@ export class CSRFProtectionManager {
   }
 
   /**
-   * 保存 CSRF token 到 localStorage
+   * Retained for callers outside the BFF client. The BFF client reads its
+   * double-submit cookie and this helper never persists credentials.
    */
   static saveToken(): void {
-    if (typeof localStorage !== 'undefined') {
-      const token = this.generateToken();
-      localStorage.setItem(this.CSRF_TOKEN_KEY, token);
-    }
+    this.token = this.generateToken();
   }
 
   /**
    * 获取 CSRF token
    */
   static getToken(): string | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
-    }
-    return localStorage.getItem(this.CSRF_TOKEN_KEY);
+    return this.token;
   }
 
   /**

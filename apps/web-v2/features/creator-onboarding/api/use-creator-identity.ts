@@ -53,7 +53,7 @@ export function useCreatorIdentity() {
         {
           params: {
             header: {
-              // Bearer token 会在 apiClient 中自动添加
+              // The same-origin BFF supplies the server-side Creator session.
             },
           },
         }

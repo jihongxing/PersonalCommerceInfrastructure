@@ -1,162 +1,65 @@
 'use client';
 
 import { apiClient } from '@/lib/api/client';
-import { setSession, clearSession, getSession } from '@/lib/auth/session';
+import { clearSession } from '@/lib/auth/session';
 
-/**
- * 认证 API 请求的数据类型
- */
+export interface SignupRequest { email: string; password: string; name: string; }
+export interface AuthResponse {
+  user: { id: string; email: string; name?: string; createdAt?: string };
+  expiresIn?: number;
+}
+export type SignupResponse = AuthResponse;
+export type LoginRequest = Omit<SignupRequest, 'name'>;
+export type LoginResponse = AuthResponse;
+export type RefreshResponse = { authenticated: boolean; user?: AuthResponse['user'] };
+export interface ForgotPasswordRequest { email: string; }
+export interface ResetPasswordRequest { token: string; newPassword: string; confirmPassword: string; }
 
-export interface SignupRequest {
-  email: string;
-  password: string;
-  name: string;
+function messageFor(error: { error?: { message?: string }; message?: string } | null, fallback: string) {
+  return error?.error?.message || error?.message || fallback;
 }
 
-export interface SignupResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    createdAt?: string;
-  };
-  expiresIn: number;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    createdAt?: string;
-  };
-  expiresIn: number;
-}
-
-export interface RefreshRequest {
-  refreshToken: string;
-}
-
-export interface RefreshResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-/**
- * 认证服务类
- * 处理所有认证相关的 API 调用
- */
 export class AuthService {
-  /**
-   * 用户注册
-   */
   async signup(credentials: SignupRequest): Promise<SignupResponse> {
     try {
-      const { data, error } = await apiClient.POST('/api/v1/auth/signup', {
-        body: credentials,
-      });
-
-      if (error) {
-        throw new Error(error.error?.message || error.message || '注册失败');
-      }
-
-      if (!data) {
-        throw new Error('No response data from signup');
-      }
-
-      const response = data as SignupResponse;
-
-      // 保存会话
-      this.saveSession(response);
-
-      return response;
+      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/signup', { body: credentials });
+      if (error) throw new Error(messageFor(error, '注册失败'));
+      if (!data?.user) throw new Error('No response data from signup');
+      return data;
     } catch (err) {
       console.error('Signup error');
       throw err;
     }
   }
 
-  /**
-   * 用户登陆
-   */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const { data, error } = await apiClient.POST('/api/v1/auth/login', {
-        body: credentials,
-      });
-
-      if (error) {
-        throw new Error(error.error?.message || error.message || '登陆失败');
-      }
-
-      if (!data) {
-        throw new Error('No response data from login');
-      }
-
-      const response = data as LoginResponse;
-
-      // 保存会话
-      this.saveSession(response);
-
-      return response;
+      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/login', { body: credentials });
+      if (error) throw new Error(messageFor(error, '登陆失败'));
+      if (!data?.user) throw new Error('No response data from login');
+      return data;
     } catch (err) {
       console.error('Login error');
       throw err;
     }
   }
 
-  /**
-   * 刷新 Token
-   */
-  async refresh(refreshToken: string): Promise<RefreshResponse> {
+  async refresh(): Promise<RefreshResponse> {
     try {
-      const { data, error } = await apiClient.POST('/api/v1/auth/refresh', {
-        body: { refreshToken },
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Token 刷新失败');
-      }
-
-      if (!data) {
-        throw new Error('No response data from refresh');
-      }
-
-      return data as RefreshResponse;
+      const { data, error } = await apiClient.POST<RefreshResponse>('/api/v1/auth/refresh');
+      if (error) throw new Error(messageFor(error, '刷新登录状态失败'));
+      if (!data) throw new Error('No response data from refresh');
+      return data;
     } catch (err) {
       console.error('Refresh error');
       throw err;
     }
   }
 
-  /**
-   * 用户登出
-   */
   async logout(): Promise<void> {
     try {
       const { error, status } = await apiClient.POST('/api/v1/auth/logout');
-      if (error && (status !== 401 || getSession()))
-        throw new Error(error.error?.message || error.message || '登出失败');
+      if (error && status !== 401) throw new Error(messageFor(error, '登出失败'));
       clearSession();
     } catch (err) {
       console.error('Logout error');
@@ -164,39 +67,18 @@ export class AuthService {
     }
   }
 
-  /**
-   * 忘记密码 - 请求重置邮件
-   */
   async forgotPassword(request: ForgotPasswordRequest): Promise<void> {
     const { error } = await apiClient.POST('/api/v1/auth/forgot-password', { body: request });
-    if (error) throw new Error(error.error?.message || '密码找回暂不可用，请稍后重试。');
+    if (error) throw new Error(messageFor(error, '密码找回暂不可用，请稍后重试。'));
   }
 
-  /**
-   * 重置密码
-   */
   async resetPassword(request: ResetPasswordRequest): Promise<void> {
     const { error } = await apiClient.POST('/api/v1/auth/reset-password', {
       body: { token: request.token, newPassword: request.newPassword },
     });
-    if (error) throw new Error(error.error?.message || '密码重置失败，请稍后重试。');
+    if (error) throw new Error(messageFor(error, '密码重置失败，请稍后重试。'));
     clearSession();
-  }
-
-  /**
-   * 保存会话到 localStorage
-   */
-  private saveSession(response: SignupResponse | LoginResponse): void {
-    setSession({
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-      userEmail: response.user.email,
-      expiresAt: Math.floor(Date.now() / 1000) + response.expiresIn,
-    });
   }
 }
 
-/**
- * 创建单例实例
- */
 export const authService = new AuthService();

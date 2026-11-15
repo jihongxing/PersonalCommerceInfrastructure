@@ -11052,7 +11052,7 @@ PCI-ENG-020-B1_CSRF_ORIGIN = IMPLEMENTED — focused client coverage; real brows
 PCI-ENG-020-B1_BROWSER_EVIDENCE = UNVERIFIED — real Browser + Next + BFF + PostgreSQL pending
 PCI-ENG-020-B1_ADMIN_EXPANSION = NONE
 PCI-ENG-020-B1_COMMIT = a1e9109 — feat: secure creator web sessions behind bff
-PCI-ENG-020-B1_FOLLOWUP = 2e8d929 — sanitize creator BFF auth responses; 77f81b3 — formatting
+PCI-ENG-020-B1_FOLLOWUP = 2e8d929 — sanitize creator BFF auth responses; 040a83f — force same-origin browser client; 77f81b3 — formatting
 PCI-ENG-020-B1_PUSH = NONE
 ```
 

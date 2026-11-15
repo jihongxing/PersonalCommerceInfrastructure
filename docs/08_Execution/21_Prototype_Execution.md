@@ -10864,3 +10864,49 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-018-F-ISSUE-01 / Operations Overview HTTP 500 Resolution
+
+This bounded follow-up resolves the Overview `500` recorded during the D Browser acceptance.
+The original exception was not a BFF, Cookie, Session, or permission failure. In the D/C
+Catalog-only Disposable PostgreSQL fixture, the authenticated account retained the existing
+`offering:read` and `request:read` permissions, while the fixture omitted the existing
+`service_offerings` and `commerce_actions` tables. The Overview service therefore selected the
+authorized modules and PostgreSQL raised SQLSTATE `42P01` (`relation "service_offerings" does
+not exist`); the API error handler correctly mapped that unhandled database error to HTTP 500.
+
+The Browser verification fixture now installs the existing Flow read tables and rows for every
+authenticated scenario that renders Overview, including the C/D Catalog-focused scenarios. The
+fixture grants Runtime `SELECT` only and adds no schema, migration, ACL, permission, or business
+write behavior. The harness asserts Overview HTTP 200 and retains the existing F/E exact totals.
+
+Verification used PostgreSQL 17.10 in a Disposable Podman fixture and the real Next.js, Admin
+BFF, Fastify, Human Operations Session, PostgreSQL, and gstack Browser chain. Overview returned
+HTTP 200 with Catalog 20, Offering 1, Request 3, and Audit 1; the Browser process exited `0`,
+API `unhandled_api_error` entries were absent, and container cleanup left no residue. The fixed
+PostgreSQL Overview/query tests passed `10/10`, Operations flow API tests passed `34/34`, Admin
+Web tests passed `48/48`, and the relevant TypeScript, ESLint, Prettier, Admin Web build, and
+`git diff --check` checks passed. The fixed evidence is indexed in
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-ISSUE-01-index.md`; a direct C-mode
+regression also returned Overview HTTP 200 with Browser process exit `0`.
+
+No production or business database was used. No Authentication Runtime, Cookie, BFF
+authorization, Catalog, Offering, Request, Audit, Session, Credential, Schema, Migration,
+permission, or business write behavior was changed.
+
+```ini
+PCI-ENG-018-F-ISSUE-01 = ACCEPTED
+PCI-ENG-018-F-ISSUE-01_ROOT_CAUSE = CATALOG-ONLY DISPOSABLE FIXTURE OMITTED FLOW TABLES
+PCI-ENG-018-F-ISSUE-01_SQLSTATE = 42P01 — service_offerings DOES NOT EXIST
+PCI-ENG-018-F-ISSUE-01_BROWSER = PASS — HTTP 200, PROCESS EXIT 0
+PCI-ENG-018-F-ISSUE-01_BUSINESS_WRITES = NONE
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

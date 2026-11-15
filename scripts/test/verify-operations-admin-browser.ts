@@ -39,6 +39,9 @@ const runCatalogAudit =
   process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1' ||
   process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
 const runFlow = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
+// The authenticated shell always requests Overview. Its four permission-scoped
+// modules require the existing flow tables even when the scenario focuses on Catalog.
+const includeOverviewFixture = true;
 const fixture = new OperationsAdminFixture({
   taskLabel: runWorkspace
     ? 'PCI-ENG-018-F'
@@ -49,8 +52,8 @@ const fixture = new OperationsAdminFixture({
         : runCatalogAudit
           ? 'PCI-ENG-018-C'
           : 'PCI-ENG-018-B-R1',
-  includeCatalogFixture: runCatalogAudit,
-  includeFlowFixture: runFlow,
+  includeCatalogFixture: includeOverviewFixture,
+  includeFlowFixture: includeOverviewFixture,
 });
 const secrets = [randomBytes(32).toString('base64url')];
 const password = secrets[0]!;
@@ -89,7 +92,7 @@ async function poll(expression: string, expected: unknown) {
     await new Promise((r) => setTimeout(r, 250));
   }
   const bodyText = await js('JSON.stringify(document.body.innerText.slice(-1_000))');
-  throw new Error(`Browser state not reached: ${expression}; body=${bodyText}`);
+  throw new Error(`Browser state not reached: ${expression}; body=${String(bodyText)}`);
 }
 let connection: PostgresDatabaseConnection | undefined;
 let next: ChildProcess | undefined;
@@ -368,7 +371,7 @@ try {
     'catalog:policy:activate',
   ]);
   check('authoritative identity', session);
-  if (runWorkspace) {
+  if (includeOverviewFixture) {
     await poll('JSON.stringify(!!document.querySelector(".metric-number"))', true);
     const overview = (await js(
       "JSON.stringify(await fetch('/api/operations/overview').then(async r=>({status:r.status,body:await r.json()})))",
@@ -377,8 +380,10 @@ try {
       body: { modules: { offering: { total: number }; request: { total: number } } };
     };
     assert.equal(overview.status, 200);
-    assert.equal(overview.body.modules.offering.total, 1);
-    assert.equal(overview.body.modules.request.total, 3);
+    if (runFlow) {
+      assert.equal(overview.body.modules.offering.total, 1);
+      assert.equal(overview.body.modules.request.total, 3);
+    }
     check('Overview real snapshot', overview);
     await browse('viewport', '390x844');
     assert.equal(
@@ -463,7 +468,11 @@ try {
     await poll('JSON.stringify(document.body.innerText.includes("相对当前有效版本的差异"))', true);
     const afterPreview = await catalogSnapshot();
     assert.deepEqual(afterPreview, beforePreview);
-    check('preview data invariance', { before: beforePreview, after: afterPreview, unchanged: true });
+    check('preview data invariance', {
+      before: beforePreview,
+      after: afterPreview,
+      unchanged: true,
+    });
     await browse(
       'js',
       `(() => {

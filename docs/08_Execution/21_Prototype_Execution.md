@@ -8,7 +8,7 @@
 > **Source of Truth**：[20 MVP PRD: VS-01](../07_Product_Architecture/20_MVP_PRD_VS01.md)  
 > **Upstream Product Definitions**：[17 Core Product Objects](../07_Product_Architecture/17_Core_Product_Objects.md)、[18 MVP Product Flow](../07_Product_Architecture/18_MVP_Product_Flow.md)、[19 MVP Product Specification](../07_Product_Architecture/19_MVP_Product_Specification.md)  
 > **Document Type**：Living execution record; implementation status, deviations, blockers, testing evidence and handoff only  
-> **Last Updated**：2026-11-13
+> **Last Updated**：2026-11-16
 
 ## 1. Purpose
 
@@ -10900,6 +10900,67 @@ PCI-ENG-018-F-ISSUE-01_ROOT_CAUSE = CATALOG-ONLY DISPOSABLE FIXTURE OMITTED FLOW
 PCI-ENG-018-F-ISSUE-01_SQLSTATE = 42P01 — service_offerings DOES NOT EXIST
 PCI-ENG-018-F-ISSUE-01_BROWSER = PASS — HTTP 200, PROCESS EXIT 0
 PCI-ENG-018-F-ISSUE-01_BUSINESS_WRITES = NONE
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+## PCI-ENG-019-A / Evidence-Based Operations Exception Discovery
+
+This bounded read-only unit adds an Exception Inbox at `/admin/exceptions`. It derives explainable
+signals from existing Offering, Customer Request and immutable Operations Audit read evidence. It
+does not add exception persistence, a scheduler, worker, notification, assignment, resolution,
+SLA, automated disposition or any business workflow transition.
+
+The accepted rule set is:
+
+- `AUDIT_OPERATION_FAILURE` (`confirmed_fact`): an immutable Audit action explicitly records
+  `activation_failed` or `draft_update_failed`.
+- `AUDIT_UNKNOWN_ACTOR` (`needs_review`): the existing Audit actor classifier returns `unknown`;
+  this is not an unauthorized-activity conclusion.
+- `PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION` (`needs_review`): a published Offering has no
+  Distribution Asset; age and publication alone are not treated as failure evidence.
+- `REQUEST_OFFERING_UNRESOLVED` (`needs_review`): the Request Offering association cannot be
+  resolved to an Offering owned by the recorded Creator. This rule requires both
+  `request:read` and `offering:read`.
+
+Each response includes the rule ID, classification, source, safe evidence fields, related record
+identifiers and rule metadata describing the condition, business relationship and false-positive
+exclusions. Normal states and insufficient evidence are omitted. The PostgreSQL repository uses a
+repeatable-read, read-only snapshot with server-side filtering and pagination; no before/after
+Audit JSON, credentials, tokens or private request content is returned.
+
+The API route is `GET /api/v1/operations/admin/exceptions`, reached by the same-origin Admin BFF
+route `/api/operations/exceptions`. Authorization is evaluated per source module using the existing
+four read permissions. The Admin Web page is read-only and exposes loading, empty, unauthorized,
+failure, filtering and pagination states.
+
+Verification used a Disposable PostgreSQL 17.10 Podman fixture and the real Next.js, Admin BFF,
+Fastify, Operations Session and gstack Browser chain. PostgreSQL exception discovery and API
+permission coverage passed `11/11`; the Browser process exited `0` after 35 checks, including the
+Exception Inbox, forged-header rejection, Session logout/revocation and the existing Admin
+surfaces. Admin Web regression passed `49/49`, the production build passed, and changed-file
+TypeScript, ESLint, Prettier and `git diff --check` passed. Structured evidence is indexed in
+`docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-index.md`.
+
+No production or business database was used. No Schema, Migration, exception persistence, Worker,
+Notification, Identity, Credential, Session model, permission, or Catalog/Offering/Request/Audit
+workflow was changed. Existing broader repository quality findings remain outside this bounded
+unit.
+
+```ini
+PCI-ENG-019-A = IMPLEMENTED — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-019-A_EXCEPTION_INBOX = READ-ONLY — EXISTING EVIDENCE ONLY
+PCI-ENG-019-A_RULES = 4 EXPLICIT RULES — CONFIRMED FACT / NEEDS REVIEW
+PCI-ENG-019-A_POSTGRES = PASS — 11/11 — DISPOSABLE POSTGRESQL 17.10
+PCI-ENG-019-A_BROWSER = PASS — 35 CHECKS — PROCESS EXIT 0
+PCI-ENG-019-A_BUSINESS_WRITES = NONE
 PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
 FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
 VS-01 = FROZEN

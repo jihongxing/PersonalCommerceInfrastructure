@@ -70,7 +70,7 @@ describe('Operations shell', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
     expect(screen.queryByText('Second route')).not.toBeInTheDocument();
   });
-  it('has ten navigation destinations, an active area and a session control', async () => {
+  it('has eleven navigation destinations, an active area and a session control', async () => {
     render(
       <AdminShell>
         <Overview />
@@ -78,7 +78,7 @@ describe('Operations shell', () => {
     );
     expect(screen.getByText('正在验证 Session')).toBeVisible();
     const navigation = await screen.findByRole('navigation', { name: '运营管理导航' });
-    expect(navigation.querySelectorAll('a')).toHaveLength(10);
+    expect(navigation.querySelectorAll('a')).toHaveLength(11);
     expect(screen.getByRole('link', { name: '服务模板', current: 'page' })).toHaveAttribute(
       'href',
       '/templates',

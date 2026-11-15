@@ -44,3 +44,33 @@ export const OperationsOverviewResponseSchema = Type.Object({
   }),
   recentActivity: Type.Optional(Type.Array(SearchItemSchema)),
 });
+
+const ExceptionRuleSchema = Type.Object({
+  id: Type.String(),
+  classification: Type.Union([Type.Literal('confirmed_fact'), Type.Literal('needs_review')]),
+  source: Type.Union([Type.Literal('offering'), Type.Literal('request'), Type.Literal('audit')]),
+  requiredModules: Type.Array(Type.String()),
+  title: Type.String(),
+  condition: Type.String(),
+  evidenceFields: Type.String(),
+  relationship: Type.String(),
+  exclusions: Type.String(),
+});
+const ExceptionSignalSchema = Type.Object({
+  id: Type.String(),
+  ruleId: Type.String(),
+  classification: Type.Union([Type.Literal('confirmed_fact'), Type.Literal('needs_review')]),
+  source: Type.Union([Type.Literal('offering'), Type.Literal('request'), Type.Literal('audit')]),
+  title: Type.String(),
+  summary: Type.String(),
+  occurredAt: Type.Optional(Type.String()),
+  evidence: Type.Record(Type.String(), Type.Unknown()),
+  related: Type.Array(Type.Object({ kind: Type.String(), id: Type.String() })),
+});
+export const OperationsExceptionsResponseSchema = Type.Object({
+  items: Type.Array(ExceptionSignalSchema),
+  total: Type.Integer({ minimum: 0 }),
+  page: Type.Integer({ minimum: 1 }),
+  pageSize: Type.Integer({ minimum: 1, maximum: 100 }),
+  rules: Type.Array(ExceptionRuleSchema),
+});

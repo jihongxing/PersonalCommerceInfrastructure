@@ -32,7 +32,8 @@ import { createApiServer } from '../../apps/api/src/create-api-server.js';
 // failures are injected in an external test proxy, never in production code.
 const browser = process.env.PCI_BROWSE_EXECUTABLE;
 assert(browser, 'Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.');
-const runWorkspace = process.env.PCI_RUN_OPERATIONS_ADMIN_F === '1';
+const runExceptionDiscovery = process.env.PCI_RUN_OPERATIONS_ADMIN_019_A === '1';
+const runWorkspace = runExceptionDiscovery || process.env.PCI_RUN_OPERATIONS_ADMIN_F === '1';
 const runCatalogControl = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_D === '1';
 const runCatalogAudit =
   runCatalogControl ||
@@ -44,7 +45,9 @@ const runFlow = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
 const includeOverviewFixture = true;
 const fixture = new OperationsAdminFixture({
   taskLabel: runWorkspace
-    ? 'PCI-ENG-018-F'
+    ? runExceptionDiscovery
+      ? 'PCI-ENG-019-A'
+      : 'PCI-ENG-018-F'
     : runFlow
       ? 'PCI-ENG-018-E'
       : runCatalogControl
@@ -107,6 +110,16 @@ let failure: unknown;
 try {
   await fixture.start();
   const db = await fixture.database();
+  if (runExceptionDiscovery) {
+    await db.admin`
+      INSERT INTO service_policy_audits
+        (id, actor_id, entity_type, entity_id, action, before_state, after_state, reason, policy_version, occurred_at, correlation_id, recorded_at)
+      VALUES
+        ('exception-browser-activation-failed', 'operations-browser', 'release', 'browser-draft', 'activation_failed', '{}'::jsonb, '{}'::jsonb, 'Browser fixture validation failure', 'v1', '2030-02-04', 'exception-browser-failed', '2031-02-04'),
+        ('exception-browser-unknown-actor', 'mystery-browser-actor', 'capability', 'capability-dance-teaching', 'updated', '{}'::jsonb, '{}'::jsonb, 'Browser fixture actor classification review', 'v1', '2030-02-05', 'exception-browser-unknown', '2031-02-05')
+      ON CONFLICT (id) DO NOTHING
+    `;
+  }
   const flowSnapshot = async () => db.admin`
     SELECT 'offerings' AS relation, count(*)::int AS count, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) AS hash FROM public.service_offerings t
     UNION ALL SELECT 'requests', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) FROM public.commerce_actions t
@@ -415,6 +428,18 @@ try {
           'JSON.stringify({path:location.pathname,search:location.search,detail:document.querySelector("aside[aria-label]")?.textContent})',
         ),
       );
+    }
+    if (runWorkspace) {
+      await browse('goto', origin + '/admin/exceptions');
+      await poll('JSON.stringify(location.pathname)', '/admin/exceptions');
+      await poll('JSON.stringify(document.body.innerText.includes("运营异常发现"))', true);
+      const exceptions = (await js(
+        "JSON.stringify(await fetch('/api/operations/exceptions').then(async r=>({status:r.status,body:await r.json()})))",
+      )) as { status: number; body: { items: unknown[]; rules: unknown[] } };
+      assert.equal(exceptions.status, 200);
+      assert.equal(exceptions.body.items.length, 2);
+      assert.equal(exceptions.body.rules.length, 4);
+      check('exception inbox evidence boundary', exceptions);
     }
   }
   if (runCatalogControl) {

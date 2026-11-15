@@ -81,11 +81,13 @@ export class OperationsAdminFixture {
     this.includeCatalogFixture = options.includeCatalogFixture ?? false;
     this.includeFlowFixture = options.includeFlowFixture ?? false;
     const prefix =
-      this.taskLabel === 'PCI-ENG-018-C'
-        ? 'pci-018c'
-        : this.taskLabel === 'PCI-ENG-018-E'
-          ? 'pci-018e'
-          : 'pci-018br1';
+      this.taskLabel === 'PCI-ENG-019-A'
+        ? 'pci-019a'
+        : this.taskLabel === 'PCI-ENG-018-C'
+          ? 'pci-018c'
+          : this.taskLabel === 'PCI-ENG-018-E'
+            ? 'pci-018e'
+            : 'pci-018br1';
     this.name = `${prefix}-${randomBytes(5).toString('hex')}`;
   }
   get postgresEvidenceFileName(): string {
@@ -114,11 +116,13 @@ export class OperationsAdminFixture {
     this.folder = await mkdtemp(
       join(
         tmpdir(),
-        this.taskLabel === 'PCI-ENG-018-C'
-          ? 'pci-018c-'
-          : this.taskLabel === 'PCI-ENG-018-E'
-            ? 'pci-018e-'
-            : 'pci-018br1-',
+        this.taskLabel === 'PCI-ENG-019-A'
+          ? 'pci-019a-'
+          : this.taskLabel === 'PCI-ENG-018-C'
+            ? 'pci-018c-'
+            : this.taskLabel === 'PCI-ENG-018-E'
+              ? 'pci-018e-'
+              : 'pci-018br1-',
       ),
     );
     this.evidence.podman = JSON.parse(

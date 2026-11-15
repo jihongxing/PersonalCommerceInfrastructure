@@ -589,6 +589,25 @@ footer {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
+.exception-list {
+  display: grid;
+  gap: 16px;
+}
+.exception-badge {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.exception-badge.confirmed_fact {
+  border-color: #b45309;
+  color: #92400e;
+}
+.exception-badge.needs_review {
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
 .search-results {
   list-style: none;
   padding: 0;

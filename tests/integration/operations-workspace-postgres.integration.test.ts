@@ -10,9 +10,10 @@ import type { OperationsHumanAuthenticationRuntime } from '../../applications/op
 import type { FastifyInstance } from 'fastify';
 
 const enabled = process.env.PCI_RUN_OPERATIONS_WORKSPACE_POSTGRES === '1';
-describe.skipIf(!enabled)('018-F real PostgreSQL query acceptance', () => {
+describe.skipIf(!enabled)('Operations workspace and exception PostgreSQL query acceptance', () => {
   const fixture = new OperationsAdminFixture({
-    taskLabel: 'PCI-ENG-018-F',
+    taskLabel:
+      process.env.PCI_RUN_OPERATIONS_ADMIN_019_A === '1' ? 'PCI-ENG-019-A' : 'PCI-ENG-018-F',
     includeCatalogFixture: true,
     includeFlowFixture: true,
   });
@@ -50,6 +51,12 @@ describe.skipIf(!enabled)('018-F real PostgreSQL query acceptance', () => {
       SELECT 'scale-'||lpad(n::text,3,'0'),'customer-flow-fixture','creator-flow-fixture','scale-'||lpad(n::text,3,'0'),'DO-NOT-SEARCH-PRIVATE','private-token-'||n,(ARRAY['draft','submitted','confirmed','declined'])[1+n%4],'2030-01-01' FROM generate_series(1,137) n;
       INSERT INTO service_policy_audits (id,actor_id,entity_type,entity_id,action,before_state,after_state,reason,policy_version,occurred_at,correlation_id,recorded_at)
       SELECT 'scale-'||lpad(n::text,3,'0'),(ARRAY['human-operator','provider-service','platform-system'])[1+n%3],'capability','scale-'||lpad(n::text,3,'0'),'updated','{"password":"not-returned"}','{"status":"active","sessionDigest":"not-returned"}','DO-NOT-SEARCH-PRIVATE','v1','2030-01-01','scale-correlation-'||n,'2031-01-01'::timestamptz-n*interval '1 second' FROM generate_series(1,137) n;
+      INSERT INTO service_offerings (id,creator_id,capability_ids,title,description,request_instructions,state,updated_at)
+      VALUES ('exception-published-no-distribution','creator-flow-fixture','["capability-flow-fixture"]','Published without distribution','Evidence fixture','Submit a request','published','2030-02-01');
+      INSERT INTO service_policy_audits (id,actor_id,entity_type,entity_id,action,before_state,after_state,reason,policy_version,occurred_at,correlation_id,recorded_at)
+      VALUES
+        ('exception-activation-failed','operations-test','release','draft-exception','activation_failed','{}','{}','Fixture validation failure','v1','2030-02-02','exception-correlation-failed','2031-02-02'),
+        ('exception-unknown-actor','mystery-actor','capability','capability-flow-fixture','updated','{}','{}','Unclassified actor fixture','v1','2030-02-03','exception-correlation-unknown','2031-02-03');
     `);
     before = await snapshot();
     client = postgres(db.runtimeUrl, {
@@ -215,11 +222,62 @@ describe.skipIf(!enabled)('018-F real PostgreSQL query acceptance', () => {
     );
     expect(all.recentActivity).toHaveLength(5);
     expect(all.recentActivity?.every((item) => item.occurredAt && !item.updatedAt)).toBe(true);
-    expect(all.modules.offering?.total).toBe(138);
+    expect(all.modules.offering?.total).toBe(139);
     expect(all.recentActivity?.every((item) => item.kind === 'audit' && item.actorCategory)).toBe(
       true,
     );
     fixture.evidence.overview = all;
+  });
+  it('discovers only explicit failure and integrity evidence with rule metadata', async () => {
+    const result = await repository.listExceptions(
+      [
+        'AUDIT_OPERATION_FAILURE',
+        'AUDIT_UNKNOWN_ACTOR',
+        'PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION',
+        'REQUEST_OFFERING_UNRESOLVED',
+      ],
+      { page: 1, pageSize: 100 },
+    );
+    expect(result.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining([
+        'audit-failure:exception-activation-failed',
+        'audit-unknown-actor:exception-unknown-actor',
+        'offering-no-distribution:exception-published-no-distribution',
+      ]),
+    );
+    expect(result.items.find((item) => item.ruleId === 'AUDIT_OPERATION_FAILURE')).toMatchObject({
+      classification: 'confirmed_fact',
+      source: 'audit',
+      evidence: { action: 'activation_failed' },
+    });
+    expect(result.items.find((item) => item.ruleId === 'AUDIT_UNKNOWN_ACTOR')).toMatchObject({
+      classification: 'needs_review',
+      evidence: { actorId: 'mystery-actor' },
+    });
+    expect(result.rules.map((rule) => rule.id)).toEqual([
+      'AUDIT_OPERATION_FAILURE',
+      'AUDIT_UNKNOWN_ACTOR',
+      'PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION',
+      'REQUEST_OFFERING_UNRESOLVED',
+    ]);
+    fixture.evidence.exceptionDiscovery = {
+      rules: result.rules.map((rule) => ({
+        id: rule.id,
+        classification: rule.classification,
+        source: rule.source,
+        requiredModules: rule.requiredModules,
+      })),
+      signals: result.items.map((item) => ({
+        id: item.id,
+        ruleId: item.ruleId,
+        classification: item.classification,
+        source: item.source,
+        evidence: item.evidence,
+        related: item.related,
+      })),
+      total: result.total,
+      safeFieldsOnly: true,
+    };
   });
   it('searches all safe modules, retains kind+ID, protects sensitive fields, and counts across pages', async () => {
     const all = await repository.search(['catalog', 'offering', 'request', 'audit'], {
@@ -281,6 +339,27 @@ describe.skipIf(!enabled)('018-F real PostgreSQL query acceptance', () => {
       'catalog',
     ]);
     expect(overview.headers['cache-control']).toBe('no-store');
+    const exceptions = await get('exceptions', 'all');
+    expect(exceptions.statusCode).toBe(200);
+    expect(exceptions.headers['cache-control']).toBe('no-store');
+    expect(exceptions.json<{ items: { ruleId: string }[] }>().items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ ruleId: 'AUDIT_OPERATION_FAILURE' }),
+        expect.objectContaining({ ruleId: 'PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION' }),
+      ]),
+    );
+    const auditOnly = await get('exceptions', 'audit');
+    expect(auditOnly.statusCode).toBe(200);
+    expect(auditOnly.json<{ rules: { source: string }[] }>().rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: 'audit' })]),
+    );
+    expect(auditOnly.json<{ rules: { source: string }[] }>().rules).toHaveLength(2);
+    const offeringOnly = await get('exceptions', 'offering');
+    expect(offeringOnly.statusCode).toBe(200);
+    expect(offeringOnly.json<{ rules: { source: string }[] }>().rules).toEqual([
+      expect.objectContaining({ source: 'offering' }),
+    ]);
+    expect((await get('exceptions', 'request')).statusCode).toBe(403);
     for (const [path, token] of [
       ['catalog/capabilities', 'catalog'],
       ['catalog/templates', 'catalog'],
@@ -308,6 +387,7 @@ describe.skipIf(!enabled)('018-F real PostgreSQL query acceptance', () => {
       'q=' + 'x'.repeat(161),
     ])
       expect((await get('search?' + query, 'all')).statusCode).toBe(400);
+    expect((await get('exceptions?ruleId=UNKNOWN_RULE', 'all')).statusCode).toBe(400);
     for (const path of ['overview', 'search'])
       expect(
         (

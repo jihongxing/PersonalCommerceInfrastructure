@@ -15,6 +15,12 @@ import type {
   OperationsOfferingState,
   OperationsRequestState,
 } from '../../../applications/operations-admin/operations-flow-read-service.js';
+import { exceptionRules } from '../../../applications/operations-admin/operations-exceptions.js';
+import type {
+  ExceptionClassification,
+  ExceptionRuleId,
+  ExceptionSource,
+} from '../../../applications/operations-admin/operations-exceptions.js';
 import type {
   CatalogReadKind,
   CatalogReadFilters,
@@ -260,7 +266,134 @@ export class PostgresOperationsQueryRepository implements OperationsQueryReposit
   search(modules: readonly ReadModule[], input: SearchInput) {
     return this.snapshot((tx) => searchRows(tx, modules, input));
   }
+
+  listExceptions(
+    ruleIds: readonly ExceptionRuleId[],
+    input: {
+      readonly page: number;
+      readonly pageSize: number;
+      readonly ruleId?: ExceptionRuleId;
+      readonly classification?: ExceptionClassification;
+      readonly source?: ExceptionSource;
+    },
+  ) {
+    return this.snapshot(async (tx) => {
+      validatePage(input);
+      const selected = new Set(ruleIds);
+      const branches: string[] = [];
+      if (selected.has('AUDIT_OPERATION_FAILURE'))
+        branches.push(`
+          SELECT 'audit-failure:'||t.id id, 'AUDIT_OPERATION_FAILURE' rule_id,
+            'confirmed_fact' classification, 'audit' source, 'Catalog operation recorded as failed' title,
+            'An immutable Audit record explicitly records a failed Catalog operation.' summary,
+            t.occurred_at occurred_at,
+            jsonb_build_object('auditId',t.id,'action',t.action,'entityType',t.entity_type,
+              'entityId',t.entity_id,'actorId',t.actor_id,'reason',t.reason,
+              'policyVersion',t.policy_version,'correlationId',t.correlation_id) evidence,
+            jsonb_build_array(jsonb_build_object('kind','audit','id',t.id)) related
+          FROM service_policy_audits t
+          WHERE t.action IN ('activation_failed','draft_update_failed')`);
+      if (selected.has('AUDIT_UNKNOWN_ACTOR'))
+        branches.push(`
+          SELECT 'audit-unknown-actor:'||t.id id, 'AUDIT_UNKNOWN_ACTOR' rule_id,
+            'needs_review' classification, 'audit' source, 'Audit execution actor is not classified' title,
+            'The existing actor identifier could not be classified by the Operations Audit rules.' summary,
+            t.occurred_at occurred_at,
+            jsonb_build_object('auditId',t.id,'actorId',t.actor_id,'entityType',t.entity_type,
+              'entityId',t.entity_id,'action',t.action,'correlationId',t.correlation_id) evidence,
+            jsonb_build_array(jsonb_build_object('kind','audit','id',t.id)) related
+          FROM service_policy_audits t
+          WHERE NOT (
+            t.actor_id ~* '^(provider|service)[-_]' OR
+            t.actor_id ~* '^(platform|system|fixture-platform)[-_]' OR
+            lower(t.actor_id) LIKE '%platform%' OR
+            t.actor_id ~* '^(operations|operator|human|admin|principal|account)[-_]'
+          )`);
+      if (selected.has('PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION'))
+        branches.push(`
+          SELECT 'offering-no-distribution:'||o.id id, 'PUBLISHED_OFFERING_WITHOUT_DISTRIBUTION' rule_id,
+            'needs_review' classification, 'offering' source, 'Published Offering has no distribution record' title,
+            'The persisted Offering is published but has no associated Distribution Asset.' summary,
+            o.updated_at occurred_at,
+            jsonb_build_object('offeringId',o.id,'title',o.title,'creatorId',o.creator_id,
+              'state',o.state,'policyStatus',o.policy_status,'updatedAt',o.updated_at,
+              'distributionPresent',false) evidence,
+            jsonb_build_array(jsonb_build_object('kind','offering','id',o.id)) related
+          FROM service_offerings o
+          LEFT JOIN distribution_assets d ON d.offering_id=o.id
+          WHERE o.state='published' AND d.offering_id IS NULL`);
+      if (selected.has('REQUEST_OFFERING_UNRESOLVED'))
+        branches.push(`
+          SELECT 'request-unresolved-offering:'||a.id id, 'REQUEST_OFFERING_UNRESOLVED' rule_id,
+            'needs_review' classification, 'request' source, 'Request Offering association cannot be resolved' title,
+            'The Request offeringId has no Offering owned by the recorded Creator.' summary,
+            a.updated_at occurred_at,
+            jsonb_build_object('requestId',a.id,'offeringId',a.offering_id,'creatorId',a.creator_id,
+              'state',a.state,'createdAt',a.created_at,'updatedAt',a.updated_at) evidence,
+            jsonb_build_array(jsonb_build_object('kind','request','id',a.id),
+              jsonb_build_object('kind','offering','id',a.offering_id)) related
+          FROM commerce_actions a
+          LEFT JOIN service_offerings o ON o.id=a.offering_id AND o.creator_id=a.creator_id
+          WHERE o.id IS NULL`);
+      if (!branches.length)
+        return { items: [], total: 0, page: input.page, pageSize: input.pageSize, rules: [] };
+      const predicates = [
+        input.ruleId === undefined ? 'TRUE' : 'rule_id=$1',
+        input.classification === undefined
+          ? 'TRUE'
+          : `${input.ruleId === undefined ? '$1' : '$2'} = classification`,
+        input.source === undefined
+          ? 'TRUE'
+          : `${input.ruleId === undefined ? (input.classification === undefined ? '$1' : '$2') : input.classification === undefined ? '$2' : '$3'} = source`,
+      ];
+      const parameters = [
+        ...(input.ruleId === undefined ? [] : [input.ruleId]),
+        ...(input.classification === undefined ? [] : [input.classification]),
+        ...(input.source === undefined ? [] : [input.source]),
+      ];
+      const union = branches.join(' UNION ALL ');
+      const where = predicates.filter((value) => value !== 'TRUE').join(' AND ') || 'TRUE';
+      const count = await tx.unsafe<{ total: number }[]>(
+        `SELECT count(*)::int total FROM (${union}) exceptions WHERE ${where}`,
+        parameters,
+      );
+      const rows = await tx.unsafe<ExceptionSignalRow[]>(
+        `SELECT id,rule_id,classification,source,title,summary,occurred_at,evidence,related
+         FROM (${union}) exceptions WHERE ${where}
+         ORDER BY occurred_at DESC NULLS LAST,id DESC LIMIT $${parameters.length + 1} OFFSET $${parameters.length + 2}`,
+        [...parameters, input.pageSize, (input.page - 1) * input.pageSize],
+      );
+      return {
+        items: rows.map((row) => ({
+          ...row,
+          ruleId: row.rule_id as ExceptionRuleId,
+          classification: row.classification as ExceptionClassification,
+          source: row.source as ExceptionSource,
+          occurredAt:
+            row.occurred_at === null ? undefined : new Date(row.occurred_at).toISOString(),
+          evidence: row.evidence,
+          related: row.related,
+        })),
+        total: count[0]!.total,
+        page: input.page,
+        pageSize: input.pageSize,
+        rules: exceptionRules.filter((rule) => selected.has(rule.id)),
+      };
+    });
+  }
 }
+
+type ExceptionSignalRow = {
+  readonly id: string;
+  readonly rule_id: string;
+  readonly classification: string;
+  readonly source: string;
+  readonly title: string;
+  readonly summary: string;
+  readonly occurred_at: string | null;
+  readonly evidence: Readonly<Record<string, string | number | boolean | null>>;
+  readonly related: readonly { readonly kind: string; readonly id: string }[];
+};
 
 async function readPage<T>(
   tx: Reader,

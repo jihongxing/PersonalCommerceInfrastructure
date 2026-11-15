@@ -16,6 +16,12 @@ import type {
   CapabilityCatalogItem,
   ServiceOfferingTemplate,
 } from '../../modules/service-policy/catalog.js';
+import type {
+  ExceptionClassification,
+  ExceptionRuleDefinition,
+  ExceptionRuleId,
+  ExceptionSource,
+} from './operations-exceptions.js';
 
 // PCI-ENG-018-F: read projections of FR-005-FR-042 and FR-043-FR-053.
 // This port owns no business transitions and exposes no mutation methods.
@@ -57,6 +63,24 @@ export interface WorkspaceOverview {
   readonly modules: Partial<Record<ReadModule, ModuleSummary>>;
   readonly recentActivity?: readonly SearchItem[];
 }
+export interface ExceptionSignal {
+  readonly id: string;
+  readonly ruleId: ExceptionRuleId;
+  readonly classification: ExceptionClassification;
+  readonly source: ExceptionSource;
+  readonly title: string;
+  readonly summary: string;
+  readonly occurredAt?: string;
+  readonly evidence: Readonly<Record<string, string | number | boolean | null>>;
+  readonly related: readonly { readonly kind: string; readonly id: string }[];
+}
+export interface ExceptionQueryPage {
+  readonly items: readonly ExceptionSignal[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly rules: readonly ExceptionRuleDefinition[];
+}
 export interface CatalogQueryRepository {
   listCatalog(kind: CatalogReadKind, input: CatalogReadFilters): Promise<CatalogReadResult>;
   getCatalog(
@@ -85,4 +109,14 @@ export interface FlowQueryRepository {
 export interface OperationsQueryRepository extends CatalogQueryRepository, FlowQueryRepository {
   overview(modules: readonly ReadModule[]): Promise<WorkspaceOverview>;
   search(modules: readonly ReadModule[], input: SearchInput): Promise<QueryPage<SearchItem>>;
+  listExceptions(
+    ruleIds: readonly ExceptionRuleId[],
+    input: {
+      readonly page: number;
+      readonly pageSize: number;
+      readonly ruleId?: ExceptionRuleId;
+      readonly classification?: ExceptionClassification;
+      readonly source?: ExceptionSource;
+    },
+  ): Promise<ExceptionQueryPage>;
 }

@@ -2,6 +2,12 @@
 export const sections = [
   { slug: '', label: '概览', english: 'Overview', description: '真实业务指标与近期运营事件。' },
   {
+    slug: 'admin/exceptions',
+    label: '异常发现',
+    english: 'Evidence Exceptions',
+    description: '从现有业务证据中识别可解释的运营关注信号。',
+  },
+  {
     slug: 'search',
     label: '全局检索',
     english: 'Global Search',

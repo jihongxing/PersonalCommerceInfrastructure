@@ -22,66 +22,66 @@ describe('service policy API', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({
-      policyVersion: 'v1',
-      capabilities: expect.arrayContaining([
-        expect.objectContaining({ id: 'capability-dance-teaching' }),
-      ]),
-      templates: expect.arrayContaining([
-        expect.objectContaining({ id: 'template-dance-private-lesson' }),
-      ]),
-    });
+    const body = response.json<{
+      policyVersion: string;
+      capabilities: readonly { id: string }[];
+      templates: readonly { id: string }[];
+    }>();
+    expect(body.policyVersion).toBe('v1');
+    expect(body.capabilities.some((item) => item.id === 'capability-dance-teaching')).toBe(true);
+    expect(body.templates.some((item) => item.id === 'template-dance-private-lesson')).toBe(true);
   });
 
-  it('protects Operations lifecycle controls and records audit evidence', async () => {
-    const unauthorized = await server.inject({
-      method: 'GET',
-      url: '/api/v1/operations/service-policy/workspace',
-      headers: { authorization: 'Bearer test-creator-token' },
-    });
-    expect(unauthorized.statusCode).toBe(401);
-
-    const paused = await server.inject({
-      method: 'PATCH',
-      url: '/api/v1/operations/service-policy/capabilities/capability-dance-teaching',
-      headers: { authorization: 'Bearer test-operations-token' },
-      payload: { status: 'paused', reason: 'Emergency review' },
-    });
-    expect(paused.statusCode).toBe(200);
-    expect(paused.json()).toMatchObject({ status: 'paused' });
-
-    const catalog = await server.inject({
+  it('retires every legacy Catalog Operations route before authentication or business access', async () => {
+    const routes = [
+      { method: 'GET' as const, url: '/api/v1/operations/service-policy/workspace' },
+      { method: 'GET' as const, url: '/api/v1/operations/service-policy/audit' },
+      {
+        method: 'PATCH' as const,
+        url: '/api/v1/operations/service-policy/capabilities/capability-dance-teaching',
+        payload: { status: 'paused', reason: 'must not execute' },
+      },
+      {
+        method: 'PATCH' as const,
+        url: '/api/v1/operations/service-policy/templates/template-dance-private-lesson',
+        payload: { status: 'paused', reason: 'must not execute' },
+      },
+      {
+        method: 'POST' as const,
+        url: '/api/v1/operations/service-policy/releases',
+        payload: { version: 'v1', reason: 'must not execute' },
+      },
+    ];
+    const before = await server.inject({
       method: 'GET',
       url: '/api/v1/creator/service-catalog',
       headers: { authorization: 'Bearer test-creator-token' },
     });
-    expect(catalog.json().capabilities).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'capability-dance-teaching', status: 'paused' }),
-      ]),
-    );
-
-    const audit = await server.inject({
+    for (const route of routes) {
+      for (const authorization of ['Bearer test-operations-token', 'Bearer invalid-token']) {
+        const response = await server.inject({
+          ...route,
+          headers: { authorization },
+        });
+        expect(response.statusCode, response.body).toBe(410);
+        expect(response.json()).toMatchObject({
+          error: { code: 'legacy_catalog_operations_route_retired' },
+        });
+      }
+      const forged = await server.inject({
+        ...route,
+        headers: {
+          'x-principal-id': 'forged',
+          'x-permissions': 'catalog:policy:activate',
+        },
+      });
+      expect(forged.statusCode, forged.body).toBe(410);
+    }
+    const after = await server.inject({
       method: 'GET',
-      url: '/api/v1/operations/service-policy/audit',
-      headers: { authorization: 'Bearer test-operations-token' },
+      url: '/api/v1/creator/service-catalog',
+      headers: { authorization: 'Bearer test-creator-token' },
     });
-    expect(audit.statusCode).toBe(200);
-    expect(audit.json()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          entityId: 'capability-dance-teaching',
-          reason: 'Emergency review',
-        }),
-      ]),
-    );
-
-    const published = await server.inject({
-      method: 'POST',
-      url: '/api/v1/operations/service-policy/releases',
-      headers: { authorization: 'Bearer test-operations-token' },
-      payload: { version: 'v1', reason: 'Confirm current policy' },
-    });
-    expect(published.statusCode).toBe(204);
+    expect(after.json()).toEqual(before.json());
   });
 });

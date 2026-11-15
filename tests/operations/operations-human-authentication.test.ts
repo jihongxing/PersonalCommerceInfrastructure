@@ -180,7 +180,15 @@ describe('Fixed first-operator permission policy', () => {
       });
       const expected =
         isInitialAdmin === true
-          ? ['catalog:read', 'audit:read', 'offering:read', 'request:read']
+          ? [
+              'catalog:read',
+              'audit:read',
+              'offering:read',
+              'request:read',
+              'catalog:draft:create',
+              'catalog:draft:update',
+              'catalog:policy:activate',
+            ]
           : [];
       expect(result.permissions).toEqual(expected);
       const context = await runtime.resolveActorContext({
@@ -196,16 +204,29 @@ describe('Fixed first-operator permission policy', () => {
       principalId,
       accountId,
       sessionId: 'test-session',
-      permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
+      permissions: [
+        'catalog:read',
+        'audit:read',
+        'offering:read',
+        'request:read',
+        'catalog:draft:create',
+        'catalog:draft:update',
+        'catalog:policy:activate',
+      ],
     },
     correlationId: 'policy',
   });
-  it.each(['catalog:read', 'audit:read', 'offering:read', 'request:read'])(
-    'allows %s',
-    (permission) => {
-      expect(() => requireOperationsHumanPermission(human, permission)).not.toThrow();
-    },
-  );
+  it.each([
+    'catalog:read',
+    'audit:read',
+    'offering:read',
+    'request:read',
+    'catalog:draft:create',
+    'catalog:draft:update',
+    'catalog:policy:activate',
+  ])('allows %s', (permission) => {
+    expect(() => requireOperationsHumanPermission(human, permission)).not.toThrow();
+  });
   it.each(['catalog:write', 'audit:write', 'accounts:create', 'unknown'])(
     'denies %s with authorization semantics',
     (permission) => {

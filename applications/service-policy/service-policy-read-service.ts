@@ -178,7 +178,8 @@ export function classifyAuditActor(actorId: string): AuditActorCategory {
     normalized.includes('platform')
   )
     return 'platform_system';
-  if (/^(operations|operator|human|admin)[-_]/u.test(normalized)) return 'human_operations';
+  if (/^(operations|operator|human|admin|principal|account)[-_]/u.test(normalized))
+    return 'human_operations';
   return 'unknown';
 }
 

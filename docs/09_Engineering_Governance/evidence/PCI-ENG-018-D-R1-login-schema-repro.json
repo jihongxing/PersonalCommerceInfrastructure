@@ -1,0 +1,36 @@
+{
+  "task": "PCI-ENG-018-D-R1",
+  "startedAt": "2026-11-15T17:15:24.3773475Z",
+  "command": "PowerShell here-string piped to pnpm exec tsx -",
+  "exitCode": 0,
+  "cases": [
+    {
+      "label": "read-only",
+      "permissionCount": 4,
+      "statusCode": 200,
+      "body": {
+        "principalId": "p",
+        "accountId": "a",
+        "sessionId": "s",
+        "permissions": ["catalog:read", "audit:read", "offering:read", "request:read"],
+        "absoluteExpiresAt": "2030-01-01T00:00:00Z",
+        "credential": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    },
+    {
+      "label": "bootstrap-admin",
+      "permissionCount": 7,
+      "statusCode": 500,
+      "body": {
+        "error": {
+          "category": "internal",
+          "code": "internal_error",
+          "correlationId": "4150a512-8e96-4399-9f87-f75f2bd4aecc",
+          "message": "An unexpected error occurred."
+        }
+      }
+    }
+  ],
+  "conclusion": "The current Login response schema serializes read-only permissions but rejects the first-admin Catalog write permissions with HTTP 500.",
+  "finishedAt": "2026-11-15T17:15:24.3921215Z"
+}

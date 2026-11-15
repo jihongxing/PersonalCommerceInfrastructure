@@ -80,6 +80,61 @@ export const ServicePolicyPublishVersionSchema = Type.Object(
   { additionalProperties: false },
 );
 
+export const ServicePolicyDraftCreateSchema = Type.Object(
+  { reason: Type.String({ minLength: 1, maxLength: 1_024 }) },
+  { additionalProperties: false },
+);
+
+export const ServicePolicyDraftUpdateSchema = Type.Object(
+  {
+    status: Type.Optional(CatalogStatusSchema),
+    creatorSelectable: Type.Optional(Type.Boolean()),
+    publishEnabled: Type.Optional(Type.Boolean()),
+    riskTier: Type.Optional(PolicyRiskTierSchema),
+    expectedRevision: Type.String({ minLength: 1, maxLength: 128 }),
+    reason: Type.String({ minLength: 1, maxLength: 1_024 }),
+  },
+  { additionalProperties: false },
+);
+
+export const ServicePolicyDraftActivateSchema = Type.Object(
+  {
+    expectedRevision: Type.String({ minLength: 1, maxLength: 128 }),
+    reason: Type.String({ minLength: 1, maxLength: 1_024 }),
+    confirm: Type.Literal(true),
+  },
+  { additionalProperties: false },
+);
+
+export const ServicePolicyValidationResultSchema = Type.Object(
+  {
+    status: Type.Union([
+      Type.Literal('VALID'),
+      Type.Literal('INVALID'),
+      Type.Literal('CONFLICT'),
+      Type.Literal('STALE_REVISION'),
+      Type.Literal('UNSUPPORTED'),
+    ]),
+    errors: Type.Array(Type.String()),
+  },
+  { additionalProperties: false },
+);
+
+export const ServicePolicyPreviewResultSchema = Type.Intersect([
+  ServicePolicyValidationResultSchema,
+  Type.Object({
+    changes: Type.Array(
+      Type.Object({
+        entityType: Type.Union([Type.Literal('capability'), Type.Literal('template')]),
+        entityId: Type.String(),
+        field: Type.String(),
+        before: Type.Unknown(),
+        after: Type.Unknown(),
+      }),
+    ),
+  }),
+]);
+
 export const ServicePolicyAuditSchema = Type.Object(
   {
     id: Type.String({ minLength: 1 }),
@@ -98,7 +153,17 @@ export const ServicePolicyAuditSchema = Type.Object(
       Type.Literal('release'),
     ]),
     entityId: Type.String({ minLength: 1 }),
-    action: Type.Union([Type.Literal('updated'), Type.Literal('published')]),
+    action: Type.Union([
+      Type.Literal('updated'),
+      Type.Literal('published'),
+      Type.Literal('draft_created'),
+      Type.Literal('draft_updated'),
+      Type.Literal('previewed'),
+      Type.Literal('validated'),
+      Type.Literal('activated'),
+      Type.Literal('activation_failed'),
+      Type.Literal('draft_update_failed'),
+    ]),
     before: Type.Record(Type.String(), Type.Unknown()),
     after: Type.Record(Type.String(), Type.Unknown()),
     reason: Type.String(),
@@ -118,6 +183,19 @@ export const ServicePolicyAdminWorkspaceSchema = Type.Object(
   },
   { additionalProperties: false },
 );
+
+export const ServicePolicyDraftSchema = Type.Intersect([
+  Type.Object({
+    capabilities: Type.Array(CapabilityCatalogItemSchema),
+    templates: Type.Array(ServiceOfferingTemplateSchema),
+    policyVersion: Type.String({ minLength: 1 }),
+  }),
+  Type.Object({
+    status: Type.Literal('draft'),
+    revision: Type.String(),
+    createdAt: Type.String(),
+  }),
+]);
 
 export const ServiceCatalogResponseSchema = Type.Object(
   {

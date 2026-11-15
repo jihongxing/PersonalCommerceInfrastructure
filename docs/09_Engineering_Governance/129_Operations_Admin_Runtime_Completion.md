@@ -376,3 +376,90 @@ ACL. It does not modify Creator Auth, static legacy Operations routes,
 Catalog write authority, Offering or Request authority, MFA, RBAC, payments, Pilot, Production or
 Real Money. Operations Session persistence remains the accepted source of database behavior; this
 unit only supplies the runtime and first controlled initialization path.
+
+## PCI-ENG-018-D-R2 — Login Permission Contract Alignment and Legacy Route Retirement
+
+Status: `BLOCKED — MAIN CONTROLLER REVIEW REQUIRED`.
+
+R2 is a bounded correction to the accepted D/R1 delivery. The canonical first-operator permission
+tuple is defined once in `modules/operations-identity/operations-identity-contract.ts`, reused by
+the Human Operations runtime, and used to generate the closed TypeBox Login/Session response union.
+The seven approved values are `catalog:read`, `audit:read`, `offering:read`, `request:read`,
+`catalog:draft:create`, `catalog:draft:update`, and `catalog:policy:activate`. The contract tests
+prove all seven serialize and reject an unknown `admin:*` value. This fixes the R1 Login HTTP 500
+schema mismatch without introducing a new permission registry or RBAC surface.
+
+The five legacy Static Operations Token Catalog routes are retired at the transport boundary with
+HTTP `410` and stable code `legacy_catalog_operations_route_retired`, before authentication or
+business access:
+
+- `GET /api/v1/operations/service-policy/workspace`;
+- `GET /api/v1/operations/service-policy/audit`;
+- `PATCH /api/v1/operations/service-policy/capabilities/:id`;
+- `PATCH /api/v1/operations/service-policy/templates/:id`;
+- `POST /api/v1/operations/service-policy/releases`.
+
+The focused API test passed the valid-token, invalid-token, and forged-header matrix and confirmed
+the Creator Catalog snapshot did not change. The real Browser harness repeated all 15 route probes
+against disposable PostgreSQL and recorded identical Catalog table count/hash snapshots before and
+after. It also completed the read-only C Browser path (Login, Catalog, Audit, Logout, and
+post-Logout protection) with exit `0`.
+
+The D management Browser path now passes Login and the seven authoritative permissions, then fails
+at the existing Preview request with HTTP `500` (`internal_error`) after Draft Create and Draft
+Update. The process exited `1`; Next/API and PostgreSQL cleanup exited `0`. This Preview failure is
+outside the R2 contract/legacy-route changes and is not called pre-existing without a parent
+comparison, so the complete D Browser acceptance remains blocked. Full lint and full repository
+verification remain unclassified. Structured evidence is indexed at
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R2-index.md`.
+
+R2 changed no Schema, Migration, Session, Creator Auth, Offering/Request, RBAC, Production, Pilot,
+or Real Money behavior. No commit or push was performed.
+
+## PCI-ENG-018-D-R3 — Policy Preview Failure Resolution and Browser Acceptance Closure
+
+Status: `POLICY PREVIEW FIXED & FULL BROWSER FLOW PASSED — AWAITING MAIN CONTROLLER ACCEPTANCE`.
+
+R3 is limited to the Preview `500` and the complete D Browser acceptance. The first failure was
+reproduced in the Admin BFF: bodyless Preview POST requests were sent upstream as `body: ''` with
+`Content-Type: application/json`, which Fastify rejected. The minimal fix omits the body and
+content type for an empty request. The next run exposed a second boundary defect: activation
+returned upstream `204`, but the BFF attempted to construct a `204` Response with an
+`ArrayBuffer`, which the Web Fetch API rejects. The BFF now preserves no-content statuses without
+a body. No SQLSTATE or domain persistence error occurred in the corrected flow.
+
+Source evidence is `apps/admin-web/lib/operations-catalog-proxy.ts:20` and
+`apps/admin-web/lib/operations-catalog-proxy.ts:36`; the `204` regression is in
+`apps/admin-web/lib/operations-catalog-proxy.test.tsx:68`. The Preview route remains a server
+cookie-backed BFF route at
+`apps/admin-web/app/api/operations/catalog/drafts/[version]/preview/route.ts:6`, and the panel
+only renders the Preview result or an explicit error at
+`apps/admin-web/components/catalog-policy-panel.tsx:116`.
+
+Focused verification passed: the BFF proxy file reported 5/5, draft Application/API tests
+reported 5/5, and the complete Admin Web test project reported 48/48. Admin TypeScript and test
+TypeScript, changed source ESLint, targeted BFF/panel/test and R3 evidence-index Prettier checks,
+and Admin production Build all exited `0`. The broad inherited Browser-harness/Execution Markdown
+Prettier check is not claimed.
+
+The real Browser evidence uses the existing gstack HeadlessChrome driver and disposable
+PostgreSQL 17.10. It completed Login, Draft Create, Draft Update, Preview, Validate, explicit
+Activation, Audit verification, Catalog and Audit reads, logout failure retention, confirmed
+logout retry, and post-logout protection with process exit `0`. The evidence harness records the
+seven authoritative permissions, the 15 retired legacy-route probes, HTTP `200` Preview,
+HTTP `200` Validate, HTTP `204` activation, and unchanged Catalog/Audit snapshots around Preview.
+The disposable fixture used image `docker.m.daocloud.io/library/postgres:17.10-alpine`, digest
+`sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a`, PostgreSQL `17.10`,
+Podman client/server `5.7.1`, container `7c2b5e4fc97f25ac0898022db6367802d1774a3bf30b7745aaeb8f559b2daac0`,
+dynamic port `127.0.0.1:39639`, and database `pci_ops_migration_fixture_admin_1`. Wrapper and
+cleanup exited `0`; the residual-container query was empty. Full repository validation and full
+lint were not rerun. The Browser harness logged an unrelated `GET /api/operations/overview` HTTP
+`500`; it is not part of the D-R3 Preview path and remains unresolved.
+
+The structured records are `docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R3-index.md`,
+`PCI-ENG-018-D-browser-1794768266066.json`, and
+`PCI-ENG-018-D-pci-018br1-e1fd303aa9-postgres.json`.
+
+R3 changed only the Admin BFF regression path and Browser evidence harness, plus this evidence
+record. It did not change permissions, Schema, Migration, Session, Creator Auth, Offering,
+Request, RBAC, Production, Pilot, or Real Money behavior. No Commit or Push was performed.

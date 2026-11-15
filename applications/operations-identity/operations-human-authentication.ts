@@ -25,14 +25,12 @@ import {
   type OperationsSessionRepository,
   type OperationsSessionSnapshot,
 } from './operations-session-repositories.js';
+import {
+  OPERATIONS_HUMAN_PERMISSIONS,
+  type OperationsHumanPermission,
+} from '../../modules/operations-identity/operations-identity-contract.js';
 
-export const OPERATIONS_HUMAN_PERMISSIONS = [
-  'catalog:read',
-  'audit:read',
-  'offering:read',
-  'request:read',
-] as const;
-export type OperationsHumanPermission = (typeof OPERATIONS_HUMAN_PERMISSIONS)[number];
+export { OPERATIONS_HUMAN_PERMISSIONS, type OperationsHumanPermission };
 export type OperationsActivationHistory = 'never_activated' | 'previously_activated' | 'unknown';
 
 export interface OperationsHumanAuthenticationSnapshot {

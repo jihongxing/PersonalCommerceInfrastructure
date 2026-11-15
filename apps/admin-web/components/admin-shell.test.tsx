@@ -112,9 +112,15 @@ describe('Operations shell', () => {
     sections.filter(
       (section) =>
         section.slug !== '' &&
-        !['search', 'capabilities', 'templates', 'audit', 'offerings', 'requests'].includes(
-          section.slug,
-        ),
+        ![
+          'search',
+          'capabilities',
+          'templates',
+          'policy-versions',
+          'audit',
+          'offerings',
+          'requests',
+        ].includes(section.slug),
     ),
   )('keeps $english unavailable without fabricated data or management actions', async (section) => {
     render(await SectionPage({ params: Promise.resolve({ section: section.slug }) }));
@@ -122,6 +128,13 @@ describe('Operations shell', () => {
     expect(screen.getByText('待实施 · 暂不可用')).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('renders controlled Catalog policy management for Policy Versions', async () => {
+    render(await SectionPage({ params: Promise.resolve({ section: 'policy-versions' }) }));
+    expect(screen.getByRole('heading', { level: 1, name: '政策版本' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '新建草稿' })).toBeVisible();
+    expect(screen.getByText(/尚未打开 Catalog 草稿/)).toBeVisible();
   });
 
   it.each([

@@ -33,8 +33,9 @@ import { createApiServer } from '../../apps/api/src/create-api-server.js';
 const browser = process.env.PCI_BROWSE_EXECUTABLE;
 assert(browser, 'Set PCI_BROWSE_EXECUTABLE to the installed gstack browse binary.');
 const runWorkspace = process.env.PCI_RUN_OPERATIONS_ADMIN_F === '1';
+const runCatalogControl = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_D === '1';
 const runCatalogAudit =
-  runWorkspace ||
+  runCatalogControl ||
   process.env.PCI_RUN_OPERATIONS_ADMIN_C === '1' ||
   process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
 const runFlow = runWorkspace || process.env.PCI_RUN_OPERATIONS_ADMIN_E === '1';
@@ -43,9 +44,11 @@ const fixture = new OperationsAdminFixture({
     ? 'PCI-ENG-018-F'
     : runFlow
       ? 'PCI-ENG-018-E'
-      : runCatalogAudit
-        ? 'PCI-ENG-018-C'
-        : 'PCI-ENG-018-B-R1',
+      : runCatalogControl
+        ? 'PCI-ENG-018-D'
+        : runCatalogAudit
+          ? 'PCI-ENG-018-C'
+          : 'PCI-ENG-018-B-R1',
   includeCatalogFixture: runCatalogAudit,
   includeFlowFixture: runFlow,
 });
@@ -85,7 +88,8 @@ async function poll(expression: string, expected: unknown) {
     if (JSON.stringify(await js(expression)) === JSON.stringify(expected)) return;
     await new Promise((r) => setTimeout(r, 250));
   }
-  throw new Error(`Browser state not reached: ${expression}`);
+  const bodyText = await js('JSON.stringify(document.body.innerText.slice(-1_000))');
+  throw new Error(`Browser state not reached: ${expression}; body=${bodyText}`);
 }
 let connection: PostgresDatabaseConnection | undefined;
 let next: ChildProcess | undefined;
@@ -93,6 +97,7 @@ let proxy: Server | undefined;
 let api: Awaited<ReturnType<typeof createApiServer>> | undefined;
 let nextStdout = '',
   nextStderr = '';
+const apiLogs: unknown[] = [];
 let fault: 'none' | '503' | 'network' = 'none';
 let loginCredential: string | undefined;
 let failure: unknown;
@@ -103,6 +108,12 @@ try {
     SELECT 'offerings' AS relation, count(*)::int AS count, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) AS hash FROM public.service_offerings t
     UNION ALL SELECT 'requests', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) FROM public.commerce_actions t
     UNION ALL SELECT 'distribution', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY offering_id)) FROM public.distribution_assets t
+  `;
+  const catalogSnapshot = async () => db.admin`
+    SELECT 'releases' AS relation, count(*)::int AS count, md5(string_agg(row_to_json(t)::text, '' ORDER BY policy_version)) AS hash FROM public.service_policy_releases t
+    UNION ALL SELECT 'capabilities', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id, policy_version)) FROM public.service_policy_capabilities t
+    UNION ALL SELECT 'templates', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id, policy_version)) FROM public.service_policy_templates t
+    UNION ALL SELECT 'audits', count(*)::int, md5(string_agg(row_to_json(t)::text, '' ORDER BY id)) FROM public.service_policy_audits t
   `;
   const flowBefore = runFlow ? await flowSnapshot() : undefined;
   await initializeFirstOperationsAccount({
@@ -128,8 +139,83 @@ try {
     servicePolicyCatalogRepository: new PostgresServicePolicyCatalogRepository(connection.database),
     operationsFlowReadService,
     operationsQueryRepository,
+    logger: {
+      debug() {},
+      info() {},
+      warn() {},
+      error(event, context) {
+        apiLogs.push({ event, context });
+      },
+    },
   });
   const apiOrigin = await api.listen({ host: '127.0.0.1', port: 0 });
+  if (runCatalogControl) {
+    const legacyRoutes = [
+      { method: 'GET', path: '/api/v1/operations/service-policy/workspace' },
+      { method: 'GET', path: '/api/v1/operations/service-policy/audit' },
+      {
+        method: 'PATCH',
+        path: '/api/v1/operations/service-policy/capabilities/capability-dance-teaching',
+        body: { status: 'paused', reason: 'retired-route-probe' },
+      },
+      {
+        method: 'PATCH',
+        path: '/api/v1/operations/service-policy/templates/template-dance-private-lesson',
+        body: { status: 'paused', reason: 'retired-route-probe' },
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/operations/service-policy/releases',
+        body: { version: 'v1', reason: 'retired-route-probe' },
+      },
+    ] as const;
+    const before = await catalogSnapshot();
+    const results: unknown[] = [];
+    for (const route of legacyRoutes) {
+      for (const authorization of ['Bearer test-operations-token', 'Bearer invalid-token']) {
+        const response = await fetch(apiOrigin + route.path, {
+          method: route.method,
+          headers: {
+            authorization,
+            ...(route.body === undefined ? {} : { 'content-type': 'application/json' }),
+          },
+          ...(route.body === undefined ? {} : { body: JSON.stringify(route.body) }),
+        });
+        const body = (await response.json()) as { error?: { code?: string } };
+        assert.equal(response.status, 410);
+        assert.equal(body.error?.code, 'legacy_catalog_operations_route_retired');
+        results.push({
+          method: route.method,
+          path: route.path,
+          authorization,
+          status: response.status,
+          code: body.error?.code,
+        });
+      }
+      const forged = await fetch(apiOrigin + route.path, {
+        method: route.method,
+        headers: {
+          'x-principal-id': 'forged-principal',
+          'x-permissions': 'catalog:policy:activate',
+          ...(route.body === undefined ? {} : { 'content-type': 'application/json' }),
+        },
+        ...(route.body === undefined ? {} : { body: JSON.stringify(route.body) }),
+      });
+      const body = (await forged.json()) as { error?: { code?: string } };
+      assert.equal(forged.status, 410);
+      assert.equal(body.error?.code, 'legacy_catalog_operations_route_retired');
+      results.push({
+        method: route.method,
+        path: route.path,
+        authorization: 'forged-headers',
+        status: forged.status,
+        code: body.error?.code,
+      });
+    }
+    const after = await catalogSnapshot();
+    assert.deepEqual(after, before);
+    check('legacy Catalog routes retired', { results, before, after, unchanged: true });
+  }
   proxy = createServer((request, response) => {
     void (async () => {
       const path = request.url!;
@@ -160,8 +246,10 @@ try {
         headers,
         body: chunks.length ? Buffer.concat(chunks) : undefined,
       });
-      (evidence.proxy as unknown[]).push({ path, status: upstream.status });
       const body = Buffer.from(await upstream.arrayBuffer());
+      const proxyEvidence: Record<string, unknown> = { path, status: upstream.status };
+      if (upstream.status >= 400) proxyEvidence.body = body.toString('utf8').slice(0, 2_000);
+      (evidence.proxy as unknown[]).push(proxyEvidence);
       if (path.endsWith('/login') && upstream.status === 200) {
         const result = JSON.parse(body.toString()) as { credential: string };
         loginCredential = result.credential;
@@ -275,6 +363,9 @@ try {
     'audit:read',
     'offering:read',
     'request:read',
+    'catalog:draft:create',
+    'catalog:draft:update',
+    'catalog:policy:activate',
   ]);
   check('authoritative identity', session);
   if (runWorkspace) {
@@ -320,6 +411,104 @@ try {
         ),
       );
     }
+  }
+  if (runCatalogControl) {
+    await browse('goto', origin + '/policy-versions');
+    await poll('JSON.stringify(location.pathname)', '/policy-versions');
+    await poll('JSON.stringify(!!document.querySelector("button"))', true);
+    await browse(
+      'js',
+      `(() => {
+        const button = [...document.querySelectorAll('button')].find((candidate) =>
+          candidate.textContent?.includes('新建草稿'),
+        );
+        if (!button) throw new Error('Create draft button not found');
+        button.click();
+        return 'created';
+      })()`,
+    );
+    await poll('JSON.stringify(document.body.innerText.includes("草稿版本"))', true);
+    check(
+      'catalog draft created',
+      await js(
+        'JSON.stringify({path:location.pathname,version:document.querySelector("strong")?.textContent,activeMessage:document.body.innerText.includes("活动版本保持不变")})',
+      ),
+    );
+    await browse(
+      'js',
+      `(() => {
+        const select = [...document.querySelectorAll('select')].find((candidate) =>
+          [...candidate.options].some((option) => option.value === 'review'),
+        );
+        if (!select) throw new Error('Catalog risk selector not found');
+        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
+        setter?.call(select, 'review');
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return 'edited';
+      })()`,
+    );
+    await poll('JSON.stringify(document.body.innerText.includes("草稿变更已保存"))', true);
+    const beforePreview = await catalogSnapshot();
+    await browse(
+      'js',
+      `(() => {
+        const button = [...document.querySelectorAll('button')].find((candidate) =>
+          candidate.textContent?.includes('预览'),
+        );
+        if (!button) throw new Error('Preview button not found');
+        button.click();
+        return 'preview';
+      })()`,
+    );
+    await poll('JSON.stringify(document.body.innerText.includes("相对当前有效版本的差异"))', true);
+    const afterPreview = await catalogSnapshot();
+    assert.deepEqual(afterPreview, beforePreview);
+    check('preview data invariance', { before: beforePreview, after: afterPreview, unchanged: true });
+    await browse(
+      'js',
+      `(() => {
+        const button = [...document.querySelectorAll('button')].find((candidate) =>
+          candidate.textContent?.includes('校验'),
+        );
+        if (!button) throw new Error('Validate button not found');
+        button.click();
+        return 'validated';
+      })()`,
+    );
+    await poll('JSON.stringify(document.body.innerText.includes("校验通过"))', true);
+    await browse('js', 'window.confirm = () => true');
+    await browse(
+      'js',
+      `(() => {
+        const button = [...document.querySelectorAll('button')].find((candidate) =>
+          candidate.textContent?.includes('确认激活'),
+        );
+        if (!button) throw new Error('Activate button not found');
+        button.click();
+        return 'activated';
+      })()`,
+    );
+    await poll('JSON.stringify(document.body.innerText.includes("Catalog 政策已激活"))', true);
+    check('catalog policy activated', await js('JSON.stringify({path:location.pathname})'));
+    await browse('goto', origin + '/audit');
+    await poll('JSON.stringify(location.pathname)', '/audit');
+    await poll('JSON.stringify(!!document.querySelector("table"))', true);
+    await browse(
+      'js',
+      `(() => {
+        const select = [...document.querySelectorAll('select')].find((candidate) =>
+          [...candidate.options].some((option) => option.value === 'activated'),
+        );
+        if (!select) throw new Error('Audit action selector not found');
+        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
+        setter?.call(select, 'activated');
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return 'filtered';
+      })()`,
+    );
+    await browse('click', 'button[type="submit"]');
+    await poll('JSON.stringify(document.body.innerText.includes("activated"))', true);
+    check('activation audit visible', await js('JSON.stringify({path:location.pathname})'));
   }
   if (runCatalogAudit) {
     await browse('goto', origin + '/capabilities');
@@ -496,6 +685,8 @@ try {
   if (connection) await connection.close();
   await fixture.close();
   evidence.postgresEvidence = fixture.postgresEvidenceFileName;
+  evidence.apiLogs = apiLogs;
+  evidence.processExitCode = failure ? 1 : 0;
   evidence.finishedAt = new Date().toISOString();
   const serialized = redact(JSON.stringify(evidence, null, 2));
   await writeFile(

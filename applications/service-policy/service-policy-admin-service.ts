@@ -1,7 +1,14 @@
 import type { ActorContext } from '../core/actor-context.js';
 import { ApplicationError } from '../core/application-error.js';
-import type { CatalogItemStatus, PolicyRiskTier } from '../../modules/service-policy/catalog.js';
+import type {
+  CatalogItemStatus,
+  PolicyRiskTier,
+  ServicePolicyDraft,
+  ServicePolicyValidationResult,
+  ServicePolicyPreviewResult,
+} from '../../modules/service-policy/catalog.js';
 import type { ServicePolicyCatalogRepository } from './service-policy-repositories.js';
+import { requireOperationsHumanPermission } from '../operations-identity/operations-human-authentication.js';
 
 export interface ServicePolicyAdminService {
   getWorkspace(
@@ -20,6 +27,27 @@ export interface ServicePolicyAdminService {
     context: ActorContext,
   ): ReturnType<ServicePolicyCatalogRepository['updateTemplate']>;
   publishVersion(version: string, reason: string, context: ActorContext): Promise<void>;
+  createDraft(reason: string, context: ActorContext): Promise<ServicePolicyDraft>;
+  getDraft(version: string, context: ActorContext): Promise<ServicePolicyDraft>;
+  listDrafts(context: ActorContext): Promise<readonly ServicePolicyDraft[]>;
+  updateDraftItem(
+    version: string,
+    kind: 'capability' | 'template',
+    id: string,
+    input: ServicePolicyDraftUpdateInput,
+    context: ActorContext,
+  ): Promise<ServicePolicyDraft>;
+  previewDraft(version: string, context: ActorContext): Promise<ServicePolicyPreviewResult>;
+  validateDraft(version: string, context: ActorContext): Promise<ServicePolicyValidationResult>;
+  activateDraft(
+    version: string,
+    input: {
+      readonly expectedRevision: string;
+      readonly reason: string;
+      readonly confirm: boolean;
+    },
+    context: ActorContext,
+  ): Promise<void>;
 }
 
 export interface ServicePolicyAdminUpdateInput {
@@ -28,6 +56,10 @@ export interface ServicePolicyAdminUpdateInput {
   readonly publishEnabled?: boolean;
   readonly riskTier?: PolicyRiskTier;
   readonly reason: string;
+}
+
+export interface ServicePolicyDraftUpdateInput extends ServicePolicyAdminUpdateInput {
+  readonly expectedRevision: string;
 }
 
 export function createServicePolicyAdminService(dependencies: {
@@ -42,6 +74,22 @@ export function createServicePolicyAdminService(dependencies: {
       });
     }
     return { actorId: context.actor.operatorId, correlationId: context.correlationId };
+  }
+
+  function requireHuman(
+    context: ActorContext,
+    permission:
+      'catalog:read' | 'catalog:draft:create' | 'catalog:draft:update' | 'catalog:policy:activate',
+  ): { actorId: string; correlationId: string } {
+    if (context.actor.kind !== 'operations_human') {
+      throw new ApplicationError({
+        category: 'authorization',
+        code: 'operations_human_required',
+        message: 'Human Operations authentication is required for catalog policy changes.',
+      });
+    }
+    requireOperationsHumanPermission(context, permission);
+    return { actorId: context.actor.principalId, correlationId: context.correlationId };
   }
 
   function requireReason(reason: string): string {
@@ -93,6 +141,51 @@ export function createServicePolicyAdminService(dependencies: {
       await dependencies.repository.publishVersion(
         normalizedVersion,
         requireReason(reason),
+        operation,
+      );
+    },
+    async createDraft(reason, context) {
+      const operation = requireHuman(context, 'catalog:draft:create');
+      return dependencies.repository.createDraft(requireReason(reason), operation);
+    },
+    async getDraft(version, context) {
+      requireHuman(context, 'catalog:read');
+      return dependencies.repository.getDraft(version);
+    },
+    async listDrafts(context) {
+      requireHuman(context, 'catalog:read');
+      return dependencies.repository.listDrafts();
+    },
+    async updateDraftItem(version, kind, id, input, context) {
+      const operation = requireHuman(context, 'catalog:draft:update');
+      return dependencies.repository.updateDraftItem(
+        version,
+        kind,
+        id,
+        { ...input, reason: requireReason(input.reason) },
+        operation,
+      );
+    },
+    async previewDraft(version, context) {
+      const operation = requireHuman(context, 'catalog:read');
+      return dependencies.repository.previewDraft(version, operation);
+    },
+    async validateDraft(version, context) {
+      const operation = requireHuman(context, 'catalog:read');
+      return dependencies.repository.validateDraft(version, operation);
+    },
+    async activateDraft(version, input, context) {
+      const operation = requireHuman(context, 'catalog:policy:activate');
+      if (!input.confirm) {
+        throw new ApplicationError({
+          category: 'validation',
+          code: 'service_policy_activation_confirmation_required',
+          message: 'Explicit activation confirmation is required.',
+        });
+      }
+      await dependencies.repository.activateDraft(
+        version,
+        { expectedRevision: input.expectedRevision, reason: requireReason(input.reason) },
         operation,
       );
     },

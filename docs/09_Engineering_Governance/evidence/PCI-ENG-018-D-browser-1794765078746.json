@@ -1,0 +1,1073 @@
+{
+  "startedAt": "2026-11-15T17:50:33.869Z",
+  "driver": "gstack /browse",
+  "commands": [
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({userAgent:navigator.userAgent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:56701/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:56701/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,protectedShell:!!document.querySelector(\"nav\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/login\",\"protectedShell\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":401,\"body\":{\"error\":\"Request could not be confirmed. Please retry.\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[autocomplete=\"username\"]",
+        "browser-operator@example.test"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[autocomplete=\"username\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[type=\"password\"]",
+        "[REDACTED]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[type=\"password\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:56701/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"nav[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,navigation:!!document.querySelector(\"nav\"),identity:document.querySelector(\".session-state\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"navigation\":true,\"identity\":\"operations-account-9625ec8f-26e8-44bc-974a-7104afd18a67退出\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794851451.071343,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({cookie:document.cookie,local:Object.keys(localStorage),session:Object.keys(sessionStorage)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"cookie\":\"\",\"local\":[],\"session\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"principalId\":\"operations-principal-0df55134-5088-44ed-9474-2daa30528007\",\"accountId\":\"operations-account-9625ec8f-26e8-44bc-974a-7104afd18a67\",\"sessionId\":\"f6a8dfc6-4d50-4f93-ab5f-8d8a8150eca0\",\"permissions\":[\"catalog:read\",\"audit:read\",\"offering:read\",\"request:read\",\"catalog:draft:create\",\"catalog:draft:update\",\"catalog:policy:activate\"]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:56701/policy-versions"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:56701/policy-versions (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/policy-versions\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"button\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('新建草稿'),\n        );\n        if (!button) throw new Error('Create draft button not found');\n        button.click();\n        return 'created';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "created\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,version:document.querySelector(\"strong\")?.textContent,activeMessage:document.body.innerText.includes(\"活动版本保持不变\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/policy-versions\",\"version\":\"draft-1\",\"activeMessage\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const select = [...document.querySelectorAll('select')].find((candidate) =>\n          [...candidate.options].some((option) => option.value === 'review'),\n        );\n        if (!select) throw new Error('Catalog risk selector not found');\n        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;\n        setter?.call(select, 'review');\n        select.dispatchEvent(new Event('change', { bubbles: true }));\n        return 'edited';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "edited\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('预览'),\n        );\n        if (!button) throw new Error('Preview button not found');\n        button.click();\n        return 'preview';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "preview\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "legacy Catalog routes retired",
+      "value": {
+        "results": [
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          }
+        ],
+        "before": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "22fb50c421b6d029fd420febdb5cee5b"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "9d53d088534be35dfe9321c207704292"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "73f4eda8dceeffbf43d697f2dc70dba3"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "fa6d699dc933e19cb62fc8ccf04162b0"
+          }
+        ],
+        "after": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "22fb50c421b6d029fd420febdb5cee5b"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "9d53d088534be35dfe9321c207704292"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "73f4eda8dceeffbf43d697f2dc70dba3"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "fa6d699dc933e19cb62fc8ccf04162b0"
+          }
+        ],
+        "unchanged": true
+      }
+    },
+    {
+      "name": "browser",
+      "value": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+      }
+    },
+    {
+      "name": "anonymous redirect",
+      "value": {
+        "path": "/login",
+        "protectedShell": false
+      }
+    },
+    {
+      "name": "forged headers without Session",
+      "value": {
+        "status": 401,
+        "body": {
+          "error": "Request could not be confirmed. Please retry."
+        }
+      }
+    },
+    {
+      "name": "authenticated shell",
+      "value": {
+        "path": "/",
+        "navigation": true,
+        "identity": "operations-account-9625ec8f-26e8-44bc-974a-7104afd18a67退出"
+      }
+    },
+    {
+      "name": "cookie metadata",
+      "value": {
+        "name": "pci_operations_session",
+        "value": "[REDACTED]",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "expires": 1794851451.071343,
+        "httpOnly": true,
+        "secure": false,
+        "sameSite": "Lax"
+      }
+    },
+    {
+      "name": "JavaScript/storage isolation",
+      "value": {
+        "cookie": "",
+        "local": [],
+        "session": []
+      }
+    },
+    {
+      "name": "authoritative identity",
+      "value": {
+        "status": 200,
+        "body": {
+          "principalId": "operations-principal-0df55134-5088-44ed-9474-2daa30528007",
+          "accountId": "operations-account-9625ec8f-26e8-44bc-974a-7104afd18a67",
+          "sessionId": "f6a8dfc6-4d50-4f93-ab5f-8d8a8150eca0",
+          "permissions": [
+            "catalog:read",
+            "audit:read",
+            "offering:read",
+            "request:read",
+            "catalog:draft:create",
+            "catalog:draft:update",
+            "catalog:policy:activate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "catalog draft created",
+      "value": {
+        "path": "/policy-versions",
+        "version": "draft-1",
+        "activeMessage": true
+      }
+    }
+  ],
+  "proxy": [
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"34f61e8f-a8e7-4eda-b172-5d3c120a9ecc\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"ff3d7c28-8c8c-4589-85c5-53f2260d7154\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"720a41f6-4053-4d60-a2ad-2c6ad6fe141e\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/overview",
+      "status": 500,
+      "body": "{\"error\":{\"category\":\"internal\",\"code\":\"internal_error\",\"correlationId\":\"a88c7c2f-d5b3-46bf-9cb9-d27669a18fff\",\"message\":\"An unexpected error occurred.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/capabilities/capability-dance-teaching",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/preview",
+      "status": 500,
+      "body": "{\"error\":{\"category\":\"internal\",\"code\":\"internal_error\",\"correlationId\":\"9d6b46d5-2407-43b1-90e4-1b798988d5b1\",\"message\":\"An unexpected error occurred.\"}}"
+    }
+  ],
+  "origins": {
+    "api": "http://127.0.0.1:56697",
+    "proxy": "http://127.0.0.1:56700",
+    "admin": "http://127.0.0.1:56701"
+  },
+  "result": "FAIL",
+  "failure": "Browser state not reached: JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))",
+  "nextCleanup": {
+    "command": [
+      "taskkill",
+      "/PID",
+      "35096",
+      "/T",
+      "/F"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "SUCCESS: The process with PID 23936 (child process of PID 35096) has been terminated.\r\nSUCCESS: The process with PID 33076 (child process of PID 35096) has been terminated.\r\nSUCCESS: The process with PID 35096 (child process of PID 27436) has been terminated.\r\n",
+    "stderr": ""
+  },
+  "next": {
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n- Local:         http://127.0.0.1:56701\n- Network:       http://127.0.0.1:56701\n✓ Ready in 782ms\n✓ Running next.config.ts took 62ms\n\n GET /login 200 in 597ms (next.js: 270ms, application-code: 326ms)\n GET / 200 in 78ms (next.js: 15ms, application-code: 63ms)\n GET /api/operations/auth/session 401 in 115ms (next.js: 3ms, application-code: 112ms)\n GET /api/operations/auth/session 401 in 259ms (next.js: 103ms, application-code: 156ms)\n GET /login 200 in 44ms (next.js: 7ms, application-code: 36ms)\n GET /api/operations/auth/session 401 in 64ms (next.js: 1.4ms, application-code: 63ms)\n POST /api/operations/auth/login 200 in 148ms (next.js: 31ms, application-code: 118ms)\n GET / 200 in 33ms (next.js: 1.9ms, application-code: 31ms)\n GET / 200 in 30ms (next.js: 3ms, application-code: 27ms)\n GET /api/operations/auth/session 200 in 77ms (next.js: 2ms, application-code: 75ms)\n GET /api/operations/auth/session 200 in 83ms (next.js: 1.1ms, application-code: 82ms)\n GET /api/operations/overview 500 in 95ms (next.js: 31ms, application-code: 64ms)\n GET /api/operations/auth/session 200 in 86ms (next.js: 1.5ms, application-code: 84ms)\n GET /policy-versions 200 in 1121ms (next.js: 15ms, generate-params: 996ms, application-code: 110ms)\n GET /api/operations/auth/session 200 in 79ms (next.js: 1.4ms, application-code: 78ms)\n GET /api/operations/auth/session 200 in 84ms (next.js: 1.2ms, application-code: 82ms)\n GET /api/operations/catalog/drafts 200 in 113ms (next.js: 34ms, application-code: 79ms)\n GET /api/operations/catalog/drafts 200 in 87ms (next.js: 2ms, application-code: 84ms)\n POST /api/operations/catalog/drafts 201 in 127ms (next.js: 1.4ms, application-code: 126ms)\n PATCH /api/operations/catalog/drafts/draft-1/capabilities/capability-dance-teaching 200 in 1128ms (next.js: 1041ms, application-code: 87ms)\n POST /api/operations/catalog/drafts/draft-1/preview 500 in 1005ms (next.js: 967ms, application-code: 37ms)\n",
+    "stderr": ""
+  },
+  "postgresEvidence": "PCI-ENG-018-D-pci-018br1-fd0e4cf8f1-postgres.json",
+  "apiLogs": [
+    {
+      "event": "unhandled_api_error",
+      "context": {
+        "correlationId": "a88c7c2f-d5b3-46bf-9cb9-d27669a18fff",
+        "errorCategory": "internal",
+        "method": "GET",
+        "path": "/api/v1/operations/admin/overview"
+      }
+    },
+    {
+      "event": "unhandled_api_error",
+      "context": {
+        "correlationId": "9d6b46d5-2407-43b1-90e4-1b798988d5b1",
+        "errorCategory": "internal",
+        "method": "POST",
+        "path": "/api/v1/operations/admin/catalog/drafts/:version/preview"
+      }
+    }
+  ],
+  "finishedAt": "2026-11-15T17:51:18.746Z"
+}

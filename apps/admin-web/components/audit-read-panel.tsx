@@ -124,6 +124,13 @@ export function AuditReadPanel() {
             <option value="">全部</option>
             <option value="updated">updated</option>
             <option value="published">published</option>
+            <option value="draft_created">draft_created</option>
+            <option value="draft_updated">draft_updated</option>
+            <option value="previewed">previewed</option>
+            <option value="validated">validated</option>
+            <option value="activated">activated</option>
+            <option value="activation_failed">activation_failed</option>
+            <option value="draft_update_failed">draft_update_failed</option>
           </select>
         </label>
         <button type="submit">查询</button>

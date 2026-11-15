@@ -1,0 +1,1181 @@
+{
+  "startedAt": "2026-11-15T18:20:24.947Z",
+  "driver": "gstack /browse",
+  "commands": [
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({userAgent:navigator.userAgent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:51093/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:51093/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,protectedShell:!!document.querySelector(\"nav\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/login\",\"protectedShell\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":401,\"body\":{\"error\":\"Request could not be confirmed. Please retry.\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[autocomplete=\"username\"]",
+        "browser-operator@example.test"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[autocomplete=\"username\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[type=\"password\"]",
+        "[REDACTED]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[type=\"password\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:51093/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"nav[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,navigation:!!document.querySelector(\"nav\"),identity:document.querySelector(\".session-state\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"navigation\":true,\"identity\":\"operations-account-b25c8619-278a-46eb-a6ce-61bfece432d9退出\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794853247.868397,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({cookie:document.cookie,local:Object.keys(localStorage),session:Object.keys(sessionStorage)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"cookie\":\"\",\"local\":[],\"session\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"principalId\":\"operations-principal-39bf7939-5435-4475-83a8-103cc42ca9d4\",\"accountId\":\"operations-account-b25c8619-278a-46eb-a6ce-61bfece432d9\",\"sessionId\":\"344516c4-380c-478e-99ca-9ecc149af5ed\",\"permissions\":[\"catalog:read\",\"audit:read\",\"offering:read\",\"request:read\",\"catalog:draft:create\",\"catalog:draft:update\",\"catalog:policy:activate\"]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:51093/policy-versions"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:51093/policy-versions (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/policy-versions\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"button\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('新建草稿'),\n        );\n        if (!button) throw new Error('Create draft button not found');\n        button.click();\n        return 'created';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "created\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,version:document.querySelector(\"strong\")?.textContent,activeMessage:document.body.innerText.includes(\"活动版本保持不变\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/policy-versions\",\"version\":\"draft-1\",\"activeMessage\":true}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const select = [...document.querySelectorAll('select')].find((candidate) =>\n          [...candidate.options].some((option) => option.value === 'review'),\n        );\n        if (!select) throw new Error('Catalog risk selector not found');\n        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;\n        setter?.call(select, 'review');\n        select.dispatchEvent(new Event('change', { bubbles: true }));\n        return 'edited';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "edited\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿变更已保存\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('预览'),\n        );\n        if (!button) throw new Error('Preview button not found');\n        button.click();\n        return 'preview';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "preview\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"相对当前有效版本的差异\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('校验'),\n        );\n        if (!button) throw new Error('Validate button not found');\n        button.click();\n        return 'validated';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "validated\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"校验通过\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"校验通过\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"校验通过\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "window.confirm = () => true"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('确认激活'),\n        );\n        if (!button) throw new Error('Activate button not found');\n        button.click();\n        return 'activated';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "activated\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"Catalog 政策已激活\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "document.body.innerText.slice(-1_000)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "used\nretired\nlow\nreview\nprohibited\n\n商业演出与活动出席\ntemplate-commercial-appearance\n\tactive\treview\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n人像摄影约拍\ntemplate-portrait-session\n\tactive\tlow\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n妆造预约\ntemplate-makeup-appointment\n\tactive\treview\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n英语口语指导\ntemplate-english-speaking-coaching\n\tactive\tlow\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n非医疗健身指导\ntemplate-fitness-consultation\n\tactive\treview\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n品牌内容共创\ntemplate-brand-content-collaboration\n\tactive\tlow\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n编舞指导\ntemplate-choreography-guidance\n\tactive\tlow\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n\n音乐与主持合作\ntemplate-music-hosting\n\tactive\treview\t可选 可发布\t\ndraft\nactive\npaused\nretired\nlow\nreview\nprohibited\n相对当前有效版本的差异\ncapability-dance-teaching.riskTier: low → review\nPCI Operations · 独立运营管理工作台\n",
+      "stderr": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "legacy Catalog routes retired",
+      "value": {
+        "results": [
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          }
+        ],
+        "before": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "9c601f4489cce0349e5498509d6c322f"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "a0832f8ace5e4e7d1ba92106c9cb8a36"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "fa42c87f375278c1aad5afdb8be7c3c5"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "46976eb87ade42dbffbdc608536e2095"
+          }
+        ],
+        "after": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "9c601f4489cce0349e5498509d6c322f"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "a0832f8ace5e4e7d1ba92106c9cb8a36"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "fa42c87f375278c1aad5afdb8be7c3c5"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "46976eb87ade42dbffbdc608536e2095"
+          }
+        ],
+        "unchanged": true
+      }
+    },
+    {
+      "name": "browser",
+      "value": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+      }
+    },
+    {
+      "name": "anonymous redirect",
+      "value": {
+        "path": "/login",
+        "protectedShell": false
+      }
+    },
+    {
+      "name": "forged headers without Session",
+      "value": {
+        "status": 401,
+        "body": {
+          "error": "Request could not be confirmed. Please retry."
+        }
+      }
+    },
+    {
+      "name": "authenticated shell",
+      "value": {
+        "path": "/",
+        "navigation": true,
+        "identity": "operations-account-b25c8619-278a-46eb-a6ce-61bfece432d9退出"
+      }
+    },
+    {
+      "name": "cookie metadata",
+      "value": {
+        "name": "pci_operations_session",
+        "value": "[REDACTED]",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "expires": 1794853247.868397,
+        "httpOnly": true,
+        "secure": false,
+        "sameSite": "Lax"
+      }
+    },
+    {
+      "name": "JavaScript/storage isolation",
+      "value": {
+        "cookie": "",
+        "local": [],
+        "session": []
+      }
+    },
+    {
+      "name": "authoritative identity",
+      "value": {
+        "status": 200,
+        "body": {
+          "principalId": "operations-principal-39bf7939-5435-4475-83a8-103cc42ca9d4",
+          "accountId": "operations-account-b25c8619-278a-46eb-a6ce-61bfece432d9",
+          "sessionId": "344516c4-380c-478e-99ca-9ecc149af5ed",
+          "permissions": [
+            "catalog:read",
+            "audit:read",
+            "offering:read",
+            "request:read",
+            "catalog:draft:create",
+            "catalog:draft:update",
+            "catalog:policy:activate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "catalog draft created",
+      "value": {
+        "path": "/policy-versions",
+        "version": "draft-1",
+        "activeMessage": true
+      }
+    }
+  ],
+  "proxy": [
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"0f5e6ccf-8446-4cea-9690-76554e141ff5\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"50d6bb32-7c5b-442f-bf2d-b104470c2839\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"invalid_operations_credentials\",\"correlationId\":\"1dce0cb2-b952-4da3-9b0f-8160b850d072\",\"message\":\"Operations authentication could not be verified.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/overview",
+      "status": 500,
+      "body": "{\"error\":{\"category\":\"internal\",\"code\":\"internal_error\",\"correlationId\":\"24f9c919-2632-4f59-883e-e5eb63fbd294\",\"message\":\"An unexpected error occurred.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/capabilities/capability-dance-teaching",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/preview",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/validate",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/catalog/drafts/draft-1/activate",
+      "status": 204
+    }
+  ],
+  "origins": {
+    "api": "http://127.0.0.1:51023",
+    "proxy": "http://127.0.0.1:51092",
+    "admin": "http://127.0.0.1:51093"
+  },
+  "result": "FAIL",
+  "failure": "Unexpected token 'u', \"used\nretir\"... is not valid JSON",
+  "nextCleanup": {
+    "command": [
+      "taskkill",
+      "/PID",
+      "7036",
+      "/T",
+      "/F"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "SUCCESS: The process with PID 15180 (child process of PID 7036) has been terminated.\r\nSUCCESS: The process with PID 11300 (child process of PID 7036) has been terminated.\r\nSUCCESS: The process with PID 7036 (child process of PID 29976) has been terminated.\r\n",
+    "stderr": ""
+  },
+  "next": {
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n- Local:         http://127.0.0.1:51093\n- Network:       http://127.0.0.1:51093\n✓ Ready in 1281ms\n✓ Running next.config.ts took 299ms\n\n GET /login 200 in 801ms (next.js: 394ms, application-code: 407ms)\n GET / 200 in 105ms (next.js: 16ms, application-code: 88ms)\n GET /api/operations/auth/session 401 in 129ms (next.js: 8ms, application-code: 121ms)\n GET /api/operations/auth/session 401 in 288ms (next.js: 111ms, application-code: 178ms)\n GET /login 200 in 53ms (next.js: 7ms, application-code: 46ms)\n GET /api/operations/auth/session 401 in 57ms (next.js: 1.8ms, application-code: 55ms)\n POST /api/operations/auth/login 200 in 154ms (next.js: 34ms, application-code: 120ms)\n GET / 200 in 41ms (next.js: 3ms, application-code: 38ms)\n GET / 200 in 42ms (next.js: 5ms, application-code: 37ms)\n GET /api/operations/auth/session 200 in 98ms (next.js: 3ms, application-code: 95ms)\n GET /api/operations/auth/session 200 in 104ms (next.js: 1.4ms, application-code: 103ms)\n GET /api/operations/overview 500 in 151ms (next.js: 40ms, application-code: 111ms)\n GET /api/operations/auth/session 200 in 72ms (next.js: 1.6ms, application-code: 70ms)\n GET /policy-versions 200 in 1141ms (next.js: 14ms, generate-params: 1009ms, application-code: 118ms)\n GET /api/operations/auth/session 200 in 105ms (next.js: 1.7ms, application-code: 103ms)\n GET /api/operations/auth/session 200 in 115ms (next.js: 1.4ms, application-code: 114ms)\n GET /api/operations/catalog/drafts 200 in 142ms (next.js: 41ms, application-code: 101ms)\n GET /api/operations/catalog/drafts 200 in 110ms (next.js: 2ms, application-code: 108ms)\n POST /api/operations/catalog/drafts 201 in 189ms (next.js: 1.7ms, application-code: 188ms)\n PATCH /api/operations/catalog/drafts/draft-1/capabilities/capability-dance-teaching 200 in 1616ms (next.js: 1473ms, application-code: 143ms)\n POST /api/operations/catalog/drafts/draft-1/preview 200 in 1752ms (next.js: 1657ms, application-code: 95ms)\n POST /api/operations/catalog/drafts/draft-1/validate 200 in 1523ms (next.js: 1435ms, application-code: 88ms)\n POST /api/operations/catalog/drafts/draft-1/activate 503 in 1319ms (next.js: 1245ms, application-code: 75ms)\n",
+    "stderr": ""
+  },
+  "postgresEvidence": "PCI-ENG-018-D-pci-018br1-cf7568ff20-postgres.json",
+  "apiLogs": [
+    {
+      "event": "unhandled_api_error",
+      "context": {
+        "correlationId": "24f9c919-2632-4f59-883e-e5eb63fbd294",
+        "errorCategory": "internal",
+        "method": "GET",
+        "path": "/api/v1/operations/admin/overview"
+      }
+    }
+  ],
+  "finishedAt": "2026-11-15T18:21:22.999Z"
+}

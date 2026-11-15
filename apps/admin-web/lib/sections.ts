@@ -23,7 +23,7 @@ export const sections = [
     slug: 'policy-versions',
     label: '政策版本',
     english: 'Policy Versions',
-    description: '目录发布版本与版本历史。',
+    description: '创建、校验并确认激活 Catalog 政策草稿。',
   },
   {
     slug: 'reports-appeals',

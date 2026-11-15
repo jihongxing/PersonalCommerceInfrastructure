@@ -223,6 +223,9 @@ suite('Operations Admin restricted PostgreSQL 17.10 acceptance', () => {
       'audit:read',
       'offering:read',
       'request:read',
+      'catalog:draft:create',
+      'catalog:draft:update',
+      'catalog:policy:activate',
     ]);
     const digest = createHash('sha256').update(result.credential).digest('hex');
     const rows =

@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-11-15T17:52:13.647Z",
+  "driver": "gstack /browse",
+  "commands": [],
+  "checks": [],
+  "proxy": [],
+  "result": "FAIL",
+  "failure": "Fastify instance is already listening. Cannot call \"setErrorHandler\"!",
+  "postgresEvidence": "PCI-ENG-018-D-pci-018br1-cb083adea6-postgres.json",
+  "apiLogs": [],
+  "finishedAt": "2026-11-15T17:52:22.545Z"
+}

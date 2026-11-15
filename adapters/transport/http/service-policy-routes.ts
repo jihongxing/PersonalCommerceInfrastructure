@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { Type } from 'typebox';
 import type { CatalogQueryRepository } from '../../../applications/operations-admin/operations-query-repository.js';
 
@@ -17,13 +17,13 @@ import {
 } from '../../../applications/service-policy/service-policy-read-service.js';
 import { requireOperationsHumanPermission } from '../../../applications/operations-identity/operations-human-authentication.js';
 import {
-  CapabilityCatalogItemSchema,
   ServiceCatalogResponseSchema,
-  ServiceOfferingTemplateSchema,
-  ServicePolicyAdminUpdateSchema,
-  ServicePolicyAdminWorkspaceSchema,
-  ServicePolicyAuditSchema,
-  ServicePolicyPublishVersionSchema,
+  ServicePolicyDraftCreateSchema,
+  ServicePolicyDraftUpdateSchema,
+  ServicePolicyDraftActivateSchema,
+  ServicePolicyDraftSchema,
+  ServicePolicyValidationResultSchema,
+  ServicePolicyPreviewResultSchema,
   OperationsAuditDetailResponseSchema,
   OperationsAuditReadResponseSchema,
   OperationsCatalogDetailResponseSchema,
@@ -40,6 +40,12 @@ const IdParamsSchema = Type.Object({ id: Type.String({ minLength: 1 }) });
 const CatalogKindParamsSchema = Type.Object({
   kind: Type.Union([Type.Literal('capabilities'), Type.Literal('templates')]),
 });
+const DraftParamsSchema = Type.Object({ version: Type.String({ minLength: 1, maxLength: 32 }) });
+const DraftItemParamsSchema = Type.Object({
+  version: Type.String({ minLength: 1, maxLength: 32 }),
+  kind: Type.Union([Type.Literal('capabilities'), Type.Literal('templates')]),
+  id: Type.String({ minLength: 1 }),
+});
 const CatalogQuerySchema = Type.Object({
   page: Type.Optional(Type.String()),
   pageSize: Type.Optional(Type.String()),
@@ -54,6 +60,22 @@ const AuditQuerySchema = Type.Object({
   entityType: Type.Optional(Type.String()),
   action: Type.Optional(Type.String()),
 });
+
+const LEGACY_CATALOG_ROUTE_RETIRED_CODE = 'legacy_catalog_operations_route_retired';
+
+async function retireLegacyCatalogRoute(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<FastifyReply> {
+  return reply.status(410).send({
+    error: {
+      category: 'not_found',
+      code: LEGACY_CATALOG_ROUTE_RETIRED_CODE,
+      correlationId: request.id,
+      message: 'This legacy Catalog Operations route has been retired.',
+    },
+  });
+}
 
 export function registerServicePolicyRoutes(
   server: FastifyInstance,
@@ -84,14 +106,6 @@ export function registerServicePolicyRoutes(
     }
   };
 
-  const authenticateOperations = async (request: AuthenticatedRequest): Promise<void> => {
-    request.operationsContext =
-      await dependencies.operationsAuthContextProvider.resolveActorContext({
-        accessToken: extractBearerToken(request.headers.authorization),
-        correlationId: request.id,
-      });
-  };
-
   const requireOperationsContext = (request: AuthenticatedRequest): ActorContext => {
     if (request.operationsContext === undefined) {
       throw new ApplicationError({
@@ -111,11 +125,21 @@ export function registerServicePolicyRoutes(
         message: 'Operations Human authentication is temporarily unavailable.',
       });
     }
-    request.operationsContext =
-      await dependencies.humanOperationsAuthContextProvider.resolveActorContext({
-        accessToken: extractBearerToken(request.headers.authorization),
-        correlationId: request.id,
+    try {
+      request.operationsContext =
+        await dependencies.humanOperationsAuthContextProvider.resolveActorContext({
+          accessToken: extractBearerToken(request.headers.authorization),
+          correlationId: request.id,
+        });
+    } catch (error) {
+      if (error instanceof ApplicationError) throw error;
+      throw new ApplicationError({
+        category: 'authentication',
+        code: 'invalid_operations_credentials',
+        message: 'Operations authentication could not be verified.',
+        cause: error,
       });
+    }
   };
 
   const requireReadPermission = (
@@ -129,6 +153,21 @@ export function registerServicePolicyRoutes(
         message: 'Authenticated operations request requires an Actor Context.',
       });
     requireOperationsHumanPermission(request.operationsContext, permission);
+  };
+
+  const requireReadContext = (request: AuthenticatedRequest): ActorContext => {
+    const context = requireOperationsContext(request);
+    requireOperationsHumanPermission(context, 'catalog:read');
+    return context;
+  };
+
+  const requireHumanPermission = (
+    request: AuthenticatedRequest,
+    permission: 'catalog:draft:create' | 'catalog:draft:update' | 'catalog:policy:activate',
+  ): ActorContext => {
+    const context = requireOperationsContext(request);
+    requireOperationsHumanPermission(context, permission);
+    return context;
   };
 
   const parsePage = (value: string | undefined, fallback: number, maximum: number): number => {
@@ -181,10 +220,179 @@ export function registerServicePolicyRoutes(
       : invalidFilter('entityType');
   }
   function parseAction(value: string): AuditReadFilters['action'] {
-    return ['updated', 'published'].includes(value)
+    return [
+      'updated',
+      'published',
+      'draft_created',
+      'draft_updated',
+      'previewed',
+      'validated',
+      'activated',
+      'activation_failed',
+      'draft_update_failed',
+    ].includes(value)
       ? (value as AuditReadFilters['action'])
       : invalidFilter('action');
   }
+
+  server.post(
+    '/api/v1/operations/admin/catalog/drafts',
+    {
+      schema: {
+        operationId: 'createOperationsCatalogDraft',
+        body: ServicePolicyDraftCreateSchema,
+        response: {
+          201: ServicePolicyDraftSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-catalog'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request, reply) => {
+      const body = request.body as { readonly reason: string };
+      const context = requireHumanPermission(request, 'catalog:draft:create');
+      return reply
+        .status(201)
+        .send(await dependencies.adminService.createDraft(body.reason, context));
+    },
+  );
+
+  server.get(
+    '/api/v1/operations/admin/catalog/drafts',
+    {
+      schema: {
+        operationId: 'listOperationsCatalogDrafts',
+        response: {
+          200: Type.Array(ServicePolicyDraftSchema),
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-catalog'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => dependencies.adminService.listDrafts(requireReadContext(request)),
+  );
+
+  server.get(
+    '/api/v1/operations/admin/catalog/drafts/:version',
+    {
+      schema: {
+        operationId: 'getOperationsCatalogDraft',
+        params: DraftParamsSchema,
+        response: {
+          200: ServicePolicyDraftSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-catalog'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) =>
+      dependencies.adminService.getDraft(
+        (request.params as { readonly version: string }).version,
+        requireReadContext(request),
+      ),
+  );
+
+  server.patch(
+    '/api/v1/operations/admin/catalog/drafts/:version/:kind/:id',
+    {
+      schema: {
+        operationId: 'updateOperationsCatalogDraftItem',
+        params: DraftItemParamsSchema,
+        body: ServicePolicyDraftUpdateSchema,
+        response: {
+          200: ServicePolicyDraftSchema,
+          400: ApiErrorEnvelopeSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          404: ApiErrorEnvelopeSchema,
+          409: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-catalog'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request) => {
+      const params = request.params as {
+        readonly version: string;
+        readonly kind: 'capabilities' | 'templates';
+        readonly id: string;
+      };
+      const body = request.body as Parameters<ServicePolicyAdminService['updateDraftItem']>[3];
+      return dependencies.adminService.updateDraftItem(
+        params.version,
+        params.kind === 'capabilities' ? 'capability' : 'template',
+        params.id,
+        body,
+        requireHumanPermission(request, 'catalog:draft:update'),
+      );
+    },
+  );
+
+  for (const action of ['preview', 'validate'] as const) {
+    server.post(
+      `/api/v1/operations/admin/catalog/drafts/:version/${action}`,
+      {
+        schema: {
+          operationId: `${action}OperationsCatalogDraft`,
+          params: DraftParamsSchema,
+          response: {
+            200:
+              action === 'preview'
+                ? ServicePolicyPreviewResultSchema
+                : ServicePolicyValidationResultSchema,
+            401: ApiErrorEnvelopeSchema,
+            403: ApiErrorEnvelopeSchema,
+            404: ApiErrorEnvelopeSchema,
+          },
+          tags: ['operations-admin-catalog'],
+        },
+        preHandler: authenticateHumanRead,
+      },
+      async (request) => {
+        const version = (request.params as { readonly version: string }).version;
+        const context = requireReadContext(request);
+        return action === 'preview'
+          ? dependencies.adminService.previewDraft(version, context)
+          : dependencies.adminService.validateDraft(version, context);
+      },
+    );
+  }
+
+  server.post(
+    '/api/v1/operations/admin/catalog/drafts/:version/activate',
+    {
+      schema: {
+        operationId: 'activateOperationsCatalogDraft',
+        params: DraftParamsSchema,
+        body: ServicePolicyDraftActivateSchema,
+        response: {
+          204: Type.Null(),
+          400: ApiErrorEnvelopeSchema,
+          401: ApiErrorEnvelopeSchema,
+          403: ApiErrorEnvelopeSchema,
+          409: ApiErrorEnvelopeSchema,
+        },
+        tags: ['operations-admin-catalog'],
+      },
+      preHandler: authenticateHumanRead,
+    },
+    async (request, reply) => {
+      const version = (request.params as { readonly version: string }).version;
+      const body = request.body as Parameters<ServicePolicyAdminService['activateDraft']>[1];
+      await dependencies.adminService.activateDraft(
+        version,
+        body,
+        requireHumanPermission(request, 'catalog:policy:activate'),
+      );
+      return reply.status(204).send();
+    },
+  );
 
   server.get(
     '/api/v1/operations/admin/catalog/:kind',
@@ -299,15 +507,12 @@ export function registerServicePolicyRoutes(
       schema: {
         operationId: 'getServicePolicyOperationsWorkspace',
         response: {
-          200: ServicePolicyAdminWorkspaceSchema,
-          401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['service-policy'],
       },
-      preHandler: authenticateOperations,
     },
-    async (request) => dependencies.adminService.getWorkspace(requireOperationsContext(request)),
+    retireLegacyCatalogRoute,
   );
 
   server.get(
@@ -316,18 +521,12 @@ export function registerServicePolicyRoutes(
       schema: {
         operationId: 'listServicePolicyAudit',
         response: {
-          200: Type.Array(ServicePolicyAuditSchema),
-          401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['service-policy'],
       },
-      preHandler: authenticateOperations,
     },
-    async (request) => {
-      requireOperationsContext(request);
-      return dependencies.catalogRepository.listAudit();
-    },
+    retireLegacyCatalogRoute,
   );
 
   server.patch(
@@ -335,27 +534,13 @@ export function registerServicePolicyRoutes(
     {
       schema: {
         operationId: 'updateServicePolicyCapability',
-        params: IdParamsSchema,
-        body: ServicePolicyAdminUpdateSchema,
         response: {
-          200: CapabilityCatalogItemSchema,
-          400: ApiErrorEnvelopeSchema,
-          401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
-          404: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['service-policy'],
       },
-      preHandler: authenticateOperations,
     },
-    async (request) => {
-      const { id } = request.params as { readonly id: string };
-      return dependencies.adminService.updateCapability(
-        id,
-        request.body as Parameters<ServicePolicyAdminService['updateCapability']>[1],
-        requireOperationsContext(request),
-      );
-    },
+    retireLegacyCatalogRoute,
   );
 
   server.patch(
@@ -363,27 +548,13 @@ export function registerServicePolicyRoutes(
     {
       schema: {
         operationId: 'updateServicePolicyTemplate',
-        params: IdParamsSchema,
-        body: ServicePolicyAdminUpdateSchema,
         response: {
-          200: ServiceOfferingTemplateSchema,
-          400: ApiErrorEnvelopeSchema,
-          401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
-          404: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['service-policy'],
       },
-      preHandler: authenticateOperations,
     },
-    async (request) => {
-      const { id } = request.params as { readonly id: string };
-      return dependencies.adminService.updateTemplate(
-        id,
-        request.body as Parameters<ServicePolicyAdminService['updateTemplate']>[1],
-        requireOperationsContext(request),
-      );
-    },
+    retireLegacyCatalogRoute,
   );
 
   server.post(
@@ -391,25 +562,12 @@ export function registerServicePolicyRoutes(
     {
       schema: {
         operationId: 'publishServicePolicyVersion',
-        body: ServicePolicyPublishVersionSchema,
         response: {
-          204: Type.Null(),
-          400: ApiErrorEnvelopeSchema,
-          401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['service-policy'],
       },
-      preHandler: authenticateOperations,
     },
-    async (request, reply) => {
-      const body = request.body as { readonly version: string; readonly reason: string };
-      await dependencies.adminService.publishVersion(
-        body.version,
-        body.reason,
-        requireOperationsContext(request),
-      );
-      return reply.status(204).send();
-    },
+    retireLegacyCatalogRoute,
   );
 }

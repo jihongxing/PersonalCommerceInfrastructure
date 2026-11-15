@@ -4,6 +4,7 @@ import { createActorContext } from '../../applications/core/actor-context.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../applications/operations-identity/operations-human-authentication.js';
 import { createApiServer } from '../../apps/api/src/create-api-server.js';
 import {
+  OPERATIONS_HUMAN_PERMISSIONS,
   createOperationsAccountId,
   createOperationsHumanPrincipalId,
   createOperationsSessionId,
@@ -20,7 +21,7 @@ describe('Operations Human authentication API', () => {
           accountId: createOperationsAccountId('account-1'),
           sessionId: createOperationsSessionId('session-1'),
           absoluteExpiresAt: new Date('2030-01-01T00:00:00.000Z'),
-          permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
+          permissions: OPERATIONS_HUMAN_PERMISSIONS,
         });
       },
       resolveActorContext(request) {
@@ -34,7 +35,7 @@ describe('Operations Human authentication API', () => {
               principalId: 'principal-1',
               accountId: 'account-1',
               sessionId: 'session-1',
-              permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
+              permissions: OPERATIONS_HUMAN_PERMISSIONS,
             },
             correlationId: request.correlationId,
           }),
@@ -63,7 +64,7 @@ describe('Operations Human authentication API', () => {
       expect(session.statusCode).toBe(200);
       expect(session.json()).toMatchObject({
         accountId: 'account-1',
-        permissions: ['catalog:read', 'audit:read', 'offering:read', 'request:read'],
+        permissions: OPERATIONS_HUMAN_PERMISSIONS,
       });
 
       const logout = await server.inject({

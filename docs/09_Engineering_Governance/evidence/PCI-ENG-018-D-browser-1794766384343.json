@@ -1,0 +1,958 @@
+{
+  "startedAt": "2026-11-15T18:12:01.840Z",
+  "driver": "gstack /browse",
+  "commands": [
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({userAgent:navigator.userAgent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:51428/"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:51428/ (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/login\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,protectedShell:!!document.querySelector(\"nav\")})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/login\",\"protectedShell\":false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":401,\"body\":{\"error\":\"Request could not be confirmed. Please retry.\"}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[autocomplete=\"username\"]",
+        "browser-operator@example.test"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[autocomplete=\"username\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "fill",
+        "input[type=\"password\"]",
+        "[REDACTED]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Filled input[type=\"password\"]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "click",
+        "button[type=\"submit\"]"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Clicked button[type=\"submit\"] → now at http://127.0.0.1:51428/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"nav[aria-label]\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({path:location.pathname,navigation:!!document.querySelector(\"nav\"),identity:document.querySelector(\".session-state\")?.textContent})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"path\":\"/\",\"navigation\":true,\"identity\":\"operations-account-7cde16ef-961b-4e86-a349-e0d7093e02a7退出\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "cookies"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[\n  {\n    \"name\": \"pci_operations_session\",\n    \"value\": \"[REDACTED — 43 chars]\",\n    \"domain\": \"127.0.0.1\",\n    \"path\": \"/\",\n    \"expires\": 1794852746.633724,\n    \"httpOnly\": true,\n    \"secure\": false,\n    \"sameSite\": \"Lax\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify({cookie:document.cookie,local:Object.keys(localStorage),session:Object.keys(sessionStorage)})"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"cookie\":\"\",\"local\":[],\"session\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(await fetch('/api/operations/auth/session',{headers:{'x-principal-id':'forged','x-permissions':'catalog:write'}}).then(async r=>({status:r.status,body:await r.json()})))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"status\":200,\"body\":{\"principalId\":\"operations-principal-20246c52-a761-4749-a044-ba708459544c\",\"accountId\":\"operations-account-7cde16ef-961b-4e86-a349-e0d7093e02a7\",\"sessionId\":\"26739d53-c03c-4a05-a6e6-6a3c4c9e2217\",\"permissions\":[\"catalog:read\",\"audit:read\",\"offering:read\",\"request:read\",\"catalog:draft:create\",\"catalog:draft:update\",\"catalog:policy:activate\"]}}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "goto",
+        "http://127.0.0.1:51428/policy-versions"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "Navigated to http://127.0.0.1:51428/policy-versions (200)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(location.pathname)"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "\"/policy-versions\"\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(!!document.querySelector(\"button\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "true\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "(() => {\n        const button = [...document.querySelectorAll('button')].find((candidate) =>\n          candidate.textContent?.includes('新建草稿'),\n        );\n        if (!button) throw new Error('Create draft button not found');\n        button.click();\n        return 'created';\n      })()"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "created\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "E:\\Users\\jihx\\.codex\\skills\\gstack\\browse\\dist\\browse.exe",
+        "js",
+        "JSON.stringify(document.body.innerText.includes(\"草稿版本\"))"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "false\n",
+      "stderr": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "legacy Catalog routes retired",
+      "value": {
+        "results": [
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/workspace",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/operations/service-policy/audit",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/capabilities/capability-dance-teaching",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/operations/service-policy/templates/template-dance-private-lesson",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer test-operations-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "Bearer invalid-token",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/operations/service-policy/releases",
+            "authorization": "forged-headers",
+            "status": 410,
+            "code": "legacy_catalog_operations_route_retired"
+          }
+        ],
+        "before": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "80cf798612abbaf9efbfdfe9be52f5ee"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "afb8ed005c3feee6c84d1d0f41c02e2b"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "eda6a9d5e52cf281d795edd42ab6dc00"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "8ee48b2c83eab163dd648e26c7e4d132"
+          }
+        ],
+        "after": [
+          {
+            "relation": "releases",
+            "count": 1,
+            "hash": "80cf798612abbaf9efbfdfe9be52f5ee"
+          },
+          {
+            "relation": "capabilities",
+            "count": 10,
+            "hash": "afb8ed005c3feee6c84d1d0f41c02e2b"
+          },
+          {
+            "relation": "templates",
+            "count": 10,
+            "hash": "eda6a9d5e52cf281d795edd42ab6dc00"
+          },
+          {
+            "relation": "audits",
+            "count": 1,
+            "hash": "8ee48b2c83eab163dd648e26c7e4d132"
+          }
+        ],
+        "unchanged": true
+      }
+    },
+    {
+      "name": "browser",
+      "value": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+      }
+    },
+    {
+      "name": "anonymous redirect",
+      "value": {
+        "path": "/login",
+        "protectedShell": false
+      }
+    },
+    {
+      "name": "forged headers without Session",
+      "value": {
+        "status": 401,
+        "body": {
+          "error": "Request could not be confirmed. Please retry."
+        }
+      }
+    },
+    {
+      "name": "authenticated shell",
+      "value": {
+        "path": "/",
+        "navigation": true,
+        "identity": "operations-account-7cde16ef-961b-4e86-a349-e0d7093e02a7退出"
+      }
+    },
+    {
+      "name": "cookie metadata",
+      "value": {
+        "name": "pci_operations_session",
+        "value": "[REDACTED]",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "expires": 1794852746.633724,
+        "httpOnly": true,
+        "secure": false,
+        "sameSite": "Lax"
+      }
+    },
+    {
+      "name": "JavaScript/storage isolation",
+      "value": {
+        "cookie": "",
+        "local": [],
+        "session": []
+      }
+    },
+    {
+      "name": "authoritative identity",
+      "value": {
+        "status": 200,
+        "body": {
+          "principalId": "operations-principal-20246c52-a761-4749-a044-ba708459544c",
+          "accountId": "operations-account-7cde16ef-961b-4e86-a349-e0d7093e02a7",
+          "sessionId": "26739d53-c03c-4a05-a6e6-6a3c4c9e2217",
+          "permissions": [
+            "catalog:read",
+            "audit:read",
+            "offering:read",
+            "request:read",
+            "catalog:draft:create",
+            "catalog:draft:update",
+            "catalog:policy:activate"
+          ]
+        }
+      }
+    }
+  ],
+  "proxy": [
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"missing_authorization\",\"correlationId\":\"b714f1fc-becd-4cfa-87c6-4a26b2b9a7a3\",\"message\":\"Authentication is required.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"missing_authorization\",\"correlationId\":\"e0811a84-3b2a-4c09-817c-ad4526cfe8ec\",\"message\":\"Authentication is required.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 401,
+      "body": "{\"error\":{\"category\":\"authentication\",\"code\":\"missing_authorization\",\"correlationId\":\"4b652053-6dc7-45e7-a6ee-8c283d3d80de\",\"message\":\"Authentication is required.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/admin/overview",
+      "status": 500,
+      "body": "{\"error\":{\"category\":\"internal\",\"code\":\"internal_error\",\"correlationId\":\"41d54bee-ac20-4f0e-883b-e29cd3820a3a\",\"message\":\"An unexpected error occurred.\"}}"
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/operations/auth/session",
+      "status": 200
+    }
+  ],
+  "origins": {
+    "api": "http://127.0.0.1:51424",
+    "proxy": "http://127.0.0.1:51427",
+    "admin": "http://127.0.0.1:51428"
+  },
+  "result": "FAIL",
+  "failure": "Browser state not reached: JSON.stringify(document.body.innerText.includes(\"草稿版本\"))",
+  "nextCleanup": {
+    "command": [
+      "taskkill",
+      "/PID",
+      "19128",
+      "/T",
+      "/F"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "stdout": "SUCCESS: The process with PID 26180 (child process of PID 19128) has been terminated.\r\nSUCCESS: The process with PID 10584 (child process of PID 19128) has been terminated.\r\nSUCCESS: The process with PID 19128 (child process of PID 23212) has been terminated.\r\n",
+    "stderr": ""
+  },
+  "next": {
+    "stdout": "▲ Next.js 16.4.5 (Turbopack)\n- Local:         http://127.0.0.1:51428\n- Network:       http://127.0.0.1:51428\n✓ Ready in 1972ms\n✓ Running next.config.ts took 255ms\n\n GET /login 200 in 907ms (next.js: 356ms, application-code: 551ms)\n GET / 200 in 120ms (next.js: 16ms, application-code: 105ms)\n GET /api/operations/auth/session 401 in 256ms (next.js: 159ms, application-code: 97ms)\n GET /api/operations/auth/session 401 in 53ms (next.js: 2ms, application-code: 51ms)\n GET /login 200 in 67ms (next.js: 8ms, application-code: 59ms)\n GET /api/operations/auth/session 401 in 42ms (next.js: 1.5ms, application-code: 41ms)\n POST /api/operations/auth/login 200 in 216ms (next.js: 39ms, application-code: 176ms)\n GET / 200 in 37ms (next.js: 6ms, application-code: 31ms)\n GET / 200 in 48ms (next.js: 4ms, application-code: 44ms)\n GET /api/operations/auth/session 200 in 113ms (next.js: 4ms, application-code: 109ms)\n GET /api/operations/auth/session 200 in 145ms (next.js: 1.7ms, application-code: 143ms)\n GET /api/operations/overview 500 in 170ms (next.js: 51ms, application-code: 118ms)\n GET /api/operations/auth/session 200 in 83ms (next.js: 1.4ms, application-code: 81ms)\n GET /policy-versions 200 in 1250ms (next.js: 14ms, generate-params: 1167ms, application-code: 69ms)\n GET /api/operations/auth/session 200 in 144ms (next.js: 1.5ms, application-code: 142ms)\n GET /api/operations/auth/session 200 in 170ms (next.js: 3ms, application-code: 167ms)\n○ Compiling /_error ...\n POST /api/operations/catalog/drafts 500 in 3.6s (next.js: 3.2s, application-code: 392ms)\n GET /api/operations/catalog/drafts 500 in 5.3s (next.js: 5.3s, application-code: 64ms)\n GET /api/operations/catalog/drafts 500 in 5.3s (next.js: 5.3s, application-code: 51ms)\n",
+    "stderr": "⨯ ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  \u001b[90m32 |\u001b[0m       signal: \u001b[33mAbortSignal\u001b[0m.timeout(\u001b[35m5000\u001b[0m),\n  \u001b[90m33 |\u001b[0m     });\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^\u001b[0m\n  \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n\n./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  \u001b[90m33 |\u001b[0m     });\n  \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^^^^\u001b[0m\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n  \u001b[90m38 |\u001b[0m     \u001b[36mconst\u001b[0m correlationId = upstream.headers.get(\u001b[32m'x-correlation-id'\u001b[0m);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n⨯ ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  \u001b[90m32 |\u001b[0m       signal: \u001b[33mAbortSignal\u001b[0m.timeout(\u001b[35m5000\u001b[0m),\n  \u001b[90m33 |\u001b[0m     });\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^\u001b[0m\n  \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n\n./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  \u001b[90m33 |\u001b[0m     });\n  \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^^^^\u001b[0m\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n  \u001b[90m38 |\u001b[0m     \u001b[36mconst\u001b[0m correlationId = upstream.headers.get(\u001b[32m'x-correlation-id'\u001b[0m);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n⨯ ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  \u001b[90m32 |\u001b[0m       signal: \u001b[33mAbortSignal\u001b[0m.timeout(\u001b[35m5000\u001b[0m),\n  \u001b[90m33 |\u001b[0m     });\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^\u001b[0m\n  \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n\n./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  \u001b[90m33 |\u001b[0m     });\n  \u001b[90m34 |\u001b[0m     \u001b[36mconst\u001b[0m body = \u001b[36mawait\u001b[0m upstream.arrayBuffer();\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m35 |\u001b[0m     \u001b[36mconst\u001b[0m headers = \u001b[36mnew\u001b[0m \u001b[33mHeaders\u001b[0m({ \u001b[32m'cache-control'\u001b[0m: \u001b[32m'no-store'\u001b[0m });\n  \u001b[90m   |\u001b[0m           \u001b[31m\u001b[1m^^^^^^^\u001b[0m\n  \u001b[90m36 |\u001b[0m     \u001b[36mconst\u001b[0m contentType = upstream.headers.get(\u001b[32m'content-type'\u001b[0m);\n  \u001b[90m37 |\u001b[0m     \u001b[36mif\u001b[0m (contentType !== \u001b[36mnull\u001b[0m) headers.set(\u001b[32m'content-type'\u001b[0m, contentType);\n  \u001b[90m38 |\u001b[0m     \u001b[36mconst\u001b[0m correlationId = upstream.headers.get(\u001b[32m'x-correlation-id'\u001b[0m);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts\n\n\n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:34:11\nError: the name `body` is defined multiple times\n  32 |       signal: AbortSignal.timeout(5000),\n  33 |     });\n> 34 |     const body = await upstream.arrayBuffer();\n     |           ^^^^\n  35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n[browser] ./apps/admin-web/lib/operations-catalog-proxy.ts:35:11\nError: the name `headers` is defined multiple times\n  33 |     });\n  34 |     const body = await upstream.arrayBuffer();\n> 35 |     const headers = new Headers({ 'cache-control': 'no-store' });\n     |           ^^^^^^^\n  36 |     const contentType = upstream.headers.get('content-type');\n  37 |     if (contentType !== null) headers.set('content-type', contentType);\n  38 |     const correlationId = upstream.headers.get('x-correlation-id');\n\nEcmascript file had an error\n\nImport trace:\n  App Route:\n    ./apps/admin-web/lib/operations-catalog-proxy.ts\n    ./apps/admin-web/app/api/operations/catalog/drafts/route.ts \n"
+  },
+  "postgresEvidence": "PCI-ENG-018-D-pci-018br1-6bd57e22d2-postgres.json",
+  "apiLogs": [
+    {
+      "event": "unhandled_api_error",
+      "context": {
+        "correlationId": "41d54bee-ac20-4f0e-883b-e29cd3820a3a",
+        "errorCategory": "internal",
+        "method": "GET",
+        "path": "/api/v1/operations/admin/overview"
+      }
+    }
+  ],
+  "finishedAt": "2026-11-15T18:13:04.342Z"
+}

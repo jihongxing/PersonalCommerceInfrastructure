@@ -53,6 +53,18 @@ export type OperationsCredentialStatus = 'active' | 'revoked';
 
 export type OperationsSessionStatus = 'active' | 'revoked';
 
+// The first-admin allowlist is shared by the runtime and HTTP response schema.
+export const OPERATIONS_HUMAN_PERMISSIONS = [
+  'catalog:read',
+  'audit:read',
+  'offering:read',
+  'request:read',
+  'catalog:draft:create',
+  'catalog:draft:update',
+  'catalog:policy:activate',
+] as const;
+export type OperationsHumanPermission = (typeof OPERATIONS_HUMAN_PERMISSIONS)[number];
+
 export type OperationsMfaFactorKind = 'webauthn' | 'totp' | 'recovery_code';
 
 export type OperationsMfaFactorStatus = 'pending' | 'active' | 'revoked';

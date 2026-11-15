@@ -1,5 +1,7 @@
 import { Type } from 'typebox';
 
+import { OPERATIONS_HUMAN_PERMISSIONS } from '../../../modules/operations-identity/operations-identity-contract.js';
+
 // PCI-ENG-018-B/R1 Operations Login, Session and Logout use cases.
 // Additive internal API; VS-01 Creator FRs remain unchanged. Permissions are the
 // Founder-frozen first-operator allowlist, not a new permission registry.
@@ -16,12 +18,12 @@ const sessionProperties = {
   accountId: Type.String({ minLength: 1 }),
   sessionId: Type.String({ minLength: 1 }),
   permissions: Type.Array(
-    Type.Union([
-      Type.Literal('catalog:read'),
-      Type.Literal('audit:read'),
-      Type.Literal('offering:read'),
-      Type.Literal('request:read'),
-    ]),
+    Type.Union(
+      OPERATIONS_HUMAN_PERMISSIONS.map((permission) => Type.Literal(permission)) as [
+        ReturnType<typeof Type.Literal>,
+        ...ReturnType<typeof Type.Literal>[],
+      ],
+    ),
   ),
 };
 export const OperationsCurrentSessionResponseSchema = Type.Object(sessionProperties, {

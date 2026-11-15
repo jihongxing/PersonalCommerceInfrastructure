@@ -10633,3 +10633,234 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## DEV-088 / PCI-ENG-018-D — Controlled Catalog Operations
+
+Founder decision FD-018-D-01 authorizes a bounded Catalog / Service Policy control surface for
+the internal Admin Web. This unit adds only policy draft creation, unpublished draft updates,
+preview, validation, explicit activation confirmation, and transactionally recorded Audit events.
+Offering, Customer Request, Creator Identity, Creator decisions, Authentication, Session, and
+general RBAC behavior remain outside this unit.
+
+The implementation reuses the existing versioned `service_policy_*` tables: a draft is an isolated
+policy version cloned from the current published snapshot. Draft updates use an expected revision,
+published rows are never edited through the draft command path, activation archives the previous
+published release and publishes the draft in the same transaction as its Audit record, and the
+catalog advisory lock serializes changes. Failed activation is recorded as `activation_failed`
+without changing the effective snapshot. No Migration or Schema change was required.
+
+The three additional fixed permissions are `catalog:draft:create`, `catalog:draft:update`, and
+`catalog:policy:activate`. They are added to the existing server-derived first-bootstrap allowlist;
+no permission-management API or general RBAC was added. New Admin Catalog routes use the Human
+Operations Session provider and the Admin Web BFF; the browser supplies no trusted identity or
+permission headers. Existing read permissions remain `catalog:read`, `audit:read`, `offering:read`,
+and `request:read`.
+
+The Admin Web policy page supports creating a draft, editing status, previewing, validating, and
+separately confirming activation. Catalog and Audit/Offering/Request data access remains read-only
+outside this policy control surface. No production, Pilot, or real-money authorization is implied.
+
+Verification for this change unit: Domain/Application draft lifecycle **5/5 PASS** and Human
+Operations HTTP API **1/1 PASS**, and Admin BFF proxy **3/3 PASS**; API TypeScript, Admin Web
+targeted component/BFF tests **46/46 PASS**, TypeScript, changed-file ESLint and
+Prettier all passed; `git diff --check` passed. PostgreSQL migration and full-repository validation
+were not run because this implementation reuses existing schema and the task does not authorize
+full-suite expansion; the disposable PostgreSQL integration tests are present but skipped because
+`CATALOG_TEST_DATABASE_URL` is not configured in this workspace. Browser E2E and disposable
+PostgreSQL evidence remain required for Main Controller acceptance and are not represented as
+completed here.
+
+```ini
+PCI-ENG-018-D = CONTROLLED CATALOG OPERATIONS COMPLETED — AWAITING MAIN CONTROLLER ACCEPTANCE
+CATALOG_DRAFT_CREATE = catalog:draft:create
+CATALOG_DRAFT_UPDATE = catalog:draft:update
+CATALOG_POLICY_ACTIVATE = catalog:policy:activate
+OFFERING_ADMIN_WRITES = NOT IMPLEMENTED
+REQUEST_ADMIN_WRITES = NOT IMPLEMENTED
+CREATOR_DECISION_PROXY = NOT IMPLEMENTED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+## PCI-ENG-018-D-R1 / Controlled Catalog Operations Acceptance Evidence Closure
+
+This bounded follow-up preserves the DEV-088 implementation record above and
+adds only acceptance evidence. It did not redesign the Catalog domain, change
+the Schema or Migration, alter Operations Session or RBAC, or remove the legacy
+Static Operations Token path.
+
+The two PostgreSQL tests that had previously been skipped were executed against
+disposable PostgreSQL 17.10 using the existing `OperationsAdminFixture` and
+controlled migration wrapper. The successful run reported **2/2 PASS**, process
+exit `0`, covering concurrent Draft Update, stale Revision rejection, Draft
+Update versus Activation, competing Activation, advisory-lock serialization,
+and the single published-release invariant. An earlier disposable attempt
+failed with SQLSTATE `23505` because Migration 0035's versioned-key upgrade was
+not installed in that fixture. Migration 0035 was then applied only inside the
+disposable database and the same test file passed. The exact retained fixture
+records, role/PID and wrapper SQL, dynamic ports, PostgreSQL/Podman provenance,
+and cleanup records are indexed in
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R1-index.md`.
+
+The real gstack Browser run used the installed HeadlessChrome driver and a
+disposable PostgreSQL database and Operations Account. Anonymous redirect and
+forged-header rejection passed, but `POST /api/v1/operations/auth/login`
+returned HTTP `500`; the BFF therefore did not establish a Session and the
+Catalog management, Audit, logout, and post-logout checks did not execute. The
+retained Browser process exited `1` and cleanup exited `0` with no container
+residue. The failure is reproducible from the current code: the Human
+Authentication runtime returns seven first-admin permissions, while the Login
+response schema accepts only the four read permissions, so Fastify rejects the
+response during serialization. This defect requires a separately authorized
+code fix and is not changed here. The structured direct reproduction is retained
+at `docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R1-login-schema-repro.json`;
+its probe process exited `0` while recording the HTTP `500` response case.
+
+The Legacy Static Operations Token audit found five remaining Catalog routes:
+`GET /api/v1/operations/service-policy/workspace`,
+`GET /api/v1/operations/service-policy/audit`,
+`PATCH /api/v1/operations/service-policy/capabilities/:id`,
+`PATCH /api/v1/operations/service-policy/templates/:id`, and
+`POST /api/v1/operations/service-policy/releases`. They resolve
+`OPERATIONS_ACCESS_TOKEN` / `OPERATIONS_OPERATOR_ID` as `pilot_operations` and
+still call the old workspace, update, and publish services without the new
+`catalog:draft:create`, `catalog:draft:update`, or
+`catalog:policy:activate` checks. This is classification **C**: the old path
+can bypass the new Human Operations Catalog permission boundary. No route was
+removed or changed.
+
+Focused changed-file checks remained PASS (Domain/Application, Admin Web,
+Operations Authentication, TypeScript, changed-file ESLint, Prettier, Build,
+and `git diff --check`). Full-repository and full-lint historical findings were
+not rerun and remain unclassified. PostgreSQL fixture provenance, Browser
+failure, direct response-schema reproduction, and the route audit are retained
+in the evidence index linked above.
+
+```ini
+PCI-ENG-018-D-R1 = BLOCKED - MAIN CONTROLLER REVIEW REQUIRED
+PCI-ENG-018-D_POSTGRES_CONCURRENCY = 2/2 PASS — DISPOSABLE POSTGRESQL 17.10
+PCI-ENG-018-D_BROWSER_E2E = BLOCKED — LOGIN HTTP 500
+PCI-ENG-018-D_LEGACY_STATIC_TOKEN = CLASSIFICATION C — PERMISSION BOUNDARY BYPASS RISK
+CATALOG_DRAFT_CREATE = catalog:draft:create
+CATALOG_DRAFT_UPDATE = catalog:draft:update
+CATALOG_POLICY_ACTIVATE = catalog:policy:activate
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+## PCI-ENG-018-D-R2 / Login Permission Contract Alignment and Legacy Route Retirement
+
+This bounded follow-up preserves the complete D and D-R1 history above. It aligns the Login and
+current-Session response contract with the seven permissions already used by the accepted Catalog
+control surface, and retires the five legacy Static Operations Token Catalog routes. It does not
+change Schema, Migration, Operations Session, Creator Auth, Offering/Request, RBAC, or production
+configuration.
+
+The canonical tuple is now owned by
+`modules/operations-identity/operations-identity-contract.ts` and is reused by the Human
+Authentication runtime and the TypeBox Login/Session response schema. The closed schema accepts
+`catalog:read`, `audit:read`, `offering:read`, `request:read`, `catalog:draft:create`,
+`catalog:draft:update`, and `catalog:policy:activate`, while rejecting unknown values such as
+`admin:*`.
+
+The following routes return HTTP `410` with code
+`legacy_catalog_operations_route_retired` before authentication or business access:
+
+- `GET /api/v1/operations/service-policy/workspace`;
+- `GET /api/v1/operations/service-policy/audit`;
+- `PATCH /api/v1/operations/service-policy/capabilities/:id`;
+- `PATCH /api/v1/operations/service-policy/templates/:id`;
+- `POST /api/v1/operations/service-policy/releases`.
+
+Focused contract, Human Authentication API, legacy route, draft application/API, API TypeScript,
+active backend test TypeScript, and changed-file Prettier checks passed. The real gstack Browser
+read-only path completed Login, Catalog, Audit, Logout, and post-Logout protection against
+disposable PostgreSQL with exit `0`. The D management Browser run also proved the seven-permission
+Login response and all 15 legacy-route probes (valid/invalid static bearer and forged headers)
+returned `410` without changing Catalog count/hash snapshots, but it then reached the existing D
+Preview request and received HTTP `500` (`internal_error`) after Draft Create and Draft Update.
+That process exited `1`, cleanup exited `0`, and the full D Browser acceptance is therefore not
+claimed. The exact structured records and PostgreSQL provenance are indexed in
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R2-index.md`.
+
+The Preview failure is not classified as pre-existing without a parent comparison and remains a
+Main Controller review item. Full lint and full repository verification remain unclassified.
+
+```ini
+PCI-ENG-018-D-R2 = BLOCKED — MAIN CONTROLLER REVIEW REQUIRED
+PCI-ENG-018-D_LOGIN_PERMISSION_CONTRACT = FIXED — SEVEN VALUES SERIALIZE
+PCI-ENG-018-D_LEGACY_CATALOG_ROUTES = RETIRED — HTTP 410
+PCI-ENG-018-D_BROWSER_READ_ONLY = PASS — DISPOSABLE POSTGRESQL 17.10
+PCI-ENG-018-D_BROWSER_MANAGEMENT = BLOCKED — PREVIEW HTTP 500
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+## PCI-ENG-018-D-R3 / Policy Preview Failure Resolution and Browser Acceptance Closure
+
+This bounded follow-up resolves the Preview failure retained by D-R2. It does not reopen the
+Login permission contract or the five retired legacy routes, and it does not change Catalog
+Domain lifecycle, Schema, Migration, Session, Creator Auth, Offering/Request, RBAC, or production
+configuration.
+
+The first Preview `500 internal_error` had two concrete BFF causes. Empty POST requests were
+forwarded with an empty JSON body and `Content-Type`, which Fastify rejected. After that was
+corrected, successful activation responses were returned upstream as `204`, but the BFF rebuilt
+that response with an `ArrayBuffer`; the Web Response constructor rejects bodies for `204`, so the
+BFF converted the successful upstream response into `503`. The BFF now omits the body for
+bodyless requests and for `204`, `205`, and `304` responses. No client error detail, credential,
+or stack trace is exposed.
+
+The regression test covers credential forwarding, bodyless Preview forwarding, `204` response
+preservation, and unsafe-origin rejection. Existing draft tests cover active-snapshot isolation,
+Preview, stale Revision conflict, failed validation, explicit activation confirmation, and the
+separate Human Operations permissions. The real Browser run uses Next.js, the Admin BFF,
+Fastify, Human Operations Session, disposable PostgreSQL 17.10, and HeadlessChrome. It completed
+the D flow: Login, seven permissions, Draft Create, Draft Update, Preview, Validate, Activation,
+Audit verification, Catalog read, Audit read, logout failure retention, confirmed logout retry,
+and post-logout protection. The Browser process exited `0`; Preview snapshots showed no change to
+Catalog or Audit data.
+
+Structured evidence is retained in
+`docs/09_Engineering_Governance/evidence/PCI-ENG-018-D-R3-index.md` and its linked Browser and
+PostgreSQL JSON files. Full repository tests and full lint were not rerun; historical full-suite
+and lint findings remain `UNCLASSIFIED / NOT PROVEN PRE-EXISTING`. The Browser harness also logged
+an unrelated existing `GET /api/operations/overview` `500`; it is outside the D-R3 Preview path
+and was not changed.
+
+```ini
+PCI-ENG-018-D-R3 = POLICY PREVIEW FIXED & FULL BROWSER FLOW PASSED — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-018-D_PREVIEW_BFF = FIXED — BODYLESS REQUESTS AND 204 RESPONSES PRESERVED
+PCI-ENG-018-D_BROWSER_MANAGEMENT = PASS — DISPOSABLE POSTGRESQL 17.10, PROCESS EXIT 0
+PCI-ENG-018-D_PREVIEW_DATA_INVARIANCE = PASS — CATALOG AND AUDIT SNAPSHOTS UNCHANGED
+PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
+FORMAL_RESUME_GATE = NOT_FULLY_CLOSED
+VS-01 = FROZEN
+STAGE_2 = BOUNDED_APPROVED_CHANGE_UNITS_ONLY
+FULL_STAGE_2 = NOT AUTHORIZED
+STAGE_3 = NOT AUTHORIZED
+EXTERNAL_PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```

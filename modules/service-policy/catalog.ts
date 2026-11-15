@@ -11,6 +11,100 @@ export interface ServicePolicyCatalogSnapshot {
   readonly templates: readonly ServiceOfferingTemplate[];
 }
 
+export type ServicePolicyValidationStatus =
+  'VALID' | 'INVALID' | 'CONFLICT' | 'STALE_REVISION' | 'UNSUPPORTED';
+
+export interface ServicePolicyValidationResult {
+  readonly status: ServicePolicyValidationStatus;
+  readonly errors: readonly string[];
+}
+
+export interface ServicePolicyChange {
+  readonly entityType: 'capability' | 'template';
+  readonly entityId: string;
+  readonly field: string;
+  readonly before: unknown;
+  readonly after: unknown;
+}
+
+export interface ServicePolicyPreviewResult extends ServicePolicyValidationResult {
+  readonly changes: readonly ServicePolicyChange[];
+}
+
+export interface ServicePolicyDraft extends ServicePolicyCatalogSnapshot {
+  readonly status: 'draft';
+  readonly revision: string;
+  readonly createdAt: string;
+}
+
+export function validateServicePolicyCatalog(
+  snapshot: ServicePolicyCatalogSnapshot,
+): ServicePolicyValidationResult {
+  const errors: string[] = [];
+  const capabilityIds = new Set(snapshot.capabilities.map((item) => item.id));
+  if (snapshot.capabilities.length === 0) errors.push('至少需要一项能力目录记录。');
+  if (snapshot.templates.length === 0) errors.push('至少需要一项服务模板记录。');
+  for (const template of snapshot.templates) {
+    if (!capabilityIds.has(template.capabilityCatalogItemId)) {
+      errors.push(`服务模板 ${template.id} 引用了不存在的能力。`);
+    }
+    if (template.status === 'active' && template.publishEnabled !== false) {
+      const capability = snapshot.capabilities.find(
+        (item) => item.id === template.capabilityCatalogItemId,
+      );
+      if (capability?.status !== 'active' || capability.publishEnabled === false) {
+        errors.push(`服务模板 ${template.id} 不能在能力未激活时发布。`);
+      }
+    }
+  }
+  for (const item of [...snapshot.capabilities, ...snapshot.templates]) {
+    if (item.status === 'active' && item.riskTier === 'prohibited') {
+      errors.push(`${item.id} 不能以 prohibited 风险等级激活。`);
+    }
+  }
+  return { status: errors.length === 0 ? 'VALID' : 'INVALID', errors };
+}
+
+export function diffServicePolicyCatalog(
+  before: ServicePolicyCatalogSnapshot,
+  after: ServicePolicyCatalogSnapshot,
+): readonly ServicePolicyChange[] {
+  const changes: ServicePolicyChange[] = [];
+  for (const [entityType, previous, next] of [
+    ['capability', before.capabilities, after.capabilities],
+    ['template', before.templates, after.templates],
+  ] as const) {
+    const beforeById = new Map(previous.map((item) => [item.id, item]));
+    for (const item of next) {
+      const prior = beforeById.get(item.id);
+      if (prior === undefined) {
+        changes.push({
+          entityType,
+          entityId: item.id,
+          field: 'created',
+          before: undefined,
+          after: item,
+        });
+        continue;
+      }
+      for (const key of Object.keys(item) as (keyof typeof item)[]) {
+        const previousValue = prior[key];
+        const nextValue = item[key];
+        if (JSON.stringify(previousValue) !== JSON.stringify(nextValue)) {
+          changes.push({
+            entityType,
+            entityId: item.id,
+            field: String(key),
+            before: previousValue,
+            after: nextValue,
+          });
+        }
+      }
+    }
+  }
+  return changes;
+}
+
 export interface CapabilityCatalogItem {
   readonly id: string;
   readonly slug: string;

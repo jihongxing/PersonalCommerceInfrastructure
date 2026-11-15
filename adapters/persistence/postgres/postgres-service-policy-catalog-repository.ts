@@ -13,6 +13,9 @@ import {
   type CatalogItemStatus,
   type PolicyRiskTier,
   type ServicePolicyCatalogSnapshot,
+  type ServicePolicyDraft,
+  validateServicePolicyCatalog,
+  diffServicePolicyCatalog,
   type ServiceOfferingTemplate,
 } from '../../../modules/service-policy/catalog.js';
 import type {
@@ -30,6 +33,246 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
       isolationLevel: 'repeatable read',
       accessMode: 'read only',
     });
+  }
+
+  public async createDraft(
+    reason: string,
+    context: { readonly actorId: string; readonly correlationId: string },
+  ): Promise<ServicePolicyDraft> {
+    return this.database.transaction(async (database) => {
+      await this.lock(database);
+      const snapshot = await this.readSnapshot(database);
+      const version = `draft-${randomUUID().replaceAll('-', '').slice(0, 25)}`;
+      const createdAt = new Date().toISOString();
+      await database.insert(servicePolicyReleases).values({
+        policyVersion: version,
+        status: 'draft',
+        reason,
+        createdAt,
+      });
+      if (snapshot.capabilities.length > 0) {
+        await database.insert(servicePolicyCapabilities).values(
+          snapshot.capabilities.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            vertical: item.vertical,
+            name: item.name,
+            description: item.description,
+            riskTier: item.riskTier,
+            releaseScope: item.releaseScope,
+            aliases: [...item.aliases],
+            version: item.version,
+            policyVersion: version,
+            status: item.status,
+            creatorSelectable: item.creatorSelectable ?? true,
+            publishEnabled: item.publishEnabled ?? true,
+          })),
+        );
+      }
+      if (snapshot.templates.length > 0) {
+        await database.insert(servicePolicyTemplates).values(
+          snapshot.templates.map((item) => ({
+            id: item.id,
+            slug: item.slug,
+            capabilityCatalogItemId: item.capabilityCatalogItemId,
+            name: item.name,
+            description: item.description,
+            riskTier: item.riskTier,
+            releaseScope: item.releaseScope,
+            requiredFields: [...item.requiredFields],
+            version: item.version,
+            policyVersion: version,
+            status: item.status,
+            creatorSelectable: item.creatorSelectable ?? true,
+            publishEnabled: item.publishEnabled ?? true,
+          })),
+        );
+      }
+      await this.appendAudit(
+        database,
+        version,
+        'release',
+        version,
+        {},
+        { status: 'draft' },
+        reason,
+        context,
+        'draft_created',
+      );
+      return this.readDraft(database, version, createdAt);
+    });
+  }
+
+  public async getDraft(version: string): Promise<ServicePolicyDraft> {
+    return this.database.transaction((database) => this.readDraft(database, version), {
+      isolationLevel: 'repeatable read',
+      accessMode: 'read only',
+    });
+  }
+
+  public async listDrafts(): Promise<readonly ServicePolicyDraft[]> {
+    return this.database.transaction(
+      async (database) => {
+        const releases = await database
+          .select({
+            policyVersion: servicePolicyReleases.policyVersion,
+            createdAt: servicePolicyReleases.createdAt,
+          })
+          .from(servicePolicyReleases)
+          .where(eq(servicePolicyReleases.status, 'draft'));
+        return Promise.all(
+          releases.map((release) =>
+            this.readDraft(database, release.policyVersion, release.createdAt),
+          ),
+        );
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    );
+  }
+
+  public async updateDraftItem(
+    version: string,
+    kind: 'capability' | 'template',
+    id: string,
+    input: {
+      readonly status?: CatalogItemStatus;
+      readonly creatorSelectable?: boolean;
+      readonly publishEnabled?: boolean;
+      readonly riskTier?: PolicyRiskTier;
+      readonly expectedRevision: string;
+      readonly reason: string;
+    },
+    context: { readonly actorId: string; readonly correlationId: string },
+  ): Promise<ServicePolicyDraft> {
+    try {
+      return await this.database.transaction(async (database) => {
+        await this.lock(database);
+        const draft = await this.readDraft(database, version);
+        if (draft.revision !== input.expectedRevision) throw staleRevision();
+        const table = kind === 'capability' ? servicePolicyCapabilities : servicePolicyTemplates;
+        const currentRows = await database
+          .select()
+          .from(table)
+          .where(and(eq(table.id, id), eq(table.policyVersion, version)));
+        const current = currentRows[0];
+        if (current === undefined) throw itemNotFound(kind);
+        const now = new Date(Math.max(Date.now(), Date.parse(draft.revision) + 1)).toISOString();
+        const changes = {
+          ...(input.status === undefined ? {} : { status: input.status }),
+          ...(input.creatorSelectable === undefined
+            ? {}
+            : { creatorSelectable: input.creatorSelectable }),
+          ...(input.publishEnabled === undefined ? {} : { publishEnabled: input.publishEnabled }),
+          ...(input.riskTier === undefined ? {} : { riskTier: input.riskTier }),
+          updatedAt: now,
+        };
+        await database
+          .update(table)
+          .set(changes)
+          .where(
+            and(
+              eq(table.id, id),
+              eq(table.policyVersion, version),
+              eq(table.updatedAt, current.updatedAt),
+            ),
+          );
+        const updated = { ...current, ...changes };
+        await this.appendAudit(
+          database,
+          version,
+          kind,
+          id,
+          current,
+          updated,
+          input.reason,
+          context,
+          'draft_updated',
+        );
+        return this.readDraft(database, version);
+      });
+    } catch (error) {
+      await this.recordDraftFailure(
+        version,
+        input.reason,
+        context,
+        error,
+        'draft_update_failed',
+        kind,
+        id,
+      );
+      throw error;
+    }
+  }
+
+  public async previewDraft(
+    version: string,
+    context: { readonly actorId: string; readonly correlationId: string },
+  ) {
+    const draft = await this.getDraft(version);
+    const result = validateServicePolicyCatalog(draft);
+    const current = await this.getSnapshot();
+    const preview = { ...result, changes: diffServicePolicyCatalog(current, draft) };
+    await this.recordDraftCheck(version, preview, context, 'previewed');
+    return preview;
+  }
+
+  public async validateDraft(
+    version: string,
+    context: { readonly actorId: string; readonly correlationId: string },
+  ) {
+    const draft = await this.getDraft(version);
+    const result = validateServicePolicyCatalog(draft);
+    await this.recordDraftCheck(version, result, context, 'validated');
+    return result;
+  }
+
+  public async activateDraft(
+    version: string,
+    input: { readonly expectedRevision: string; readonly reason: string },
+    context: { readonly actorId: string; readonly correlationId: string },
+  ): Promise<void> {
+    try {
+      await this.database.transaction(async (database) => {
+        await this.lock(database);
+        const draft = await this.readDraft(database, version);
+        if (draft.revision !== input.expectedRevision) throw staleRevision();
+        const result = validateServicePolicyCatalog(draft);
+        if (result.status !== 'VALID') {
+          throw new ApplicationError({
+            category: 'validation',
+            code: 'service_policy_draft_invalid',
+            message: result.errors.join(' '),
+          });
+        }
+        await database
+          .update(servicePolicyReleases)
+          .set({ status: 'archived' })
+          .where(eq(servicePolicyReleases.status, 'published'));
+        await database
+          .update(servicePolicyReleases)
+          .set({
+            status: 'published',
+            reason: input.reason,
+            publishedBy: context.actorId,
+            publishedAt: new Date().toISOString(),
+          })
+          .where(eq(servicePolicyReleases.policyVersion, version));
+        await this.appendAudit(
+          database,
+          version,
+          'release',
+          version,
+          { status: 'draft' },
+          { status: 'published', publishedBy: context.actorId },
+          input.reason,
+          context,
+          'activated',
+        );
+      });
+    } catch (error) {
+      await this.recordDraftFailure(version, input.reason, context, error);
+      throw error;
+    }
   }
 
   private async readSnapshot(
@@ -311,6 +554,147 @@ export class PostgresServicePolicyCatalogRepository implements ServicePolicyCata
       correlationId: context.correlationId,
     });
   }
+
+  private async lock(database: Pick<ProductDatabase, 'execute'>): Promise<void> {
+    await database.execute(
+      sql`select pg_advisory_xact_lock(hashtext('pci.service-policy.catalog'))`,
+    );
+  }
+
+  private async readDraft(
+    database: Pick<ProductDatabase, 'select'>,
+    version: string,
+    createdAt?: string,
+  ): Promise<ServicePolicyDraft> {
+    const releases = await database
+      .select()
+      .from(servicePolicyReleases)
+      .where(
+        and(
+          eq(servicePolicyReleases.policyVersion, version),
+          eq(servicePolicyReleases.status, 'draft'),
+        ),
+      )
+      .limit(1);
+    const release = releases[0];
+    if (release === undefined) throw draftNotFound();
+    const snapshot = await this.readVersionSnapshot(database, version);
+    const revision = await this.readDraftRevision(database, version);
+    return {
+      ...snapshot,
+      status: 'draft',
+      revision,
+      createdAt: createdAt ?? release.createdAt,
+    };
+  }
+
+  private async readVersionSnapshot(
+    database: Pick<ProductDatabase, 'select'>,
+    policyVersion: string,
+  ): Promise<ServicePolicyCatalogSnapshot> {
+    const [capabilities, templates] = await Promise.all([
+      database
+        .select()
+        .from(servicePolicyCapabilities)
+        .where(eq(servicePolicyCapabilities.policyVersion, policyVersion)),
+      database
+        .select()
+        .from(servicePolicyTemplates)
+        .where(eq(servicePolicyTemplates.policyVersion, policyVersion)),
+    ]);
+    return {
+      policyVersion,
+      capabilities: capabilities.map(mapCapability),
+      templates: templates.map(mapTemplate),
+    };
+  }
+
+  private async readDraftRevision(
+    database: Pick<ProductDatabase, 'select'>,
+    version: string,
+  ): Promise<string> {
+    const rows = await database
+      .select({ updatedAt: servicePolicyCapabilities.updatedAt })
+      .from(servicePolicyCapabilities)
+      .where(eq(servicePolicyCapabilities.policyVersion, version));
+    const templateRows = await database
+      .select({ updatedAt: servicePolicyTemplates.updatedAt })
+      .from(servicePolicyTemplates)
+      .where(eq(servicePolicyTemplates.policyVersion, version));
+    return (
+      [...rows, ...templateRows]
+        .map((row) => row.updatedAt)
+        .sort()
+        .at(-1) ?? ''
+    );
+  }
+
+  private async recordDraftCheck(
+    version: string,
+    result: { readonly status: string; readonly errors: readonly string[] },
+    context: { readonly actorId: string; readonly correlationId: string },
+    action: 'previewed' | 'validated',
+  ): Promise<void> {
+    await this.database.transaction(async (database) => {
+      await this.appendAudit(
+        database,
+        version,
+        'release',
+        version,
+        {},
+        result,
+        `${action} draft`,
+        context,
+        action,
+      );
+    });
+  }
+
+  private async recordDraftFailure(
+    version: string,
+    reason: string,
+    context: { readonly actorId: string; readonly correlationId: string },
+    error: unknown,
+    action: 'activation_failed' | 'draft_update_failed' = 'activation_failed',
+    entityType: 'release' | 'capability' | 'template' = 'release',
+    entityId = version,
+  ): Promise<void> {
+    await this.database.transaction(async (database) => {
+      await this.appendAudit(
+        database,
+        version,
+        entityType,
+        entityId,
+        {},
+        { error: error instanceof Error ? error.message : 'activation_failed' },
+        reason,
+        context,
+        action,
+      );
+    });
+  }
+}
+
+function draftNotFound(): ApplicationError {
+  return new ApplicationError({
+    category: 'not_found',
+    code: 'service_policy_draft_not_found',
+    message: 'Service policy draft was not found.',
+  });
+}
+function staleRevision(): ApplicationError {
+  return new ApplicationError({
+    category: 'conflict',
+    code: 'service_policy_draft_stale_revision',
+    message: 'The service policy draft has changed. Reload before retrying.',
+  });
+}
+function itemNotFound(kind: 'capability' | 'template'): ApplicationError {
+  return new ApplicationError({
+    category: 'not_found',
+    code: `service_policy_${kind}_not_found`,
+    message: 'Service policy item was not found.',
+  });
 }
 
 function mapCapability(row: typeof servicePolicyCapabilities.$inferSelect): CapabilityCatalogItem {

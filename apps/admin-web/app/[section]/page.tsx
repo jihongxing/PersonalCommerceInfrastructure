@@ -6,6 +6,7 @@ import { OfferingReadPanel } from '../../components/offering-read-panel';
 import { RequestReadPanel } from '../../components/request-read-panel';
 import { sections } from '../../lib/sections';
 import { WorkspaceSearch } from '../../components/workspace-search';
+import { CatalogPolicyPanel } from '../../components/catalog-policy-panel';
 
 export function generateStaticParams() {
   return sections.filter((section) => section.slug).map((section) => ({ section: section.slug }));
@@ -49,6 +50,18 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
           <p>{section.description}</p>
         </div>
         <AuditReadPanel />
+      </>
+    );
+  }
+  if (slug === 'policy-versions') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <CatalogPolicyPanel />
       </>
     );
   }

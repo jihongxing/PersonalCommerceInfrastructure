@@ -14,7 +14,7 @@ export interface EmailTemplate {
 export function generatePasswordResetEmailTemplate(
   email: string,
   resetLink: string,
-  name?: string
+  name?: string,
 ): EmailTemplate {
   const displayName = name || email.split('@')[0];
 
@@ -97,10 +97,7 @@ ${resetLink}
 /**
  * 生成欢迎邮件模板
  */
-export function generateWelcomeEmailTemplate(
-  email: string,
-  name?: string
-): EmailTemplate {
+export function generateWelcomeEmailTemplate(email: string, name?: string): EmailTemplate {
   const displayName = name || email.split('@')[0];
 
   return {
@@ -187,7 +184,7 @@ https://www.example.com/creator/onboarding
 export function generateConfirmationEmailTemplate(
   email: string,
   action: string,
-  details?: Record<string, string>
+  details?: Record<string, string>,
 ): EmailTemplate {
   return {
     subject: `Personal Commerce - ${action} 确认`,

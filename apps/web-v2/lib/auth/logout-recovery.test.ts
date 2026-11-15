@@ -11,7 +11,11 @@ describe('BFF logout', () => {
     expect(post).toHaveBeenCalledWith('/api/v1/auth/logout');
   });
   it('treats an already expired session as logged out', async () => {
-    post.mockResolvedValue({ data: null, error: { error: { code: 'invalid_session' } }, status: 401 });
+    post.mockResolvedValue({
+      data: null,
+      error: { error: { code: 'invalid_session' } },
+      status: 401,
+    });
     await expect(authService.logout()).resolves.toBeUndefined();
   });
 });

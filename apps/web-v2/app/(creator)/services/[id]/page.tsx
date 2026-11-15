@@ -345,7 +345,7 @@ export default function ServiceDetailPage() {
                 <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded">
                   <AlertCircle className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-gray-700">
-                      此服务已下架。消费者无法看到。已有的请求仍会保留。
+                    此服务已下架。消费者无法看到。已有的请求仍会保留。
                   </p>
                 </div>
               )}

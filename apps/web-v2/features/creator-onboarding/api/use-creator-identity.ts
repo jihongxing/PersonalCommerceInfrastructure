@@ -48,16 +48,13 @@ export function useCreatorIdentity() {
   return useQuery({
     queryKey: ['creator-identity'],
     queryFn: async (): Promise<CreatorIdentity> => {
-      const { data, error, status } = await apiClient.GET(
-        '/api/v1/creator/identity',
-        {
-          params: {
-            header: {
-              // The same-origin BFF supplies the server-side Creator session.
-            },
+      const { data, error, status } = await apiClient.GET('/api/v1/creator/identity', {
+        params: {
+          header: {
+            // The same-origin BFF supplies the server-side Creator session.
           },
-        }
-      );
+        },
+      });
 
       if (error) {
         throw new ApiError(error.error?.message || '加载商业身份失败', error.error?.code, status);
@@ -81,17 +78,19 @@ export function useCreateIdentity() {
 
   return useMutation({
     mutationFn: async (request: CreateIdentityRequest) => {
-      const { data, error } = await apiClient.POST(
-        '/api/v1/creator/identity',
-        {
-          body: { profile: { ...request, avatarUrl: request.avatarUrl || undefined, location: request.location || undefined, socialLinks: (request.socialLinks || []).map((item) => item.url) } },
-        }
-      );
+      const { data, error } = await apiClient.POST('/api/v1/creator/identity', {
+        body: {
+          profile: {
+            ...request,
+            avatarUrl: request.avatarUrl || undefined,
+            location: request.location || undefined,
+            socialLinks: (request.socialLinks || []).map((item) => item.url),
+          },
+        },
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to create identity'
-        );
+        throw new Error(error.error?.message || 'Failed to create identity');
       }
 
       if (!data) {
@@ -116,17 +115,19 @@ export function useUpdateIdentity() {
 
   return useMutation({
     mutationFn: async (request: UpdateIdentityRequest) => {
-      const { data, error } = await apiClient.PATCH(
-        '/api/v1/creator/identity',
-        {
-          body: { profile: { ...request, avatarUrl: request.avatarUrl || undefined, location: request.location || undefined, socialLinks: (request.socialLinks || []).map((item) => item.url) } },
-        }
-      );
+      const { data, error } = await apiClient.PATCH('/api/v1/creator/identity', {
+        body: {
+          profile: {
+            ...request,
+            avatarUrl: request.avatarUrl || undefined,
+            location: request.location || undefined,
+            socialLinks: (request.socialLinks || []).map((item) => item.url),
+          },
+        },
+      });
 
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to update identity'
-        );
+        throw new Error(error.error?.message || 'Failed to update identity');
       }
 
       if (!data) {

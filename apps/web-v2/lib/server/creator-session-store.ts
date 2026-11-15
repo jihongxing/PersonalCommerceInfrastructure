@@ -1,9 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-} from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import postgres, { type Sql } from 'postgres';
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;

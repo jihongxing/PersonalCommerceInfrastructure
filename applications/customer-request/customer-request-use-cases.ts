@@ -22,7 +22,10 @@ import type {
   CommerceIdentityRepository,
 } from '../creator-identity/creator-identity-repositories.js';
 import type { OfferingRepository } from '../service-offering/offering-repositories.js';
-import { isOfferingPolicyCurrentlyPublishable, isPolicyPublishable } from '../../modules/service-policy/catalog.js';
+import {
+  isOfferingPolicyCurrentlyPublishable,
+  isPolicyPublishable,
+} from '../../modules/service-policy/catalog.js';
 import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
 import type { AppearanceOfferingMetadata } from '../../modules/service-offering/offering.js';
 import { assertCreatorOwnership } from '../../modules/shared/actors.js';

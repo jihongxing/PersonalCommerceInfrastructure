@@ -3,7 +3,11 @@
 import { apiClient } from '@/lib/api/client';
 import { clearSession } from '@/lib/auth/session';
 
-export interface SignupRequest { email: string; password: string; name: string; }
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name: string;
+}
 export interface AuthResponse {
   user: { id: string; email: string; name?: string; createdAt?: string };
   expiresIn?: number;
@@ -12,17 +16,28 @@ export type SignupResponse = AuthResponse;
 export type LoginRequest = Omit<SignupRequest, 'name'>;
 export type LoginResponse = AuthResponse;
 export type RefreshResponse = { authenticated: boolean; user?: AuthResponse['user'] };
-export interface ForgotPasswordRequest { email: string; }
-export interface ResetPasswordRequest { token: string; newPassword: string; confirmPassword: string; }
+export interface ForgotPasswordRequest {
+  email: string;
+}
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
-function messageFor(error: { error?: { message?: string }; message?: string } | null, fallback: string) {
+function messageFor(
+  error: { error?: { message?: string }; message?: string } | null,
+  fallback: string,
+) {
   return error?.error?.message || error?.message || fallback;
 }
 
 export class AuthService {
   async signup(credentials: SignupRequest): Promise<SignupResponse> {
     try {
-      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/signup', { body: credentials });
+      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/signup', {
+        body: credentials,
+      });
       if (error) throw new Error(messageFor(error, '注册失败'));
       if (!data?.user) throw new Error('No response data from signup');
       return data;
@@ -34,7 +49,9 @@ export class AuthService {
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/login', { body: credentials });
+      const { data, error } = await apiClient.POST<AuthResponse>('/api/v1/auth/login', {
+        body: credentials,
+      });
       if (error) throw new Error(messageFor(error, '登陆失败'));
       if (!data?.user) throw new Error('No response data from login');
       return data;

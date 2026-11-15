@@ -22,11 +22,13 @@ describe('OrderResultCard', () => {
   it('does not expose a historical fulfillment code', () => {
     render(
       <OrderResultCard
-        result={{
-          ...submitted,
-          state: 'confirmed',
-          fulfillmentCode: { code: 'FC-ABCD1234' },
-        } as OrderResult}
+        result={
+          {
+            ...submitted,
+            state: 'confirmed',
+            fulfillmentCode: { code: 'FC-ABCD1234' },
+          } as OrderResult
+        }
       />,
     );
     expect(screen.getByTestId('status-badge')).toHaveTextContent('已确认');

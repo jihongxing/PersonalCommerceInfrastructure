@@ -21,9 +21,7 @@ type ApiResponse<T> = {
 
 function csrfToken(): string | undefined {
   if (typeof document === 'undefined') return undefined;
-  const item = document.cookie
-    .split('; ')
-    .find((value) => value.startsWith('pci_creator_csrf='));
+  const item = document.cookie.split('; ').find((value) => value.startsWith('pci_creator_csrf='));
   return item ? decodeURIComponent(item.slice('pci_creator_csrf='.length)) : undefined;
 }
 
@@ -78,11 +76,14 @@ class SimpleApiClient {
       finishRequestSpan(span, status);
       if (response.status === 401 && !path.startsWith('/api/v1/auth/')) {
         clearSession();
-        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('creator-auth-expired'));
+        if (typeof window !== 'undefined')
+          window.dispatchEvent(new CustomEvent('creator-auth-expired'));
       }
       return {
         data: response.ok ? (data as T) : null,
-        error: response.ok ? null : ((data as ApiResponse<T>['error']) ?? { message: response.statusText }),
+        error: response.ok
+          ? null
+          : ((data as ApiResponse<T>['error']) ?? { message: response.statusText }),
         status,
       };
     } catch (error) {

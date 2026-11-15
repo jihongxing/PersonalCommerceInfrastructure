@@ -674,7 +674,7 @@ describe('Creator Identity API', () => {
       resultAccessToken: submittedAction.resultAccessToken,
       state: 'confirmed',
     });
-      expect(customerResult).not.toHaveProperty('fulfillmentCode');
+    expect(customerResult).not.toHaveProperty('fulfillmentCode');
     expect(customerResult.message).toMatch(/records only the Creator's response/);
 
     await server.inject({

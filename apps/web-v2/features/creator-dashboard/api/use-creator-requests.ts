@@ -2,12 +2,28 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 
 export interface CreatorRequest {
-  action: { id: string; customerId: string; creatorId: string; offeringId: string; requestMessage: string; resultAccessToken: string; state: 'submitted'; };
+  action: {
+    id: string;
+    customerId: string;
+    creatorId: string;
+    offeringId: string;
+    requestMessage: string;
+    resultAccessToken: string;
+    state: 'submitted';
+  };
   customer: { contactName: string; contactMethod: string };
   offering: { title: string };
 }
 export interface CreatorConfirmedRequest {
-  action: { id: string; customerId: string; creatorId: string; offeringId: string; requestMessage: string; resultAccessToken: string; state: 'confirmed'; };
+  action: {
+    id: string;
+    customerId: string;
+    creatorId: string;
+    offeringId: string;
+    requestMessage: string;
+    resultAccessToken: string;
+    state: 'confirmed';
+  };
   customer: { contactName: string; contactMethod: string };
   offering: { title: string };
 }

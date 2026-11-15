@@ -22,7 +22,8 @@ export function createInterceptedFetch(config: RequestInterceptorConfig = {}) {
       if (config.onResponse) response = await config.onResponse(response);
       return response;
     } catch (error) {
-      if (config.onError) throw await config.onError(error instanceof Error ? error : new Error(String(error)));
+      if (config.onError)
+        throw await config.onError(error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   };

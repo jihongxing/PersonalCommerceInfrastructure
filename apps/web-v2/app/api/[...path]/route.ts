@@ -1,9 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
-import {
-  creatorWebSessionStore,
-  type CreatorWebSession,
-} from '@/lib/server/creator-session-store';
+import { creatorWebSessionStore, type CreatorWebSession } from '@/lib/server/creator-session-store';
 
 const CSRF_COOKIE = 'pci_creator_csrf';
 const DEV_SESSION_COOKIE = 'pci_creator_session';
@@ -35,8 +32,7 @@ function apiBaseUrl(): string {
 }
 
 function allowedOrigins(request: NextRequest): readonly string[] {
-  const configured = process.env.CREATOR_BFF_ALLOWED_ORIGINS
-    ?.split(',')
+  const configured = process.env.CREATOR_BFF_ALLOWED_ORIGINS?.split(',')
     .map((value) => value.trim())
     .filter(Boolean);
   return configured?.length ? configured : [request.nextUrl.origin];
@@ -208,22 +204,31 @@ async function handleAuth(request: NextRequest, path: string): Promise<NextRespo
   if (path === '/api/v1/auth/session' && request.method === 'GET') {
     const session = await requireSession(request);
     const response = session
-      ? NextResponse.json({ authenticated: true, user: { id: session.accountId, email: session.email } })
+      ? NextResponse.json({
+          authenticated: true,
+          user: { id: session.accountId, email: session.email },
+        })
       : NextResponse.json({ authenticated: false, user: null });
-    if (!request.cookies.get(CSRF_COOKIE)) setCsrfCookie(response, randomBytes(32).toString('base64url'));
+    if (!request.cookies.get(CSRF_COOKIE))
+      setCsrfCookie(response, randomBytes(32).toString('base64url'));
     return response;
   }
 
   if (path === '/api/v1/auth/login' || path === '/api/v1/auth/signup') {
-    if (request.method !== 'POST') return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
-    if (!originAllowed(request)) return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
+    if (request.method !== 'POST')
+      return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
+    if (!originAllowed(request))
+      return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
     const upstream = await upstreamRequest(request, path, undefined, await request.arrayBuffer());
     const data = await readJson(upstream);
     if (!upstream.ok || !data) {
-      return NextResponse.json(data ?? { error: { code: 'authentication_failed', message: 'Authentication failed.' } }, {
-        status: upstream.status,
-        headers: responseHeaders(upstream),
-      });
+      return NextResponse.json(
+        data ?? { error: { code: 'authentication_failed', message: 'Authentication failed.' } },
+        {
+          status: upstream.status,
+          headers: responseHeaders(upstream),
+        },
+      );
     }
     if (
       typeof data.accessToken !== 'string' ||
@@ -246,12 +251,16 @@ async function handleAuth(request: NextRequest, path: string): Promise<NextRespo
       refreshToken: data.refreshToken,
     });
     setSessionCookie(response, session.id);
-    setCsrfCookie(response, request.cookies.get(CSRF_COOKIE)?.value ?? randomBytes(32).toString('base64url'));
+    setCsrfCookie(
+      response,
+      request.cookies.get(CSRF_COOKIE)?.value ?? randomBytes(32).toString('base64url'),
+    );
     return response;
   }
 
   if (path === '/api/v1/auth/refresh') {
-    if (request.method !== 'POST') return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
+    if (request.method !== 'POST')
+      return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
     if (!originAllowed(request) || !csrfValid(request))
       return errorResponse(403, 'csrf_rejected', 'Request origin or CSRF token is invalid.');
     const session = await requireSession(request);
@@ -269,7 +278,8 @@ async function handleAuth(request: NextRequest, path: string): Promise<NextRespo
   }
 
   if (path === '/api/v1/auth/logout') {
-    if (request.method !== 'POST') return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
+    if (request.method !== 'POST')
+      return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
     if (!originAllowed(request) || !csrfValid(request))
       return errorResponse(403, 'csrf_rejected', 'Request origin or CSRF token is invalid.');
     const session = await requireSession(request);
@@ -283,8 +293,10 @@ async function handleAuth(request: NextRequest, path: string): Promise<NextRespo
   }
 
   if (path === '/api/v1/auth/forgot-password' || path === '/api/v1/auth/reset-password') {
-    if (request.method !== 'POST') return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
-    if (!originAllowed(request)) return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
+    if (request.method !== 'POST')
+      return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
+    if (!originAllowed(request))
+      return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
     const upstream = await upstreamRequest(request, path, undefined, await request.arrayBuffer());
     const response = new NextResponse(upstream.body, {
       status: upstream.status,
@@ -307,7 +319,8 @@ async function handler(request: NextRequest, context: RouteContext): Promise<Nex
   // The Next catch-all route strips the outer /api prefix from the URL.
   const path = rawPath.startsWith('/api/v1/') ? rawPath : `/api${rawPath}`;
   if (!path.startsWith('/api/v1/')) return errorResponse(404, 'not_found', 'Not found.');
-  if (!originAllowed(request)) return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
+  if (!originAllowed(request))
+    return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
 
   if (isAuthPath(path)) {
     const authResponse = await handleAuth(request, path);
@@ -320,8 +333,10 @@ async function handler(request: NextRequest, context: RouteContext): Promise<Nex
 
   const protectedPath = isProtectedPath(path);
   let session = protectedPath ? await requireSession(request) : undefined;
-  if (protectedPath && !session) return errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
-  const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
+  if (protectedPath && !session)
+    return errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
+  const body =
+    request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
   let upstream = await upstreamRequest(request, path, session, body);
   if (protectedPath && upstream.status === 401 && session) {
     session = await refreshSession(session);
@@ -336,7 +351,8 @@ async function handler(request: NextRequest, context: RouteContext): Promise<Nex
     status: upstream.status,
     headers: responseHeaders(upstream),
   });
-  if (!request.cookies.get(CSRF_COOKIE)) setCsrfCookie(response, randomBytes(32).toString('base64url'));
+  if (!request.cookies.get(CSRF_COOKIE))
+    setCsrfCookie(response, randomBytes(32).toString('base64url'));
   return response;
 }
 

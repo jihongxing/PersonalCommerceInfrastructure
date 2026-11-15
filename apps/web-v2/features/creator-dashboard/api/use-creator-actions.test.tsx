@@ -9,7 +9,9 @@ vi.mock('@/lib/api/client', () => ({ apiClient: { POST: post } }));
 
 describe('creator request decisions', () => {
   it('submits a confirm decision through the BFF without a bearer header', async () => {
-    post.mockResolvedValueOnce({ data: { actionId: 'action-1', state: 'confirmed', resultAccessToken: 'result' } });
+    post.mockResolvedValueOnce({
+      data: { actionId: 'action-1', state: 'confirmed', resultAccessToken: 'result' },
+    });
     const client = new QueryClient();
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -18,6 +20,8 @@ describe('creator request decisions', () => {
     await act(async () => {
       await result.current.mutateAsync('action-1');
     });
-    expect(post).toHaveBeenCalledWith('/api/v1/creator/requests/{actionId}/confirm', { params: { path: { actionId: 'action-1' } } });
+    expect(post).toHaveBeenCalledWith('/api/v1/creator/requests/{actionId}/confirm', {
+      params: { path: { actionId: 'action-1' } },
+    });
   });
 });

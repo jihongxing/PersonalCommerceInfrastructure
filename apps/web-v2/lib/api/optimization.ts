@@ -37,15 +37,28 @@ export class RequestDeduplicator {
 // Compatibility exports for retired token-cache callers. They intentionally
 // never retain or refresh credentials in browser memory.
 export class TokenCacheManager {
-  get(_key: string): null { return null; }
-  set(_key: string, _token: string): void { void _key; void _token; }
-  clear(): void { /* retired */ }
-  getStats() { return { size: 0, maxSize: 0, utilization: '0.00%' }; }
+  get(_key: string): null {
+    return null;
+  }
+  set(_key: string, _token: string): void {
+    void _key;
+    void _token;
+  }
+  clear(): void {
+    /* retired */
+  }
+  getStats() {
+    return { size: 0, maxSize: 0, utilization: '0.00%' };
+  }
 }
 
 export class TokenPreRefreshManager {
-  startMonitoring(_onRefresh: () => Promise<void>): void { void _onRefresh; }
-  stopMonitoring(): void { /* BFF refreshes server-side */ }
+  startMonitoring(_onRefresh: () => Promise<void>): void {
+    void _onRefresh;
+  }
+  stopMonitoring(): void {
+    /* BFF refreshes server-side */
+  }
 }
 
 export const tokenCacheManager = new TokenCacheManager();

@@ -27,19 +27,17 @@ export function useSubmitBooking(offeringId: string) {
             path: { offeringId },
           },
           body: request,
-        }
+        },
       );
-      
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to submit booking request'
-        );
+        throw new Error(error.error?.message || 'Failed to submit booking request');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return data as BookingResult;
     },
   });

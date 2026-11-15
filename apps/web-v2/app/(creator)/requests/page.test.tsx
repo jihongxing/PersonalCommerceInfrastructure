@@ -3,9 +3,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RequestsPage from './page';
 
 const state = vi.hoisted(() => ({ confirm: vi.fn(), decline: vi.fn() }));
-vi.mock('@/lib/auth/context', () => ({ useAuth: () => ({ isAuthenticated: true, isLoading: false }) }));
+vi.mock('@/lib/auth/context', () => ({
+  useAuth: () => ({ isAuthenticated: true, isLoading: false }),
+}));
 vi.mock('@/features/creator-dashboard/api/use-creator-requests', () => ({
-  useCreatorRequests: () => ({ data: [{ action: { id: 'action-1', state: 'submitted', requestMessage: 'Hello' }, customer: { contactName: 'Visitor', contactMethod: 'contact' }, offering: { title: 'Consultation' } }], isLoading: false }),
+  useCreatorRequests: () => ({
+    data: [
+      {
+        action: { id: 'action-1', state: 'submitted', requestMessage: 'Hello' },
+        customer: { contactName: 'Visitor', contactMethod: 'contact' },
+        offering: { title: 'Consultation' },
+      },
+    ],
+    isLoading: false,
+  }),
   useCreatorConfirmedRequests: () => ({ data: [], isLoading: false }),
 }));
 vi.mock('@/features/creator-dashboard/api/use-creator-actions', () => ({

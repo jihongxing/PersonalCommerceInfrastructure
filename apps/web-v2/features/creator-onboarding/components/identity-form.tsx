@@ -55,9 +55,7 @@ export function IdentityForm() {
     if (identity) {
       form.reset({
         ...identity.profile,
-        socialLinks: (identity.profile.socialLinks || []).map((item) =>
-          typeof item === 'string' ? { platform: 'link', url: item } : item,
-        ),
+        socialLinks: identity.profile.socialLinks,
       });
     }
   }, [identity, form]);

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
+import type { MissingPublishCondition } from './contracts';
 
 export interface ServiceOffering {
   id: string;
@@ -19,6 +20,7 @@ export interface ServiceOffering {
   policyStatus?: 'not_checked' | 'auto_approved' | 'review_required' | 'approved' | 'rejected';
   policyReason?: string;
   policyVersion?: string;
+  missingPublishConditions: MissingPublishCondition[];
   createdAt: string;
   updatedAt: string;
 }
@@ -29,19 +31,28 @@ export interface DistributionAsset {
   state: 'generated' | 'distributed';
 }
 
+export interface PublishServiceOfferingResponse {
+  offering: {
+    id: string;
+    creatorId: string;
+    state: 'published';
+  };
+  distributionAsset: DistributionAsset;
+}
+
 export function useDistributionAsset(offeringId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['distribution-asset', offeringId],
     enabled: !!offeringId && enabled,
     queryFn: async (): Promise<DistributionAsset | null> => {
-      const { data, error } = await apiClient.GET(
+      const { data, error } = await apiClient.GET<DistributionAsset | null>(
         '/api/v1/creator/offerings/{offeringId}/distribution',
         {
           params: { path: { offeringId } },
         },
       );
       if (error) throw new Error(error.error?.message || '无法加载分发状态');
-      return data as DistributionAsset | null;
+      return data;
     },
   });
 }
@@ -50,14 +61,15 @@ export function useRecordDistribution(offeringId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await apiClient.POST(
+      const { data, error } = await apiClient.POST<DistributionAsset>(
         '/api/v1/creator/offerings/{offeringId}/distribution',
         {
           params: { path: { offeringId } },
         },
       );
       if (error) throw new Error(error.error?.message || '记录分发失败');
-      return data as DistributionAsset;
+      if (!data) throw new Error('No data returned from API');
+      return data;
     },
     onSuccess: (asset) => queryClient.setQueryData(['distribution-asset', offeringId], asset),
     onError: () => queryClient.invalidateQueries({ queryKey: ['distribution-asset', offeringId] }),
@@ -99,7 +111,7 @@ export function useCreatorServices() {
   return useQuery({
     queryKey: ['creator-services'],
     queryFn: async (): Promise<ServiceOffering[]> => {
-      const { data, error } = await apiClient.GET<{ offerings?: ServiceOffering[] }>(
+      const { data, error } = await apiClient.GET<{ offerings: ServiceOffering[] }>(
         '/api/v1/creator/offerings',
         {
           params: {
@@ -116,7 +128,7 @@ export function useCreatorServices() {
         return [];
       }
 
-      return (data.offerings || []) as ServiceOffering[];
+      return data.offerings;
     },
     retry: 1,
   });
@@ -141,9 +153,7 @@ export function useServiceOffering(offeringId: string) {
         throw new Error('No data returned from API');
       }
 
-      return (
-        (data.offerings as ServiceOffering[]).find((offering) => offering.id === offeringId) ?? null
-      );
+      return data.offerings.find((offering) => offering.id === offeringId) ?? null;
     },
     enabled: !!offeringId,
     retry: 1,
@@ -158,7 +168,7 @@ export function useCreateService() {
 
   return useMutation({
     mutationFn: async (request: CreateServiceOfferingRequest) => {
-      const { data, error } = await apiClient.POST('/api/v1/creator/offerings', {
+      const { data, error } = await apiClient.POST<ServiceOffering>('/api/v1/creator/offerings', {
         body: request,
       });
 
@@ -170,7 +180,7 @@ export function useCreateService() {
         throw new Error('No data returned from API');
       }
 
-      return data as ServiceOffering;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -188,12 +198,15 @@ export function useUpdateService(offeringId: string) {
 
   return useMutation({
     mutationFn: async (request: UpdateServiceOfferingRequest) => {
-      const { data, error } = await apiClient.PATCH('/api/v1/creator/offerings/{offeringId}', {
-        params: {
-          path: { offeringId },
+      const { data, error } = await apiClient.PATCH<ServiceOffering>(
+        '/api/v1/creator/offerings/{offeringId}',
+        {
+          params: {
+            path: { offeringId },
+          },
+          body: request,
         },
-        body: request,
-      });
+      );
 
       if (error) {
         throw new Error(error.error?.message || 'Failed to update service');
@@ -203,7 +216,7 @@ export function useUpdateService(offeringId: string) {
         throw new Error('No data returned from API');
       }
 
-      return data as ServiceOffering;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -224,7 +237,7 @@ export function usePublishService(offeringId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await apiClient.POST(
+      const { data, error } = await apiClient.POST<PublishServiceOfferingResponse>(
         '/api/v1/creator/offerings/{offeringId}/publish',
         {
           params: {
@@ -241,9 +254,14 @@ export function usePublishService(offeringId: string) {
         throw new Error('No data returned from API');
       }
 
-      return data as ServiceOffering;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      queryClient.setQueryData<ServiceOffering | null>(
+        ['creator-service', offeringId],
+        (current) => (current ? { ...current, state: result.offering.state } : current),
+      );
+      queryClient.setQueryData(['distribution-asset', offeringId], result.distributionAsset);
       queryClient.invalidateQueries({
         queryKey: ['creator-services'],
       });
@@ -262,7 +280,7 @@ export function useUnpublishService(offeringId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await apiClient.POST(
+      const { data, error } = await apiClient.POST<ServiceOffering>(
         '/api/v1/creator/offerings/{offeringId}/unpublish',
         {
           params: {
@@ -279,7 +297,7 @@ export function useUnpublishService(offeringId: string) {
         throw new Error('No data returned from API');
       }
 
-      return data as ServiceOffering;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

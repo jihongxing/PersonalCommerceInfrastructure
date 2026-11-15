@@ -4,17 +4,12 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import ServiceDetailPage from './page';
 
 const mocks = vi.hoisted(() => ({
-  identity: vi.fn(),
   publish: vi.fn(),
-  refetch: vi.fn(),
   service: vi.fn(),
   asset: vi.fn(),
   distribute: vi.fn(),
 }));
 vi.mock('next/navigation', () => ({ useParams: () => ({ id: 'service-1' }) }));
-vi.mock('@/features/creator-onboarding/api/use-creator-identity', () => ({
-  useCreatorIdentity: mocks.identity,
-}));
 vi.mock('@/features/creator-onboarding/api/use-creator-services', () => ({
   useServiceOffering: () => ({
     data: mocks.service() ?? {
@@ -27,6 +22,7 @@ vi.mock('@/features/creator-onboarding/api/use-creator-services', () => ({
       requestInstructions: '留言',
       templateId: 'template-professional-consulting',
       policyStatus: 'approved',
+      missingPublishConditions: [],
     },
   }),
   usePublishService: () => ({ mutateAsync: mocks.publish, isPending: false }),
@@ -37,48 +33,41 @@ vi.mock('@/features/creator-onboarding/api/use-creator-services', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.publish.mockReset();
+  mocks.service.mockReset();
+  mocks.asset.mockReset();
+  mocks.distribute.mockReset();
   vi.spyOn(window, 'confirm').mockReturnValue(true);
 });
 
-it('identifies incomplete identity and prevents publication', () => {
-  mocks.identity.mockReturnValue({
-    data: { profile: { displayName: '  ', bio: '' } },
-    isPending: false,
-    isError: false,
+it('uses server publish conditions to prevent publication', () => {
+  mocks.service.mockReturnValue({
+    id: 'service-1',
+    state: 'draft',
+    title: '咨询',
+    description: '描述',
+    capabilityIds: ['capability-1'],
+    availabilityDescription: '工作日',
+    requestInstructions: '留言',
+    templateId: 'template-professional-consulting',
+    policyStatus: 'approved',
+    missingPublishConditions: ['availability'],
   });
   render(<ServiceDetailPage />);
-  expect(screen.getByText('7 / 8 完成')).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: '完善商业身份' })).toHaveAttribute(
-    'href',
-    '/profile/edit',
-  );
+  expect(screen.getByText('4 / 5 完成')).toBeInTheDocument();
+  expect(screen.getByText('需要说明服务何时可用')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '发布服务' })).toBeDisabled();
-});
-
-it('offers retry when identity cannot be checked', async () => {
-  mocks.identity.mockReturnValue({ isPending: false, isError: true, refetch: mocks.refetch });
-  render(<ServiceDetailPage />);
-  expect(screen.getByRole('alert')).toHaveTextContent('无法检查商业身份');
-  expect(screen.getByRole('button', { name: '发布服务' })).toBeDisabled();
-  await userEvent.click(screen.getByRole('button', { name: '重试' }));
-  expect(mocks.refetch).toHaveBeenCalledOnce();
 });
 
 it('announces server rejection after a complete readiness check', async () => {
-  mocks.identity.mockReturnValue({
-    data: { profile: { displayName: '创作者', bio: '简介' } },
-    isPending: false,
-    isError: false,
-  });
   mocks.publish.mockRejectedValue(new Error('发布状态已发生变化'));
   render(<ServiceDetailPage />);
-  expect(screen.getByText('8 / 8 完成')).toBeInTheDocument();
+  expect(screen.getByText('发布前检查清单').parentElement).toHaveTextContent('5 / 5 完成');
   await userEvent.click(screen.getByRole('button', { name: '发布服务' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('发布状态已发生变化');
 });
 
 it('records external distribution only after explicit confirmation', async () => {
-  mocks.identity.mockReturnValue({ data: { profile: { displayName: '创作者', bio: '简介' } } });
   mocks.service.mockReturnValue({
     id: 'service-1',
     state: 'published',
@@ -86,6 +75,7 @@ it('records external distribution only after explicit confirmation', async () =>
     description: '描述',
     capabilityIds: [],
     requestInstructions: '留言',
+    missingPublishConditions: [],
   });
   mocks.asset.mockReturnValue({
     offeringId: 'service-1',

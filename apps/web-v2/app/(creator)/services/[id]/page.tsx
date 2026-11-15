@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCreatorIdentity } from '@/features/creator-onboarding/api/use-creator-identity';
 import {
   useServiceOffering,
   usePublishService,
@@ -24,7 +23,6 @@ export default function ServiceDetailPage() {
     null,
   );
   const { data: service, isLoading, isError, refetch } = useServiceOffering(params.id);
-  const identity = useCreatorIdentity();
   const publishMutation = usePublishService(params.id);
   const unpublishMutation = useUnpublishService(params.id);
   const asset = useDistributionAsset(params.id, service?.state === 'published');
@@ -44,22 +42,7 @@ export default function ServiceDetailPage() {
     }
   }
 
-  // 检查发布前的条件
-  const identityReady = Boolean(
-    identity.data?.profile.displayName.trim() && identity.data?.profile.bio.trim(),
-  );
-  const canPublish =
-    !identity.isPending &&
-    !identity.isError &&
-    identityReady &&
-    !!service?.title &&
-    !!service?.description &&
-    service?.capabilityIds &&
-    service.capabilityIds.length > 0 &&
-    !!service?.availabilityDescription &&
-    !!service?.requestInstructions &&
-    !!service?.templateId &&
-    (service.policyStatus === 'auto_approved' || service.policyStatus === 'approved');
+  const canPublish = service?.missingPublishConditions.length === 0;
 
   async function handlePublish() {
     if (!canPublish) {
@@ -231,19 +214,9 @@ export default function ServiceDetailPage() {
         </Card>
 
         {/* 发布前检查清单 */}
-        {(service.state === 'draft' || service.state === 'unpublished') &&
-          (identity.isPending ? (
-            <p role="status">正在检查商业身份...</p>
-          ) : identity.isError ? (
-            <div role="alert" className="space-y-2">
-              <p>无法检查商业身份，请重试。</p>
-              <Button variant="outline" onClick={() => identity.refetch()}>
-                重试
-              </Button>
-            </div>
-          ) : (
-            <PublishChecklist service={service} identityReady={identityReady} />
-          ))}
+        {(service.state === 'draft' || service.state === 'unpublished') && (
+          <PublishChecklist service={service} />
+        )}
 
         {/* 发布状态和操作 */}
         <Card>

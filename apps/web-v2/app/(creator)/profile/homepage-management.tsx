@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient } from '@/lib/api/client';
 import { homepageUrl, type PublicHomepage } from '@/lib/public-homepage';
+import type { CreatorReferenceResponse } from '@/lib/creator-reference';
 
 type Lifecycle = 'ACTIVE' | 'SUSPENDED' | 'ARCHIVED';
 type Profile = { commerceProfileId: string; displayName: string; lifecycle: Lifecycle };
@@ -50,20 +51,18 @@ type ApiResponse<T> = {
   data: T | null;
   error: { error?: { message?: string; code?: string }; message?: string } | null;
 };
-type ReferenceResponse = {
-  assignmentStatus: 'ASSIGNED' | 'PENDING';
-  displayValue: string;
-};
 
 async function loadManagement(): Promise<{
   management: Management;
   profiles: Profile[];
-  reference: string;
+  reference?: string;
 }> {
   const [management, profiles, reference] = await Promise.all([
     apiClient.GET('/api/v1/private/homepages') as Promise<ApiResponse<Management>>,
     apiClient.GET('/api/v1/private/profiles') as Promise<ApiResponse<{ profiles: Profile[] }>>,
-    apiClient.GET('/api/v1/private/identity/reference') as Promise<ApiResponse<ReferenceResponse>>,
+    apiClient.GET('/api/v1/private/identity/reference') as Promise<
+      ApiResponse<CreatorReferenceResponse>
+    >,
   ]);
   if (
     management.error ||
@@ -72,7 +71,8 @@ async function loadManagement(): Promise<{
     !management.data ||
     !profiles.data ||
     !reference.data ||
-    reference.data.assignmentStatus !== 'ASSIGNED'
+    (reference.data?.assignmentStatus !== 'ASSIGNED' &&
+      reference.data?.assignmentStatus !== 'NOT_ASSIGNED')
   )
     throw new Error(
       management.error?.error?.message ||
@@ -83,7 +83,8 @@ async function loadManagement(): Promise<{
   return {
     management: management.data,
     profiles: profiles.data.profiles,
-    reference: reference.data.displayValue,
+    reference:
+      reference.data.assignmentStatus === 'ASSIGNED' ? reference.data.displayValue : undefined,
   };
 }
 

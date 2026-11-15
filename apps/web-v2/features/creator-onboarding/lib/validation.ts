@@ -9,16 +9,7 @@ export const IdentityFormSchema = z.object({
   bio: z.string().min(1, '简介不能为空').max(2000, '简介最多 2000 字符'),
   avatarUrl: z.string().url('头像 URL 格式不正确').optional().or(z.literal('')),
   location: z.string().max(100, '地址最多 100 字符').optional().or(z.literal('')),
-  socialLinks: z
-    .array(
-      z.object({
-        platform: z.string().min(1, '平台不能为空'),
-        url: z.string().url('URL 格式不正确'),
-      }),
-    )
-    .max(8, '最多添加 8 个社交链接')
-    .optional()
-    .or(z.literal(undefined)),
+  socialLinks: z.array(z.string().url('URL 格式不正确')).max(8, '最多添加 8 个社交链接').optional(),
 });
 
 export type IdentityFormData = z.infer<typeof IdentityFormSchema>;

@@ -1,33 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/lib/api/client';
+import type { CreatorIdentityResponse } from './contracts';
 
-export interface CreatorIdentity {
-  creatorId: string;
-  profile: {
-    displayName: string;
-    bio: string;
-    avatarUrl?: string;
-    location?: string;
-    socialLinks?: Array<{
-      platform: string;
-      url: string;
-    }>;
-  };
-  capabilityIds: string[];
-  state: 'draft' | 'published' | 'unpublished';
-  createdAt: string;
-  updatedAt: string;
-}
+export type CreatorIdentity = CreatorIdentityResponse;
 
 export interface CreateIdentityRequest {
   displayName: string;
   bio: string;
   avatarUrl?: string;
   location?: string;
-  socialLinks?: Array<{
-    platform: string;
-    url: string;
-  }>;
+  socialLinks?: string[];
 }
 
 export interface UpdateIdentityRequest {
@@ -35,10 +17,7 @@ export interface UpdateIdentityRequest {
   bio?: string;
   avatarUrl?: string;
   location?: string;
-  socialLinks?: Array<{
-    platform: string;
-    url: string;
-  }>;
+  socialLinks?: string[];
 }
 
 /**
@@ -48,13 +27,16 @@ export function useCreatorIdentity() {
   return useQuery({
     queryKey: ['creator-identity'],
     queryFn: async (): Promise<CreatorIdentity> => {
-      const { data, error, status } = await apiClient.GET('/api/v1/creator/identity', {
-        params: {
-          header: {
-            // The same-origin BFF supplies the server-side Creator session.
+      const { data, error, status } = await apiClient.GET<CreatorIdentityResponse>(
+        '/api/v1/creator/identity',
+        {
+          params: {
+            header: {
+              // The same-origin BFF supplies the server-side Creator session.
+            },
           },
         },
-      });
+      );
 
       if (error) {
         throw new ApiError(error.error?.message || '加载商业身份失败', error.error?.code, status);
@@ -64,7 +46,7 @@ export function useCreatorIdentity() {
         throw new Error('No data returned from API');
       }
 
-      return data as CreatorIdentity;
+      return data;
     },
     retry: 1,
   });
@@ -78,16 +60,19 @@ export function useCreateIdentity() {
 
   return useMutation({
     mutationFn: async (request: CreateIdentityRequest) => {
-      const { data, error } = await apiClient.POST('/api/v1/creator/identity', {
-        body: {
-          profile: {
-            ...request,
-            avatarUrl: request.avatarUrl || undefined,
-            location: request.location || undefined,
-            socialLinks: (request.socialLinks || []).map((item) => item.url),
+      const { data, error } = await apiClient.POST<CreatorIdentityResponse>(
+        '/api/v1/creator/identity',
+        {
+          body: {
+            profile: {
+              ...request,
+              avatarUrl: request.avatarUrl || undefined,
+              location: request.location || undefined,
+              socialLinks: request.socialLinks || [],
+            },
           },
         },
-      });
+      );
 
       if (error) {
         throw new Error(error.error?.message || 'Failed to create identity');
@@ -97,7 +82,7 @@ export function useCreateIdentity() {
         throw new Error('No data returned from API');
       }
 
-      return data as CreatorIdentity;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -115,16 +100,19 @@ export function useUpdateIdentity() {
 
   return useMutation({
     mutationFn: async (request: UpdateIdentityRequest) => {
-      const { data, error } = await apiClient.PATCH('/api/v1/creator/identity', {
-        body: {
-          profile: {
-            ...request,
-            avatarUrl: request.avatarUrl || undefined,
-            location: request.location || undefined,
-            socialLinks: (request.socialLinks || []).map((item) => item.url),
+      const { data, error } = await apiClient.PATCH<CreatorIdentityResponse>(
+        '/api/v1/creator/identity',
+        {
+          body: {
+            profile: {
+              ...request,
+              avatarUrl: request.avatarUrl || undefined,
+              location: request.location || undefined,
+              socialLinks: request.socialLinks || [],
+            },
           },
         },
-      });
+      );
 
       if (error) {
         throw new Error(error.error?.message || 'Failed to update identity');
@@ -134,7 +122,7 @@ export function useUpdateIdentity() {
         throw new Error('No data returned from API');
       }
 
-      return data as CreatorIdentity;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

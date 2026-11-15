@@ -1,14 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
+import type { Capability, CreatorIdentityResponse } from './contracts';
 
-export interface Capability {
-  id: string;
-  name: string;
-  description: string;
-  catalogItemId?: string;
-  catalogStatus?: 'active' | 'custom_request' | 'retired';
-  policyVersion?: string;
-}
+export type { Capability } from './contracts';
 
 export interface CreateCapabilityRequest {
   name: string;
@@ -23,13 +17,9 @@ export function useCreatorCapabilities() {
   return useQuery({
     queryKey: ['creator-capabilities'],
     queryFn: async (): Promise<Capability[]> => {
-      const { data, error } = await apiClient.GET<{ capabilities?: Capability[] }>(
+      const { data, error } = await apiClient.GET<CreatorIdentityResponse>(
         '/api/v1/creator/identity',
-        {
-          params: {
-            header: {},
-          },
-        },
+        { params: { header: {} } },
       );
 
       if (error) {
@@ -40,7 +30,7 @@ export function useCreatorCapabilities() {
         return [];
       }
 
-      return (data.capabilities || []) as Capability[];
+      return data.capabilities;
     },
     retry: 1,
   });
@@ -54,9 +44,12 @@ export function useCreateCapability() {
 
   return useMutation({
     mutationFn: async (request: CreateCapabilityRequest) => {
-      const { data, error } = await apiClient.POST('/api/v1/creator/identity/capabilities', {
-        body: request,
-      });
+      const { data, error } = await apiClient.POST<CreatorIdentityResponse>(
+        '/api/v1/creator/identity/capabilities',
+        {
+          body: request,
+        },
+      );
 
       if (error) {
         throw new Error(error.error?.message || 'Failed to create capability');
@@ -66,7 +59,7 @@ export function useCreateCapability() {
         throw new Error('No data returned from API');
       }
 
-      return data as Capability;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

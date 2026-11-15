@@ -10,15 +10,12 @@ import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/context';
 import { homepageUrl } from '@/lib/public-homepage';
 import { copyText } from '@/lib/copy-text';
+import type { CreatorReferenceResponse } from '@/lib/creator-reference';
 
 type ApiErrorResponse = { error?: { message?: string } };
 type ApiResponse<T> = { data: T | null; error: ApiErrorResponse | null };
 type IdentityResponse = {
   profile: { displayName: string; bio: string };
-};
-type ReferenceResponse = {
-  assignmentStatus: 'ASSIGNED' | 'PENDING';
-  displayValue: string;
 };
 type HomepageState = 'UNPUBLISHED' | 'PUBLISHED' | 'PAUSED';
 type HomepageSummary = {
@@ -35,14 +32,8 @@ function homepageStateLabel(state: HomepageState): string {
   return { UNPUBLISHED: '未发布', PUBLISHED: '已发布', PAUSED: '已暂停' }[state];
 }
 
-async function loadWorkspace(): Promise<{ name: string; complete: boolean }> {
-  const initialized = (await apiClient.POST(
-    '/api/v1/auth/workspace/initialize',
-  )) as ApiResponse<unknown>;
-  if (initialized.error) throw new Error(initialized.error.error?.message || '身份初始化失败');
-  const { data, error } = (await apiClient.GET(
-    '/api/v1/creator/identity',
-  )) as ApiResponse<IdentityResponse>;
+export async function loadWorkspace(): Promise<{ name: string; complete: boolean }> {
+  const { data, error } = await apiClient.GET<IdentityResponse>('/api/v1/creator/identity');
   if (error || !data) throw new Error(error?.error?.message || '无法加载商业身份');
   return {
     name: data.profile.displayName,
@@ -50,14 +41,13 @@ async function loadWorkspace(): Promise<{ name: string; complete: boolean }> {
   };
 }
 
-async function loadReference(): Promise<string> {
-  const result = (await apiClient.GET(
+export async function loadReference(): Promise<CreatorReferenceResponse> {
+  const result = await apiClient.GET<CreatorReferenceResponse>(
     '/api/v1/private/identity/reference',
-  )) as ApiResponse<ReferenceResponse>;
+  );
   if (result.error || !result.data)
     throw new Error(result.error?.error?.message || '无法加载 C 号');
-  if (result.data.assignmentStatus !== 'ASSIGNED') throw new Error('C 号尚未分配，请重试初始化');
-  return result.data.displayValue;
+  return result.data;
 }
 
 async function loadHomepageSummary(): Promise<HomepageSummary> {
@@ -177,6 +167,8 @@ export default function DashboardPage() {
     enabled: workspace.isSuccess,
     retry: false,
   });
+  const assignedReference =
+    reference.data?.assignmentStatus === 'ASSIGNED' ? reference.data.displayValue : undefined;
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8 space-y-6">
@@ -184,9 +176,14 @@ export default function DashboardPage() {
         <p className="text-sm text-muted-foreground">Creator Studio</p>
         <h1 className="mt-2 text-3xl font-semibold">工作台</h1>
         <p className="mt-2 text-sm text-muted-foreground">已登录：{user?.email}</p>
-        {reference.data && (
+        {reference.data?.assignmentStatus === 'ASSIGNED' && (
           <p className="mt-2 text-sm">
-            C 号：<span className="font-mono">{reference.data}</span>
+            C 号：<span className="font-mono">{reference.data.displayValue}</span>
+          </p>
+        )}
+        {reference.data?.assignmentStatus === 'NOT_ASSIGNED' && (
+          <p className="mt-2 text-sm" role="status">
+            C 号尚未分配，等待系统分配
           </p>
         )}
         {reference.isError && (
@@ -201,8 +198,8 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-      <HomepageSummaryCard reference={reference.data} />
-      <StableSharingTools reference={reference.data} />
+      <HomepageSummaryCard reference={assignedReference} />
+      <StableSharingTools reference={assignedReference} />
       <section className="dashboard-panel" aria-labelledby="start-heading">
         <h2 id="start-heading" className="text-xl font-semibold">
           开始使用

@@ -67,7 +67,7 @@ export default function ServiceDetailPage() {
       return;
     }
 
-    if (!confirm('确定要发布此服务吗？发布后消费者将可以搜索和预约。')) {
+    if (!confirm('确定要发布此服务吗？发布后消费者将可以搜索并提交请求。')) {
       return;
     }
 
@@ -191,7 +191,7 @@ export default function ServiceDetailPage() {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">预约要求</p>
+              <p className="text-sm text-muted-foreground">请求要求</p>
               <p className="whitespace-pre-wrap break-words mt-1">{service.requestInstructions}</p>
             </div>
 
@@ -260,7 +260,7 @@ export default function ServiceDetailPage() {
                   <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
                     <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-blue-700">
-                      此服务还未发布。消费者无法看到。发布后，消费者将能够发现和预约此服务。
+                      此服务还未发布。消费者无法看到。发布后，消费者将能够发现并提交请求。
                     </p>
                   </div>
 
@@ -326,7 +326,7 @@ export default function ServiceDetailPage() {
                   <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded">
                     <div className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5">✓</div>
                     <p className="text-sm text-green-700">
-                      此服务已发布。消费者可以搜索并预约此服务。
+                      此服务已发布。消费者可以搜索并提交请求。
                     </p>
                   </div>
 
@@ -345,7 +345,7 @@ export default function ServiceDetailPage() {
                 <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded">
                   <AlertCircle className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-gray-700">
-                    此服务已下架。消费者无法看到。已有的预约仍会保留。
+                      此服务已下架。消费者无法看到。已有的请求仍会保留。
                   </p>
                 </div>
               )}

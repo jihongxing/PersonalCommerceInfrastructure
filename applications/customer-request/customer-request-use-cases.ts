@@ -1,4 +1,3 @@
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
 import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
 import {
   createCustomer,
@@ -103,12 +102,6 @@ export interface CustomerResult {
   readonly actionId: string;
   readonly state: CommerceAction['state'];
   readonly message: string;
-  readonly fulfillmentCode?: {
-    readonly code: string;
-    readonly status: 'pending' | 'fulfilled' | 'expired';
-    readonly expiresAt: string;
-    readonly confirmedAt?: string;
-  };
 }
 
 export class GetPublicOfferingUseCase {
@@ -205,12 +198,6 @@ export class SubmitCustomerRequestUseCase {
         await customerRepository.save(customer);
       }
       await commerceActionRepository.save(action);
-
-      // Generate fulfillment code for offline service verification
-      const fulfillmentCode = FulfillmentCode.generate(action.id);
-      await (scope.fulfillmentCodeRepository ?? this.dependencies.fulfillmentCodeRepository).save(
-        fulfillmentCode,
-      );
 
       await this.dependencies.canonicalEventRecorder.record(
         {
@@ -426,30 +413,10 @@ export class GetCustomerRequestResultUseCase {
         "Your Request was declined by the Creator. This status records only the Creator's response to your Request.",
     };
 
-    // Fetch fulfillment code if exists
-    const fulfillmentCode = await this.dependencies.fulfillmentCodeRepository.findByActionId(
-      action.id,
-    );
-
     return {
       actionId: action.id,
       state: action.state,
       message: messageByState[action.state],
-      ...(fulfillmentCode
-        ? {
-            fulfillmentCode: {
-              code: fulfillmentCode.getCode(),
-              status:
-                fulfillmentCode.getStatus() === 'pending' && fulfillmentCode.isExpired()
-                  ? ('expired' as const)
-                  : fulfillmentCode.getStatus(),
-              expiresAt: fulfillmentCode.getExpiresAt().toISOString(),
-              ...(fulfillmentCode.getFulfilledAt() === undefined
-                ? {}
-                : { confirmedAt: fulfillmentCode.getFulfilledAt()!.toISOString() }),
-            },
-          }
-        : {}),
     };
   }
 }

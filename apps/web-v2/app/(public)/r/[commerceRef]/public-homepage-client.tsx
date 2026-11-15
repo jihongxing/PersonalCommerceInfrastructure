@@ -89,7 +89,7 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
             </p>
           </header>
           <section className="public-homepage-services">
-            <h2 className="text-xl font-semibold">可预约服务</h2>
+            <h2 className="text-xl font-semibold">可提交请求的服务</h2>
             <p className="mt-2 text-sm text-muted-foreground">查看服务详情并提交您的需求</p>
             {result.data.offerings.length === 0 ? (
               <p className="mt-4 text-sm text-muted-foreground">尚无服务</p>

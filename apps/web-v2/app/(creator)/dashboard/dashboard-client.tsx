@@ -266,12 +266,12 @@ export default function DashboardPage() {
       </section>
       <section className="dashboard-panel" aria-labelledby="requests-heading">
         <h2 id="requests-heading" className="text-xl font-semibold">
-          预约审核
+          请求审核
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">查看待处理和已确认的预约</p>
+        <p className="mt-2 text-sm text-muted-foreground">查看待处理和已确认的请求</p>
         <Button asChild className="mt-4">
           <Link href="/requests">
-            查看预约 <ArrowRight className="ml-2 h-4 w-4" />
+            查看请求 <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </section>

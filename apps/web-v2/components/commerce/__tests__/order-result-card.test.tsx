@@ -19,35 +19,24 @@ describe('OrderResultCard', () => {
     expect(screen.getByText(/页面将自动刷新/)).toBeInTheDocument();
   });
 
-  it('shows the fulfillment code and explains how it is used', () => {
+  it('does not expose a historical fulfillment code', () => {
     render(
       <OrderResultCard
         result={{
           ...submitted,
           state: 'confirmed',
-          fulfillmentCode: {
-            code: 'FC-ABCD1234',
-            status: 'pending',
-            expiresAt: '2030-01-01T00:00:00Z',
-          },
-        }}
+          fulfillmentCode: { code: 'FC-ABCD1234' },
+        } as OrderResult}
       />,
     );
     expect(screen.getByTestId('status-badge')).toHaveTextContent('已确认');
-    expect(screen.getByText('FC-ABCD1234')).toBeInTheDocument();
-    expect(screen.getByText('待使用')).toBeInTheDocument();
-    expect(screen.getByText(/本地时间/).closest('time')).toHaveAttribute(
-      'dateTime',
-      '2030-01-01T00:00:00Z',
-    );
-    expect(screen.getByText(/本地时间/)).not.toHaveTextContent('刚刚');
-    expect(screen.getByText(/由 Creator 确认履约/)).toBeInTheDocument();
+    expect(screen.queryByText('FC-ABCD1234')).not.toBeInTheDocument();
+    expect(screen.queryByText('履约码')).not.toBeInTheDocument();
   });
 
   it('shows the declined state without a fulfillment code', () => {
     render(<OrderResultCard result={{ ...submitted, state: 'declined' }} />);
     expect(screen.getByTestId('status-badge')).toHaveTextContent('已拒绝');
-    expect(screen.getByText(/无法接受此预约/)).toBeInTheDocument();
-    expect(screen.queryByText('履约码')).not.toBeInTheDocument();
+    expect(screen.getByText(/无法接受此请求/)).toBeInTheDocument();
   });
 });

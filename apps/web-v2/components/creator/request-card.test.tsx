@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { RequestCard } from './request-card';
 import type { CreatorConfirmedRequest } from '@/features/creator-dashboard/api/use-creator-requests';
 
@@ -18,16 +18,10 @@ const request: CreatorConfirmedRequest = {
 };
 
 describe('confirmed request', () => {
-  it('requires the visitor code before invoking fulfillment', () => {
-    const confirm = vi.fn();
-    render(<RequestCard request={request} onConfirmFulfillment={confirm} />);
-    const button = screen.getByRole('button', { name: '确认履约' });
-    expect(button).toBeDisabled();
-    fireEvent.change(screen.getByLabelText('访客提供的履约码'), {
-      target: { value: 'fc-a1b2c3d4' },
-    });
-    expect(button).toBeEnabled();
-    fireEvent.click(button);
-    expect(confirm).toHaveBeenCalledWith('action-1', 'FC-A1B2C3D4');
+  it('shows the terminal decision without fulfillment controls', () => {
+    render(<RequestCard request={request} />);
+    expect(screen.getByText('已确认')).toBeInTheDocument();
+    expect(screen.queryByText(/履约/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

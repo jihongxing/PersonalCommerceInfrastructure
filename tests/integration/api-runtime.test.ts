@@ -418,6 +418,25 @@ describe('API runtime skeleton', () => {
     await server.close();
   });
 
+  it('retires the VS-01 fulfillment workflow without mutating requests', async () => {
+    const server = await createApiServer();
+    const confirm = await server.inject({
+      method: 'POST',
+      url: '/api/v1/creator/requests/action-1/confirm-fulfillment',
+      payload: { fulfillmentCode: 'FC-ABCDEFGH' },
+    });
+    const qr = await server.inject({
+      method: 'GET',
+      url: '/api/v1/public/fulfillment-code/FC-ABCDEFGH/qrcode',
+    });
+
+    expect(confirm.statusCode).toBe(410);
+    expect(confirm.json().error.code).toBe('creator_fulfillment_retired');
+    expect(qr.statusCode).toBe(410);
+    expect(qr.json().error.code).toBe('creator_fulfillment_retired');
+    await server.close();
+  });
+
   it('can bind an independent API runtime socket', async () => {
     const server = await createApiServer();
     const address = await server.listen({

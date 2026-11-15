@@ -300,7 +300,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="例如: 周一到周五 19:00-21:00，周末全天。需要提前 24 小时预约。"
+                        placeholder="例如: 周一到周五 19:00-21:00，周末全天。请说明希望联系的时间。"
                         className="min-h-[100px]"
                         {...field}
                         disabled={isLoading}
@@ -326,7 +326,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="消费者预约时需要提供哪些信息？例如: 学生的英语水平、学习目标、可用时间段等"
+                        placeholder="消费者提交请求时需要提供哪些信息？例如: 学生的英语水平、学习目标、可用时间段等"
                         className="min-h-[100px]"
                         {...field}
                         disabled={isLoading}

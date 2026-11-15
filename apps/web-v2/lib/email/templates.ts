@@ -136,7 +136,7 @@ export function generateWelcomeEmailTemplate(
 
       <div class="feature">✨ 创建您的专业商业身份</div>
       <div class="feature">📝 管理您的服务和能力</div>
-      <div class="feature">💼 接收客户预约和订单</div>
+      <div class="feature">💼 接收客户请求并回复决定</div>
       <div class="feature">🔐 完全控制您的商业身份（永不失效）</div>
 
       <center>
@@ -167,7 +167,7 @@ Personal Commerce - 欢迎加入！
 您现在可以：
 ✨ 创建您的专业商业身份
 📝 管理您的服务和能力
-💼 接收客户预约和订单
+💼 接收客户请求并回复决定
 🔐 完全控制您的商业身份（永不失效）
 
 开始使用：

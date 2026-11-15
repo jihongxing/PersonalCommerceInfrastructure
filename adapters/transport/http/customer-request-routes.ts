@@ -222,39 +222,29 @@ export function registerCustomerRequestRoutes(
     },
   );
 
-  // Fulfillment code confirmation route
+  // PCI-ENG-020-B2: this workflow is outside the VS-01 terminal boundary.
   server.post(
     '/api/v1/creator/requests/:actionId/confirm-fulfillment',
     {
       schema: {
-        operationId: 'confirmFulfillment',
+        operationId: 'retiredConfirmFulfillment',
         params: actionParams,
-        body: Type.Object({
-          fulfillmentCode: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
-        }),
         response: {
-          200: Type.Object({
-            actionId: Type.String(),
-            status: Type.Literal('fulfilled'),
-            confirmedAt: Type.String(),
-          }),
-          400: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
           401: ApiErrorEnvelopeSchema,
-          403: ApiErrorEnvelopeSchema,
-          404: ApiErrorEnvelopeSchema,
         },
         tags: ['customer-request'],
       },
-      preHandler: authenticate,
     },
-    async (request) => {
-      const { actionId } = request.params as { readonly actionId: string };
-      const { fulfillmentCode } = request.body as { readonly fulfillmentCode: string };
-      return dependencies.service.confirmFulfillment(
-        actionId,
-        fulfillmentCode,
-        requireContext(request),
-      );
+    async (request, reply) => {
+      return reply.status(410).send({
+        error: {
+          category: 'unavailable',
+          code: 'creator_fulfillment_retired',
+          correlationId: request.id,
+          message: 'Creator fulfillment confirmation is retired for VS-01.',
+        },
+      });
     },
   );
 
@@ -263,23 +253,25 @@ export function registerCustomerRequestRoutes(
     '/api/v1/public/fulfillment-code/:code/qrcode',
     {
       schema: {
-        operationId: 'getFulfillmentCodeQrCode',
+        operationId: 'retiredFulfillmentCodeQrCode',
         params: Type.Object({
           code: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
         }),
         response: {
-          200: Type.Object({
-            dataUrl: Type.String(),
-          }),
-          400: ApiErrorEnvelopeSchema,
+          410: ApiErrorEnvelopeSchema,
         },
         tags: ['customer-request'],
       },
     },
-    async (request) => {
-      const { code } = request.params as { readonly code: string };
-      const dataUrl = await dependencies.qrCodeGenerator.generateDataUrl(code);
-      return { dataUrl };
+    async (request, reply) => {
+      return reply.status(410).send({
+        error: {
+          category: 'unavailable',
+          code: 'creator_fulfillment_retired',
+          correlationId: request.id,
+          message: 'Fulfillment code distribution is retired for VS-01.',
+        },
+      });
     },
   );
 }

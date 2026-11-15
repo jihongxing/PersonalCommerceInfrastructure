@@ -109,6 +109,7 @@ async function createFixture() {
       initialServicePolicyCatalog,
     ),
   };
+  const fulfillmentCodeRepository = dependencies.fulfillmentCodeRepository;
   return {
     getPublicOffering: new GetPublicOfferingUseCase(dependencies),
     submitCustomerRequest: new SubmitCustomerRequestUseCase(dependencies),
@@ -125,10 +126,25 @@ async function createFixture() {
     notificationAdapter,
     canonicalEventRecorder,
     unitOfWork,
+    fulfillmentCodeRepository,
   };
 }
 
 describe('Customer Request application use cases', () => {
+  it('does not generate a fulfillment code for a new Customer Request', async () => {
+    const { submitCustomerRequest, fulfillmentCodeRepository } = await createFixture();
+    const action = await submitCustomerRequest.execute(
+      {
+        offeringId: 'offering-1',
+        contactName: 'Buyer One',
+        contactMethod: 'buyer@example.test',
+        requestMessage: 'Please contact me.',
+      },
+      { correlationId: 'request-no-fulfillment-code' },
+    );
+    await expect(fulfillmentCodeRepository.findByActionId(action.id)).resolves.toBeNull();
+  });
+
   it('shows a Published public Offering and records storefront_viewed', async () => {
     const { getPublicOffering, productEventStore } = await createFixture();
 

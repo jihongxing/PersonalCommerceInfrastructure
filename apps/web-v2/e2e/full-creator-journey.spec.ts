@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, api, apiBase } from './fixtures';
+import { test, expect, apiBase } from './fixtures';
 
 test('new Creator creates and publishes a service and confirms a visitor request', async ({
   page,
@@ -28,7 +28,8 @@ test('new Creator creates and publishes a service and confirms a visitor request
   await page.getByRole('button', { name: '创建账户' }).click();
   const signupResponse = await signup;
   expect(signupResponse.status()).toBe(201);
-  const { accessToken } = await signupResponse.json();
+  const signupBody = await signupResponse.json();
+  expect(signupBody).not.toHaveProperty('accessToken');
   await expect(page).toHaveURL(/\/(dashboard|onboarding(?:\/welcome)?)$/);
 
   await page.goto('/profile/edit');
@@ -69,13 +70,6 @@ test('new Creator creates and publishes a service and confirms a visitor request
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: '发布服务' }).click();
   await expect(page.getByText('分享资产已生成，尚未记录实际对外分发')).toBeVisible();
-  const asset = await api(
-    request,
-    'GET',
-    `/api/v1/creator/offerings/${created.id}/distribution`,
-    accessToken,
-  );
-  expect(asset.state).toBe('generated');
   await page.reload();
   await expect(page.getByText('分享资产已生成，尚未记录实际对外分发')).toBeVisible();
 
@@ -83,16 +77,16 @@ test('new Creator creates and publishes a service and confirms a visitor request
   await expect(page.getByRole('heading', { name: serviceName, level: 2 })).toBeVisible();
   await page.getByLabel('您的姓名').fill('完整路径访客');
   await page.getByLabel('联系方式', { exact: true }).fill(`visitor-${randomUUID()}@example.test`);
-  await page.getByLabel('预约说明', { exact: true }).fill('希望咨询我的具体需求。');
-  await page.getByRole('button', { name: '提交预约', exact: true }).click();
+  await page.getByLabel('请求说明', { exact: true }).fill('希望咨询我的具体需求。');
+  await page.getByRole('button', { name: '提交请求', exact: true }).click();
   await expect(page).toHaveURL(/\/o\/[a-f0-9-]+$/);
   const resultUrl = page.url();
   await expect(page.getByTestId('status-badge')).toHaveText('等待 Creator 回复');
 
   await page.goto('/requests');
   const card = page.getByTestId('request-card').filter({ hasText: '完整路径访客' });
-  await card.getByRole('button', { name: '确认预约', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('已确认预约');
+  await card.getByRole('button', { name: '确认请求', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('已确认请求');
   await page.goto(resultUrl);
   await expect(page.getByTestId('status-badge')).toHaveText('已确认');
 });

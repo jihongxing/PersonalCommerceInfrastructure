@@ -11051,5 +11051,40 @@ PCI-ENG-020-B1_BROWSER_TOKENS = NONE — no localStorage/sessionStorage or brows
 PCI-ENG-020-B1_CSRF_ORIGIN = IMPLEMENTED — focused client coverage; real browser pending
 PCI-ENG-020-B1_BROWSER_EVIDENCE = UNVERIFIED — real Browser + Next + BFF + PostgreSQL pending
 PCI-ENG-020-B1_ADMIN_EXPANSION = NONE
+PCI-ENG-020-B1_COMMIT = a1e9109 — feat: secure creator web sessions behind bff
 PCI-ENG-020-B1_PUSH = NONE
+```
+
+## PCI-ENG-020-B2 / VS-01 Customer Request Terminal Boundary Restoration
+
+This implementation retires the out-of-scope fulfillment-code activity while preserving historical
+storage. New Customer Requests no longer generate a fulfillment code; Customer Result responses and
+Creator Web views do not expose historical or new codes. The Creator `confirm-fulfillment` endpoint
+and the related public QR endpoint remain registered only as explicit HTTP 410 retired-feature
+responses and cannot mutate a Request. Creator Confirm and Decline remain the only active terminal
+operations, with `Confirmed` and `Declined` preserved as terminal states.
+
+The Creator request list, result card, booking/request form, active copy, API hooks and acceptance
+journeys were updated to remove fulfillment controls and booking/completion promises. Existing
+fulfillment tables, repository interfaces and historical rows were left intact; no destructive
+migration or state backfill was performed. Operations Admin Web was not expanded and no payment,
+settlement, refund, Marketplace, CRM or automated fulfillment capability was added.
+
+Validation evidence: focused Customer Request application and Creator Identity integration tests
+passed `2 files / 22 tests`; the new no-generation assertion and terminal result assertion passed;
+the API runtime retirement test passed within the suite; Creator Web focused tests passed `10 files /
+17 tests`; Creator Web typecheck, lint and production build passed. The API runtime suite still
+reports one unrelated existing OpenAPI path-list drift caused by Operations Admin routes. Real
+Browser request -> result -> Creator Confirm/Decline verification was not available in this
+workspace and remains pending Main Controller acceptance evidence.
+
+```ini
+PCI-ENG-020-B2 = VS-01 FULFILLMENT WORKFLOW RETIREMENT — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-B2_SCOPE = Customer Request -> Creator Confirm / Decline -> Confirmed | Declined
+PCI-ENG-020-B2_NEW_FULFILLMENT_GENERATION = NONE
+PCI-ENG-020-B2_RETIRED_ENDPOINTS = confirm-fulfillment + fulfillment-code QR -> HTTP 410
+PCI-ENG-020-B2_HISTORICAL_DATA = PRESERVED — no destructive migration or backfill
+PCI-ENG-020-B2_BROWSER_EVIDENCE = UNVERIFIED — real Browser journey pending
+PCI-ENG-020-B2_ADMIN_EXPANSION = NONE
+PCI-ENG-020-B2_PUSH = NONE
 ```

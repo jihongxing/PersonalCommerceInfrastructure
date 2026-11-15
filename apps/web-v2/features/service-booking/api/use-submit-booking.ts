@@ -12,16 +12,10 @@ export interface BookingResult {
   resultAccessToken: string;
   state: 'submitted' | 'confirmed' | 'declined';
   message: string;
-  fulfillmentCode?: {
-    code: string;
-    status: 'pending' | 'fulfilled' | 'expired';
-    expiresAt: string;
-    confirmedAt?: string;
-  };
 }
 
 /**
- * 提交预约请求
+ * 提交 Customer Request
  */
 export function useSubmitBooking(offeringId: string) {
   return useMutation({

@@ -47,7 +47,7 @@ function AppearanceInfo({ appearance }: { appearance: ServiceOfferingAppearance 
       </div>
 
       <div>
-        <p className="text-sm font-medium mb-1">适合预约方</p>
+        <p className="text-sm font-medium mb-1">适合请求方</p>
         <Badge variant="outline">{buyerTypeLabels[appearance.buyerType]}</Badge>
       </div>
 

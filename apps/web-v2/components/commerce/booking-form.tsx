@@ -24,7 +24,7 @@ import { useSubmitBooking } from '@/features/service-booking/api/use-submit-book
 const bookingFormSchema = z.object({
   contactName: z.string().min(1, '请输入您的姓名').max(160, '姓名最多 160 字符'),
   contactMethod: z.string().min(1, '请输入联系方式').max(320, '联系方式最多 320 字符'),
-  requestMessage: z.string().min(1, '请输入预约说明').max(2000, '预约说明最多 2000 字符'),
+  requestMessage: z.string().min(1, '请输入请求说明').max(2000, '请求说明最多 2000 字符'),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -66,7 +66,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>预约请求已提交</CardTitle>
+          <CardTitle>请求已提交</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">{submitBooking.data.message}</p>
@@ -83,7 +83,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
             }}
             className="w-full"
           >
-            查看预约状态
+            查看请求状态
           </Button>
         </CardFooter>
       </Card>
@@ -93,7 +93,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>提交预约请求</CardTitle>
+        <CardTitle>提交请求</CardTitle>
       </CardHeader>
       <CardContent>
         {requestInstructions && (
@@ -138,7 +138,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
               name="requestMessage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>预约说明</FormLabel>
+                  <FormLabel>请求说明</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="请描述您的需求、时间、地点等信息"
@@ -153,7 +153,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
             />
 
             <Button type="submit" className="min-h-11 w-full" disabled={submitBooking.isPending}>
-              {submitBooking.isPending ? '提交中...' : '提交预约'}
+              {submitBooking.isPending ? '提交中...' : '提交请求'}
             </Button>
 
             {submitBooking.error && (

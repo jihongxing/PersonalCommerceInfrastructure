@@ -124,9 +124,16 @@ async function readJson(response: Response): Promise<Record<string, unknown> | u
 }
 
 function authPayload(data: Record<string, unknown>): Record<string, unknown> {
-  const user = data.user;
+  const rawUser = data.user;
+  const raw = rawUser && typeof rawUser === 'object' ? (rawUser as Record<string, unknown>) : {};
+  const user = {
+    id: typeof raw.id === 'string' ? raw.id : undefined,
+    email: typeof raw.email === 'string' ? raw.email : undefined,
+    ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
+    ...(typeof raw.createdAt === 'string' ? { createdAt: raw.createdAt } : {}),
+  };
   return {
-    ...(user && typeof user === 'object' ? { user } : {}),
+    user,
     ...(typeof data.expiresIn === 'number' ? { expiresIn: data.expiresIn } : {}),
     ...(typeof data.setupPending === 'boolean' ? { setupPending: data.setupPending } : {}),
   };

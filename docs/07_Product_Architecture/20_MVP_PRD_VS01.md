@@ -771,3 +771,68 @@ Capability Catalog Item
 发布；Creator 只能读取当前发布快照。JSON 初始化数据通过幂等导入命令写入数据库，不覆盖运营
 状态和审计历史。目录状态变化必须重新约束 Publish、公开服务和新 Request，既有请求与事件保持
 可追溯。
+
+## FD-020-BD-01 Amendment — Fulfillment Code & Fulfillment Confirmation
+
+> 登记日期：2026-11-16；Founder Decision：`FD-020-BD-01 — Fulfillment Workflow Retention & VS-01 Amendment`。
+> 本节追加修订 VS-01，不删除此前冻结文本或 020-B2 的历史执行记录。若此前边界文字与本节冲突，
+> 本节是后续批准的产品合同解释。
+
+### A. 修订原因与产品边界
+
+此前 VS-01 的 `Customer Request -> Creator Confirm / Decline` 终点边界没有完整记录已经存在的
+履约码和履约确认能力。020-B2 因此错误地把超出旧文字的能力退役。Founder 决定保留并恢复该能力，
+并将其定义为 Creator 与客户之间的履约确认工具。它不使 PCI 成为实际服务提供方，不承诺服务交付，
+也不增加 Payment、Settlement、Refund、Marketplace、CRM、Automated Fulfillment 或其他商业能力。
+
+产品生命周期为：
+
+```text
+Identity
+  -> Capability
+  -> Service Offering
+  -> Publish / Distribution
+  -> Customer Request
+  -> Creator Confirm / Decline
+  -> (Confirmed only) Fulfillment Code
+  -> Creator Fulfillment Confirmation
+```
+
+`Confirm / Decline` 是 Creator 对 Customer Request 的业务决定；`Fulfillment Confirmation` 是
+Confirmed Request 之后对已出示履约码的完成确认。后者不改变已成立的 Creator Confirm / Decline
+历史决定，也不把 Declined 或 Submitted Request 变成可履约对象。
+
+### B. Fulfillment Code 定义
+
+1. 新 Customer Request 提交并持久化后，为该 Action 生成一个唯一 `FC-` 加 8 位大写字母或数字的
+   Fulfillment Code，状态为 `pending`，有效期为生成后 90 天。代码与 Action 一对一关联；历史代码
+   保留，不重新生成、不回填。
+2. Customer Result 在 Request 的所有可读取状态中返回关联履约码（若该 Action 已有关联代码）及
+   `pending`、`fulfilled` 或 `expired` 状态、过期时间和（如已确认）确认时间。Customer 通过结果页
+   查看并向 Creator 出示代码；没有历史代码的既有 Action 仍可读取原有 Request 结果。
+3. Creator Web 的 Confirmed Request 列表显示履约信息。Creator 必须在所属 Creator Session 下提交
+   Action ID 和客户提供的代码；浏览器请求继续通过同源 BFF，不能使用浏览器持久化 Bearer Token。
+4. QR endpoint `/api/v1/public/fulfillment-code/{code}/qrcode` 仅把同一履约码编码为二维码 Data URL，
+   供 Customer 结果页展示和现场出示；扫描本身不完成履约，也不绕过 Creator 权限或代码校验。
+
+### C. 验证和状态规则
+
+- 代码必须匹配 `FC-[A-Z0-9]{8}`，存在且必须关联提交的 Action；代码与 Action 不匹配、代码不存在或
+  格式错误均失败。
+- 只有 Action 状态为 `confirmed` 且请求 Creator 与当前 Creator Session 相同，才允许确认履约。
+  未授权 Creator、缺失 Action、`submitted`、`declined` 或其他无效状态均拒绝。
+- 过期或已使用的代码不得再次确认。重复提交返回冲突；持久化实现以 pending 且未过期的条件更新
+  原子领取代码，因此并发请求最多一个成功，其余得到已使用或冲突结果。
+- 成功确认只把 Fulfillment Code 标记为 `fulfilled` 并记录确认时间；它不改写 Action 的
+  `confirmed` / `declined` 决策。既有履约数据和既有 Request 结果必须继续可读。
+
+### D. 兼容性、验收和明确排除
+
+本修订不要求删除历史 Request、履约码或历史结果，不要求 Schema / Migration 变更；若实现需要数据库
+约束，只能采用向后兼容的最小变更。新请求、Public Result、QR、Creator 确认、错误代码、权限、无效
+状态、重复/并发确认以及历史数据读取均纳入 VS-01 验收。Creator Confirm / Decline 原有语义和 AT-001
+至 AT-013 仍有效，履约确认是 Confirmed 之后的追加能力。
+
+本节只批准既有 Fulfillment Code & Fulfillment Confirmation 能力的产品定义和恢复，不批准支付、结算、
+退款、Marketplace、CRM、自动履约、平台保证服务交付或新的 SLA / 必经步骤。实现状态和验证证据记录在
+执行台账 `PCI-ENG-020-B2-R1`。

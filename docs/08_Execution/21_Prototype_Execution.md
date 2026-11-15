@@ -11091,3 +11091,44 @@ PCI-ENG-020-B2_COMMIT = 0f6ddb5 — fix: restore vs01 customer request terminal 
 PCI-ENG-020-B2_FOLLOWUP = 77f81b3 — formatting
 PCI-ENG-020-B2_PUSH = NONE
 ```
+
+## PCI-ENG-020-B2-R1 / Fulfillment Workflow Restoration & VS-01 Amendment
+
+`FD-020-BD-01 — Fulfillment Workflow Retention & VS-01 Amendment` dated 2026-11-16 supersedes the
+020-B2 retirement interpretation. The VS-01 amendment is appended to the authoritative PRD and keeps
+the previous retirement commit as historical evidence. Existing Fulfillment Code and Fulfillment
+Confirmation are restored as a follow-up to `Customer Request -> Creator Confirm / Decline`.
+
+The restored implementation generates one `FC-[A-Z0-9]{8}` code for each newly submitted Action,
+retains a 90-day pending/fulfilled/expired lifecycle, returns the code from Public Result, restores
+the public QR Data URL endpoint, and exposes fulfillment information and confirmation controls in the
+Creator Web Confirmed Request list. Confirmation requires the owning Creator, the matching code and
+an Action already in `confirmed` state. In-memory and PostgreSQL repositories claim pending codes with
+an atomic conditional update when available, so repeat and concurrent submissions cannot both succeed.
+Creator Confirm / Decline remains independent and its historical result is not rewritten by fulfillment.
+
+The restoration is selective: B1's same-origin BFF, HttpOnly session cookie, CSRF/Origin checks,
+server-side access/refresh token storage, response sanitization and token-free browser client remain in
+place. No Operations Admin expansion, payment, settlement, refund, Marketplace, CRM, automated
+fulfillment, service-delivery guarantee, Schema/Migration change, history deletion or backfill was made.
+
+Validation evidence for this unit includes the Fulfillment Code domain/use-case tests (including invalid
+state, ownership, expiry, duplicate and concurrent claims), Customer Request application generation and
+result tests, Creator Identity API tests for generation, public result, QR, authorization, confirmation
+and invalid state, and Creator Web hook/component tests for BFF-based confirmation and QR display. Full
+real Browser + Next.js + BFF + Shared API + PostgreSQL execution was unavailable in this workspace;
+that evidence remains pending Main Controller acceptance. Existing unrelated Operations Admin OpenAPI
+path-list drift remains outside this unit.
+
+```ini
+FD-020-BD-01 = APPROVED BY FOUNDER — RETAIN AND RESTORE FULFILLMENT CAPABILITY
+FD-020-BD-01_DATE = 2026-11-16
+PCI-ENG-020-B2-R1 = FULFILLMENT CAPABILITY RESTORED & VS-01 AMENDED — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-B2-R1_SCOPE = Customer Request -> Creator Confirm / Decline -> Fulfillment Code -> Creator Fulfillment Confirmation
+PCI-ENG-020-B2-R1_HISTORY = PRESERVED — no request/code deletion, backfill or historical result rewrite
+PCI-ENG-020-B2-R1_SCHEMA_MIGRATION = NONE
+PCI-ENG-020-B2-R1_BFF_BOUNDARY = PRESERVED — same-origin BFF + HttpOnly Session + CSRF/Origin
+PCI-ENG-020-B2-R1_BROWSER_EVIDENCE = UNVERIFIED — real Browser + Next + BFF + PostgreSQL unavailable
+PCI-ENG-020-B2-R1_ADMIN_EXPANSION = NONE
+PCI-ENG-020-B2-R1_PUSH = NONE
+```

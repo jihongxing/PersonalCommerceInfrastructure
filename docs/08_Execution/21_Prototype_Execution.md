@@ -10971,3 +10971,50 @@ EXTERNAL_PILOT = NOT AUTHORIZED
 PRODUCTION = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 ```
+
+## PCI-ENG-020-A / Creator Web Product and Frontend Baseline Audit
+
+This read-only audit establishes `apps/web-v2` as the active Creator Web review target and
+records its current routes, visible operations, Creator-facing API dependencies, Domain/
+Application paths, test coverage and evidence limits. It does not expand Operations Admin Web,
+change VS-01 business rules, modify Schema/Migration, or alter Identity, Session or permission
+models.
+
+The audit confirms that the core Identity -> Capability -> Service Offering -> Publish /
+Distribution -> Customer Request -> Creator Confirm / Decline path is represented in the active
+frontend and related API routes. It also records a P0 engineering security risk: access and
+refresh tokens are retained in browser `localStorage` by the current Creator session client. The
+audit does not fix this risk; it requires a separately approved authentication/session change.
+
+The audit confirms a P1 product-scope gap: the active Creator request UI, public result UI and
+customer-request application expose fulfillment-code generation and `confirm-fulfillment`, while
+the frozen VS-01 contract stops at Confirmed/Declined and excludes an automated fulfillment
+workflow. This requires Main Controller product authorization before any implementation decision.
+
+Other recorded risks include capability-create and publish response-shape assertions, the
+`NOT_ASSIGNED`/`PENDING` C-number enum mismatch, service-form omission of optional `appearance`,
+client-side duplication of publish-readiness rules, merged unpublished/archived presentation,
+and Creator detail list-fetch behavior. No code fix was made in this unit.
+
+Validation evidence: Creator Web unit/component/API-hook tests passed `28 files / 86 tests`;
+Creator Web typecheck passed; lint passed with five warnings; targeted Customer Request
+application use-case tests passed `12/12`; isolated Creator Identity integration tests passed
+`9/9` with a 30-second timeout. Existing browser suites were inventoried but not run, so no
+browser screenshot or real-browser acceptance is claimed.
+
+The complete capability inventory, journey audit, dependency matrix, findings and proposed
+priority roadmap are in `PCI-ENG-020-A-Creator-Web-Audit.md`. Existing untracked historical
+evidence under `docs/09_Engineering_Governance/evidence` was preserved.
+
+```ini
+PCI-ENG-020-A = FRONTEND AUDIT COMPLETED — AWAITING MAIN CONTROLLER REVIEW
+PCI-ENG-020-A_SCOPE = apps/web-v2 ACTIVE / CREATOR_WEB
+PCI-ENG-020-A_CODE_CHANGES = NONE
+PCI-ENG-020-A_SCHEMA_MIGRATION = NONE
+PCI-ENG-020-A_ADMIN_EXPANSION = NONE
+PCI-ENG-020-A_BROWSER_EVIDENCE = UNVERIFIED — E2E INVENTORIED, NOT RUN
+PCI-ENG-020-A_P0 = CWD-001 — BROWSER LOCALSTORAGE SESSION CREDENTIAL RETENTION
+PCI-ENG-020-A_P1 = CWD-002 — FULFILLMENT WORKFLOW EXPOSED OUTSIDE VS-01 STOP BOUNDARY
+PCI-ENG-020-A_COMMIT = NONE
+PCI-ENG-020-A_PUSH = NONE
+```

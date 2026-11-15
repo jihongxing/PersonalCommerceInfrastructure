@@ -1,6 +1,6 @@
 /**
  * Confirm Fulfillment Use Case
- * 
+ *
  * Creator confirms that an offline service has been completed by entering/scanning
  * the fulfillment code that was provided to the customer.
  */
@@ -77,28 +77,23 @@ export async function confirmFulfillmentUseCase(
   // 4. Verify the creator has permission
   const action = await dependencies.commerceActionRepository.findById(command.actionId);
   if (!action) {
-    throw new ConfirmFulfillmentError(
-      'ACTION_NOT_FOUND',
-      'Order not found',
-      false,
-    );
+    throw new ConfirmFulfillmentError('ACTION_NOT_FOUND', 'Order not found', false);
   }
 
   if (action.creatorId !== command.creatorId) {
     throw new AuthorizationError('Not authorized to confirm this order');
   }
 
-  // 5. Check if code is expired
-  if (fulfillmentCode.isExpired()) {
+  if (action.state !== 'confirmed') {
     throw new ConfirmFulfillmentError(
-      'FULFILLMENT_CODE_EXPIRED',
-      'Fulfillment code has expired',
-      true,
-      { expiresAt: fulfillmentCode.getExpiresAt().toISOString() },
+      'ACTION_INVALID_STATE',
+      'Fulfillment can only be confirmed for a Creator-confirmed Request',
+      false,
+      { state: action.state },
     );
   }
 
-  // 6. Check if code has already been fulfilled
+  // 5. Check if code has already been fulfilled
   if (fulfillmentCode.getStatus() === 'fulfilled') {
     throw new ConfirmFulfillmentError(
       'FULFILLMENT_CODE_ALREADY_FULFILLED',
@@ -108,11 +103,43 @@ export async function confirmFulfillmentUseCase(
     );
   }
 
-  // 7. Mark fulfillment code as fulfilled
-  const updatedCode = fulfillmentCode.markFulfilled();
-  await dependencies.fulfillmentCodeRepository.save(updatedCode);
+  // 6. Check if code is expired
+  if (fulfillmentCode.isExpired()) {
+    throw new ConfirmFulfillmentError(
+      'FULFILLMENT_CODE_EXPIRED',
+      'Fulfillment code has expired',
+      true,
+      { expiresAt: fulfillmentCode.getExpiresAt().toISOString() },
+    );
+  }
 
-  // 8. Update action fulfillment status (TODO: implement when commerce_actions schema supports it)
+  // Claim the code atomically when the repository supports it. This keeps
+  // concurrent confirmations from both reporting success.
+  const updatedCode = dependencies.fulfillmentCodeRepository.markFulfilledIfPending
+    ? await dependencies.fulfillmentCodeRepository.markFulfilledIfPending(command.fulfillmentCode)
+    : fulfillmentCode.markFulfilled();
+  if (updatedCode === null) {
+    const latest = await dependencies.fulfillmentCodeRepository.findByCode(command.fulfillmentCode);
+    if (latest?.getStatus() === 'fulfilled') {
+      throw new ConfirmFulfillmentError(
+        'FULFILLMENT_CODE_ALREADY_FULFILLED',
+        'This fulfillment code has already been used',
+        false,
+        { fulfilledAt: latest.getFulfilledAt()?.toISOString() },
+      );
+    }
+    throw new ConfirmFulfillmentError(
+      'FULFILLMENT_CODE_EXPIRED',
+      'Fulfillment code has expired',
+      true,
+      { expiresAt: fulfillmentCode.getExpiresAt().toISOString() },
+    );
+  }
+  if (!dependencies.fulfillmentCodeRepository.markFulfilledIfPending) {
+    await dependencies.fulfillmentCodeRepository.save(updatedCode);
+  }
+
+  // Keep the additive fulfillment columns synchronized when the repository exposes them.
   if (dependencies.commerceActionRepository.updateFulfillmentStatus) {
     await dependencies.commerceActionRepository.updateFulfillmentStatus(
       command.actionId,

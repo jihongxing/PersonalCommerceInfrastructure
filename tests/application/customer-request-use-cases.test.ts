@@ -131,7 +131,7 @@ async function createFixture() {
 }
 
 describe('Customer Request application use cases', () => {
-  it('does not generate a fulfillment code for a new Customer Request', async () => {
+  it('generates a fulfillment code for a new Customer Request', async () => {
     const { submitCustomerRequest, fulfillmentCodeRepository } = await createFixture();
     const action = await submitCustomerRequest.execute(
       {
@@ -140,9 +140,15 @@ describe('Customer Request application use cases', () => {
         contactMethod: 'buyer@example.test',
         requestMessage: 'Please contact me.',
       },
-      { correlationId: 'request-no-fulfillment-code' },
+      { correlationId: 'request-with-fulfillment-code' },
     );
-    await expect(fulfillmentCodeRepository.findByActionId(action.id)).resolves.toBeNull();
+    await expect(fulfillmentCodeRepository.findByActionId(action.id)).resolves.toMatchObject({
+      getActionId: expect.any(Function),
+      getCode: expect.any(Function),
+    });
+    const code = await fulfillmentCodeRepository.findByActionId(action.id);
+    expect(code?.getActionId()).toBe(action.id);
+    expect(code?.getCode()).toMatch(/^FC-[A-Z0-9]{8}$/);
   });
 
   it('shows a Published public Offering and records storefront_viewed', async () => {

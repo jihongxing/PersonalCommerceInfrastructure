@@ -70,6 +70,21 @@ export const CustomerRequestResultSchema = Type.Object(
       Type.Literal('declined'),
     ]),
     message: Type.String({ minLength: 1 }),
+    fulfillmentCode: Type.Optional(
+      Type.Object(
+        {
+          code: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
+          status: Type.Union([
+            Type.Literal('pending'),
+            Type.Literal('fulfilled'),
+            Type.Literal('expired'),
+          ]),
+          expiresAt: Type.String({ format: 'date-time' }),
+          confirmedAt: Type.Optional(Type.String({ format: 'date-time' })),
+        },
+        { additionalProperties: false },
+      ),
+    ),
   },
   { additionalProperties: false },
 );
@@ -140,6 +155,21 @@ export const CreatorConfirmedRequestSchema = Type.Object(
         title: Type.String({ minLength: 1 }),
       },
       { additionalProperties: false },
+    ),
+    fulfillmentCode: Type.Optional(
+      Type.Object(
+        {
+          code: Type.String({ minLength: 11, maxLength: 11, pattern: '^FC-[A-Z0-9]{8}$' }),
+          status: Type.Union([
+            Type.Literal('pending'),
+            Type.Literal('fulfilled'),
+            Type.Literal('expired'),
+          ]),
+          expiresAt: Type.String({ format: 'date-time' }),
+          confirmedAt: Type.Optional(Type.String({ format: 'date-time' })),
+        },
+        { additionalProperties: false },
+      ),
     ),
   },
   { additionalProperties: false },

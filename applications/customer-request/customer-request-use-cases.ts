@@ -1,3 +1,4 @@
+import { FulfillmentCode } from '../../domain/fulfillment-code.js';
 import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
 import {
   createCustomer,
@@ -99,12 +100,24 @@ export interface CreatorConfirmedRequestDetails {
     readonly id: string;
     readonly title: string;
   };
+  readonly fulfillmentCode?: {
+    readonly code: string;
+    readonly status: 'pending' | 'fulfilled' | 'expired';
+    readonly expiresAt: string;
+    readonly confirmedAt?: string;
+  };
 }
 
 export interface CustomerResult {
   readonly actionId: string;
   readonly state: CommerceAction['state'];
   readonly message: string;
+  readonly fulfillmentCode?: {
+    readonly code: string;
+    readonly status: 'pending' | 'fulfilled' | 'expired';
+    readonly expiresAt: string;
+    readonly confirmedAt?: string;
+  };
 }
 
 export class GetPublicOfferingUseCase {
@@ -202,6 +215,11 @@ export class SubmitCustomerRequestUseCase {
       }
       await commerceActionRepository.save(action);
 
+      const fulfillmentCode = FulfillmentCode.generate(action.id);
+      await (scope.fulfillmentCodeRepository ?? this.dependencies.fulfillmentCodeRepository).save(
+        fulfillmentCode,
+      );
+
       await this.dependencies.canonicalEventRecorder.record(
         {
           actorId: customer.id,
@@ -291,6 +309,9 @@ export class GetCreatorConfirmedRequestsUseCase {
           });
         }
 
+        const fulfillmentCode = await this.dependencies.fulfillmentCodeRepository.findByActionId(
+          action.id,
+        );
         return {
           action,
           customer: {
@@ -299,6 +320,9 @@ export class GetCreatorConfirmedRequestsUseCase {
             contactMethod: customer.contactMethod,
           },
           offering: { id: offering.id, title: offering.title },
+          ...(fulfillmentCode
+            ? { fulfillmentCode: serializeFulfillmentCode(fulfillmentCode) }
+            : {}),
         };
       }),
     );
@@ -416,12 +440,31 @@ export class GetCustomerRequestResultUseCase {
         "Your Request was declined by the Creator. This status records only the Creator's response to your Request.",
     };
 
+    const fulfillmentCode = await this.dependencies.fulfillmentCodeRepository.findByActionId(
+      action.id,
+    );
+
     return {
       actionId: action.id,
       state: action.state,
       message: messageByState[action.state],
+      ...(fulfillmentCode ? { fulfillmentCode: serializeFulfillmentCode(fulfillmentCode) } : {}),
     };
   }
+}
+
+function serializeFulfillmentCode(fulfillmentCode: FulfillmentCode) {
+  return {
+    code: fulfillmentCode.getCode(),
+    status:
+      fulfillmentCode.getStatus() === 'pending' && fulfillmentCode.isExpired()
+        ? ('expired' as const)
+        : fulfillmentCode.getStatus(),
+    expiresAt: fulfillmentCode.getExpiresAt().toISOString(),
+    ...(fulfillmentCode.getFulfilledAt() === undefined
+      ? {}
+      : { confirmedAt: fulfillmentCode.getFulfilledAt()!.toISOString() }),
+  };
 }
 
 function creatorIdFromContext(context: ActorContext): string {

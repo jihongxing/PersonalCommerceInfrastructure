@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { test, expect, api, apiBase, login, submitRequest } from './fixtures';
 
-test('Creator confirms a request and keeps the terminal result code-free', async ({
+test('Creator confirms a request and completes the fulfillment confirmation', async ({
   page,
   request,
   seed,
@@ -13,10 +13,17 @@ test('Creator confirms a request and keeps the terminal result code-free', async
   await expect(page.getByRole('status')).toHaveText('已确认请求');
   const outcome = await api(request, 'GET', `/api/v1/public/requests/${result.resultAccessToken}`);
   expect(outcome.state).toBe('confirmed');
-  expect(outcome).not.toHaveProperty('fulfillmentCode');
+  expect(outcome.fulfillmentCode.status).toBe('pending');
+  expect(outcome.fulfillmentCode.code).toMatch(/^FC-[A-Z0-9]{8}$/);
+  await page.getByRole('tab', { name: /已确认/ }).click();
+  const confirmedCard = page.getByTestId('request-card').filter({ hasText: '确认测试访客' });
+  await confirmedCard.getByLabel('输入客户提供的履约码').fill(outcome.fulfillmentCode.code);
+  await confirmedCard.getByRole('button', { name: '确认履约' }).click();
+  await expect(page.getByRole('status')).toHaveText('已确认履约');
   await page.goto(`/o/${result.resultAccessToken}`);
   await expect(page.getByTestId('status-badge')).toHaveText('已确认');
-  await expect(page.getByText('履约码')).not.toBeVisible();
+  await expect(page.getByText('履约码')).toBeVisible();
+  await expect(page.getByText(outcome.fulfillmentCode.code)).toBeVisible();
 });
 
 test('Creator rejects a request and logout protects the deep link', async ({

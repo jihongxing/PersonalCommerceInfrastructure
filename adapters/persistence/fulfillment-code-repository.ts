@@ -1,6 +1,6 @@
 /**
  * Fulfillment Code Repository
- * 
+ *
  * Persistence layer for fulfillment codes
  */
 
@@ -46,7 +46,7 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
     `;
 
     const result = await this.db.query(query, [code]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
@@ -63,7 +63,7 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
     `;
 
     const result = await this.db.query(query, [actionId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
@@ -80,11 +80,24 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
     `;
 
     const result = await this.db.query(query, [id]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
 
     return FulfillmentCode.fromRecord(result.rows[0] as any);
+  }
+
+  async markFulfilledIfPending(code: string): Promise<FulfillmentCode | null> {
+    const result = await this.db.query(
+      `
+        UPDATE fulfillment_codes
+        SET status = 'fulfilled', fulfilled_at = NOW(), updated_at = NOW()
+        WHERE code = $1 AND status = 'pending' AND expires_at > NOW()
+        RETURNING id, code, action_id, status, created_at, expires_at, fulfilled_at
+      `,
+      [code],
+    );
+    return result.rows.length === 0 ? null : FulfillmentCode.fromRecord(result.rows[0] as any);
   }
 }

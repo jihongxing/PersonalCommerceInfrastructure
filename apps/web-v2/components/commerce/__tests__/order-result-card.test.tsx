@@ -1,7 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { OrderResultCard } from '@/components/commerce/order-result-card';
 import type { OrderResult } from '@/features/order-fulfillment/api/use-order-result';
+
+vi.mock('@/features/order-fulfillment/api/use-order-result', async () => {
+  const actual = await vi.importActual<
+    typeof import('@/features/order-fulfillment/api/use-order-result')
+  >('@/features/order-fulfillment/api/use-order-result');
+  return {
+    ...actual,
+    useFulfillmentQrCode: () => ({ data: undefined, isLoading: false, error: null }),
+  };
+});
 
 const submitted: OrderResult = {
   actionId: 'action-123',
@@ -19,21 +29,23 @@ describe('OrderResultCard', () => {
     expect(screen.getByText(/页面将自动刷新/)).toBeInTheDocument();
   });
 
-  it('does not expose a historical fulfillment code', () => {
+  it('shows a fulfillment code and its customer handoff instructions', () => {
     render(
       <OrderResultCard
-        result={
-          {
-            ...submitted,
-            state: 'confirmed',
-            fulfillmentCode: { code: 'FC-ABCD1234' },
-          } as OrderResult
-        }
+        result={{
+          ...submitted,
+          state: 'confirmed',
+          fulfillmentCode: {
+            code: 'FC-ABCD1234',
+            status: 'pending',
+            expiresAt: '2026-12-01T00:00:00.000Z',
+          },
+        }}
       />,
     );
     expect(screen.getByTestId('status-badge')).toHaveTextContent('已确认');
-    expect(screen.queryByText('FC-ABCD1234')).not.toBeInTheDocument();
-    expect(screen.queryByText('履约码')).not.toBeInTheDocument();
+    expect(screen.getByText('FC-ABCD1234')).toBeInTheDocument();
+    expect(screen.getByText('履约码')).toBeInTheDocument();
   });
 
   it('shows the declined state without a fulfillment code', () => {

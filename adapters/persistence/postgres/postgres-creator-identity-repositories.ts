@@ -494,6 +494,19 @@ export class PostgresCommerceActionRepository implements CommerceActionRepositor
     return rows.length === 1;
   }
 
+  public async updateFulfillmentStatus(actionId: string, status: string): Promise<void> {
+    await this.database.execute(sql`
+      UPDATE commerce_actions
+      SET fulfillment_status = ${status},
+          fulfillment_confirmed_at = CASE
+            WHEN ${status} = 'fulfilled' THEN NOW()
+            ELSE fulfillment_confirmed_at
+          END,
+          updated_at = NOW()
+      WHERE id = ${actionId}
+    `);
+  }
+
   public async save(entity: CommerceAction): Promise<void> {
     await this.database
       .insert(commerceActions)

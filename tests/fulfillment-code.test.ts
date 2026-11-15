@@ -119,14 +119,26 @@ class MockFulfillmentCodeRepository {
   async findById(id: string) {
     return this.codes.get(id) ?? null;
   }
+
+  async markFulfilledIfPending(code: string) {
+    const current = [...this.codes.values()].find((entry) => entry.getCode() === code) ?? null;
+    if (current === null || !current.isValid()) return null;
+    const updated = current.markFulfilled();
+    this.codes.set(updated.getId(), updated);
+    return updated;
+  }
 }
 
 class MockCommerceActionRepository {
   private actions: Map<string, any> = new Map();
   private fulfillmentStatuses: Map<string, string> = new Map();
 
-  addAction(actionId: string, creatorId: string) {
-    this.actions.set(actionId, { id: actionId, creatorId });
+  addAction(
+    actionId: string,
+    creatorId: string,
+    state: 'submitted' | 'confirmed' | 'declined' = 'confirmed',
+  ) {
+    this.actions.set(actionId, { id: actionId, creatorId, state });
   }
 
   async findById(id: string) {
@@ -315,5 +327,42 @@ describe('confirmFulfillmentUseCase', () => {
         },
       ),
     ).rejects.toThrow('already been used');
+  });
+
+  it('rejects fulfillment before Creator confirmation', async () => {
+    const actionId = 'action-submitted';
+    const creatorId = 'creator-456';
+    const code = FulfillmentCode.generate(actionId);
+    await fcRepo.save(code);
+    actionRepo.addAction(actionId, creatorId, 'submitted');
+
+    await expect(
+      confirmFulfillmentUseCase(
+        { fulfillmentCodeRepository: fcRepo as any, commerceActionRepository: actionRepo as any },
+        { actionId, fulfillmentCode: code.getCode(), creatorId },
+      ),
+    ).rejects.toMatchObject({ code: 'ACTION_INVALID_STATE' });
+  });
+
+  it('allows only one concurrent confirmation to claim a code', async () => {
+    const actionId = 'action-concurrent';
+    const creatorId = 'creator-456';
+    const code = FulfillmentCode.generate(actionId);
+    await fcRepo.save(code);
+    actionRepo.addAction(actionId, creatorId, 'confirmed');
+
+    const results = await Promise.allSettled([
+      confirmFulfillmentUseCase(
+        { fulfillmentCodeRepository: fcRepo as any, commerceActionRepository: actionRepo as any },
+        { actionId, fulfillmentCode: code.getCode(), creatorId },
+      ),
+      confirmFulfillmentUseCase(
+        { fulfillmentCodeRepository: fcRepo as any, commerceActionRepository: actionRepo as any },
+        { actionId, fulfillmentCode: code.getCode(), creatorId },
+      ),
+    ]);
+
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
   });
 });

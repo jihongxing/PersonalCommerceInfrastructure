@@ -1,6 +1,6 @@
 /**
  * Fulfillment Repository Interfaces (Ports)
- * 
+ *
  * Application layer ports for fulfillment-related persistence
  */
 
@@ -14,6 +14,8 @@ export interface IFulfillmentCodeRepository {
   findByCode(code: string): Promise<FulfillmentCode | null>;
   findByActionId(actionId: string): Promise<FulfillmentCode | null>;
   findById(id: string): Promise<FulfillmentCode | null>;
+  /** Atomically claims a pending, unexpired code when the backing store supports it. */
+  markFulfilledIfPending?(code: string): Promise<FulfillmentCode | null>;
 }
 
 /**
@@ -21,6 +23,6 @@ export interface IFulfillmentCodeRepository {
  * (Only the fulfillment-related methods)
  */
 export interface ICommerceActionRepository {
-  findById(id: string): Promise<{ creatorId: string } | undefined>;
+  findById(id: string): Promise<{ creatorId: string; state: string } | undefined>;
   updateFulfillmentStatus?(actionId: string, status: string): Promise<void>;
 }

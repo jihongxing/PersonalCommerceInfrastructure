@@ -418,7 +418,7 @@ describe('API runtime skeleton', () => {
     await server.close();
   });
 
-  it('retires the VS-01 fulfillment workflow without mutating requests', async () => {
+  it('exposes the restored fulfillment routes behind Creator authentication', async () => {
     const server = await createApiServer();
     const confirm = await server.inject({
       method: 'POST',
@@ -430,10 +430,10 @@ describe('API runtime skeleton', () => {
       url: '/api/v1/public/fulfillment-code/FC-ABCDEFGH/qrcode',
     });
 
-    expect(confirm.statusCode).toBe(410);
-    expect(confirm.json().error.code).toBe('creator_fulfillment_retired');
-    expect(qr.statusCode).toBe(410);
-    expect(qr.json().error.code).toBe('creator_fulfillment_retired');
+    expect(confirm.statusCode).toBe(401);
+    expect(confirm.json().error.code).toBe('missing_authorization');
+    expect(qr.statusCode).toBe(200);
+    expect(qr.json().dataUrl).toMatch(/^data:image\/png;base64,/);
     await server.close();
   });
 

@@ -38,7 +38,7 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
       WHERE code = ${code}
       LIMIT 1
     `);
-    
+
     if (result.length === 0) {
       return null;
     }
@@ -61,7 +61,7 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
       WHERE action_id = ${actionId}
       LIMIT 1
     `);
-    
+
     if (result.length === 0) {
       return null;
     }
@@ -84,11 +84,29 @@ export class PostgresFulfillmentCodeRepository implements IFulfillmentCodeReposi
       WHERE id = ${id}
       LIMIT 1
     `);
-    
+
     if (result.length === 0) {
       return null;
     }
 
     return FulfillmentCode.fromRecord(result[0] as any);
+  }
+
+  async markFulfilledIfPending(code: string): Promise<FulfillmentCode | null> {
+    const result = await this.db.execute<{
+      id: string;
+      code: string;
+      action_id: string;
+      status: string;
+      created_at: string;
+      expires_at: string;
+      fulfilled_at: string | null;
+    }>(sql`
+      UPDATE fulfillment_codes
+      SET status = 'fulfilled', fulfilled_at = NOW(), updated_at = NOW()
+      WHERE code = ${code} AND status = 'pending' AND expires_at > NOW()
+      RETURNING id, code, action_id, status, created_at, expires_at, fulfilled_at
+    `);
+    return result.length === 0 ? null : FulfillmentCode.fromRecord(result[0] as any);
   }
 }

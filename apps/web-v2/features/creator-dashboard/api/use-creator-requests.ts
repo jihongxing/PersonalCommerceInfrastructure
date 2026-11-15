@@ -26,6 +26,12 @@ export interface CreatorConfirmedRequest {
   };
   customer: { contactName: string; contactMethod: string };
   offering: { title: string };
+  fulfillmentCode?: {
+    code: string;
+    status: 'pending' | 'fulfilled' | 'expired';
+    expiresAt: string;
+    confirmedAt?: string;
+  };
 }
 
 export function useCreatorRequests(_legacyAccessToken?: string) {

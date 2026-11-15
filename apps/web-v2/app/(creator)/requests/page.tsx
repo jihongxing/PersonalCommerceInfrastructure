@@ -9,6 +9,7 @@ import {
 import {
   useConfirmRequest,
   useDeclineRequest,
+  useConfirmFulfillment,
 } from '@/features/creator-dashboard/api/use-creator-actions';
 import { RequestCard } from '@/components/creator/request-card';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +25,7 @@ function CreatorDashboardContent() {
   const confirmed = useCreatorConfirmedRequests();
   const confirmRequest = useConfirmRequest();
   const declineRequest = useDeclineRequest();
+  const confirmFulfillment = useConfirmFulfillment();
 
   async function runAction(action: () => Promise<unknown>, success: string) {
     setActionMessage('');
@@ -91,7 +93,7 @@ function CreatorDashboardContent() {
       <header className="creator-page-heading">
         <div>
           <h1>访客请求</h1>
-          <p>查看请求并记录 Creator 的确认或拒绝决定</p>
+          <p>查看请求、记录 Creator 决定并确认履约</p>
         </div>
       </header>
       {actionMessage && (
@@ -140,7 +142,17 @@ function CreatorDashboardContent() {
             </Card>
           ) : (
             confirmedRequests.map((request) => (
-              <RequestCard key={request.action.id} request={request} isLoading={false} />
+              <RequestCard
+                key={request.action.id}
+                request={request}
+                onConfirmFulfillment={(actionId, fulfillmentCode) =>
+                  void runAction(
+                    () => confirmFulfillment.mutateAsync({ actionId, fulfillmentCode }),
+                    '已确认履约',
+                  )
+                }
+                isLoading={confirmFulfillment.isPending}
+              />
             ))
           )}
         </TabsContent>

@@ -7,6 +7,7 @@ export class InMemoryCommerceActionRepository
   implements CommerceActionRepository, TransactionParticipant
 {
   private actions = new Map<string, CommerceAction>();
+  private fulfillmentStatuses = new Map<string, string>();
 
   public findById(id: string): Promise<CommerceAction | undefined> {
     const action = this.actions.get(id);
@@ -57,6 +58,11 @@ export class InMemoryCommerceActionRepository
 
   public save(action: CommerceAction): Promise<void> {
     this.actions.set(action.id, structuredClone(action));
+    return Promise.resolve();
+  }
+
+  public updateFulfillmentStatus(actionId: string, status: string): Promise<void> {
+    this.fulfillmentStatuses.set(actionId, status);
     return Promise.resolve();
   }
 

@@ -36,6 +36,14 @@ export class InMemoryFulfillmentCodeRepository implements IFulfillmentCodeReposi
     return this.codes.get(id) ?? null;
   }
 
+  async markFulfilledIfPending(code: string): Promise<FulfillmentCode | null> {
+    const current = [...this.codes.values()].find((entry) => entry.getCode() === code) ?? null;
+    if (current === null || !current.isValid()) return null;
+    const updated = current.markFulfilled();
+    this.codes.set(updated.getId(), updated);
+    return updated;
+  }
+
   // Test helper
   clear(): void {
     this.codes.clear();

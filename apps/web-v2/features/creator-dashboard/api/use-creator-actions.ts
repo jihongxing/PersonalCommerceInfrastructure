@@ -44,3 +44,33 @@ export function useDeclineRequest(_legacyAccessToken?: string) {
     },
   });
 }
+
+export function useConfirmFulfillment(_legacyAccessToken?: string) {
+  void _legacyAccessToken;
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      actionId,
+      fulfillmentCode,
+    }: {
+      actionId: string;
+      fulfillmentCode: string;
+    }) => {
+      const { data, error } = await apiClient.POST<{
+        actionId: string;
+        status: 'fulfilled';
+        confirmedAt: string;
+      }>('/api/v1/creator/requests/{actionId}/confirm-fulfillment', {
+        params: { path: { actionId } },
+        body: { fulfillmentCode },
+      });
+      if (error) throw new Error(error.error?.message || 'Failed to confirm fulfillment');
+      if (!data) throw new Error('No data returned from API');
+      return data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['creator-confirmed-requests'] });
+      void queryClient.invalidateQueries({ queryKey: ['order-result'] });
+    },
+  });
+}

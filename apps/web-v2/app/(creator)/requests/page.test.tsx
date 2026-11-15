@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RequestsPage from './page';
 
-const state = vi.hoisted(() => ({ confirm: vi.fn(), decline: vi.fn() }));
+const state = vi.hoisted(() => ({ confirm: vi.fn(), decline: vi.fn(), fulfill: vi.fn() }));
 vi.mock('@/lib/auth/context', () => ({
   useAuth: () => ({ isAuthenticated: true, isLoading: false }),
 }));
@@ -22,6 +22,7 @@ vi.mock('@/features/creator-dashboard/api/use-creator-requests', () => ({
 vi.mock('@/features/creator-dashboard/api/use-creator-actions', () => ({
   useConfirmRequest: () => ({ mutateAsync: state.confirm, isPending: false }),
   useDeclineRequest: () => ({ mutateAsync: state.decline, isPending: false }),
+  useConfirmFulfillment: () => ({ mutateAsync: state.fulfill, isPending: false }),
 }));
 
 beforeEach(() => vi.resetAllMocks());

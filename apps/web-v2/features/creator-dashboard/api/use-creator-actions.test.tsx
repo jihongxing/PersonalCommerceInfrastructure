@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { useConfirmRequest } from './use-creator-actions';
+import { useConfirmFulfillment, useConfirmRequest } from './use-creator-actions';
 
 const post = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/client', () => ({ apiClient: { POST: post } }));
@@ -22,6 +22,24 @@ describe('creator request decisions', () => {
     });
     expect(post).toHaveBeenCalledWith('/api/v1/creator/requests/{actionId}/confirm', {
       params: { path: { actionId: 'action-1' } },
+    });
+  });
+
+  it('submits fulfillment confirmation through the same-origin BFF', async () => {
+    post.mockResolvedValueOnce({
+      data: { actionId: 'action-1', status: 'fulfilled', confirmedAt: '2026-11-16T00:00:00.000Z' },
+    });
+    const client = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useConfirmFulfillment(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ actionId: 'action-1', fulfillmentCode: 'FC-ABCD1234' });
+    });
+    expect(post).toHaveBeenCalledWith('/api/v1/creator/requests/{actionId}/confirm-fulfillment', {
+      params: { path: { actionId: 'action-1' } },
+      body: { fulfillmentCode: 'FC-ABCD1234' },
     });
   });
 });

@@ -668,14 +668,64 @@ describe('Creator Identity API', () => {
       readonly resultAccessToken: string;
       readonly state: string;
       readonly message: string;
+      readonly fulfillmentCode: {
+        readonly code: string;
+        readonly status: string;
+      };
     }>(result);
     expect(customerResult).toMatchObject({
       actionId: submittedAction.actionId,
       resultAccessToken: submittedAction.resultAccessToken,
       state: 'confirmed',
     });
-    expect(customerResult).not.toHaveProperty('fulfillmentCode');
+    expect(customerResult.fulfillmentCode).toMatchObject({ status: 'pending' });
+    expect(customerResult.fulfillmentCode.code).toMatch(/^FC-[A-Z0-9]{8}$/);
     expect(customerResult.message).toMatch(/records only the Creator's response/);
+
+    const qr = await server.inject({
+      method: 'GET',
+      url: `/api/v1/public/fulfillment-code/${customerResult.fulfillmentCode.code}/qrcode`,
+    });
+    expect(qr.statusCode).toBe(200);
+    expect(qr.json().dataUrl).toMatch(/^data:image\/png;base64,/);
+
+    const invalidCode = await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${submittedAction.actionId}/confirm-fulfillment`,
+      headers,
+      payload: { fulfillmentCode: 'FC-00000000' },
+    });
+    expect(invalidCode.statusCode).toBe(404);
+    expect(invalidCode.json().error.code).toBe('FULFILLMENT_CODE_NOT_FOUND');
+
+    const unauthorizedFulfillment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${submittedAction.actionId}/confirm-fulfillment`,
+      headers: { authorization: 'Bearer other-creator-token' },
+      payload: { fulfillmentCode: customerResult.fulfillmentCode.code },
+    });
+    expect(unauthorizedFulfillment.statusCode).toBe(403);
+
+    const fulfilled = await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${submittedAction.actionId}/confirm-fulfillment`,
+      headers,
+      payload: { fulfillmentCode: customerResult.fulfillmentCode.code },
+    });
+    expect(fulfilled.statusCode).toBe(200);
+    expect(fulfilled.json()).toMatchObject({
+      actionId: submittedAction.actionId,
+      status: 'fulfilled',
+    });
+
+    const repeatedFulfillment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${submittedAction.actionId}/confirm-fulfillment`,
+      headers,
+      payload: { fulfillmentCode: customerResult.fulfillmentCode.code },
+    });
+    expect(repeatedFulfillment.statusCode).toBe(409);
+    expect(repeatedFulfillment.json().error.code).toBe('FULFILLMENT_CODE_ALREADY_FULFILLED');
 
     await server.inject({
       method: 'POST',
@@ -702,6 +752,22 @@ describe('Creator Identity API', () => {
       actionId: secondAction.actionId,
       state: 'declined',
     });
+
+    const declinedResult = await server.inject({
+      method: 'GET',
+      url: `/api/v1/public/requests/${responseJson<{ readonly resultAccessToken: string }>(secondSubmitted).resultAccessToken}`,
+    });
+    const declinedCode = responseJson<{ readonly fulfillmentCode: { readonly code: string } }>(
+      declinedResult,
+    ).fulfillmentCode.code;
+    const invalidStateFulfillment = await server.inject({
+      method: 'POST',
+      url: `/api/v1/creator/requests/${secondAction.actionId}/confirm-fulfillment`,
+      headers,
+      payload: { fulfillmentCode: declinedCode },
+    });
+    expect(invalidStateFulfillment.statusCode).toBe(409);
+    expect(invalidStateFulfillment.json().error.code).toBe('ACTION_INVALID_STATE');
   });
 
   it('rejects missing authentication and invalid identity input', async () => {

@@ -5,7 +5,7 @@ import { finishRequestSpan, injectRequestTrace, startRequestSpan } from './traci
 import { clearSession } from '@/lib/auth/session';
 
 // Browser requests stay on the same origin and cross the Creator BFF route.
-const API_BASE_URL = process.env.NEXT_PUBLIC_CREATOR_BFF_BASE_URL ?? '';
+const API_BASE_URL = '';
 
 type ApiRequestOptions = {
   headers?: HeadersInit;

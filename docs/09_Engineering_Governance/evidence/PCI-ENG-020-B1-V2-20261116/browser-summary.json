@@ -1,0 +1,96 @@
+{
+  "browserCapturedResponses": 49,
+  "namedBrowserProbes": 4,
+  "observedApplicationFetches": 44,
+  "allObservedApplicationFetchesSameOrigin": true,
+  "noObservedAuthorizationHeader": true,
+  "noObservedAuthTokenPattern": false,
+  "lexicalTokenPatternFalsePositives": [
+    {
+      "timestamp": "2026-11-16T11:19:25.471Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 409,
+      "authTokenPatternAbsent": false
+    },
+    {
+      "timestamp": "2026-11-16T11:20:08.342Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 409,
+      "authTokenPatternAbsent": false
+    }
+  ],
+  "lexicalPatternExplanation": "Two 409 error codes contain invalid_refresh_token / expired_refresh_token. The observational regex matches these words. They are error-code strings, not token values; raw observations are preserved. Structured credential-field and actual-secret scans are recorded separately.",
+  "finalStorage": {
+    "localStorage": [],
+    "sessionStorage": [],
+    "visibleCookieNames": []
+  },
+  "logoutResponses": [
+    {
+      "timestamp": 1794827775620,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    },
+    {
+      "timestamp": 1794827900560,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    },
+    {
+      "timestamp": 1794827962611,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"already_revoked\"}"
+    },
+    {
+      "timestamp": 1794827965519,
+      "status": 409,
+      "body": "{\"error\":{\"code\":\"logout_invalid_refresh_token\",\"message\":\"注销未完成：会话凭据无效或过期，请重试或联系支持。\"}}"
+    },
+    {
+      "timestamp": 1794828004361,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    },
+    {
+      "timestamp": 1794828008391,
+      "status": 409,
+      "body": "{\"error\":{\"code\":\"logout_expired_refresh_token\",\"message\":\"注销未完成：会话凭据无效或过期，请重试或联系支持。\"}}"
+    },
+    {
+      "timestamp": 1794828011500,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    },
+    {
+      "timestamp": 1794828048554,
+      "status": 503,
+      "body": "{\"error\":{\"code\":\"logout_incomplete\",\"message\":\"注销未完成，服务暂不可用，请重试。\"}}"
+    },
+    {
+      "timestamp": 1794828131731,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    },
+    {
+      "timestamp": 1794828316210,
+      "status": 403,
+      "body": "{\"error\":{\"code\":\"csrf_rejected\",\"message\":\"Request origin or CSRF token is invalid.\"}}"
+    },
+    {
+      "timestamp": 1794828317257,
+      "status": 200,
+      "body": "{\"ok\":true,\"state\":\"revoked\"}"
+    }
+  ],
+  "networkLimit": "gstack response capture does not include Set-Cookie; masked browser cookie inventory is separate. No request credentials were exported."
+}

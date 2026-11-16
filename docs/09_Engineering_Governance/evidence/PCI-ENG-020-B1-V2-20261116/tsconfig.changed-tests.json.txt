@@ -1,0 +1,14 @@
+{
+  "extends": "D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\web-v2\\tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": []
+  },
+  "include": [
+    "D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\web-v2\\app\\api\\[...path]\\route.test.ts",
+    "D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\web-v2\\lib\\auth\\logout-feedback.test.tsx",
+    "D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\web-v2\\lib\\auth\\logout-recovery.test.ts",
+    "D:\\codeSpace\\PersonalCommerceInfrastructure\\apps\\web-v2\\lib\\auth\\service-logging.test.ts"
+  ],
+  "exclude": []
+}

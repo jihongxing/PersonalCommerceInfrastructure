@@ -112,3 +112,19 @@ Supabase Auth Adapter 的组合根才调用 `loadAuthConfiguration`。认证 Pro
 Desk 的 Session Adapter 读取，用于浏览器端 Supabase Auth 登录、注册、刷新和登出。
 二者必须是可公开使用的项目 URL 与 anon / publishable key，不得替代 Service Role Key，
 也不得把 `SUPABASE_TEST_PASSWORD` 或 `CREATOR_ACTOR_MAPPINGS` 暴露到客户端。
+
+## Creator BFF upstream logout revocation (PCI-ENG-020-B1-V2)
+
+`CREATOR_BFF_REVOCATION_SECRET` is an independent random server credential of at least 32 bytes,
+configured identically in the Shared API and Creator Next.js BFF. It is never a `NEXT_PUBLIC_`
+variable, never an Operations credential, and must not appear in browser responses or logs.
+The API bootstrap passes it explicitly to the local-auth transport; the BFF reads it only in
+its server route. A supplied short value rejects API startup; absence disables this operation
+and BFF logout reports an explicit retryable failure instead of claiming success.
+
+The API `/api/v1/auth/revoke-session` requires this credential in the
+`x-creator-bff-revocation-secret` header and a valid persisted Refresh Token hash. The BFF does
+not proxy that route for browser calls. Only confirmed `revoked` / `already_revoked` responses
+allow the BFF to revoke its own row and expire its cookies. Invalid/expired Refresh credentials,
+network failure, upstream errors or malformed success responses preserve retry credentials and
+report failure. There is no fallback to the JWT signing secret or Operations authentication.

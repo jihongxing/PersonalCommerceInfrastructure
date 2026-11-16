@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-11-16T19:46:18.838832+08:00",
+  "apiStopped": true,
+  "nextPrimaryStopped": true,
+  "nextSecondaryStopped": true,
+  "browserStopNote": "browse stop returned connection error on shutdown; no task browser daemon/Chrome remained; task HTTP ports closed independently.",
+  "taskContainer": "pci-020b1-v2-93281537",
+  "taskContainerRemoved": true,
+  "otherPreviouslyRunningContainersPreserved": true,
+  "priorContainerCount": 35,
+  "loopbackPorts": {
+    "18082": {
+      "listening": false
+    },
+    "3445": {
+      "listening": false
+    },
+    "3447": {
+      "listening": false
+    },
+    "39917": {
+      "listening": false
+    }
+  },
+  "temporaryCredentialFiles": [
+    {
+      "existsAfter": false,
+      "path": "E:/User/jihx/AppData/Local/Temp/pci-020b1-v2/runtime.env.ps1"
+    },
+    {
+      "existsAfter": false,
+      "path": "E:/User/jihx/AppData/Local/Temp/pci-020b1-v2/postgres.env"
+    },
+    {
+      "existsAfter": false,
+      "path": "E:/User/jihx/AppData/Local/Temp/pci-020b1-v2/server-state.json"
+    }
+  ],
+  "priorV1Files": "untouched; earlier V1 cleanup rejection is not retried"
+}

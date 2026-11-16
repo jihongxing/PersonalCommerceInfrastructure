@@ -11132,3 +11132,55 @@ PCI-ENG-020-B2-R1_BROWSER_EVIDENCE = UNVERIFIED — real Browser + Next + BFF + 
 PCI-ENG-020-B2-R1_ADMIN_EXPANSION = NONE
 PCI-ENG-020-B2-R1_PUSH = NONE
 ```
+
+## DEV-089 / PCI-ENG-020-B1-V2 — Upstream Logout Revocation Closure
+
+Main Controller authorizes closure of B1V1-001 on 2026-11-16. This bounded security correction
+requires explicit upstream revocation before logout success. Failed or uncertain revocation must
+retain server-side credentials and browser retry capability. A BFF-only, refresh-hash-validated
+atomic revocation operation and per-session PostgreSQL serialization are authorized implementation
+details, without changing Creator business rules, Fulfillment, VS-01 or Operations identity.
+
+The implementation uses an independent server-only `CREATOR_BFF_REVOCATION_SECRET` and
+`POST /api/v1/auth/revoke-session`. The API validates the persisted Refresh Token hash and
+atomically revokes its session, returning explicit `revoked` / `already_revoked` states. The BFF
+only then revokes its own row, expires its Secure/HttpOnly opaque cookie and reports success.
+Invalid/expired credentials, arbitrary upstream errors, unavailable API and ambiguous success
+responses report failure while retaining encrypted credentials and a visible UI retry path.
+Refresh and Logout serialize on the BFF PostgreSQL row across instances; existing Hash CAS,
+AES-256-GCM, CSRF/Origin and Creator/Operations separation remain intact. No Schema/Migration,
+Creator business-rule, Fulfillment or VS-01 changes were made.
+
+Real gstack Chromium + production Next.js BFF + Shared API + disposable PostgreSQL 17.10
+verification passed normal logout, signed expired-Access injection, already-revoked idempotence,
+invalid/expired Refresh failures and API-unavailable failure followed by UI retry. Database
+checks proved both session layers revoked and original Refresh replay rejected with 401 after
+each completed browser scenario. Four cross-process HTTP races against two production Next
+instances completed both-layer revocation; original/latest Refresh replay and private BFF
+access were rejected. These races are server HTTP evidence, not browser concurrency evidence.
+All 11 BFF sessions were revoked before disposal; Operations accounts/sessions remained zero.
+
+Focused Creator tests: 21/21; PostgreSQL auth/identity/revocation: 19/19; API/application and
+changed-test Typechecks, appropriate ESLint, selected formatting and production build passed.
+Full Creator suite remains 95 passed / 1 failed due to an unchanged pre-existing BookingForm
+copy assertion; full Web test Typecheck retains pre-existing matcher diagnostics. Actual API500,
+ambiguous200 and arbitrary401 handling is unit-tested, not claimed as browser-injected evidence.
+Trusted HTTPS, actual browser foreign-Origin, deployment ACL and cross-service crash recovery
+remain outside the verified boundary. API/BFF require matching private revocation configuration.
+
+Report: `docs/09_Engineering_Governance/PCI-ENG-020-B1-V2-Upstream-Logout-Revocation-Closure.md`.
+Evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V2-20261116/README.md`.
+The API, two Next processes and browser were stopped; the exact disposable container removed.
+Prior V1 ledger content and all 46 prior untracked files were preserved and hash-checked;
+only this V2 ledger addition is included in the authorized independent fix commit. No Push.
+
+```ini
+PCI-ENG-020-B1-V2 = UPSTREAM LOGOUT REVOCATION FIX — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-B1-V2_DEFECT = B1V1-001 CLOSED BY IMPLEMENTATION AND REAL BROWSER/POSTGRESQL EVIDENCE
+PCI-ENG-020-B1-V2_FAILURE_SEMANTICS = EXPLICIT FAILURE + SERVER CREDENTIAL RETENTION + UI RETRY
+PCI-ENG-020-B1-V2_MULTI_INSTANCE_REFRESH_LOGOUT = FOUR REAL HTTP ROUNDS PASSED
+PCI-ENG-020-B1-V2_SCHEMA_MIGRATION_PRODUCT_RULE_CHANGES = NONE
+PCI-ENG-020-B1-V2_ALL_REPOSITORY_GATES = NOT CLAIMED — EXISTING UNRELATED FAILURES RECORDED
+PCI-ENG-020-B1-V2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
+PCI-ENG-020-B1-V2_PUSH = NONE
+```

@@ -1,0 +1,13 @@
+window.__b1v2Results ??= [];
+window.__b1v2Probe = async function(name,path,method='GET',body,csrf=true) {
+ const headers = new Headers();
+ if (body !== undefined) headers.set('content-type','application/json');
+ if (csrf && method !== 'GET') headers.set('x-csrf-token', document.cookie.split('; ').find(x=>x.startsWith('pci_creator_csrf='))?.split('=')[1] ?? '');
+ const response = await fetch(path,{method,headers,credentials:'same-origin',...(body === undefined ? {} : {body:JSON.stringify(body)})});
+ const text = await response.text();
+ let payload; try { payload=JSON.parse(text); } catch { payload=text; }
+ const result = {name, timestamp:new Date().toISOString(),url:response.url,status:response.status,body:payload,tokenFieldsAbsent:!/(?:accessToken|refreshToken|access_token|refresh_token|Bearer\s+|eyJ[A-Za-z0-9_-]{10,}\.)/.test(text),responseCookieHeaderVisible:response.headers.has('set-cookie')};
+ window.__b1v2Results.push(result);
+ return result;
+};
+return {installed:true,origin:location.origin};

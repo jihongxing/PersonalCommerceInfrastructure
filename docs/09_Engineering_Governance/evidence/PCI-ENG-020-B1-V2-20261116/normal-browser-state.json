@@ -1,0 +1,30 @@
+{
+  "path": "/auth/login",
+  "localStorageKeys": [],
+  "sessionStorageKeys": [],
+  "cookieNames": [],
+  "audit": [
+    {
+      "timestamp": "2026-11-16T11:16:15.522Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:16:17.693Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 401,
+      "authTokenPatternAbsent": true
+    }
+  ]
+}

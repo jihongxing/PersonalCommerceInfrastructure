@@ -1,0 +1,119 @@
+{
+  "recordedAt": "2026-11-16T11:46:19.668536+00:00",
+  "checks": [
+    {
+      "name": "Creator focused",
+      "command": "pnpm --filter web-v2 exec vitest run app/api/[...path]/route.test.ts lib/auth/logout-recovery.test.ts lib/auth/service-logging.test.ts lib/auth/session-restore.test.tsx lib/auth/logout-feedback.test.tsx",
+      "exitCode": 0,
+      "result": "5 files / 21 tests",
+      "log": "focused-creator-tests.log.txt"
+    },
+    {
+      "name": "Final feedback assertions",
+      "command": "pnpm --filter web-v2 exec vitest run lib/auth/logout-feedback.test.tsx",
+      "exitCode": 0,
+      "result": "1 file / 1 test",
+      "log": "feedback-tests-final.log.txt"
+    },
+    {
+      "name": "PostgreSQL integration",
+      "command": "pnpm exec vitest run tests/integration/creator-session-revocation.integration.test.ts tests/integration/local-auth.integration.test.ts tests/integration/creator-identity-api.integration.test.ts --testTimeout 30000",
+      "exitCode": 0,
+      "result": "3 files / 19 tests; initial default5s existing local-auth test timed out under startup load",
+      "log": "postgres-integration-tests.log.txt"
+    },
+    {
+      "name": "API typecheck",
+      "command": "pnpm typecheck:api",
+      "exitCode": 0,
+      "result": "PASS",
+      "log": "typecheck-api.log.txt"
+    },
+    {
+      "name": "Backend tests typecheck",
+      "command": "pnpm typecheck:active-tests:backend",
+      "exitCode": 0,
+      "result": "PASS",
+      "log": "typecheck-backend-tests.log.txt"
+    },
+    {
+      "name": "Web application typecheck",
+      "command": "pnpm --filter web-v2 typecheck",
+      "exitCode": 0,
+      "result": "PASS",
+      "log": "typecheck-web.log.txt"
+    },
+    {
+      "name": "Changed Web tests typecheck",
+      "command": "pnpm exec tsc -p <task-temp>/tsconfig.changed-tests.json",
+      "exitCode": 0,
+      "result": "PASS; four changed tests; configuration preserved",
+      "log": "typecheck-changed-web-tests.log.txt"
+    },
+    {
+      "name": "Web ESLint",
+      "command": "pnpm --dir apps/web-v2 lint",
+      "exitCode": 0,
+      "result": "0 errors, 4 pre-existing warnings",
+      "log": "eslint-web.log.txt"
+    },
+    {
+      "name": "Backend ESLint",
+      "command": "pnpm exec eslint <six changed backend files>",
+      "exitCode": 0,
+      "result": "PASS; initial incorrect root-project invocation on Web tests corrected",
+      "log": "eslint-backend.log.txt"
+    },
+    {
+      "name": "Selected code formatting",
+      "command": "pnpm exec prettier --check <13 changed TypeScript/TSX files>",
+      "exitCode": 0,
+      "result": "PASS; .env has no Prettier parser",
+      "log": "prettier-code.log.txt"
+    },
+    {
+      "name": "Production build",
+      "command": "pnpm --filter web-v2 build",
+      "exitCode": 0,
+      "result": "PASS; served by both real Next processes",
+      "log": "production-build.log.txt"
+    },
+    {
+      "name": "Full Creator suite",
+      "command": "pnpm --filter web-v2 exec vitest run",
+      "exitCode": 1,
+      "result": "95 passed / 1 pre-existing BookingForm copy assertion failed",
+      "log": "full-creator-tests.log.txt"
+    },
+    {
+      "name": "Full Web test typecheck",
+      "command": "pnpm typecheck:web-v2:tests",
+      "exitCode": 2,
+      "result": "FAIL; pre-existing matcher augmentation diagnostics; isolated changed tests pass",
+      "log": "full-web-test-typecheck.log.txt"
+    },
+    {
+      "name": "Documentation and evidence formatting",
+      "command": "pnpm exec prettier --check <new report/index/JSON and two appended-only Markdown excerpts>",
+      "exitCode": 0,
+      "result": "PASS",
+      "log": "prettier-docs.log.txt"
+    },
+    {
+      "name": "Git whitespace",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS",
+      "log": null
+    }
+  ],
+  "preExistingFailureSourcesUnchangedAgainstStartingHead": {
+    "apps/web-v2/components/commerce/booking-form.test.tsx": true,
+    "apps/web-v2/components/commerce/booking-form.tsx": true,
+    "apps/web-v2/tsconfig.tests.json": true,
+    "apps/web-v2/vitest.setup.ts": true
+  },
+  "initialFailures": "Initial PostgreSQL timeout and root ESLint project mismatch documented in report; final relevant runs passed. No unrelated baseline fixes.",
+  "finalFullWebTestTypecheckContainsChangedFileDiagnostics": false,
+  "initialWebTestTypecheckNote": "Initial log included three new feedback matcher assertions; those assertions were corrected. Final full typecheck still fails in unchanged existing files only; initial log is preserved separately."
+}

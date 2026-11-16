@@ -1,0 +1,11 @@
+window.__b1v2FetchAudit=[];
+const originalFetch=window.fetch.bind(window);
+window.fetch=async function(input,options) {
+ const request=new Request(input,options);
+ const isApi=new URL(request.url).pathname.startsWith('/api/');
+ const item={timestamp:new Date().toISOString(),url:request.url,method:request.method,sameOrigin:new URL(request.url).origin===location.origin,authorizationHeaderPresent:request.headers.has('authorization'),csrfHeaderPresent:request.headers.has('x-csrf-token'),credentials:request.credentials};
+ const response=await originalFetch(input,options);
+ if(isApi){const body=await response.clone().text();item.status=response.status;item.authTokenPatternAbsent=!/(?:accessToken|refreshToken|access_token|refresh_token|Bearer\s+|eyJ[A-Za-z0-9_-]{10,}\.)/.test(body);window.__b1v2FetchAudit.push(item);}
+ return response;
+};
+return {observing:true};

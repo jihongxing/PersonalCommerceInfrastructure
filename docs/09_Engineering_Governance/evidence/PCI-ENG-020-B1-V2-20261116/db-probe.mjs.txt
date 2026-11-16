@@ -1,0 +1,52 @@
+import {createRequire} from 'node:module';
+import {createHash,createCipheriv,createDecipheriv,randomBytes} from 'node:crypto';
+import {readFileSync,writeFileSync,appendFileSync,existsSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+const req=createRequire('D:/codeSpace/PersonalCommerceInfrastructure/package.json');
+const sql=req('postgres')(process.env.DATABASE_URL,{max:2,prepare:false,onnotice:()=>{}});
+const dir='E:/User/jihx/AppData/Local/Temp/pci-020b1-v2';
+const key=createHash('sha256').update(process.env.CREATOR_BFF_SESSION_SECRET).digest();
+const decrypt=(value)=>{const [iv,tag,data]=value.split('.').map(x=>Buffer.from(x,'base64url'));const d=createDecipheriv('aes-256-gcm',key,iv);d.setAuthTag(tag);return Buffer.concat([d.update(data),d.final()]).toString();};
+const encrypt=(value)=>{const iv=randomBytes(12);const c=createCipheriv('aes-256-gcm',key,iv);const data=Buffer.concat([c.update(value),c.final()]);return [iv,c.getAuthTag(),data].map(x=>x.toString('base64url')).join('.');};
+const [mode,label='current']=process.argv.slice(2);
+const savepath=dir+'/server-state.json';
+const saved=existsSync(savepath)?JSON.parse(readFileSync(savepath)):{};
+const log=(x)=>{const event={timestamp:new Date().toISOString(),label,mode,...x};appendFileSync(dir+'/db-events.jsonl',JSON.stringify(event)+'\n');console.log(JSON.stringify(event));};
+try {
+ const latest=async()=> (await sql`select * from creator_web_sessions where user_email=${process.env.B1V2_CREATOR_EMAIL} and revoked_at is null order by created_at desc limit 1`)[0];
+ if(mode==='mark'){
+  const row=await latest(); if(!row)throw Error('No active disposable session');
+  const claims=JSON.parse(Buffer.from(decrypt(row.access_token_ciphertext).split('.')[1],'base64url'));
+  saved[label]={row,sid:claims.sid}; writeFileSync(savepath,JSON.stringify(saved));
+  log({bffRevoked:false,accountId:row.account_id,accessTokenKeptServerSide:true});
+ } else if(mode==='expire-access'){
+  const row=await latest();const {SignJWT,decodeJwt}=await import(pathToFileURL(req.resolve('jose')).href);
+  const claims=decodeJwt(decrypt(row.access_token_ciphertext));
+  const expired=await new SignJWT({sid:claims.sid}).setProtectedHeader({alg:'HS256',typ:'JWT'}).setSubject(claims.sub).setIssuedAt(Math.floor(Date.now()/1000)-1000).setExpirationTime(Math.floor(Date.now()/1000)-100).sign(new TextEncoder().encode(process.env.JWT_SECRET));
+  await sql`update creator_web_sessions set access_token_ciphertext=${encrypt(expired)} where id_hash=${row.id_hash}`;
+  log({expiredSignedJwtInjected:true,refreshCredentialUnchanged:true});
+ } else if(mode==='audit'){
+  const s=saved[label];const b=(await sql`select revoked_at is not null revoked, expires_at>now() unexpired,refresh_token_hash from creator_web_sessions where id_hash=${s.row.id_hash}`)[0];
+  const u=(await sql`select revoked_at is not null revoked,expires_at>now() unexpired from local_auth_sessions where id=${s.sid}`)[0];
+  log({bffRevoked:b.revoked,bffUnexpired:b.unexpired,upstreamRevoked:u.revoked,upstreamUnexpired:u.unexpired,refreshHashUnchanged:b.refresh_token_hash===s.row.refresh_token_hash});
+ } else if(mode==='replay'){
+  const s=saved[label];const response=await fetch('http://127.0.0.1:18082/api/v1/auth/refresh',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({refreshToken:decrypt(s.row.refresh_token_ciphertext)})});
+  const body=await response.json();log({originalRefreshStatus:response.status,errorCode:body.error?.code,serverSideOnly:true});
+  if(response.ok)throw Error('Unexpected refresh accepted after logout');
+ } else if(mode==='revoke-upstream'){
+  const s=saved[label];const response=await fetch('http://127.0.0.1:18082/api/v1/auth/revoke-session',{method:'POST',headers:{'content-type':'application/json','x-creator-bff-revocation-secret':process.env.CREATOR_BFF_REVOCATION_SECRET},body:JSON.stringify({refreshToken:decrypt(s.row.refresh_token_ciphertext)})});
+  log({upstreamStatus:response.status,body:await response.json()});
+ } else if(mode==='invalid-refresh'){
+  const row=await latest();const bad=randomBytes(32).toString('base64url');await sql`update creator_web_sessions set refresh_token_ciphertext=${encrypt(bad)},refresh_token_hash=${createHash('sha256').update(bad).digest('hex')} where id_hash=${row.id_hash}`;
+  log({invalidRefreshInjected:true});
+ } else if(mode==='restore-refresh'){
+  const row=saved[label].row;await sql`update creator_web_sessions set refresh_token_ciphertext=${row.refresh_token_ciphertext},refresh_token_hash=${row.refresh_token_hash} where id_hash=${row.id_hash}`;
+  log({originalEncryptedRefreshRestored:true});
+ } else if(mode==='expire-upstream'){
+  await sql`update local_auth_sessions set expires_at=now()-interval '1 minute' where id=${saved[label].sid}`;log({upstreamExpiryInjected:true});
+ } else if(mode==='restore-upstream-expiry'){
+  await sql`update local_auth_sessions set expires_at=now()+interval '1 day' where id=${saved[label].sid}`;log({testExpiryRestored:true});
+ } else if(mode==='summary'){
+  log({bff:await sql`select count(*)::int total,count(*) filter(where revoked_at is not null)::int revoked,count(*) filter(where revoked_at is null and expires_at>now())::int active from creator_web_sessions`,upstream:await sql`select count(*)::int total,count(*) filter(where revoked_at is not null)::int revoked from local_auth_sessions`,operations:await sql`select (select count(*)::int from operations_accounts) accounts,(select count(*)::int from operations_sessions) sessions`,migrations:(await sql`select count(*)::int count from drizzle.__drizzle_migrations`)[0].count});
+ } else throw Error('Unknown mode');
+}finally{await sql.end({timeout:2});}

@@ -1,0 +1,555 @@
+{
+  "url": "http://localhost:3445/auth/login?returnTo=%2Fdashboard",
+  "results": [
+    {
+      "name": "private_after_normal_logout",
+      "timestamp": "2026-11-16T11:16:17.700Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "status": 401,
+      "body": {
+        "error": {
+          "code": "invalid_session",
+          "message": "登录已过期，请重新登录。"
+        }
+      },
+      "tokenFieldsAbsent": true,
+      "responseCookieHeaderVisible": false
+    },
+    {
+      "name": "server_only_bff_route_rejected",
+      "timestamp": "2026-11-16T11:25:16.029Z",
+      "url": "http://localhost:3445/api/v1/auth/revoke-session",
+      "status": 404,
+      "body": {
+        "error": {
+          "code": "not_found",
+          "message": "Not found."
+        }
+      },
+      "tokenFieldsAbsent": true,
+      "responseCookieHeaderVisible": false
+    },
+    {
+      "name": "logout_without_csrf_rejected",
+      "timestamp": "2026-11-16T11:25:16.207Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "status": 403,
+      "body": {
+        "error": {
+          "code": "csrf_rejected",
+          "message": "Request origin or CSRF token is invalid."
+        }
+      },
+      "tokenFieldsAbsent": true,
+      "responseCookieHeaderVisible": false
+    },
+    {
+      "name": "private_before_final_logout",
+      "timestamp": "2026-11-16T11:25:16.419Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "status": 200,
+      "body": {
+        "creatorId": "0c629387-1c20-4964-9e2c-50eb3f985d4f",
+        "profile": {
+          "displayName": "B1V2 Disposable Creator",
+          "bio": "",
+          "socialLinks": []
+        },
+        "capabilityIds": [],
+        "capabilities": [],
+        "state": "draft"
+      },
+      "tokenFieldsAbsent": true,
+      "responseCookieHeaderVisible": false
+    }
+  ],
+  "audit": [
+    {
+      "timestamp": "2026-11-16T11:16:15.522Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:16:17.693Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 401,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:18.628Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:18.863Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:18.938Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:18.861Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:19.012Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:18:20.433Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:21.508Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:21.694Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:21.739Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:21.692Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:21.785Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:22.557Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:24.671Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:24.811Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:24.809Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:24.852Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:24.894Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:19:25.471Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 409,
+      "authTokenPatternAbsent": false
+    },
+    {
+      "timestamp": "2026-11-16T11:20:04.291Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:06.575Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:06.771Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:06.770Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:06.817Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:06.857Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:08.342Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 409,
+      "authTokenPatternAbsent": false
+    },
+    {
+      "timestamp": "2026-11-16T11:20:11.421Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:46.188Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:46.400Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:46.398Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:46.500Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:46.546Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:20:48.520Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 503,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:22:11.647Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:15.175Z",
+      "url": "http://localhost:3445/api/v1/auth/login",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:15.345Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:15.412Z",
+      "url": "http://localhost:3445/api/v1/private/identity/reference",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:15.344Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:15.451Z",
+      "url": "http://localhost:3445/api/v1/private/homepages",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:16.024Z",
+      "url": "http://localhost:3445/api/v1/auth/revoke-session",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 404,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:16.201Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 403,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:16.385Z",
+      "url": "http://localhost:3445/api/v1/creator/identity",
+      "method": "GET",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": false,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    },
+    {
+      "timestamp": "2026-11-16T11:25:17.191Z",
+      "url": "http://localhost:3445/api/v1/auth/logout",
+      "method": "POST",
+      "sameOrigin": true,
+      "authorizationHeaderPresent": false,
+      "csrfHeaderPresent": true,
+      "credentials": "same-origin",
+      "status": 200,
+      "authTokenPatternAbsent": true
+    }
+  ],
+  "localStorage": [],
+  "sessionStorage": [],
+  "visibleCookieNames": []
+}

@@ -112,7 +112,12 @@ export async function startApi(): Promise<ApiRuntime> {
         : {
             ...(usePostgresTestComposition || composition.localAuthService === undefined
               ? {}
-              : { localAuthService: composition.localAuthService }),
+              : {
+                  localAuthService: composition.localAuthService,
+                  ...(process.env.CREATOR_BFF_REVOCATION_SECRET
+                    ? { creatorBffRevocationSecret: process.env.CREATOR_BFF_REVOCATION_SECRET }
+                    : {}),
+                }),
             authContextProvider: usePostgresTestComposition
               ? new InMemoryAuthContextProvider([
                   {

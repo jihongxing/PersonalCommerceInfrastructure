@@ -1,0 +1,22 @@
+[
+  {
+    "name": "pci_creator_csrf",
+    "value": "[REDACTED]",
+    "domain": "localhost",
+    "path": "/",
+    "expires": 1795432527.785205,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__Host-pci_creator_session",
+    "value": "[REDACTED]",
+    "domain": "localhost",
+    "path": "/",
+    "expires": 1795432527.785074,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  }
+]

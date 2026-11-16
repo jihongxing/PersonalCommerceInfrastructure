@@ -75,8 +75,12 @@ export class AuthService {
 
   async logout(): Promise<void> {
     try {
-      const { error, status } = await apiClient.POST('/api/v1/auth/logout');
-      if (error && status !== 401) throw new Error(messageFor(error, '登出失败'));
+      const { data, error } = await apiClient.POST<{ ok: boolean; state: string }>(
+        '/api/v1/auth/logout',
+      );
+      if (error) throw new Error(messageFor(error, '注销未完成，请重试。'));
+      if (data?.ok !== true || !['revoked', 'already_revoked'].includes(data.state))
+        throw new Error('无法确认注销结果，请重试。');
       clearSession();
     } catch (err) {
       console.error('Logout error');

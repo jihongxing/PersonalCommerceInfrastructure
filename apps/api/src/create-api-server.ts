@@ -80,6 +80,7 @@ import type { OperationsFlowReadService } from '../../../applications/operations
 export interface ApiServerDependencies {
   readonly publicHomepageService?: PublicHomepageService;
   readonly localAuthService?: LocalAuthService;
+  readonly creatorBffRevocationSecret?: string;
   readonly authContextProvider?: AuthContextProvider;
   readonly creatorIdentityService?: CreatorIdentityService;
   readonly currentUserIdentityService?: CurrentUserIdentityService;
@@ -338,7 +339,11 @@ export async function createApiServer(
     });
   }
   if (dependencies.localAuthService !== undefined)
-    registerLocalAuthRoutes(server, dependencies.localAuthService);
+    registerLocalAuthRoutes(
+      server,
+      dependencies.localAuthService,
+      dependencies.creatorBffRevocationSecret,
+    );
   registerSystemRoutes(
     server,
     dependencies.checkReadiness === undefined

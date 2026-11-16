@@ -1,0 +1,8 @@
+
+ RUN  v4.1.10 D:/codeSpace/PersonalCommerceInfrastructure
+
+
+ Test Files  3 passed (3)
+      Tests  19 passed (19)
+   Start at  19:10:00
+   Duration  20.87s (transform 1.50s, setup 0ms, import 8.52s, tests 11.51s, environment 0ms)

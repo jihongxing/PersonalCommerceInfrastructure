@@ -51,6 +51,9 @@ export interface LocalAuthRepository {
     newHash: string,
   ): Promise<{ account: LocalAccount; sessionId: string } | undefined>;
   revokeSession(id: string, accountId: string): Promise<void>;
+  revokeSessionByRefreshHash(
+    hash: string,
+  ): Promise<'revoked' | 'already_revoked' | 'invalid' | 'expired'>;
   findActiveSession(id: string, accountId: string): Promise<boolean>;
   findCreatorId(accountId: string): Promise<string | undefined>;
 }
@@ -309,6 +312,15 @@ export class LocalAuthService implements ProviderTokenVerifier, CreatorActorReso
   async logout(token: string): Promise<void> {
     const session = await this.verify(token);
     await this.repository.revokeSession(session.sessionId, session.accountId);
+  }
+
+  // Revocation does not mint credentials or authorize business access.
+  async revokeWithRefreshToken(token: string): Promise<{ state: 'revoked' | 'already_revoked' }> {
+    const state = await this.repository.revokeSessionByRefreshHash(tokenHash(token));
+    if (state === 'invalid' || state === 'expired') {
+      throw authError(`${state}_refresh_token`, '无法确认上游会话撤销，注销未完成。');
+    }
+    return { state };
   }
 
   async verifyAccessToken(token: string): Promise<ProviderIdentity> {

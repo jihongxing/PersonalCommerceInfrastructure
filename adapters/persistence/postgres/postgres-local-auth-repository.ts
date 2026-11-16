@@ -172,6 +172,24 @@ export class PostgresLocalAuthRepository implements LocalAuthRepository {
       .sql`UPDATE local_auth_sessions SET revoked_at = now() WHERE id = ${id} AND account_id = ${accountId} AND revoked_at IS NULL`;
   }
 
+  async revokeSessionByRefreshHash(
+    hash: string,
+  ): Promise<'revoked' | 'already_revoked' | 'invalid' | 'expired'> {
+    return this.sql.begin(async (tx) => {
+      // The same row lock also guards refresh's conditional UPDATE. Neither operation
+      // can reactivate a revoked row, and the hash is retained for idempotent retries.
+      const rows = await tx<{ id: string; revoked: boolean; expired: boolean }[]>`
+        SELECT id, revoked_at IS NOT NULL AS revoked, expires_at <= now() AS expired
+        FROM local_auth_sessions WHERE refresh_hash = ${hash} FOR UPDATE`;
+      const session = rows[0];
+      if (!session) return 'invalid';
+      if (session.revoked) return 'already_revoked';
+      if (session.expired) return 'expired';
+      await tx`UPDATE local_auth_sessions SET revoked_at = now() WHERE id = ${session.id}`;
+      return 'revoked';
+    });
+  }
+
   async findActiveSession(id: string, accountId: string): Promise<boolean> {
     const rows = await this
       .sql`SELECT 1 FROM local_auth_sessions s JOIN local_auth_accounts a ON a.id = s.account_id WHERE s.id = ${id} AND a.id = ${accountId} AND a.is_active AND s.revoked_at IS NULL AND s.expires_at > now()`;

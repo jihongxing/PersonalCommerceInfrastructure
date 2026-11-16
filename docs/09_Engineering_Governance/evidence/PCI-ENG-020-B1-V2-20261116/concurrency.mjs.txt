@@ -1,0 +1,42 @@
+import {createRequire} from 'node:module';
+import {createHash,createDecipheriv} from 'node:crypto';
+import {appendFileSync} from 'node:fs';
+const req=createRequire('D:/codeSpace/PersonalCommerceInfrastructure/package.json');
+const sql=req('postgres')(process.env.DATABASE_URL,{max:2,prepare:false,onnotice:()=>{}});
+const key=createHash('sha256').update(process.env.CREATOR_BFF_SESSION_SECRET).digest();
+const dec=v=>{const [iv,tag,data]=v.split('.').map(x=>Buffer.from(x,'base64url'));const d=createDecipheriv('aes-256-gcm',key,iv);d.setAuthTag(tag);return Buffer.concat([d.update(data),d.final()]).toString();};
+const bases=['http://localhost:3445','http://localhost:3447'];
+const api='http://127.0.0.1:18082';
+const log=x=>{const e={timestamp:new Date().toISOString(),harness:'server HTTP -> two real production Next BFF processes -> API -> PostgreSQL',...x};appendFileSync('E:/User/jihx/AppData/Local/Temp/pci-020b1-v2/concurrency.jsonl',JSON.stringify(e)+'\n');console.log(JSON.stringify(e));};
+const assert=(ok,msg)=>{if(!ok)throw Error(msg)};
+try {
+ for(let round=0;round<4;round++){
+  const login=await fetch(bases[0]+'/api/v1/auth/login',{method:'POST',headers:{origin:bases[0],'content-type':'application/json'},body:JSON.stringify({email:process.env.B1V2_CREATOR_EMAIL,password:process.env.B1V2_CREATOR_PASSWORD})});
+  assert(login.ok,'Test login failed '+login.status);
+  const raw=login.headers.getSetCookie().join(';');
+  const sid=raw.match(/__Host-pci_creator_session=([^;\s,]+)/)[1];const csrf=raw.match(/pci_creator_csrf=([^;\s,]+)/)[1];
+  const cookie=`__Host-pci_creator_session=${sid}; pci_creator_csrf=${csrf}`;
+  const hash=createHash('sha256').update(sid).digest('hex');
+  const before=(await sql`select * from creator_web_sessions where id_hash=${hash}`)[0];
+  const claims=JSON.parse(Buffer.from(dec(before.access_token_ciphertext).split('.')[1],'base64url'));
+  const call=async(base,path,method='POST')=>{const r=await fetch(base+path,{method,headers:{origin:base,cookie,'x-csrf-token':csrf}});return {status:r.status,body:await r.json()};};
+  const work=round%2===0?['refresh','logout','refresh','logout']:['logout','refresh','logout','refresh'];
+  const results=await Promise.all(work.map((op,i)=>call(bases[i%2],'/api/v1/auth/'+op)));
+  assert(results.filter((_,i)=>work[i]==='logout').every(x=>x.status===200&&x.body.ok===true),'Concurrent logout must complete');
+  assert(results.filter((_,i)=>work[i]==='refresh').every(x=>[200,401].includes(x.status)),'Unexpected refresh result');
+  const after=(await sql`select * from creator_web_sessions where id_hash=${hash}`)[0];
+  const up=(await sql`select revoked_at is not null revoked from local_auth_sessions where id=${claims.sid}`)[0];
+  assert(after.revoked_at&&up.revoked,'Both session layers must be revoked');
+  const replay=async(token)=>{const r=await fetch(api+'/api/v1/auth/refresh',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({refreshToken:token})});return r.status;};
+  const originalRefreshStatus=await replay(dec(before.refresh_token_ciphertext));
+  const latestRefreshStatus=await replay(dec(after.refresh_token_ciphertext));
+  const privateResponse=await call(bases[1],'/api/v1/creator/identity','GET');
+  const repeats=await Promise.all(bases.map(base=>call(base,'/api/v1/auth/logout')));
+  assert(originalRefreshStatus===401&&latestRefreshStatus===401&&privateResponse.status===401,'Revoked credentials must not regain access');
+  assert(repeats.every(x=>x.status===200&&x.body.state==='already_revoked'),'Repeat logout must explicitly confirm revoked state');
+  log({round,work,results,bffRevoked:!!after.revoked_at,upstreamRevoked:up.revoked,refreshHashChanged:before.refresh_token_hash!==after.refresh_token_hash,originalRefreshStatus,latestRefreshStatus,privateBffStatus:privateResponse.status,repeatedLogout:repeats});
+ }
+ const forbidden=await fetch(api+'/api/v1/auth/revoke-session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({refreshToken:'invalid-test-value'})});
+ assert(forbidden.status===403,'Dedicated route requires BFF server credential');
+ log({case:'direct_api_without_bff_credential',status:forbidden.status});
+}finally{await sql.end({timeout:2});}

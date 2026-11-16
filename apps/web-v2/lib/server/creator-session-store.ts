@@ -70,9 +70,26 @@ function databaseUrl(): string {
 export class CreatorWebSessionStore {
   private sql: Sql | undefined;
 
+  constructor(private readonly transaction?: postgres.TransactionSql) {}
+
   private client(): Sql {
     this.sql ??= postgres(databaseUrl(), { max: 10, prepare: false });
     return this.sql;
+  }
+
+  private query(): Sql | postgres.TransactionSql {
+    return this.transaction ?? this.client();
+  }
+
+  async withSessionLock<T>(
+    id: string,
+    operation: (store: CreatorWebSessionStore) => Promise<T>,
+  ): Promise<T> {
+    const result = await this.client().begin(async (tx) => {
+      await tx`SELECT id_hash FROM creator_web_sessions WHERE id_hash = ${hashSessionId(id)} FOR UPDATE`;
+      return { value: await operation(new CreatorWebSessionStore(tx)) };
+    });
+    return result.value;
   }
 
   async create(input: {
@@ -83,7 +100,7 @@ export class CreatorWebSessionStore {
   }): Promise<CreatorWebSession> {
     const id = randomBytes(32).toString('base64url');
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-    await this.client()`
+    await this.query()`
       INSERT INTO creator_web_sessions (
         id_hash,
         account_id,
@@ -105,13 +122,22 @@ export class CreatorWebSessionStore {
   }
 
   async get(id: string): Promise<CreatorWebSession | undefined> {
-    const rows = await this.client()<StoredSessionRow[]>`
+    return this.read(id, false);
+  }
+
+  // An expired/revoked BFF row may still carry the credential needed to finish
+  // upstream revocation. It must never authorize normal private business access.
+  async getForLogout(id: string): Promise<CreatorWebSession | undefined> {
+    return this.read(id, true);
+  }
+
+  private async read(id: string, forLogout: boolean): Promise<CreatorWebSession | undefined> {
+    const rows = await this.query()<StoredSessionRow[]>`
       SELECT id_hash, account_id, user_email, access_token_ciphertext,
         refresh_token_ciphertext, refresh_token_hash, expires_at
       FROM creator_web_sessions
       WHERE id_hash = ${hashSessionId(id)}
-        AND revoked_at IS NULL
-        AND expires_at > now()
+        AND (${forLogout} OR (revoked_at IS NULL AND expires_at > now()))
     `;
     const row = rows[0];
     if (!row) return undefined;
@@ -136,7 +162,7 @@ export class CreatorWebSessionStore {
     refreshToken: string,
     expectedRefreshToken: string,
   ): Promise<boolean> {
-    const result = await this.client()`
+    const result = await this.query()`
       UPDATE creator_web_sessions
       SET access_token_ciphertext = ${encrypt(accessToken)},
           refresh_token_ciphertext = ${encrypt(refreshToken)},
@@ -150,7 +176,7 @@ export class CreatorWebSessionStore {
   }
 
   async revoke(id: string): Promise<void> {
-    await this.client()`
+    await this.query()`
       UPDATE creator_web_sessions
       SET revoked_at = now(), updated_at = now()
       WHERE id_hash = ${hashSessionId(id)} AND revoked_at IS NULL

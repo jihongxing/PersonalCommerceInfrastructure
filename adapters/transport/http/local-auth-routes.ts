@@ -1,9 +1,48 @@
 import type { FastifyInstance } from 'fastify';
 import { Type } from 'typebox';
+import { timingSafeEqual } from 'node:crypto';
 import type { LocalAuthService } from '../../../applications/account-identity-membership/local-auth-service.js';
 import { extractBearerToken } from '../../auth/transport/bearer-token.js';
 
-export function registerLocalAuthRoutes(server: FastifyInstance, service: LocalAuthService): void {
+export function registerLocalAuthRoutes(
+  server: FastifyInstance,
+  service: LocalAuthService,
+  bffRevocationSecret?: string,
+): void {
+  if (bffRevocationSecret !== undefined && Buffer.byteLength(bffRevocationSecret) < 32)
+    throw new Error('CREATOR_BFF_REVOCATION_SECRET must contain at least 32 bytes.');
+  server.post<{ Body: { refreshToken: string } }>(
+    '/api/v1/auth/revoke-session',
+    {
+      schema: {
+        body: Type.Object(
+          { refreshToken: Type.String({ minLength: 1, maxLength: 512 }) },
+          { additionalProperties: false },
+        ),
+        response: {
+          200: Type.Object({
+            state: Type.Union([Type.Literal('revoked'), Type.Literal('already_revoked')]),
+          }),
+        },
+      },
+      preHandler: async (request, reply) => {
+        const supplied = request.headers['x-creator-bff-revocation-secret'];
+        const expected = bffRevocationSecret ? Buffer.from(bffRevocationSecret) : undefined;
+        const actual = typeof supplied === 'string' ? Buffer.from(supplied) : undefined;
+        if (
+          !expected ||
+          !actual ||
+          expected.length !== actual.length ||
+          !timingSafeEqual(expected, actual)
+        ) {
+          return reply
+            .status(403)
+            .send({ error: { code: 'bff_required', message: 'Server authentication required.' } });
+        }
+      },
+    },
+    async (request) => service.revokeWithRefreshToken(request.body.refreshToken),
+  );
   const credentials = Type.Object(
     {
       email: Type.String({ minLength: 3, maxLength: 255 }),

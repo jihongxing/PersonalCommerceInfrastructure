@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-11-16T11:20:49.094Z",
+  "path": "/dashboard",
+  "alerts": [
+    "退出登录失败：注销未完成，服务暂不可用，请重试。",
+    "注销未完成，服务暂不可用，请重试。"
+  ],
+  "logoutRetryAvailable": true,
+  "localStorageKeys": [],
+  "sessionStorageKeys": []
+}

@@ -1,0 +1,85 @@
+
+> personal-commerce-infrastructure@0.2.0 typecheck:web-v2:tests D:\codeSpace\PersonalCommerceInfrastructure
+> pnpm --dir apps/web-v2 exec tsc -p tsconfig.tests.json
+
+app/(creator)/capabilities/page.test.tsx(25,57): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/capabilities/page.test.tsx(26,37): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/capabilities/page.test.tsx(27,56): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/capabilities/page.test.tsx(36,39): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/capabilities/page.test.tsx(37,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(creator)/capabilities/page.test.tsx(46,56): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/capabilities/page.test.tsx(52,46): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/dashboard/dashboard-client.test.tsx(71,53): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/dashboard/dashboard-client.test.tsx(72,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(creator)/onboarding/page.test.tsx(27,39): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/homepage-management.test.tsx(61,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/homepage-management.test.tsx(63,51): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/homepage-management.test.tsx(65,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/homepage-management.test.tsx(66,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(creator)/profile/homepage-management.test.tsx(68,43): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/homepage-management.test.tsx(69,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(creator)/profile/profile-client.test.tsx(43,40): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/profile/profile-client.test.tsx(44,55): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/requests/page.test.tsx(35,47): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/requests/page.test.tsx(37,60): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(57,40): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(58,42): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(59,56): error TS2339: Property 'toBeDisabled' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(65,53): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(creator)/services/[id]/page.test.tsx(67,44): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(87,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/[id]/page.test.tsx(94,45): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/page.test.tsx(23,56): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/page.test.tsx(27,56): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/page.test.tsx(32,56): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/page.test.tsx(41,39): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(creator)/services/page.test.tsx(42,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+app/(public)/auth/reset-password/page.test.tsx(16,44): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/auth/reset-password/page.test.tsx(23,64): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/auth/reset-password/page.test.tsx(29,44): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/o/[token]/page.test.tsx(48,46): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(28,65): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(29,59): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(42,66): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(44,69): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(60,66): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+app/(public)/r/[commerceRef]/public-homepage-client.test.tsx(62,69): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(26,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(27,39): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(28,46): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(29,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(46,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(47,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(48,37): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(53,48): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/__tests__/order-result-card.test.tsx(54,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/booking-form.test.tsx(24,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/booking-form.test.tsx(43,39): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(31,53): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(39,35): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(46,57): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(54,46): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(55,52): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+components/commerce/stable-sharing-tools.test.tsx(65,46): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(67,66): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(87,39): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(89,52): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+components/commerce/stable-sharing-tools.test.tsx(90,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+components/commerce/stable-sharing-tools.test.tsx(92,53): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(108,49): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(110,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(112,52): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/commerce/stable-sharing-tools.test.tsx(124,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+components/commerce/stable-sharing-tools.test.tsx(125,54): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+components/creator/request-card.test.tsx(29,37): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/creator/request-card.test.tsx(30,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/ui/__tests__/button.test.tsx(9,63): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+components/ui/__tests__/button.test.tsx(24,40): error TS2339: Property 'toBeDisabled' does not exist on type 'Assertion<void, HTMLElement>'.
+components/ui/__tests__/button.test.tsx(30,20): error TS2339: Property 'toHaveClass' does not exist on type 'Assertion<void, HTMLButtonElement | null>'.
+components/ui/__tests__/button.test.tsx(39,38): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'.
+features/creator-onboarding/components/edit-capability-form.test.tsx(20,39): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+features/creator-onboarding/components/edit-capability-form.test.tsx(21,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'.
+lib/auth/session-restore.test.tsx(35,46): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'.
+lib/auth/session-restore.test.tsx(37,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+lib/auth/session-restore.test.tsx(53,51): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+ ELIFECYCLE  Command failed with exit code 2.

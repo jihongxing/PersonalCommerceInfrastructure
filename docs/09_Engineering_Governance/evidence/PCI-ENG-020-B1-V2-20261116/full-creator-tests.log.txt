@@ -1,0 +1,200 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:21:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.1.0 D:/codeSpace/PersonalCommerceInfrastructure/apps/web-v2
+
+ ❯ components/commerce/booking-form.test.tsx (2 tests | 1 failed) 299ms
+   ❯ visitor request form (2)
+     × validates required fields and submits the entered values 267ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/commerce/booking-form.test.tsx > visitor request form > validates required fields and submits the entered values
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "提交预约"
+
+Here are the accessible roles:
+
+  textbox:
+
+  Name "您的姓名":
+  <input
+    aria-describedby="_r_0_-form-item-description"
+    aria-invalid="false"
+    class="flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+    id="_r_0_-form-item"
+    name="contactName"
+    placeholder="请输入您的姓名"
+    value=""
+  />
+
+  Name "联系方式":
+  <input
+    aria-describedby="_r_1_-form-item-description"
+    aria-invalid="false"
+    class="flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+    id="_r_1_-form-item"
+    name="contactMethod"
+    placeholder="微信号、手机号或其他联系方式"
+    value=""
+  />
+
+  Name "请求说明":
+  <textarea
+    aria-describedby="_r_2_-form-item-description"
+    aria-invalid="false"
+    class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm min-h-[120px]"
+    id="_r_2_-form-item"
+    name="requestMessage"
+    placeholder="请描述您的需求、时间、地点等信息"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="text-[0.8rem] text-muted-foreground"
+    id="_r_1_-form-item-description"
+  />
+
+  Name "":
+  <p
+    class="text-[0.8rem] text-muted-foreground"
+    id="_r_2_-form-item-description"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "提交请求":
+  <button
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 px-4 py-2 min-h-11 w-full"
+    type="submit"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-xl border bg-card text-card-foreground shadow"
+    >
+      <div
+        class="flex flex-col space-y-1.5 p-6"
+      >
+        <div
+          class="font-semibold leading-none tracking-tight"
+        >
+          提交请求
+        </div>
+      </div>
+      <div
+        class="p-6 pt-0"
+      >
+        <form
+          class="space-y-6"
+        >
+          <div
+            class="space-y-2"
+          >
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="_r_0_-form-item"
+            >
+              您的姓名
+            </label>
+            <input
+              aria-describedby="_r_0_-form-item-description"
+              aria-invalid="false"
+              class="flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="_r_0_-form-item"
+              name="contactName"
+              placeholder="请输入您的姓名"
+              value=""
+            />
+          </div>
+          <div
+            class="space-y-2"
+          >
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="_r_1_-form-item"
+            >
+              联系方式
+            </label>
+            <input
+              aria-describedby="_r_1_-form-item-description"
+              aria-invalid="false"
+              class="flex min-h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              id="_r_1_-form-item"
+              name="contactMethod"
+              placeholder="微信号、手机号或其他联系方式"
+              value=""
+            />
+            <p
+              class="text-[0.8rem] text-muted-foreground"
+              id="_r_1_-form-item-description"
+            >
+              Creator 将通过此方式与您联系
+            </p>
+          </div>
+          <div
+            class="space-y-2"
+          >
+            <label
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              for="_r_2_-form-item"
+            >
+              请求说明
+            </label>
+            <textarea
+              aria-describedby="_r_2_-form-item-description"
+              aria-invalid="false"
+              class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm min-h-[120px]"
+              id="_r_2_-form-item"
+              name="requestMessage"
+              placeholder="请描述您的需求、时间、地点等信息"
+            />
+            <p
+              class="text-[0.8rem] text-muted-foreground"
+              id="_r_2_-form-item-description"
+            >
+              最多 2000 字符
+            </p>
+          </div>
+          <button
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 px-4 py-2 min-h-11 w-full"
+            type="submit"
+          >
+            提交请求
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ components/commerce/booking-form.test.tsx:23:29
+     21|     const user = userEvent.setup();
+     22|     render(<BookingForm offeringId="service-1" />);
+     23|     await user.click(screen.getByRole('button', { name: '提交预约' }));
+       |                             ^
+     24|     expect(await screen.findByText('请输入您的姓名')).toBeInTheDocument();
+     25|     expect(state.submit).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 33 passed (34)
+      Tests  1 failed | 95 passed (96)
+   Start at  19:11:39
+   Duration  26.38s (environment 55%, setup 19%, import 12%, tests 11%, transform 2%, worker 1%)
+
+Environment  jsdom was created 34 times · 61.55s total, 55% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

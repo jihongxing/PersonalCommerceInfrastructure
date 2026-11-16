@@ -95,8 +95,20 @@ function setSessionCookie(response: NextResponse, value: string): void {
 }
 
 function clearSessionCookies(response: NextResponse): void {
-  response.cookies.set(sessionCookieName(), '', { httpOnly: true, path: '/', maxAge: 0 });
-  response.cookies.set(CSRF_COOKIE, '', { httpOnly: false, path: '/', maxAge: 0 });
+  response.cookies.set(sessionCookieName(), '', {
+    httpOnly: true,
+    secure: secureCookies(),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  response.cookies.set(CSRF_COOKIE, '', {
+    httpOnly: false,
+    secure: secureCookies(),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
 }
 
 function responseHeaders(upstream: Response): Headers {
@@ -160,37 +172,44 @@ async function upstreamRequest(
 async function refreshSession(session: CreatorWebSession): Promise<CreatorWebSession | undefined> {
   const existing = refreshInFlight.get(session.id);
   if (existing) return existing;
-  const operation = (async () => {
-    const latest = await creatorWebSessionStore.get(session.id);
-    if (!latest) return undefined;
-    if (latest.accessToken !== session.accessToken || latest.refreshToken !== session.refreshToken)
-      return latest;
+  const operation = creatorWebSessionStore
+    .withSessionLock(session.id, async (store) => {
+      const latest = await store.get(session.id);
+      if (!latest) return undefined;
+      if (
+        latest.accessToken !== session.accessToken ||
+        latest.refreshToken !== session.refreshToken
+      )
+        return latest;
 
-    const refreshResponse = await fetch(`${apiBaseUrl()}/api/v1/auth/refresh`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ refreshToken: latest.refreshToken }),
-      cache: 'no-store',
-    });
-    const data = await readJson(refreshResponse);
-    if (!refreshResponse.ok) {
-      const after = await creatorWebSessionStore.get(session.id);
-      if (after && after.refreshToken !== latest.refreshToken) return after;
-      await creatorWebSessionStore.revoke(session.id);
-      return undefined;
-    }
-    if (typeof data?.accessToken !== 'string' || typeof data.refreshToken !== 'string') {
-      return undefined;
-    }
-    const updated = await creatorWebSessionStore.updateTokens(
-      session.id,
-      data.accessToken,
-      data.refreshToken,
-      latest.refreshToken,
-    );
-    if (!updated) return creatorWebSessionStore.get(session.id);
-    return { ...latest, accessToken: data.accessToken, refreshToken: data.refreshToken };
-  })().finally(() => refreshInFlight.delete(session.id));
+      const refreshResponse = await fetch(`${apiBaseUrl()}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ refreshToken: latest.refreshToken }),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(10_000),
+      });
+      const data = await readJson(refreshResponse);
+      if (!refreshResponse.ok) {
+        const after = await store.get(session.id);
+        if (after && after.refreshToken !== latest.refreshToken) return after;
+        // Preserve the encrypted credential and cookie when upstream refresh fails;
+        // logout may still need them to complete revocation or retry after an outage.
+        throw new Error('upstream_refresh_failed');
+      }
+      if (typeof data?.accessToken !== 'string' || typeof data.refreshToken !== 'string') {
+        throw new Error('invalid_upstream_refresh_response');
+      }
+      const updated = await store.updateTokens(
+        session.id,
+        data.accessToken,
+        data.refreshToken,
+        latest.refreshToken,
+      );
+      if (!updated) return store.get(session.id);
+      return { ...latest, accessToken: data.accessToken, refreshToken: data.refreshToken };
+    })
+    .finally(() => refreshInFlight.delete(session.id));
   refreshInFlight.set(session.id, operation);
   return operation;
 }
@@ -282,14 +301,55 @@ async function handleAuth(request: NextRequest, path: string): Promise<NextRespo
       return errorResponse(405, 'method_not_allowed', 'Method not allowed.');
     if (!originAllowed(request) || !csrfValid(request))
       return errorResponse(403, 'csrf_rejected', 'Request origin or CSRF token is invalid.');
-    const session = await requireSession(request);
-    if (session) {
-      await upstreamRequest(request, path, session).catch(() => undefined);
-      await creatorWebSessionStore.revoke(session.id);
+    const id = request.cookies.get(sessionCookieName())?.value;
+    if (!id)
+      return errorResponse(409, 'logout_session_missing', '无法确认注销结果：会话凭据缺失。');
+    const secret = process.env.CREATOR_BFF_REVOCATION_SECRET;
+    if (!secret || Buffer.byteLength(secret) < 32)
+      return errorResponse(503, 'logout_unavailable', '注销暂不可用，请稍后重试。');
+    try {
+      return await creatorWebSessionStore.withSessionLock(id, async (store) => {
+        const session = await store.getForLogout(id);
+        if (!session)
+          return errorResponse(409, 'logout_session_missing', '无法确认注销结果：会话凭据缺失。');
+        const upstream = await fetch(`${apiBaseUrl()}/api/v1/auth/revoke-session`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-creator-bff-revocation-secret': secret,
+          },
+          body: JSON.stringify({ refreshToken: session.refreshToken }),
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10_000),
+        });
+        const data = await readJson(upstream);
+        if (!upstream.ok) {
+          const rawError = data?.error;
+          const code =
+            rawError && typeof rawError === 'object' && 'code' in rawError
+              ? rawError.code
+              : undefined;
+          if (
+            upstream.status === 401 &&
+            (code === 'invalid_refresh_token' || code === 'expired_refresh_token')
+          )
+            return errorResponse(
+              409,
+              `logout_${code}`,
+              '注销未完成：会话凭据无效或过期，请重试或联系支持。',
+            );
+          return errorResponse(503, 'logout_incomplete', '注销未完成，服务暂不可用，请重试。');
+        }
+        if (data?.state !== 'revoked' && data?.state !== 'already_revoked')
+          return errorResponse(502, 'logout_unconfirmed', '无法确认上游注销结果，请重试。');
+        await store.revoke(id);
+        const response = NextResponse.json({ ok: true, state: data.state });
+        clearSessionCookies(response);
+        return response;
+      });
+    } catch {
+      return errorResponse(503, 'logout_incomplete', '注销未完成，服务暂不可用，请重试。');
     }
-    const response = NextResponse.json({ ok: true });
-    clearSessionCookies(response);
-    return response;
   }
 
   if (path === '/api/v1/auth/forgot-password' || path === '/api/v1/auth/reset-password') {
@@ -318,42 +378,49 @@ async function handler(request: NextRequest, context: RouteContext): Promise<Nex
   const rawPath = `/${segments.join('/')}`;
   // The Next catch-all route strips the outer /api prefix from the URL.
   const path = rawPath.startsWith('/api/v1/') ? rawPath : `/api${rawPath}`;
-  if (!path.startsWith('/api/v1/')) return errorResponse(404, 'not_found', 'Not found.');
+  if (!path.startsWith('/api/v1/') || path === '/api/v1/auth/revoke-session')
+    return errorResponse(404, 'not_found', 'Not found.');
   if (!originAllowed(request))
     return errorResponse(403, 'origin_rejected', 'Origin is not allowed.');
 
-  if (isAuthPath(path)) {
-    const authResponse = await handleAuth(request, path);
-    if (authResponse) return authResponse;
-  }
-
-  if (isMutation(request.method) && !isAuthPath(path) && !csrfValid(request)) {
-    return errorResponse(403, 'csrf_rejected', 'Request origin or CSRF token is invalid.');
-  }
-
-  const protectedPath = isProtectedPath(path);
-  let session = protectedPath ? await requireSession(request) : undefined;
-  if (protectedPath && !session)
-    return errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
-  const body =
-    request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
-  let upstream = await upstreamRequest(request, path, session, body);
-  if (protectedPath && upstream.status === 401 && session) {
-    session = await refreshSession(session);
-    if (!session) {
-      const response = errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
-      clearSessionCookies(response);
-      return response;
+  try {
+    if (isAuthPath(path)) {
+      const authResponse = await handleAuth(request, path);
+      if (authResponse) return authResponse;
     }
-    upstream = await upstreamRequest(request, path, session, body);
+
+    if (isMutation(request.method) && !isAuthPath(path) && !csrfValid(request)) {
+      return errorResponse(403, 'csrf_rejected', 'Request origin or CSRF token is invalid.');
+    }
+
+    const protectedPath = isProtectedPath(path);
+    let session = protectedPath ? await requireSession(request) : undefined;
+    if (protectedPath && !session)
+      return errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
+    const body =
+      request.method === 'GET' || request.method === 'HEAD'
+        ? undefined
+        : await request.arrayBuffer();
+    let upstream = await upstreamRequest(request, path, session, body);
+    if (protectedPath && upstream.status === 401 && session) {
+      session = await refreshSession(session);
+      if (!session) {
+        const response = errorResponse(401, 'invalid_session', '登录已过期，请重新登录。');
+        clearSessionCookies(response);
+        return response;
+      }
+      upstream = await upstreamRequest(request, path, session, body);
+    }
+    const response = new NextResponse(upstream.body, {
+      status: upstream.status,
+      headers: responseHeaders(upstream),
+    });
+    if (!request.cookies.get(CSRF_COOKIE))
+      setCsrfCookie(response, randomBytes(32).toString('base64url'));
+    return response;
+  } catch {
+    return errorResponse(503, 'session_upstream_unavailable', '暂时无法验证会话，请重试。');
   }
-  const response = new NextResponse(upstream.body, {
-    status: upstream.status,
-    headers: responseHeaders(upstream),
-  });
-  if (!request.cookies.get(CSRF_COOKIE))
-    setCsrfCookie(response, randomBytes(32).toString('base64url'));
-  return response;
 }
 
 export const GET = handler;

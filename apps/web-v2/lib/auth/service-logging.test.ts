@@ -18,8 +18,13 @@ describe('authentication error logging', () => {
         authService.login({ email: 'user@example.test', password: 'password' }),
       ).rejects.toThrow('private-token');
       await expect(authService.refresh()).rejects.toThrow('private-token');
-      await expect(authService.logout()).resolves.toBeUndefined();
-      expect(logging.mock.calls).toEqual([['Signup error'], ['Login error'], ['Refresh error']]);
+      await expect(authService.logout()).rejects.toThrow('private-token');
+      expect(logging.mock.calls).toEqual([
+        ['Signup error'],
+        ['Login error'],
+        ['Refresh error'],
+        ['Logout error'],
+      ]);
     } finally {
       logging.mockRestore();
     }

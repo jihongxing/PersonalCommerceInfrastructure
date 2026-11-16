@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import type { MissingPublishCondition } from './contracts';
+import type { ServiceOfferingAppearance } from '@/lib/service-offering-appearance';
 
 export interface ServiceOffering {
   id: string;
@@ -10,11 +11,7 @@ export interface ServiceOffering {
   title: string;
   description: string;
   availabilityDescription: string;
-  appearance?: {
-    currency?: string;
-    priceRangeMin?: number;
-    priceRangeMax?: number;
-  };
+  appearance?: ServiceOfferingAppearance;
   requestInstructions: string;
   state: 'draft' | 'published' | 'unpublished' | 'archived';
   policyStatus?: 'not_checked' | 'auto_approved' | 'review_required' | 'approved' | 'rejected';
@@ -82,11 +79,7 @@ export interface CreateServiceOfferingRequest {
   title: string;
   description: string;
   availabilityDescription: string;
-  appearance?: {
-    currency?: string;
-    priceRangeMin?: number;
-    priceRangeMax?: number;
-  };
+  appearance?: ServiceOfferingAppearance;
   requestInstructions: string;
 }
 
@@ -96,11 +89,7 @@ export interface UpdateServiceOfferingRequest {
   title?: string;
   description?: string;
   availabilityDescription?: string;
-  appearance?: {
-    currency?: string;
-    priceRangeMin?: number;
-    priceRangeMax?: number;
-  };
+  appearance?: ServiceOfferingAppearance;
   requestInstructions?: string;
 }
 

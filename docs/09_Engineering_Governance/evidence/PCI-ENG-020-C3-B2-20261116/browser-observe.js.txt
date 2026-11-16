@@ -1,0 +1,1 @@
+(()=>({at:new Date().toISOString(),path:location.pathname,body:document.body.innerText.slice(0,3000),storage:{local:Object.keys(localStorage),session:Object.keys(sessionStorage)},scrollWidth:document.documentElement.scrollWidth,viewport:{width:innerWidth,height:innerHeight}}))()

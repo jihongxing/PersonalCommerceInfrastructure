@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,9 @@ import {
 import { useServiceCatalog } from '../api/use-service-catalog';
 import { ServiceFormSchema, ServiceFormData } from '../lib/validation';
 import Link from 'next/link';
+import { AppearanceFields } from './appearance-fields';
+import { AppearanceInfo } from '@/components/commerce/appearance-info';
+import { appearanceRequest, supportsAppearance } from '@/lib/service-offering-appearance';
 
 interface ServiceFormProps {
   serviceId?: string; // 如果存在则为编辑模式
@@ -51,6 +54,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   const createMutation = useCreateService();
   const updateMutation = useUpdateService(serviceId || '');
   const catalog = useServiceCatalog();
+  const [saveError, setSaveError] = useState<string>();
+  const saving = useRef(false);
 
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(ServiceFormSchema),
@@ -60,37 +65,53 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
       title: '',
       description: '',
       availabilityDescription: '',
-      appearance: {},
       requestInstructions: '',
     },
   });
 
+  const historicalReadOnly =
+    !!existingService?.appearance &&
+    !supportsAppearance(existingService.templateId, catalog.data?.templates);
+  const appearanceEditable =
+    supportsAppearance(form.watch('templateId'), catalog.data?.templates) && !historicalReadOnly;
+  const appearance = form.watch('appearance');
+
   // 当编辑服务数据加载完成时，填充表单
   useEffect(() => {
     if (isEdit && existingService && existingService.state !== 'archived') {
+      if (form.formState.isDirty) return;
       form.reset({
         capabilityIds: existingService.capabilityIds,
         templateId: existingService.templateId ?? '',
         title: existingService.title,
         description: existingService.description,
         availabilityDescription: existingService.availabilityDescription,
-        appearance: existingService.appearance,
+        appearance: supportsAppearance(existingService.templateId, catalog.data?.templates)
+          ? existingService.appearance
+          : undefined,
         requestInstructions: existingService.requestInstructions,
       });
     }
-  }, [isEdit, existingService, form]);
+  }, [isEdit, existingService, form, catalog.data]);
 
   async function onSubmit(data: ServiceFormData) {
-    if (existingService?.state === 'archived') return;
+    if (existingService?.state === 'archived' || saving.current) return;
+    saving.current = true;
+    setSaveError(undefined);
+    const { appearance: metadata, ...base } = data;
+    const request = {
+      ...base,
+      ...(appearanceEditable && metadata ? { appearance: appearanceRequest(metadata) } : {}),
+    };
     try {
       if (isEdit) {
-        await updateMutation.mutateAsync({ ...data, appearance: undefined });
+        await updateMutation.mutateAsync(request);
         toast({
           title: '成功',
           description: '服务已更新',
         });
       } else {
-        await createMutation.mutateAsync({ ...data, appearance: undefined });
+        await createMutation.mutateAsync(request);
         toast({
           title: '成功',
           description: '服务已创建',
@@ -100,11 +121,14 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
       // 返回到服务列表页
       router.push('/services');
     } catch (error) {
+      setSaveError(error instanceof Error ? error.message : '操作失败，请重试');
       toast({
         title: '错误',
         description: error instanceof Error ? error.message : '操作失败，请重试',
         variant: 'destructive',
       });
+    } finally {
+      saving.current = false;
     }
   }
 
@@ -160,7 +184,12 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
+              {saveError && (
+                <p role="alert" className="text-sm text-destructive">
+                  保存失败：{saveError}
+                </p>
+              )}
               {/* 能力选择 - 简化为下拉菜单 */}
               <FormField
                 control={form.control}
@@ -182,6 +211,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                               variant={field.value.includes(cap.id) ? 'default' : 'outline'}
                               size="sm"
                               onClick={() => {
+                                form.setValue('templateId', '', { shouldDirty: true });
+                                form.setValue('appearance', undefined);
+                                form.clearErrors('appearance');
                                 if (field.value.includes(cap.id)) {
                                   field.onChange(field.value.filter((id) => id !== cap.id));
                                 } else {
@@ -235,6 +267,17 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                       <FormControl>
                         <select
                           {...field}
+                          onChange={(event) => {
+                            field.onChange(event.target.value);
+                            form.setValue(
+                              'appearance',
+                              supportsAppearance(event.target.value, catalog.data?.templates) &&
+                                !historicalReadOnly
+                                ? existingService?.appearance
+                                : undefined,
+                            );
+                            form.clearErrors('appearance');
+                          }}
                           disabled={isLoading || !catalogItemId}
                           className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
@@ -358,6 +401,46 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                   </FormItem>
                 )}
               />
+
+              {appearanceEditable && (
+                <section aria-label="活动信息配置" className="space-y-3">
+                  {appearance ? (
+                    <AppearanceFields form={form} disabled={isLoading} />
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        活动信息为可选项，不影响基础服务字段的填写要求。
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isLoading}
+                        className="min-h-11"
+                        onClick={() =>
+                          form.setValue('appearance', {
+                            appearanceType: 'guest',
+                            startsOn: '',
+                            locationDescription: '',
+                            buyerType: 'organizer',
+                            requestCallToAction: '提交请求',
+                          })
+                        }
+                      >
+                        添加活动信息
+                      </Button>
+                    </>
+                  )}
+                </section>
+              )}
+              {!appearanceEditable && existingService?.appearance && (
+                <section aria-label="历史活动信息" className="space-y-3 rounded-lg border p-4">
+                  <h2 className="font-medium">历史活动信息（只读）</h2>
+                  <p className="text-sm text-muted-foreground">
+                    此模板不提供活动信息编辑。保存基础服务字段会保留原有数据。
+                  </p>
+                  <AppearanceInfo appearance={existingService.appearance} showRequestCopy />
+                </section>
+              )}
 
               {/* 提交按钮 */}
               <div className="flex gap-3 pt-4">

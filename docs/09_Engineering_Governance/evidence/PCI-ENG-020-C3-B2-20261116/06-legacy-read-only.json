@@ -1,0 +1,16 @@
+{
+  "page": {
+    "label": "legacy-off-scope-read-only",
+    "at": "2026-11-16T15:52:46.415Z",
+    "path": "/services/c3b2-legacy-published-fixture/edit",
+    "body": "C\n创作者工作台\nCREATOR WORKSPACE\n工作台\n资料\n能力\n服务\n请求\n返回公开查找\n创作者工作台\nc3b2-b3a89685@example.test\n编辑服务\n\n更新您的服务信息\n\n编辑服务\n关联能力 *\n\n选择相关能力，可多选\n\n商业演出与出席\n舞蹈教学\n服务模板 *\n请选择匹配的服务模板\n1 对 1 舞蹈私教 · 自动检查\n\n服务必须使用与能力匹配的模板；审核中的模板不会直接公开。\n\n服务名称 *\n\n26 / 160 字符\n\n详细描述 *\n\n43 / 2000 字符\n\n可用性描述 *\n\n14 / 1000 字符\n\n请求说明 *\n\n7 / 1000 字符\n\n历史活动信息（只读）\n\n此模板不提供活动信息编辑。保存基础服务字段会保留原有数据。\n\n活动标题\n冬季活动修订标题\n活动类型\n展会活动\n活动日期\n2026-12-10 至 2026-12-11\n活动地点\n北京测试活动场地\n适合的请求方\n外部请求方\n定价说明\n按活动时长与合作范围沟通\n请求入口文案\n提交出席合作请求\n外部信息链接\n查看外部信息（新窗口）\n更新服务\n取消",
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "active": "BODY"
+  },
+  "appearanceInputs": 0,
+  "addEntry": false
+}

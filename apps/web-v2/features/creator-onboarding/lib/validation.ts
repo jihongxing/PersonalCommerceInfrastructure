@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AppearanceFormSchema } from '@/lib/service-offering-appearance';
 
 /**
  * Creator Identity 验证 schemas
@@ -39,13 +40,7 @@ export const ServiceFormSchema = z.object({
     .string()
     .min(1, '可用性描述不能为空')
     .max(1000, '可用性描述最多 1000 字符'),
-  appearance: z
-    .object({
-      currency: z.string().optional(),
-      priceRangeMin: z.number().min(0).optional(),
-      priceRangeMax: z.number().min(0).optional(),
-    })
-    .optional(),
+  appearance: AppearanceFormSchema.optional(),
   requestInstructions: z.string().min(1, '请求说明不能为空').max(1000, '请求说明最多 1000 字符'),
 });
 

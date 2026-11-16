@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { AppearanceInfo } from '@/components/commerce/appearance-info';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -180,16 +181,6 @@ export default function ServiceDetailPage() {
               <p className="whitespace-pre-wrap break-words mt-1">{service.requestInstructions}</p>
             </div>
 
-            {service.appearance?.priceRangeMin !== undefined && (
-              <div>
-                <p className="text-sm text-muted-foreground">价格范围</p>
-                <p className="mt-1">
-                  {service.appearance.currency || 'CNY'} {service.appearance.priceRangeMin} -{' '}
-                  {service.appearance.priceRangeMax}
-                </p>
-              </div>
-            )}
-
             <div>
               <p className="text-sm text-muted-foreground">关联能力</p>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -214,6 +205,17 @@ export default function ServiceDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {service.appearance && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">活动信息</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AppearanceInfo appearance={service.appearance} showRequestCopy />
+            </CardContent>
+          </Card>
+        )}
 
         {/* 发布前检查清单 */}
         {(service.state === 'draft' || service.state === 'unpublished') && (

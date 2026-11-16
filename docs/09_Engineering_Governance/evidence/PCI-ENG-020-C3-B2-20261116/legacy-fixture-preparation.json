@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-16T15:49:50.118Z",
+  "fixtureOnly": true,
+  "reason": "Existing review policy prevents publishing a new scoped activity; use a newly synthesized legacy ordinary record for Public/Request compatibility. No catalog or scoped-offering state changed.",
+  "sourceScoped": {
+    "id": "aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+    "state": "draft",
+    "policyStatus": "review_required",
+    "appearance": {
+      "endsOn": "2026-12-11",
+      "startsOn": "2026-12-10",
+      "buyerType": "approved_external_requester",
+      "externalUrl": "https://example.test/event",
+      "pricingRule": "按活动时长与合作范围沟通",
+      "upcomingTitle": "冬季活动修订标题",
+      "appearanceType": "convention",
+      "locationDescription": "北京测试活动场地",
+      "requestCallToAction": "提交出席合作请求"
+    }
+  },
+  "fixture": {
+    "id": "c3b2-legacy-published-fixture",
+    "template_id": "template-dance-private-lesson",
+    "appearance": {
+      "endsOn": "2026-12-11",
+      "startsOn": "2026-12-10",
+      "buyerType": "approved_external_requester",
+      "externalUrl": "https://example.test/event",
+      "pricingRule": "按活动时长与合作范围沟通",
+      "upcomingTitle": "冬季活动修订标题",
+      "appearanceType": "convention",
+      "locationDescription": "北京测试活动场地",
+      "requestCallToAction": "提交出席合作请求"
+    },
+    "state": "published",
+    "policy_status": "approved"
+  }
+}

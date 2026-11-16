@@ -1,0 +1,123 @@
+{
+  "at": "2026-11-16T15:41:06.346Z",
+  "catalog": [
+    {
+      "id": "template-brand-content-collaboration",
+      "capability_catalog_item_id": "capability-content-production",
+      "risk_tier": "low",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-choreography-guidance",
+      "capability_catalog_item_id": "capability-choreography-guidance",
+      "risk_tier": "low",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-commercial-appearance",
+      "capability_catalog_item_id": "capability-commercial-appearance",
+      "risk_tier": "review",
+      "release_scope": "established",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-dance-private-lesson",
+      "capability_catalog_item_id": "capability-dance-teaching",
+      "risk_tier": "low",
+      "release_scope": "vs01",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-english-speaking-coaching",
+      "capability_catalog_item_id": "capability-english-coaching",
+      "risk_tier": "low",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-fitness-consultation",
+      "capability_catalog_item_id": "capability-fitness-coaching",
+      "risk_tier": "review",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-makeup-appointment",
+      "capability_catalog_item_id": "capability-makeup-styling",
+      "risk_tier": "review",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-music-hosting",
+      "capability_catalog_item_id": "capability-music-hosting",
+      "risk_tier": "review",
+      "release_scope": "future",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-portrait-session",
+      "capability_catalog_item_id": "capability-portrait-photography",
+      "risk_tier": "low",
+      "release_scope": "established",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    },
+    {
+      "id": "template-professional-consulting",
+      "capability_catalog_item_id": "capability-professional-consulting",
+      "risk_tier": "review",
+      "release_scope": "established",
+      "status": "active",
+      "creator_selectable": true,
+      "publish_enabled": true
+    }
+  ],
+  "offerings": [
+    {
+      "id": "aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+      "creator_id": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+      "template_id": "template-commercial-appearance",
+      "title": "C3B2 Scoped Event",
+      "description": "活动出席服务，范围另行沟通。",
+      "appearance": {
+        "endsOn": "2026-12-11",
+        "startsOn": "2026-12-10",
+        "buyerType": "approved_external_requester",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "按活动时长与合作范围沟通",
+        "upcomingTitle": "冬季活动修订标题",
+        "appearanceType": "convention",
+        "locationDescription": "北京测试活动场地",
+        "requestCallToAction": "提交出席合作请求"
+      },
+      "state": "draft",
+      "policy_status": "review_required"
+    }
+  ],
+  "counts": {
+    "operations_accounts": 0,
+    "operations_sessions": 0,
+    "bff_sessions": 1,
+    "active_upstream_sessions": 1
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "at": "2026-11-16T15:58:49.383Z",
+  "database": "pci_020c3b2_b3a89685",
+  "checks": {
+    "catalogUnchanged": true,
+    "scopedEditedObjectPersisted": true,
+    "scopedPolicyPreserved": true,
+    "legacyAppearancePreserved": true,
+    "ordinaryHasNoAppearance": true,
+    "originalRequestAndFulfillment": true,
+    "creatorOperationsSeparation": true
+  },
+  "offerings": [
+    {
+      "id": "aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+      "creator_id": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+      "template_id": "template-commercial-appearance",
+      "title": "C3B2 Scoped Event",
+      "description": "活动出席服务，范围另行沟通。",
+      "appearance": {
+        "endsOn": "2026-12-11",
+        "startsOn": "2026-12-10",
+        "buyerType": "approved_external_requester",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "按活动时长与合作范围沟通",
+        "upcomingTitle": "冬季活动修订标题",
+        "appearanceType": "convention",
+        "locationDescription": "北京测试活动场地",
+        "requestCallToAction": "提交出席合作请求"
+      },
+      "state": "draft",
+      "policy_status": "review_required"
+    },
+    {
+      "id": "c3b2-legacy-published-fixture",
+      "creator_id": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+      "template_id": "template-dance-private-lesson",
+      "title": "C3B2 Legacy Public Fixture Edited",
+      "description": "Synthetic legacy compatibility fixture only",
+      "appearance": {
+        "endsOn": "2026-12-11",
+        "startsOn": "2026-12-10",
+        "buyerType": "approved_external_requester",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "按活动时长与合作范围沟通",
+        "upcomingTitle": "冬季活动修订标题",
+        "appearanceType": "convention",
+        "locationDescription": "北京测试活动场地",
+        "requestCallToAction": "提交出席合作请求"
+      },
+      "state": "published",
+      "policy_status": "auto_approved"
+    },
+    {
+      "id": "92e4f46c-69a8-4258-b993-71d6c2a9e82d",
+      "creator_id": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+      "template_id": "template-dance-private-lesson",
+      "title": "C3B2 Ordinary Offering",
+      "description": "普通舞蹈教学服务兼容性验证。",
+      "appearance": null,
+      "state": "draft",
+      "policy_status": "auto_approved"
+    }
+  ],
+  "requests": [
+    {
+      "id": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+      "offering_id": "c3b2-legacy-published-fixture",
+      "state": "submitted",
+      "request_message": "请联系沟通活动需求，仅用于一次性数据库验证。",
+      "code": "FC-GJY8UZUB",
+      "fulfillment_status": "pending"
+    }
+  ],
+  "counts": {
+    "operations_accounts": 0,
+    "operations_sessions": 0,
+    "bff_sessions": 1,
+    "active_upstream_sessions": 1
+  }
+}

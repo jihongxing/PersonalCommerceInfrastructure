@@ -16,6 +16,24 @@ beforeEach(() => {
 });
 
 describe('visitor request form', () => {
+  it('uses the Appearance CTA for the existing request payload and result route', async () => {
+    state.submit.mockResolvedValue({ resultAccessToken: 'existing-result' });
+    const user = userEvent.setup();
+    render(<BookingForm offeringId="service-1" requestCallToAction="提交出席合作请求" />);
+    await user.type(screen.getByLabelText('您的姓名'), 'Visitor');
+    await user.type(screen.getByLabelText('联系方式'), 'contact');
+    await user.type(screen.getByLabelText('请求说明'), 'Details');
+    await user.click(screen.getByRole('button', { name: '提交出席合作请求' }));
+    await waitFor(() =>
+      expect(state.submit).toHaveBeenCalledWith({
+        contactName: 'Visitor',
+        contactMethod: 'contact',
+        requestMessage: 'Details',
+      }),
+    );
+    expect(state.push).toHaveBeenCalledWith('/o/existing-result');
+  });
+
   it('validates required fields and submits the entered values', async () => {
     state.submit.mockResolvedValue({ resultAccessToken: 'result-token' });
     const user = userEvent.setup();

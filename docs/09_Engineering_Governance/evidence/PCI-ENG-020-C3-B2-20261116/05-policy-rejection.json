@@ -1,0 +1,33 @@
+{
+  "page": {
+    "label": "scoped-publish-policy-rejected",
+    "at": "2026-11-16T15:51:39.197Z",
+    "path": "/services/aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+    "body": "C\n创作者工作台\nCREATOR WORKSPACE\n工作台\n资料\n能力\n服务\n请求\n返回公开查找\n创作者工作台\nc3b2-b3a89685@example.test\nC3B2 Scoped Event\n草稿\n\n可编辑；满足发布条件后可以发布。\n\n编辑\n基本信息\n\n服务描述\n\n活动出席服务，范围另行沟通。\n\n可用性\n\n需联系确认；活动日期不会预留档期。\n\n请求要求\n\n请说明活动需求。\n\n关联能力\n\nd9e277fb...\n\n政策检查\n\n等待平台审核：该服务类型需要人工审核后才能公开。\n\n活动信息\n活动标题\n冬季活动修订标题\n活动类型\n展会活动\n活动日期\n2026-12-10 至 2026-12-11\n活动地点\n北京测试活动场地\n适合的请求方\n外部请求方\n定价说明\n按活动时长与合作范围沟通\n请求入口文案\n提交出席合作请求\n外部信息链接\n查看外部信息（新窗口）\n发布前检查清单\n5 / 5 完成\n\n服务名称\n\n需要填写服务名称\n\n服务描述\n\n需要填写详细描述\n\n关联能力\n\n需要关联至少一个能力\n\n可用性描述\n\n需要说明服务何时可用\n\n请求说明\n\n需要说明消费者如何请求此服务\n\n✓ 所有条件已满足，可以发布服务\n发布状态\n\n该服务类型需要人工审核后才能公开。\n\n此服务还未发布。消费者无法看到。发布后，消费者将能够发现并提交请求。\n\n发布服务\n返回服务列表",
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "active": "BODY"
+  },
+  "network": [
+    {
+      "at": "2026-11-16T15:50:45.577Z",
+      "path": "/api/v1/creator/offerings/aa9f09c1-3b39-4228-86e8-9a43b30c78d2/publish",
+      "method": "POST",
+      "status": 409,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": true,
+      "body": {
+        "error": {
+          "category": "conflict",
+          "code": "service_offering_policy_review_required",
+          "correlationId": "319926d8-6e79-4a11-a075-06704cf7c184",
+          "message": "该服务类型需要人工审核后才能公开。"
+        }
+      }
+    }
+  ]
+}

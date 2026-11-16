@@ -1,17 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 
-export interface ServiceOfferingAppearance {
-  appearanceType: 'convention' | 'guest' | 'brand' | 'photo' | 'signing';
-  startsOn: string;
-  endsOn?: string;
-  locationDescription: string;
-  buyerType: 'organizer' | 'brand' | 'fan_group' | 'approved_external_requester';
-  pricingRule?: string;
-  requestCallToAction: string;
-  upcomingTitle?: string;
-  externalUrl?: string;
-}
+export type { ServiceOfferingAppearance } from '@/lib/service-offering-appearance';
+import type { ServiceOfferingAppearance } from '@/lib/service-offering-appearance';
 
 export interface ServiceOfferingDetail {
   id: string;

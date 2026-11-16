@@ -32,9 +32,14 @@ type BookingFormValues = z.infer<typeof bookingFormSchema>;
 interface BookingFormProps {
   offeringId: string;
   requestInstructions?: string;
+  requestCallToAction?: string;
 }
 
-export function BookingForm({ offeringId, requestInstructions }: BookingFormProps) {
+export function BookingForm({
+  offeringId,
+  requestInstructions,
+  requestCallToAction,
+}: BookingFormProps) {
   const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const submitBooking = useSubmitBooking(offeringId);
@@ -153,7 +158,7 @@ export function BookingForm({ offeringId, requestInstructions }: BookingFormProp
             />
 
             <Button type="submit" className="min-h-11 w-full" disabled={submitBooking.isPending}>
-              {submitBooking.isPending ? '提交中...' : '提交请求'}
+              {submitBooking.isPending ? '提交中...' : requestCallToAction?.trim() || '提交请求'}
             </Button>
 
             {submitBooking.error && (

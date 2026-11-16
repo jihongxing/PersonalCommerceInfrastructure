@@ -11288,3 +11288,51 @@ PCI-ENG-020-C3-B1_ALL_REPOSITORY_GATES = NOT CLAIMED / EXISTING CORE ERRORS RECO
 PCI-ENG-020-C3-B1_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
 PCI-ENG-020-C3-B1_PUSH = NONE
 ```
+## DEV-092 / PCI-ENG-020-C3-B2 — Scoped Creator Appearance Management
+
+2026-11-16: Main Controller authorizes B2 after B1 acceptance under `FD-020-C3-BD-01 / Option B`.
+Scope (FR-006/006A/010/012 and existing Request entry): full optional Appearance create/view/edit
+only for confirmed `template-commercial-appearance` -> `capability-commercial-appearance`;
+ordinary templates gain no new entry, historical off-scope objects stay read-only and preserved.
+Use real API metadata, remove the frontend pseudo-price shape, show Public activity context and
+customize only the existing Request CTA. No clearing, calendar, pricing computation, template
+expansion, business state-machine, policy, API/Schema, Auth/BFF or token-storage changes.
+Implementation, automated checks and real Browser/BFF/API/PostgreSQL evidence follow below.
+
+Implemented and verified: Creator Web now exposes the complete optional Appearance object only for the
+confirmed `template-commercial-appearance` / `capability-commercial-appearance` mapping. Ordinary
+templates have no creation entry. Existing off-scope metadata is read-only, omitted from ordinary
+update payloads, and preserved by the B1 backend semantics. Public Offering displays the existing
+metadata and uses `requestCallToAction` only for the existing Request button; no Request payload or
+state machine changed. The exact fields, neutral `approved_external_requester` label, safe external
+URL handling, date validation, unsaved-edit protection, and duplicate-submit guard are in the Creator
+Web implementation and tests.
+
+Real Browser + Next.js production server + same-origin BFF + Shared API + disposable PostgreSQL
+verified scoped create, refresh/edit, invalid-date rejection, ordinary template hiding, historical
+read-only preservation, Public rendering, 375px no-overflow, original Request CTA submission, QR
+lookup, and PostgreSQL JSONB round-trip. The real activity template remains `review_required`, so
+publish returns the expected 409 `service_offering_policy_review_required`; new scoped Public/Request
+completion is not claimed. A separate synthetic ordinary published record with pre-existing
+Appearance was used only for compatibility Public/Request evidence. No production or shared history
+was inspected.
+
+Final validation: Creator Web 37 files / 127 tests passed, Web typecheck passed, local Web ESLint
+reported 0 errors and 4 warnings, and the prior B1 API/domain/application regression 4 files / 35
+tests passed. Full Web test typecheck retains the existing jest-dom matcher diagnostics. API and
+Creator production builds were already passed for this unchanged product build; no production code
+changed after those builds. Evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-020-C3-B2-20261116/`.
+Report: `docs/09_Engineering_Governance/PCI-ENG-020-C3-B2-Scoped-Creator-Appearance-Management.md`.
+
+```ini
+PCI-ENG-020-C3-B2 = SCOPED APPEARANCE CREATOR & PUBLIC EXPERIENCE — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-C3-B2_SCOPED_CREATE_EDIT = PASS / REAL BROWSER + BFF + API + POSTGRESQL
+PCI-ENG-020-C3-B2_PUBLIC_REQUEST = PASS FOR SYNTHETIC LEGACY COMPATIBILITY FIXTURE ONLY
+PCI-ENG-020-C3-B2_NEW_SCOPED_PUBLISH = BLOCKED BY EXISTING REVIEW POLICY / EXPECTED 409
+PCI-ENG-020-C3-B2_WEB_TESTS = 127/127 PASSED
+PCI-ENG-020-C3-B2_WEB_TYPECHECK = PASSED
+PCI-ENG-020-C3-B2_WEB_LINT = 0 ERRORS / 4 WARNINGS
+PCI-ENG-020-C3-B2_SCHEMA_MIGRATION_AUTH_BFF_STATE_MACHINE_CHANGES = NONE
+PCI-ENG-020-C3-B2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
+PCI-ENG-020-C3-B2_PUSH = NONE
+```

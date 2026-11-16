@@ -1,0 +1,26 @@
+(()=>{
+window.__b2Events=[];
+window.__b2Fetches=[];
+const original=window.fetch.bind(window);
+const scrub=(value)=>{
+ if(Array.isArray(value))return value.map(scrub);
+ if(value && typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,/token|password|secret/i.test(key)?'[REDACTED]':scrub(item)]));
+ return value;
+};
+window.fetch=async(input,options)=>{
+ const request=new Request(input,options);
+ const response=await original(input,options);
+ if(new URL(request.url).pathname.startsWith('/api/')){
+  let payload,body;
+  try{payload=scrub(JSON.parse(await request.clone().text()));}catch{}
+  try{body=scrub(await response.clone().json());}catch{}
+  window.__b2Fetches.push({at:new Date().toISOString(),path:new URL(request.url).pathname,method:request.method,status:response.status,sameOrigin:new URL(request.url).origin===location.origin,authorizationHeader:request.headers.has('authorization'),csrfPresent:request.headers.has('x-csrf-token'),payload,body});
+ }
+ return response;
+};
+window.__b2Observe=(label)=>{
+ const event={label,at:new Date().toISOString(),path:location.pathname.replace(/\/o\/.+/, '/o/[REDACTED]'),body:document.body.innerText.slice(0,14000).replace(/eyJ[\w.-]+/g,'[REDACTED]'),storage:{local:Object.keys(localStorage),session:Object.keys(sessionStorage)},overflow:document.documentElement.scrollWidth>innerWidth,active:document.activeElement?.tagName};
+ window.__b2Events.push(event);return event;
+};
+return {observing:true};
+})()

@@ -1,0 +1,129 @@
+{
+  "event": {
+    "label": "scoped-create-success",
+    "at": "2026-11-16T15:39:56.358Z",
+    "path": "/services",
+    "body": "C\n创作者工作台\nCREATOR WORKSPACE\n工作台\n资料\n能力\n服务\n请求\n返回公开查找\n创作者工作台\nc3b2-b3a89685@example.test\n服务\n\n管理可向访客提供的服务\n\n创建服务\n我的服务\n1 项\n草稿 (1)\n已发布 (0)\n未发布 (0)\n已归档 (0)\nC3B2 Scoped Event\n\n活动出席服务，范围另行沟通。\n\n草稿：可编辑；满足发布条件后可以发布。\n\n等待平台审核：该服务类型需要人工审核后才能公开。",
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "active": "BODY"
+  },
+  "fetches": [
+    {
+      "at": "2026-11-16T15:39:11.121Z",
+      "path": "/api/v1/creator/offerings",
+      "method": "POST",
+      "status": 201,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": true,
+      "payload": {
+        "capabilityIds": [
+          "d9e277fb-a2f0-4543-b06a-f43eaed30933"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "C3B2 Scoped Event",
+        "description": "活动出席服务，范围另行沟通。",
+        "availabilityDescription": "需联系确认；活动日期不会预留档期。",
+        "requestInstructions": "请说明活动需求。",
+        "appearance": {
+          "appearanceType": "convention",
+          "startsOn": "2026-12-10",
+          "locationDescription": "上海测试活动场地",
+          "buyerType": "approved_external_requester",
+          "requestCallToAction": "提交出席合作请求",
+          "endsOn": "2026-12-11",
+          "pricingRule": "按活动时长与合作范围沟通",
+          "upcomingTitle": "冬季测试活动",
+          "externalUrl": "https://example.test/event"
+        }
+      },
+      "body": {
+        "id": "aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+        "creatorId": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+        "capabilityIds": [
+          "d9e277fb-a2f0-4543-b06a-f43eaed30933"
+        ],
+        "title": "C3B2 Scoped Event",
+        "description": "活动出席服务，范围另行沟通。",
+        "requestInstructions": "请说明活动需求。",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "需联系确认；活动日期不会预留档期。",
+        "appearance": {
+          "appearanceType": "convention",
+          "startsOn": "2026-12-10",
+          "locationDescription": "上海测试活动场地",
+          "buyerType": "approved_external_requester",
+          "requestCallToAction": "提交出席合作请求",
+          "endsOn": "2026-12-11",
+          "pricingRule": "按活动时长与合作范围沟通",
+          "upcomingTitle": "冬季测试活动",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "at": "2026-11-16T15:39:11.211Z",
+      "path": "/api/v1/creator/offerings",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "offerings": [
+          {
+            "id": "aa9f09c1-3b39-4228-86e8-9a43b30c78d2",
+            "creatorId": "14a5d0d8-8ff7-437d-8180-64849fc5a9fd",
+            "capabilityIds": [
+              "d9e277fb-a2f0-4543-b06a-f43eaed30933"
+            ],
+            "title": "C3B2 Scoped Event",
+            "description": "活动出席服务，范围另行沟通。",
+            "requestInstructions": "请说明活动需求。",
+            "state": "draft",
+            "policyStatus": "review_required",
+            "missingPublishConditions": [],
+            "templateId": "template-commercial-appearance",
+            "availabilityDescription": "需联系确认；活动日期不会预留档期。",
+            "appearance": {
+              "appearanceType": "convention",
+              "startsOn": "2026-12-10",
+              "locationDescription": "上海测试活动场地",
+              "buyerType": "approved_external_requester",
+              "requestCallToAction": "提交出席合作请求",
+              "endsOn": "2026-12-11",
+              "pricingRule": "按活动时长与合作范围沟通",
+              "upcomingTitle": "冬季测试活动",
+              "externalUrl": "https://example.test/event"
+            },
+            "policyReason": "该服务类型需要人工审核后才能公开。",
+            "policyVersion": "v1"
+          }
+        ]
+      }
+    }
+  ],
+  "serviceLinks": [
+    {
+      "text": "创建服务",
+      "path": "/services/new"
+    },
+    {
+      "text": "",
+      "path": "/services/aa9f09c1-3b39-4228-86e8-9a43b30c78d2/edit"
+    },
+    {
+      "text": "",
+      "path": "/services/aa9f09c1-3b39-4228-86e8-9a43b30c78d2"
+    }
+  ]
+}

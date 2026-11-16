@@ -1,0 +1,128 @@
+{
+  "page": {
+    "label": "custom-cta-original-request-flow",
+    "at": "2026-11-16T15:55:59.626Z",
+    "path": "/o/[REDACTED]",
+    "body": "C\n创作者主页\n创作者登录\n请求状态\n等待 Creator 回复\n\nYour Request was submitted and is waiting for the Creator.\n\n查询码（请保存）\n\nae7cddd6-b619-4c17-a66d-01d43e19d7cf\n\n履约码\n待 Creator 确认\n\n请将此码提供给 Creator\n\nFC-GJY8UZUB\n\n过期时间：2027/02/14 23:55\n\nCreator 可扫描后使用此履约码\n\n您的请求已提交，正在等待 Creator 确认。页面将自动刷新显示最新状态。\n\n手动刷新状态\n\n页面会自动每 10 秒刷新一次\n\n返回首页",
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "active": "BODY"
+  },
+  "network": [
+    {
+      "at": "2026-11-16T15:55:23.259Z",
+      "path": "/api/v1/public/offerings/c3b2-legacy-published-fixture/requests",
+      "method": "POST",
+      "status": 201,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": true,
+      "payload": {
+        "contactName": "C3B2 Test Requester",
+        "contactMethod": "c3b2-requester@example.test",
+        "requestMessage": "请联系沟通活动需求，仅用于一次性数据库验证。"
+      },
+      "body": {
+        "actionId": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+        "resultAccessToken": "[REDACTED]",
+        "state": "submitted",
+        "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+      }
+    },
+    {
+      "at": "2026-11-16T15:55:23.345Z",
+      "path": "/api/v1/public/requests/ae7cddd6-b619-4c17-a66d-01d43e19d7cf",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "actionId": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+        "resultAccessToken": "[REDACTED]",
+        "state": "submitted",
+        "message": "Your Request was submitted and is waiting for the Creator.",
+        "fulfillmentCode": {
+          "code": "FC-GJY8UZUB",
+          "status": "pending",
+          "expiresAt": "2027-02-14T15:55:23.236Z"
+        }
+      }
+    },
+    {
+      "at": "2026-11-16T15:55:23.440Z",
+      "path": "/api/v1/public/fulfillment-code/FC-GJY8UZUB/qrcode",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "dataUrl": "data:image/png;base64,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"
+      }
+    },
+    {
+      "at": "2026-11-16T15:55:33.376Z",
+      "path": "/api/v1/public/requests/ae7cddd6-b619-4c17-a66d-01d43e19d7cf",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "actionId": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+        "resultAccessToken": "[REDACTED]",
+        "state": "submitted",
+        "message": "Your Request was submitted and is waiting for the Creator.",
+        "fulfillmentCode": {
+          "code": "FC-GJY8UZUB",
+          "status": "pending",
+          "expiresAt": "2027-02-14T15:55:23.236Z"
+        }
+      }
+    },
+    {
+      "at": "2026-11-16T15:55:43.396Z",
+      "path": "/api/v1/public/requests/ae7cddd6-b619-4c17-a66d-01d43e19d7cf",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "actionId": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+        "resultAccessToken": "[REDACTED]",
+        "state": "submitted",
+        "message": "Your Request was submitted and is waiting for the Creator.",
+        "fulfillmentCode": {
+          "code": "FC-GJY8UZUB",
+          "status": "pending",
+          "expiresAt": "2027-02-14T15:55:23.236Z"
+        }
+      }
+    },
+    {
+      "at": "2026-11-16T15:55:53.439Z",
+      "path": "/api/v1/public/requests/ae7cddd6-b619-4c17-a66d-01d43e19d7cf",
+      "method": "GET",
+      "status": 200,
+      "sameOrigin": true,
+      "authorizationHeader": false,
+      "csrfPresent": false,
+      "body": {
+        "actionId": "f4d6eada-97f7-45ce-a5a9-189da4d7cd17",
+        "resultAccessToken": "[REDACTED]",
+        "state": "submitted",
+        "message": "Your Request was submitted and is waiting for the Creator.",
+        "fulfillmentCode": {
+          "code": "FC-GJY8UZUB",
+          "status": "pending",
+          "expiresAt": "2027-02-14T15:55:23.236Z"
+        }
+      }
+    }
+  ]
+}

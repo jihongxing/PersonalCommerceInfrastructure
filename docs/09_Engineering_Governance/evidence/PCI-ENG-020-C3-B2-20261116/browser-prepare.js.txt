@@ -1,0 +1,10 @@
+const csrf=()=>decodeURIComponent(document.cookie.split('; ').find(x=>x.startsWith('pci_creator_csrf='))?.split('=')[1]||'');
+async function call(path,method,body){
+ const response=await fetch(path,{method,credentials:'same-origin',headers:{'x-csrf-token':csrf(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const data=await response.json(); if(!response.ok)throw Error(path+':'+response.status);return data;
+}
+await call('/api/v1/creator/identity','PATCH',{profile:{displayName:'C3B2 Disposable Creator',bio:'Scoped appearance browser verification only',socialLinks:[]}});
+await call('/api/v1/creator/identity/capabilities','POST',{catalogItemId:'capability-commercial-appearance',name:'商业演出与出席',description:'Synthetic scoped activity'});
+const identity=await call('/api/v1/creator/identity/capabilities','POST',{catalogItemId:'capability-dance-teaching',name:'舞蹈教学',description:'Synthetic ordinary service'});
+window.__b2Identity=identity;
+return {creatorId:identity.creatorId,capabilities:identity.capabilities};

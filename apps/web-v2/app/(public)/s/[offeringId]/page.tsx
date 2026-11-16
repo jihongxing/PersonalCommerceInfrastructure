@@ -97,7 +97,11 @@ function ServiceOffering({ params }: { params: Promise<{ offeringId: string }> }
 
       <div className="public-service-layout">
         <ServiceDetailCard offering={offering} />
-        <BookingForm offeringId={offering.id} requestInstructions={offering.requestInstructions} />
+        <BookingForm
+          offeringId={offering.id}
+          requestInstructions={offering.requestInstructions}
+          requestCallToAction={offering.appearance?.requestCallToAction}
+        />
       </div>
     </div>
   );

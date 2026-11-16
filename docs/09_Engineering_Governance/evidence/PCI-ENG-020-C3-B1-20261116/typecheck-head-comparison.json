@@ -1,0 +1,80 @@
+{
+  "baseline": "HEAD tracked TypeScript sources overlaid into read-only compiler host; new tests excluded by build config",
+  "current": [
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 196,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 198,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 198,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 216,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 218,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 218,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    }
+  ],
+  "head": [
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 196,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 198,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 198,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 216,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 218,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    },
+    {
+      "file": "scripts/test/verify-operations-admin-browser.ts",
+      "line": 218,
+      "code": 2339,
+      "message": "Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; } | { readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/audit\"; } | { ...; } | { ...; } | { ...; }'.\n  Property 'body' does not exist on type '{ readonly method: \"GET\"; readonly path: \"/api/v1/operations/service-policy/workspace\"; }'."
+    }
+  ],
+  "identical": true
+}

@@ -1,0 +1,110 @@
+{
+  "task": "PCI-ENG-020-C3-B1",
+  "hashBasis": "worktree bytes at review before commit; manifest excluded from its own hash list",
+  "files": [
+    {
+      "path": "application-final-tests.txt",
+      "sha256": "65155d91e615d1cdc7c65cb83707d2880d283147233454ed37fbaec05c7a41bf"
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "1d8843908917223b16b4161d65a58af6052dc98e9f4b424f96e4cfd25098a8c2"
+    },
+    {
+      "path": "build-api.txt",
+      "sha256": "f819af21f46250fcf86c3bd807d7393d7d7e824120bb172aa556c123f5856c46"
+    },
+    {
+      "path": "build-core.txt",
+      "sha256": "0b1f37ab4c34119cd6d047f0064ec8acdb465775cc7039a46501f414436d9765"
+    },
+    {
+      "path": "build-web.txt",
+      "sha256": "e90b192e3a6982dcedb58a3ebda4bb9d2695ad78b410c5227db638c5c54387b0"
+    },
+    {
+      "path": "cleanup.json",
+      "sha256": "9057d8df5d887d9ed60e4de9592483d368372c1bd9cdec14b52d1feb979fb575"
+    },
+    {
+      "path": "creator-tests.txt",
+      "sha256": "cb8ae5b6b56796f1413bffc897944d9cf45c1f3072b58e4d06af61acc054e639"
+    },
+    {
+      "path": "database-environment.json",
+      "sha256": "2d184292c37b198f270d59175da3f8f8dee8acca5a69c0703c882d47d0024eb0"
+    },
+    {
+      "path": "focused-tests.txt",
+      "sha256": "50a59eae2ee927aad1b1fffe9a3edc203970f4f014c8f38d855e61c2ac7899c6"
+    },
+    {
+      "path": "format-code.txt",
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "path": "format-docs.txt",
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "path": "lint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "migration-final.txt",
+      "sha256": "474f0acb933bbc7e055e9eb02f841dcfbab1f1e8fcae55a489a4bd4c0f7f8977"
+    },
+    {
+      "path": "preservation.json",
+      "sha256": "315cbb4f1cdb78257e0b21264175ee1977df5d84bb80b186265f8c5e6c8bee3e"
+    },
+    {
+      "path": "README.md",
+      "sha256": "3a7b9bcb9ccd9c4a70a33361b56b665fb6fb81523493e2137c5a737122d2d852"
+    },
+    {
+      "path": "seed.txt",
+      "sha256": "ca1e5cd96b8811c3389332873fcbe3f6257a18ae9ecd186c36ff3cb4e24958d1"
+    },
+    {
+      "path": "socket-postgres-probe.mjs.txt",
+      "sha256": "c7a9aad1005aa506f967eb9e8886bda210188d47413e631d0212a324783527e1"
+    },
+    {
+      "path": "socket-postgres-results.json",
+      "sha256": "447dfc8a271d74bb0dc57b1afd5a79a299fe045c26f85a3f74c693c504cfaa75"
+    },
+    {
+      "path": "staged-files.txt",
+      "sha256": "981d7fe56bc82769efbe261e18dade0b99c18e9486ade305e1f681a943d1c47a"
+    },
+    {
+      "path": "typecheck-api.txt",
+      "sha256": "61b7ae3491588c88f11843416ff56ac5ed00832b11c2947fa98d183a74529c6f"
+    },
+    {
+      "path": "typecheck-core.txt",
+      "sha256": "e623a966117d36aad7963813c37dd25f44501431a5e4945d99a9e19f37bebfc2"
+    },
+    {
+      "path": "typecheck-head-comparison.json",
+      "sha256": "a8a2b40d73042e0f576a7c70e5027a31ba8404eca2468b98416a51050f373906"
+    },
+    {
+      "path": "typecheck-head-comparison.mjs.txt",
+      "sha256": "6db82d5666aeaf25591f69a6e1c621596e07614e30ab11254d5e9456cf57f115"
+    },
+    {
+      "path": "typecheck-tests-final.txt",
+      "sha256": "2192421b8c91c6d215feba5c8d7f22b96a0569c646d2bf7c4abcabe03e8bd2f1"
+    },
+    {
+      "path": "typecheck-web.txt",
+      "sha256": "a4c5ba0879b3b475ccaf7e432e6bbe621a3829f5a764b51ba6debd8415a446b5"
+    },
+    {
+      "path": "validation.json",
+      "sha256": "d64f09fc9b7453804a38700ee7625b33bbd4bbbdcf73d1058d73b3e07eaafeb2"
+    }
+  ]
+}

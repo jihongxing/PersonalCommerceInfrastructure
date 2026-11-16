@@ -20,7 +20,7 @@ export interface AppearanceOfferingMetadata {
   readonly buyerType: AppearanceBuyerType;
   readonly pricingRule?: string;
   readonly requestCallToAction: string;
-  readonly upcomingTitle: string;
+  readonly upcomingTitle?: string;
   readonly externalUrl?: string;
 }
 
@@ -48,6 +48,13 @@ export interface OfferingDraftInput {
   readonly availabilityDescription?: string;
   readonly appearance?: AppearanceOfferingMetadata;
   readonly requestInstructions: string;
+}
+
+export class InvalidAppearanceDateRangeError extends Error {
+  public constructor() {
+    super('Appearance end date cannot be before its start date.');
+    this.name = 'InvalidAppearanceDateRangeError';
+  }
 }
 
 export type MissingPublishCondition =
@@ -81,7 +88,14 @@ export function updateOffering(offering: Offering, input: OfferingDraftInput): O
   }
 
   const availabilityDescription = input.availabilityDescription?.trim();
-  const appearance = appearanceMetadata(input.appearance);
+  // Older clients omit this optional field during ordinary edits. Preserve the
+  // stored object verbatim; only an explicitly supplied object is normalized.
+  const appearance =
+    input.appearance === undefined
+      ? offering.appearance === undefined
+        ? {}
+        : { appearance: offering.appearance }
+      : appearanceMetadata(input.appearance);
   const updatedOffering = {
     id: offering.id,
     creatorId: offering.creatorId,
@@ -137,7 +151,7 @@ function appearanceMetadata(appearance: AppearanceOfferingMetadata | undefined):
       ? undefined
       : requiredDate(appearance.endsOn, 'Appearance end date');
   if (endsOn !== undefined && endsOn < startsOn) {
-    throw new Error('Appearance end date cannot be before its start date.');
+    throw new InvalidAppearanceDateRangeError();
   }
 
   const externalUrl = optionalUrl(appearance.externalUrl);
@@ -154,7 +168,9 @@ function appearanceMetadata(appearance: AppearanceOfferingMetadata | undefined):
         appearance.requestCallToAction,
         'Appearance request call to action',
       ),
-      upcomingTitle: requiredText(appearance.upcomingTitle, 'Upcoming title'),
+      ...(appearance.upcomingTitle === undefined
+        ? {}
+        : { upcomingTitle: requiredText(appearance.upcomingTitle, 'Upcoming title') }),
       ...(externalUrl === undefined ? {} : { externalUrl }),
     },
   };

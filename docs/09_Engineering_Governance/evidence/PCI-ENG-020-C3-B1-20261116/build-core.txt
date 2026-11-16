@@ -1,0 +1,17 @@
+
+> personal-commerce-infrastructure@0.2.0 build D:\codeSpace\PersonalCommerceInfrastructure
+> tsc -p tsconfig.build.json
+
+scripts/test/verify-operations-admin-browser.ts(196,23): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+scripts/test/verify-operations-admin-browser.ts(198,21): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+scripts/test/verify-operations-admin-browser.ts(198,76): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+scripts/test/verify-operations-admin-browser.ts(216,21): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+scripts/test/verify-operations-admin-browser.ts(218,19): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+scripts/test/verify-operations-admin-browser.ts(218,74): error TS2339: Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; } | { readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/audit"; } | { ...; } | { ...; } | { ...; }'.
+  Property 'body' does not exist on type '{ readonly method: "GET"; readonly path: "/api/v1/operations/service-policy/workspace"; }'.
+ ELIFECYCLE  Command failed with exit code 2.

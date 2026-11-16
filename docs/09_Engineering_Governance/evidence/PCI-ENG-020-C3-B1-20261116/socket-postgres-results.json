@@ -1,0 +1,1590 @@
+{
+  "task": "PCI-ENG-020-C3-B1",
+  "at": "2026-11-16T14:33:47.906Z",
+  "transport": "real HTTP socket -> Fastify -> Application -> PostgreSQL",
+  "auth": "synthetic test AuthContextProvider; no browser or BFF verification claimed",
+  "database": "pci_020c3b1_58a068bb",
+  "steps": [
+    {
+      "label": "create complete legacy-shaped metadata",
+      "method": "POST",
+      "path": "/api/v1/creator/offerings",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "endsOn": "2026-11-21",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "upcomingTitle": "Legacy title",
+          "pricingRule": "Discuss scope",
+          "externalUrl": "https://example.test/event"
+        }
+      },
+      "status": 201,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "endsOn": "2026-11-21",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "initial JSONB",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "endsOn": "2026-11-21",
+          "startsOn": "2026-11-20",
+          "buyerType": "organizer",
+          "externalUrl": "https://example.test/event",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "appearanceType": "guest",
+          "locationDescription": "Synthetic venue",
+          "requestCallToAction": "Submit request"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "endsOn": "2026-11-21",
+        "startsOn": "2026-11-20",
+        "buyerType": "organizer",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "Discuss scope",
+        "upcomingTitle": "Legacy title",
+        "appearanceType": "guest",
+        "locationDescription": "Synthetic venue",
+        "requestCallToAction": "Submit request"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "old client ordinary edit: title; appearance omitted",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Changed title",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event"
+      },
+      "status": 200,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Changed title",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "endsOn": "2026-11-21",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "JSONB after omitted title update",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Changed title",
+        "appearance": {
+          "endsOn": "2026-11-21",
+          "startsOn": "2026-11-20",
+          "buyerType": "organizer",
+          "externalUrl": "https://example.test/event",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "appearanceType": "guest",
+          "locationDescription": "Synthetic venue",
+          "requestCallToAction": "Submit request"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "endsOn": "2026-11-21",
+        "startsOn": "2026-11-20",
+        "buyerType": "organizer",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "Discuss scope",
+        "upcomingTitle": "Legacy title",
+        "appearanceType": "guest",
+        "locationDescription": "Synthetic venue",
+        "requestCallToAction": "Submit request"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "old client ordinary edit: description; appearance omitted",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Changed details",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event"
+      },
+      "status": 200,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Changed details",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "endsOn": "2026-11-21",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "JSONB after omitted description update",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "endsOn": "2026-11-21",
+          "startsOn": "2026-11-20",
+          "buyerType": "organizer",
+          "externalUrl": "https://example.test/event",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "appearanceType": "guest",
+          "locationDescription": "Synthetic venue",
+          "requestCallToAction": "Submit request"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "endsOn": "2026-11-21",
+        "startsOn": "2026-11-20",
+        "buyerType": "organizer",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "Discuss scope",
+        "upcomingTitle": "Legacy title",
+        "appearanceType": "guest",
+        "locationDescription": "Synthetic venue",
+        "requestCallToAction": "Submit request"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "old client ordinary edit: availability; appearance omitted",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "Changed availability",
+        "requestInstructions": "Describe the event"
+      },
+      "status": 200,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "Changed availability",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "endsOn": "2026-11-21",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "JSONB after omitted availability update",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "endsOn": "2026-11-21",
+          "startsOn": "2026-11-20",
+          "buyerType": "organizer",
+          "externalUrl": "https://example.test/event",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "appearanceType": "guest",
+          "locationDescription": "Synthetic venue",
+          "requestCallToAction": "Submit request"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "endsOn": "2026-11-21",
+        "startsOn": "2026-11-20",
+        "buyerType": "organizer",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "Discuss scope",
+        "upcomingTitle": "Legacy title",
+        "appearanceType": "guest",
+        "locationDescription": "Synthetic venue",
+        "requestCallToAction": "Submit request"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "old client ordinary edit: instructions; appearance omitted",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Changed instructions"
+      },
+      "status": 200,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Event context",
+        "requestInstructions": "Changed instructions",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "appearance": {
+          "appearanceType": "guest",
+          "startsOn": "2026-11-20",
+          "locationDescription": "Synthetic venue",
+          "buyerType": "organizer",
+          "requestCallToAction": "Submit request",
+          "endsOn": "2026-11-21",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "externalUrl": "https://example.test/event"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "JSONB after omitted instructions update",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "endsOn": "2026-11-21",
+          "startsOn": "2026-11-20",
+          "buyerType": "organizer",
+          "externalUrl": "https://example.test/event",
+          "pricingRule": "Discuss scope",
+          "upcomingTitle": "Legacy title",
+          "appearanceType": "guest",
+          "locationDescription": "Synthetic venue",
+          "requestCallToAction": "Submit request"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "endsOn": "2026-11-21",
+        "startsOn": "2026-11-20",
+        "buyerType": "organizer",
+        "externalUrl": "https://example.test/event",
+        "pricingRule": "Discuss scope",
+        "upcomingTitle": "Legacy title",
+        "appearanceType": "guest",
+        "locationDescription": "Synthetic venue",
+        "requestCallToAction": "Submit request"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "replace full object without upcomingTitle",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details"
+        }
+      },
+      "status": 200,
+      "body": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details"
+        },
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "JSONB whole replacement; old optional properties removed",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "startsOn": "2026-11-22",
+          "buyerType": "brand",
+          "appearanceType": "brand",
+          "locationDescription": "Replacement venue",
+          "requestCallToAction": "Request details"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "startsOn": "2026-11-22",
+        "buyerType": "brand",
+        "appearanceType": "brand",
+        "locationDescription": "Replacement venue",
+        "requestCallToAction": "Request details"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "invalid range create",
+      "method": "POST",
+      "path": "/api/v1/creator/offerings",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details",
+          "endsOn": "2026-11-21"
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "service_offering_appearance_date_range_invalid",
+          "correlationId": "54cdf650-ec48-476f-8e95-a046b54255e4",
+          "message": "Appearance end date cannot be before its start date."
+        }
+      }
+    },
+    {
+      "label": "invalid range update",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details",
+          "endsOn": "2026-11-21"
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "service_offering_appearance_date_range_invalid",
+          "correlationId": "45e6d669-6e42-420e-a7d5-10812b514e43",
+          "message": "Appearance end date cannot be before its start date."
+        }
+      }
+    },
+    {
+      "label": "JSONB unchanged after invalid range",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "startsOn": "2026-11-22",
+          "buyerType": "brand",
+          "appearanceType": "brand",
+          "locationDescription": "Replacement venue",
+          "requestCallToAction": "Request details"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "startsOn": "2026-11-22",
+        "buyerType": "brand",
+        "appearanceType": "brand",
+        "locationDescription": "Replacement venue",
+        "requestCallToAction": "Request details"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "reject disguised pricing currency",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details",
+          "currency": "CNY"
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "request_validation_failed",
+          "correlationId": "e2cc2b4e-325a-4a20-aff8-d0343a87298d",
+          "message": "Request validation failed."
+        }
+      }
+    },
+    {
+      "label": "reject disguised pricing priceRangeMin",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details",
+          "priceRangeMin": 10
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "request_validation_failed",
+          "correlationId": "27946471-a784-477b-bb64-caa694fd20f1",
+          "message": "Request validation failed."
+        }
+      }
+    },
+    {
+      "label": "reject disguised pricing priceRangeMax",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": {
+          "appearanceType": "brand",
+          "startsOn": "2026-11-22",
+          "locationDescription": "Replacement venue",
+          "buyerType": "brand",
+          "requestCallToAction": "Request details",
+          "priceRangeMax": 20
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "request_validation_failed",
+          "correlationId": "c40bf0e0-0d36-4254-a24c-8e7eb36bbaab",
+          "message": "Request validation failed."
+        }
+      }
+    },
+    {
+      "label": "null does not clear",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event",
+        "appearance": null
+      },
+      "status": 400,
+      "body": {
+        "error": {
+          "category": "validation",
+          "code": "request_validation_failed",
+          "correlationId": "aa5332b4-66f2-4c54-8568-01264aaf5e97",
+          "message": "Request validation failed."
+        }
+      }
+    },
+    {
+      "label": "JSONB unchanged after rejected clearing/pricing",
+      "sql": {
+        "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+        "title": "Synthetic event",
+        "appearance": {
+          "startsOn": "2026-11-22",
+          "buyerType": "brand",
+          "appearanceType": "brand",
+          "locationDescription": "Replacement venue",
+          "requestCallToAction": "Request details"
+        },
+        "state": "draft"
+      },
+      "mappedAppearance": {
+        "startsOn": "2026-11-22",
+        "buyerType": "brand",
+        "appearanceType": "brand",
+        "locationDescription": "Replacement venue",
+        "requestCallToAction": "Request details"
+      },
+      "independentConnection": true
+    },
+    {
+      "label": "create without appearance",
+      "method": "POST",
+      "path": "/api/v1/creator/offerings",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Synthetic event",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event"
+      },
+      "status": 201,
+      "body": {
+        "id": "5f133cb0-970e-4f60-92b4-652b590f6f9f",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Synthetic event",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "ordinary update stays absent",
+      "method": "PATCH",
+      "path": "/api/v1/creator/offerings/5f133cb0-970e-4f60-92b4-652b590f6f9f",
+      "input": {
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "templateId": "template-commercial-appearance",
+        "title": "Ordinary edit",
+        "description": "Event context",
+        "availabilityDescription": "By request",
+        "requestInstructions": "Describe the event"
+      },
+      "status": 200,
+      "body": {
+        "id": "5f133cb0-970e-4f60-92b4-652b590f6f9f",
+        "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+        "capabilityIds": [
+          "79c8772c-c605-48e2-9415-53232e00ca92"
+        ],
+        "title": "Ordinary edit",
+        "description": "Event context",
+        "requestInstructions": "Describe the event",
+        "state": "draft",
+        "policyStatus": "review_required",
+        "missingPublishConditions": [],
+        "templateId": "template-commercial-appearance",
+        "availabilityDescription": "By request",
+        "policyReason": "该服务类型需要人工审核后才能公开。",
+        "policyVersion": "v1"
+      }
+    },
+    {
+      "label": "ordinary JSONB is NULL",
+      "sql": {
+        "id": "5f133cb0-970e-4f60-92b4-652b590f6f9f",
+        "title": "Ordinary edit",
+        "appearance": null,
+        "state": "draft"
+      },
+      "mappedAppearance": null,
+      "independentConnection": true
+    },
+    {
+      "label": "list after fresh requests",
+      "method": "GET",
+      "path": "/api/v1/creator/offerings",
+      "status": 200,
+      "body": {
+        "offerings": [
+          {
+            "id": "5f133cb0-970e-4f60-92b4-652b590f6f9f",
+            "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+            "capabilityIds": [
+              "79c8772c-c605-48e2-9415-53232e00ca92"
+            ],
+            "title": "Ordinary edit",
+            "description": "Event context",
+            "requestInstructions": "Describe the event",
+            "state": "draft",
+            "policyStatus": "review_required",
+            "missingPublishConditions": [],
+            "templateId": "template-commercial-appearance",
+            "availabilityDescription": "By request",
+            "policyReason": "该服务类型需要人工审核后才能公开。",
+            "policyVersion": "v1"
+          },
+          {
+            "id": "dc78d410-06e7-4729-81eb-d69d5140852a",
+            "creatorId": "5b08dd03-69bd-486f-a9ec-4daa73af4007",
+            "capabilityIds": [
+              "79c8772c-c605-48e2-9415-53232e00ca92"
+            ],
+            "title": "Synthetic event",
+            "description": "Event context",
+            "requestInstructions": "Describe the event",
+            "state": "draft",
+            "policyStatus": "review_required",
+            "missingPublishConditions": [],
+            "templateId": "template-commercial-appearance",
+            "availabilityDescription": "By request",
+            "appearance": {
+              "appearanceType": "brand",
+              "startsOn": "2026-11-22",
+              "locationDescription": "Replacement venue",
+              "buyerType": "brand",
+              "requestCallToAction": "Request details"
+            },
+            "policyReason": "该服务类型需要人工审核后才能公开。",
+            "policyVersion": "v1"
+          }
+        ]
+      }
+    },
+    {
+      "label": "review policy unchanged",
+      "method": "POST",
+      "path": "/api/v1/creator/offerings/dc78d410-06e7-4729-81eb-d69d5140852a/publish",
+      "status": 409,
+      "body": {
+        "error": {
+          "category": "conflict",
+          "code": "service_offering_policy_review_required",
+          "correlationId": "e75dedad-80cb-45c6-a605-ac8baa75e081",
+          "message": "该服务类型需要人工审核后才能公开。"
+        }
+      }
+    }
+  ],
+  "environment": {
+    "version": "PostgreSQL 17.10 (Debian 17.10-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "database": "pci_020c3b1_58a068bb"
+  },
+  "migrations": {
+    "applied": 43
+  },
+  "catalogBefore": {
+    "policyVersion": "v1",
+    "capabilities": [
+      {
+        "id": "capability-dance-teaching",
+        "slug": "dance-teaching",
+        "vertical": "舞蹈与表演",
+        "name": "舞蹈教学",
+        "description": "教授舞蹈动作、基础训练和编舞方法。",
+        "riskTier": "low",
+        "releaseScope": "vs01",
+        "aliases": [
+          "Private Dance Lesson",
+          "Dance lesson",
+          "舞蹈私教"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-professional-consulting",
+        "slug": "professional-consulting",
+        "vertical": "知识与咨询",
+        "name": "专业咨询",
+        "description": "围绕明确主题提供经验、方法和信息整理。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "aliases": [
+          "咨询能力",
+          "咨询"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-commercial-appearance",
+        "slug": "commercial-appearance",
+        "vertical": "舞蹈与表演",
+        "name": "商业演出与出席",
+        "description": "面向活动、品牌或组织提供明确范围的现场出席或表演。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "aliases": [
+          "Convention Appearance",
+          "商业演出"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-portrait-photography",
+        "slug": "portrait-photography",
+        "vertical": "视觉创作",
+        "name": "人像摄影",
+        "description": "提供有明确拍摄范围和交付条件的人像摄影服务。",
+        "riskTier": "low",
+        "releaseScope": "established",
+        "aliases": [
+          "Portrait photography",
+          "人像拍摄"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-makeup-styling",
+        "slug": "makeup-styling",
+        "vertical": "美业与造型",
+        "name": "妆造造型",
+        "description": "提供明确场景、时长和交付范围的妆造服务。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Makeup styling",
+          "妆造"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-english-coaching",
+        "slug": "english-coaching",
+        "vertical": "知识与教育",
+        "name": "英语口语教学",
+        "description": "围绕口语表达、发音和交流练习提供教学指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "English speaking coaching",
+          "英语口语课程"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-fitness-coaching",
+        "slug": "fitness-coaching",
+        "vertical": "运动与健康",
+        "name": "健身指导",
+        "description": "提供非医疗性质的训练计划、动作指导和运动习惯建议。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Fitness coaching",
+          "健身指导"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-content-production",
+        "slug": "content-production",
+        "vertical": "内容创作",
+        "name": "品牌内容制作",
+        "description": "为品牌或组织提供明确交付物、周期和修改范围的内容共创。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "Content collaboration",
+          "内容合作"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-choreography-guidance",
+        "slug": "choreography-guidance",
+        "vertical": "舞蹈与表演",
+        "name": "编舞指导",
+        "description": "提供明确作品目标、排练范围和交付条件的编舞指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "Choreography guidance",
+          "编舞指导"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-music-hosting",
+        "slug": "music-hosting",
+        "vertical": "音乐与主持",
+        "name": "音乐与主持表演",
+        "description": "提供明确活动范围、档期和现场要求的音乐或主持服务。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Music performance",
+          "主持表演"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      }
+    ],
+    "templates": [
+      {
+        "id": "template-dance-private-lesson",
+        "slug": "dance-private-lesson",
+        "capabilityCatalogItemId": "capability-dance-teaching",
+        "name": "1 对 1 舞蹈私教",
+        "description": "明确时长、形式、地点和预约条件的单人舞蹈教学。",
+        "riskTier": "low",
+        "releaseScope": "vs01",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-professional-consulting",
+        "slug": "professional-consulting",
+        "capabilityCatalogItemId": "capability-professional-consulting",
+        "name": "专业咨询",
+        "description": "明确主题、范围、时长和交付方式的咨询服务。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-commercial-appearance",
+        "slug": "commercial-appearance",
+        "capabilityCatalogItemId": "capability-commercial-appearance",
+        "name": "商业演出与活动出席",
+        "description": "明确活动、地点、时间、买方类型和合作范围的现场服务。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-portrait-session",
+        "slug": "portrait-session",
+        "capabilityCatalogItemId": "capability-portrait-photography",
+        "name": "人像摄影约拍",
+        "description": "明确拍摄时长、地点、交付物和修改范围的人像拍摄。",
+        "riskTier": "low",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-makeup-appointment",
+        "slug": "makeup-appointment",
+        "capabilityCatalogItemId": "capability-makeup-styling",
+        "name": "妆造预约",
+        "description": "明确场景、时长、地点和交付范围的妆造预约。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-english-speaking-coaching",
+        "slug": "english-speaking-coaching",
+        "capabilityCatalogItemId": "capability-english-coaching",
+        "name": "英语口语指导",
+        "description": "明确学习目标、形式、时长和练习范围的口语指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-fitness-consultation",
+        "slug": "fitness-consultation",
+        "capabilityCatalogItemId": "capability-fitness-coaching",
+        "name": "非医疗健身指导",
+        "description": "明确训练目标、形式和安全前置条件的非医疗健身指导。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-brand-content-collaboration",
+        "slug": "brand-content-collaboration",
+        "capabilityCatalogItemId": "capability-content-production",
+        "name": "品牌内容共创",
+        "description": "明确内容类型、交付物、周期和修改次数的品牌内容服务。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-choreography-guidance",
+        "slug": "choreography-guidance",
+        "capabilityCatalogItemId": "capability-choreography-guidance",
+        "name": "编舞指导",
+        "description": "明确作品目标、排练方式和交付范围的编舞指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-music-hosting",
+        "slug": "music-hosting",
+        "capabilityCatalogItemId": "capability-music-hosting",
+        "name": "音乐与主持合作",
+        "description": "明确活动场景、档期、地点和现场要求的音乐或主持合作。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      }
+    ]
+  },
+  "operationsBefore": {
+    "accounts": 0,
+    "sessions": 0
+  },
+  "catalogAfter": {
+    "policyVersion": "v1",
+    "capabilities": [
+      {
+        "id": "capability-dance-teaching",
+        "slug": "dance-teaching",
+        "vertical": "舞蹈与表演",
+        "name": "舞蹈教学",
+        "description": "教授舞蹈动作、基础训练和编舞方法。",
+        "riskTier": "low",
+        "releaseScope": "vs01",
+        "aliases": [
+          "Private Dance Lesson",
+          "Dance lesson",
+          "舞蹈私教"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-professional-consulting",
+        "slug": "professional-consulting",
+        "vertical": "知识与咨询",
+        "name": "专业咨询",
+        "description": "围绕明确主题提供经验、方法和信息整理。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "aliases": [
+          "咨询能力",
+          "咨询"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-commercial-appearance",
+        "slug": "commercial-appearance",
+        "vertical": "舞蹈与表演",
+        "name": "商业演出与出席",
+        "description": "面向活动、品牌或组织提供明确范围的现场出席或表演。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "aliases": [
+          "Convention Appearance",
+          "商业演出"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-portrait-photography",
+        "slug": "portrait-photography",
+        "vertical": "视觉创作",
+        "name": "人像摄影",
+        "description": "提供有明确拍摄范围和交付条件的人像摄影服务。",
+        "riskTier": "low",
+        "releaseScope": "established",
+        "aliases": [
+          "Portrait photography",
+          "人像拍摄"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-makeup-styling",
+        "slug": "makeup-styling",
+        "vertical": "美业与造型",
+        "name": "妆造造型",
+        "description": "提供明确场景、时长和交付范围的妆造服务。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Makeup styling",
+          "妆造"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-english-coaching",
+        "slug": "english-coaching",
+        "vertical": "知识与教育",
+        "name": "英语口语教学",
+        "description": "围绕口语表达、发音和交流练习提供教学指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "English speaking coaching",
+          "英语口语课程"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-fitness-coaching",
+        "slug": "fitness-coaching",
+        "vertical": "运动与健康",
+        "name": "健身指导",
+        "description": "提供非医疗性质的训练计划、动作指导和运动习惯建议。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Fitness coaching",
+          "健身指导"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-content-production",
+        "slug": "content-production",
+        "vertical": "内容创作",
+        "name": "品牌内容制作",
+        "description": "为品牌或组织提供明确交付物、周期和修改范围的内容共创。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "Content collaboration",
+          "内容合作"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-choreography-guidance",
+        "slug": "choreography-guidance",
+        "vertical": "舞蹈与表演",
+        "name": "编舞指导",
+        "description": "提供明确作品目标、排练范围和交付条件的编舞指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "aliases": [
+          "Choreography guidance",
+          "编舞指导"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "capability-music-hosting",
+        "slug": "music-hosting",
+        "vertical": "音乐与主持",
+        "name": "音乐与主持表演",
+        "description": "提供明确活动范围、档期和现场要求的音乐或主持服务。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "aliases": [
+          "Music performance",
+          "主持表演"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      }
+    ],
+    "templates": [
+      {
+        "id": "template-dance-private-lesson",
+        "slug": "dance-private-lesson",
+        "capabilityCatalogItemId": "capability-dance-teaching",
+        "name": "1 对 1 舞蹈私教",
+        "description": "明确时长、形式、地点和预约条件的单人舞蹈教学。",
+        "riskTier": "low",
+        "releaseScope": "vs01",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-professional-consulting",
+        "slug": "professional-consulting",
+        "capabilityCatalogItemId": "capability-professional-consulting",
+        "name": "专业咨询",
+        "description": "明确主题、范围、时长和交付方式的咨询服务。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-commercial-appearance",
+        "slug": "commercial-appearance",
+        "capabilityCatalogItemId": "capability-commercial-appearance",
+        "name": "商业演出与活动出席",
+        "description": "明确活动、地点、时间、买方类型和合作范围的现场服务。",
+        "riskTier": "review",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-portrait-session",
+        "slug": "portrait-session",
+        "capabilityCatalogItemId": "capability-portrait-photography",
+        "name": "人像摄影约拍",
+        "description": "明确拍摄时长、地点、交付物和修改范围的人像拍摄。",
+        "riskTier": "low",
+        "releaseScope": "established",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-makeup-appointment",
+        "slug": "makeup-appointment",
+        "capabilityCatalogItemId": "capability-makeup-styling",
+        "name": "妆造预约",
+        "description": "明确场景、时长、地点和交付范围的妆造预约。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-english-speaking-coaching",
+        "slug": "english-speaking-coaching",
+        "capabilityCatalogItemId": "capability-english-coaching",
+        "name": "英语口语指导",
+        "description": "明确学习目标、形式、时长和练习范围的口语指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-fitness-consultation",
+        "slug": "fitness-consultation",
+        "capabilityCatalogItemId": "capability-fitness-coaching",
+        "name": "非医疗健身指导",
+        "description": "明确训练目标、形式和安全前置条件的非医疗健身指导。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-brand-content-collaboration",
+        "slug": "brand-content-collaboration",
+        "capabilityCatalogItemId": "capability-content-production",
+        "name": "品牌内容共创",
+        "description": "明确内容类型、交付物、周期和修改次数的品牌内容服务。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-choreography-guidance",
+        "slug": "choreography-guidance",
+        "capabilityCatalogItemId": "capability-choreography-guidance",
+        "name": "编舞指导",
+        "description": "明确作品目标、排练方式和交付范围的编舞指导。",
+        "riskTier": "low",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      },
+      {
+        "id": "template-music-hosting",
+        "slug": "music-hosting",
+        "capabilityCatalogItemId": "capability-music-hosting",
+        "name": "音乐与主持合作",
+        "description": "明确活动场景、档期、地点和现场要求的音乐或主持合作。",
+        "riskTier": "review",
+        "releaseScope": "future",
+        "requiredFields": [
+          "title",
+          "description",
+          "availability",
+          "request_instructions"
+        ],
+        "version": "v1",
+        "status": "active",
+        "creatorSelectable": true,
+        "publishEnabled": true
+      }
+    ]
+  },
+  "operationsAfter": {
+    "accounts": 0,
+    "sessions": 0
+  },
+  "result": "PASS"
+}

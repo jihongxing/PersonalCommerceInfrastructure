@@ -1,0 +1,88 @@
+import { randomUUID } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import assert from 'node:assert/strict';
+const src = async (path) => import(pathToFileURL(resolve('dist', path)).href);
+const { createPostgresDatabase } = await src('adapters/persistence/postgres/postgres-database.js');
+const { PostgresCommerceIdentityRepository, PostgresCapabilityRepository, PostgresOfferingRepository } = await src('adapters/persistence/postgres/postgres-creator-identity-repositories.js');
+const { PostgresServicePolicyCatalogRepository } = await src('adapters/persistence/postgres/postgres-service-policy-catalog-repository.js');
+const { createServiceOfferingService } = await src('applications/service-offering/offering-service.js');
+const { InMemoryAuthContextProvider } = await src('adapters/auth/testing/in-memory-auth-context-provider.js');
+const { createApiServer } = await src('apps/api/src/create-api-server.js');
+const target = new URL(process.env.APPEARANCE_TEST_DATABASE_URL);
+assert.equal(target.hostname, '127.0.0.1');
+assert.match(target.pathname, /^\/pci_020c3b1_[a-z0-9_]+$/);
+const db = createPostgresDatabase(target.href);
+const identities = new PostgresCommerceIdentityRepository(db.database);
+const capabilities = new PostgresCapabilityRepository(db.database);
+const offerings = new PostgresOfferingRepository(db.database);
+const catalog = new PostgresServicePolicyCatalogRepository(db.database);
+const creatorId = randomUUID(), capabilityId = randomUUID();
+const observations = { task: 'PCI-ENG-020-C3-B1', at: new Date().toISOString(), transport: 'real HTTP socket -> Fastify -> Application -> PostgreSQL', auth: 'synthetic test AuthContextProvider; no browser or BFF verification claimed', database: target.pathname.slice(1), steps: [] };
+const service = createServiceOfferingService({ identityRepository: identities, capabilityRepository: capabilities, offeringRepository: offerings, servicePolicyCatalogRepository: catalog, idGenerator: { generate: randomUUID } });
+const server = await createApiServer({ serviceOfferingService: service, servicePolicyCatalogRepository: catalog, authContextProvider: new InMemoryAuthContextProvider([{ accessToken: 'synthetic-appearance-test', actor: { kind: 'creator', creatorId } }]) });
+try {
+  observations.environment = (await db.client`select version() as version, current_database() as database`)[0];
+  observations.migrations = (await db.client`select count(*)::int as applied from drizzle.__drizzle_migrations`)[0];
+  observations.catalogBefore = await catalog.getSnapshot();
+  observations.operationsBefore = (await db.client`select (select count(*) from operations_accounts)::int as accounts, (select count(*) from operations_sessions)::int as sessions`)[0];
+  await identities.save({ creatorId, profile: { displayName: 'Synthetic probe', bio: 'Nonproduction only', socialLinks: [] }, capabilityIds: [], state: 'draft' });
+  await capabilities.save({ id: capabilityId, creatorId, name: '商业演出与出席', description: 'Synthetic activity', catalogItemId: 'capability-commercial-appearance', catalogStatus: 'active', policyVersion: 'v1' });
+  await server.listen({ host: '127.0.0.1', port: 0 });
+  const address = server.server.address();
+  const origin = `http://127.0.0.1:${address.port}`;
+  const input = { capabilityIds: [capabilityId], templateId: 'template-commercial-appearance', title: 'Synthetic event', description: 'Event context', availabilityDescription: 'By request', requestInstructions: 'Describe the event' };
+  const appearance = { appearanceType: 'guest', startsOn: '2026-11-20', endsOn: '2026-11-21', locationDescription: 'Synthetic venue', buyerType: 'organizer', requestCallToAction: 'Submit request', upcomingTitle: 'Legacy title', pricingRule: 'Discuss scope', externalUrl: 'https://example.test/event' };
+  async function call(label, method, path, payload, expected) {
+    const response = await fetch(origin + path, { method, headers: { authorization: 'Bearer synthetic-appearance-test', ...(payload ? { 'content-type': 'application/json' } : {}) }, ...(payload ? { body: JSON.stringify(payload) } : {}) });
+    const body = await response.json();
+    observations.steps.push({ label, method, path, input: payload, status: response.status, body });
+    assert.equal(response.status, expected, label);
+    return body;
+  }
+  async function persisted(label, id, expected) {
+    const fresh = createPostgresDatabase(target.href);
+    try {
+      const [row] = await fresh.client`select id, title, appearance, state from service_offerings where id = ${id}`;
+      const mapped = await new PostgresOfferingRepository(fresh.database).findById(id);
+      observations.steps.push({ label, sql: row, mappedAppearance: mapped.appearance ?? null, independentConnection: true });
+      assert.deepEqual(row.appearance, expected);
+      assert.deepEqual(mapped.appearance ?? null, expected);
+    } finally { await fresh.close(); }
+  }
+  const created = await call('create complete legacy-shaped metadata', 'POST', '/api/v1/creator/offerings', { ...input, appearance }, 201);
+  await persisted('initial JSONB', created.id, appearance);
+  for (const [label, edit] of Object.entries({ title: { title: 'Changed title' }, description: { description: 'Changed details' }, availability: { availabilityDescription: 'Changed availability' }, instructions: { requestInstructions: 'Changed instructions' } })) {
+    await call(`old client ordinary edit: ${label}; appearance omitted`, 'PATCH', `/api/v1/creator/offerings/${created.id}`, { ...input, ...edit }, 200);
+    await persisted(`JSONB after omitted ${label} update`, created.id, appearance);
+  }
+  const replacement = { appearanceType: 'brand', startsOn: '2026-11-22', locationDescription: 'Replacement venue', buyerType: 'brand', requestCallToAction: 'Request details' };
+  await call('replace full object without upcomingTitle', 'PATCH', `/api/v1/creator/offerings/${created.id}`, { ...input, appearance: replacement }, 200);
+  await persisted('JSONB whole replacement; old optional properties removed', created.id, replacement);
+  const invalid = { ...replacement, endsOn: '2026-11-21' };
+  const error = await call('invalid range create', 'POST', '/api/v1/creator/offerings', { ...input, appearance: invalid }, 400);
+  assert.equal(error.error.code, 'service_offering_appearance_date_range_invalid');
+  await call('invalid range update', 'PATCH', `/api/v1/creator/offerings/${created.id}`, { ...input, appearance: invalid }, 400);
+  await persisted('JSONB unchanged after invalid range', created.id, replacement);
+  for (const [key, value] of Object.entries({ currency: 'CNY', priceRangeMin: 10, priceRangeMax: 20 })) {
+    await call(`reject disguised pricing ${key}`, 'PATCH', `/api/v1/creator/offerings/${created.id}`, { ...input, appearance: { ...replacement, [key]: value } }, 400);
+  }
+  await call('null does not clear', 'PATCH', `/api/v1/creator/offerings/${created.id}`, { ...input, appearance: null }, 400);
+  await persisted('JSONB unchanged after rejected clearing/pricing', created.id, replacement);
+  const ordinary = await call('create without appearance', 'POST', '/api/v1/creator/offerings', input, 201);
+  await call('ordinary update stays absent', 'PATCH', `/api/v1/creator/offerings/${ordinary.id}`, { ...input, title: 'Ordinary edit' }, 200);
+  await persisted('ordinary JSONB is NULL', ordinary.id, null);
+  await call('list after fresh requests', 'GET', '/api/v1/creator/offerings', undefined, 200);
+  const denied = await call('review policy unchanged', 'POST', `/api/v1/creator/offerings/${created.id}/publish`, undefined, 409);
+  assert.equal(denied.error.code, 'service_offering_policy_review_required');
+  observations.catalogAfter = await catalog.getSnapshot();
+  assert.deepEqual(observations.catalogAfter, observations.catalogBefore);
+  observations.operationsAfter = (await db.client`select (select count(*) from operations_accounts)::int as accounts, (select count(*) from operations_sessions)::int as sessions`)[0];
+  observations.result = 'PASS';
+} finally {
+  await server.close();
+  await db.close();
+}
+await writeFile(process.argv[2], JSON.stringify(observations, null, 2) + '\n');
+process.stdout.write(`Socket/PostgreSQL probe PASS: ${observations.steps.length} redacted steps; no browser claim.\n`);

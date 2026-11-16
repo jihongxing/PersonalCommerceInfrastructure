@@ -1,5 +1,6 @@
 import {
   createDraftOffering,
+  InvalidAppearanceDateRangeError,
   missingPublishConditions,
   publishOffering,
   unpublishOffering,
@@ -76,10 +77,8 @@ export class CreateServiceOfferingUseCase implements ApplicationUseCase<
     const creatorId = creatorIdFromContext(context);
     await assertCreatorCanSaveOffering(creatorId, command.capabilityIds, this.dependencies);
 
-    const offering = createDraftOffering(
-      this.dependencies.idGenerator.generate(),
-      creatorId,
-      command,
+    const offering = withAppearanceValidation(() =>
+      createDraftOffering(this.dependencies.idGenerator.generate(), creatorId, command),
     );
     const evaluated = await evaluatePolicy(offering, this.dependencies);
     await this.dependencies.offeringRepository.save(evaluated);
@@ -118,7 +117,7 @@ export class UpdateServiceOfferingUseCase implements ApplicationUseCase<
 
     await assertCreatorCanSaveOffering(creatorId, command.capabilityIds, this.dependencies);
 
-    const offering = updateOffering(existing, command);
+    const offering = withAppearanceValidation(() => updateOffering(existing, command));
     const evaluated = await evaluatePolicy(offering, this.dependencies);
     await this.dependencies.offeringRepository.save(evaluated);
     return evaluated;
@@ -370,6 +369,22 @@ export class RecordExternalDistributionUseCase implements ApplicationUseCase<
       );
       return distributedAsset;
     });
+  }
+}
+
+function withAppearanceValidation<Result>(operation: () => Result): Result {
+  try {
+    return operation();
+  } catch (error) {
+    if (error instanceof InvalidAppearanceDateRangeError) {
+      throw new ApplicationError({
+        category: 'validation',
+        code: 'service_offering_appearance_date_range_invalid',
+        message: error.message,
+        cause: error,
+      });
+    }
+    throw error;
   }
 }
 

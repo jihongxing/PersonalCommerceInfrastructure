@@ -1,0 +1,7 @@
+
+> personal-commerce-infrastructure@0.2.0 typecheck:creator-web D:\codeSpace\PersonalCommerceInfrastructure
+> pnpm --filter web-v2 typecheck
+
+
+> web-v2@0.1.0 typecheck D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2
+> tsc --noEmit

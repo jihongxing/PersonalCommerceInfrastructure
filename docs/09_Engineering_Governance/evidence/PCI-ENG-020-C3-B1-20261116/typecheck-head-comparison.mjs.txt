@@ -1,0 +1,22 @@
+import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
+const require = createRequire(resolve('package.json'));
+const ts = require('typescript');
+const config = ts.readConfigFile('tsconfig.build.json', ts.sys.readFile);
+const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, process.cwd());
+const files = execFileSync('git', ['diff', '--name-only', '--', '*.ts'], { encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean);
+const original = new Map(files.map(path => [resolve(path).toLowerCase(), execFileSync('git', ['show', `HEAD:${path}`], { encoding: 'utf8' })]));
+function check(baseline) {
+  const host = ts.createCompilerHost(parsed.options);
+  const read = host.readFile;
+  if (baseline) host.readFile = file => original.get(resolve(file).toLowerCase()) ?? read(file);
+  const program = ts.createProgram(parsed.fileNames, { ...parsed.options, noEmit: true }, host);
+  return ts.getPreEmitDiagnostics(program).map(d => ({ file: d.file ? relative(process.cwd(), d.file.fileName).replaceAll('\\', '/') : undefined, line: d.file && d.start !== undefined ? d.file.getLineAndCharacterOfPosition(d.start).line + 1 : undefined, code: d.code, message: ts.flattenDiagnosticMessageText(d.messageText, '\n') }));
+}
+const baseline = check(true), current = check(false);
+const report = { baseline: 'HEAD tracked TypeScript sources overlaid into read-only compiler host; new tests excluded by build config', current, head: baseline, identical: JSON.stringify(current) === JSON.stringify(baseline) };
+writeFileSync(process.argv[2], JSON.stringify(report, null, 2) + '\n');
+process.stdout.write(`Core baseline/current diagnostics: ${baseline.length}/${current.length}; identical=${report.identical}\n`);
+if (!report.identical) process.exitCode = 1;

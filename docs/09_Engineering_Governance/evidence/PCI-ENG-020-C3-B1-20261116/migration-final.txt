@@ -1,0 +1,103 @@
+
+> personal-commerce-infrastructure@0.2.0 db:migrate D:\codeSpace\PersonalCommerceInfrastructure
+> tsx scripts/database/migrate.ts
+
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P06',
+  message: 'schema "drizzle" already exists, skipping',
+  file: 'schemacmds.c',
+  line: '132',
+  routine: 'CreateSchemaCommand'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "__drizzle_migrations" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "account_identity_memberships_identity_id_identities_identity_id_fk" will be truncated to "account_identity_memberships_identity_id_identities_identity_id"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "legacy_subject_mappings_initial_commerce_profile_id_commerce_profiles_commerce_profile_id_fk" will be truncated to "legacy_subject_mappings_initial_commerce_profile_id_commerce_pr"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "commerce_references_commerce_profile_id_commerce_profiles_commerce_profile_id_fk" will be truncated to "commerce_references_commerce_profile_id_commerce_profiles_comme"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "commerce_relationships_external_platform_account_id_external_platform_accounts_external_platform_account_id_fk" will be truncated to "commerce_relationships_external_platform_account_id_external_pl"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "commerce_relationships_commerce_profile_id_commerce_profiles_commerce_profile_id_fk" will be truncated to "commerce_relationships_commerce_profile_id_commerce_profiles_co"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "operations_accounts_principal_id_operations_human_principals_principal_id_fk" will be truncated to "operations_accounts_principal_id_operations_human_principals_pr"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "operations_credentials_account_id_operations_accounts_account_id_fk" will be truncated to "operations_credentials_account_id_operations_accounts_account_i"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "operations_sessions_principal_id_operations_human_principals_principal_id_fk" will be truncated to "operations_sessions_principal_id_operations_human_principals_pr"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42622',
+  message: 'identifier "operations_human_principal_activation_history_reject_truncate_trigger" will be truncated to "operations_human_principal_activation_history_reject_truncate_t"',
+  file: 'scansup.c',
+  line: '99',
+  routine: 'truncate_identifier'
+}

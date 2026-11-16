@@ -49,7 +49,7 @@ export const serviceOfferings = pgTable(
       buyerType: 'organizer' | 'brand' | 'fan_group' | 'approved_external_requester';
       pricingRule?: string;
       requestCallToAction: string;
-      upcomingTitle: string;
+      upcomingTitle?: string;
       externalUrl?: string;
     }>(),
     requestInstructions: varchar('request_instructions', { length: 1_000 }).notNull(),

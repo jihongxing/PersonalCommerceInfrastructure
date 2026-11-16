@@ -20,7 +20,7 @@ const PublicAppearanceOfferingSchema = Type.Object(
     ]),
     pricingRule: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
     requestCallToAction: Type.String({ minLength: 1, maxLength: 240 }),
-    upcomingTitle: Type.String({ minLength: 1, maxLength: 240 }),
+    upcomingTitle: Type.Optional(Type.String({ minLength: 1, maxLength: 240 })),
     externalUrl: Type.Optional(Type.String({ format: 'uri', maxLength: 2_048 })),
   },
   { additionalProperties: false },

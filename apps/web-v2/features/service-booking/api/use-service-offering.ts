@@ -9,7 +9,7 @@ export interface ServiceOfferingAppearance {
   buyerType: 'organizer' | 'brand' | 'fan_group' | 'approved_external_requester';
   pricingRule?: string;
   requestCallToAction: string;
-  upcomingTitle: string;
+  upcomingTitle?: string;
   externalUrl?: string;
 }
 
@@ -38,25 +38,20 @@ export function useServiceOffering(offeringId: string) {
   return useQuery({
     queryKey: ['service-offering', offeringId],
     queryFn: async (): Promise<ServiceOfferingResponse> => {
-      const { data, error } = await apiClient.GET(
-        '/api/v1/public/offerings/{offeringId}',
-        {
-          params: {
-            path: { offeringId },
-          },
-        }
-      );
-      
+      const { data, error } = await apiClient.GET('/api/v1/public/offerings/{offeringId}', {
+        params: {
+          path: { offeringId },
+        },
+      });
+
       if (error) {
-        throw new Error(
-          error.error?.message || 'Failed to load service offering'
-        );
+        throw new Error(error.error?.message || 'Failed to load service offering');
       }
-      
+
       if (!data) {
         throw new Error('No data returned from API');
       }
-      
+
       return data as ServiceOfferingResponse;
     },
     enabled: !!offeringId,

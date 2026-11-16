@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { InMemoryEntityCollectionRepository } from '../../adapters/in-memory/in-memory-entity-collection-repository.js';
 
 import { createActorContext } from '../../applications/core/actor-context.js';
 import { CanonicalEventRecorder } from '../../applications/core/canonical-event-recorder.js';
@@ -26,7 +27,7 @@ async function createFixture() {
     (capability) => capability.id,
     (capability) => capability.creatorId,
   );
-  const offeringRepository = new TestCollectionRepository<Offering>(
+  const offeringRepository = new InMemoryEntityCollectionRepository<Offering>(
     (offering) => offering.id,
     (offering) => offering.creatorId,
   );
@@ -84,6 +85,7 @@ async function createFixture() {
       }),
     }),
     identityRepository,
+    offeringRepository,
     distributionAssetRepository,
     productEventStore,
   };
@@ -185,6 +187,72 @@ describe('Service Offering application use cases', () => {
       availability: { description: 'Weekends by request.' },
     });
     await expect(service.list(context)).resolves.toEqual([updated]);
+  });
+
+  it('preserves omitted metadata through Application and Memory save/read, replacing only explicit objects', async () => {
+    const { context, service, offeringRepository } = await createFixture();
+    const input = {
+      capabilityIds: ['capability-1'],
+      title: 'Activity',
+      description: 'Details',
+      requestInstructions: 'Contact us',
+    };
+    const appearance = {
+      appearanceType: 'guest' as const,
+      startsOn: '2026-11-20',
+      locationDescription: 'Venue',
+      buyerType: 'organizer' as const,
+      requestCallToAction: 'Submit request',
+      upcomingTitle: 'Legacy title',
+    };
+    const created = await service.create({ ...input, appearance }, context);
+    for (const edit of [
+      { title: 'Updated' },
+      { description: 'New details' },
+      { requestInstructions: 'New instructions' },
+      { availabilityDescription: 'By request' },
+    ]) {
+      await service.update({ ...input, ...edit, offeringId: created.id }, context);
+      expect((await offeringRepository.findById(created.id))?.appearance).toEqual(appearance);
+    }
+    const withoutTitle = {
+      appearanceType: appearance.appearanceType,
+      startsOn: '2026-11-21',
+      locationDescription: appearance.locationDescription,
+      buyerType: appearance.buyerType,
+      requestCallToAction: appearance.requestCallToAction,
+    };
+    await service.update({ ...input, offeringId: created.id, appearance: withoutTitle }, context);
+    expect((await offeringRepository.findById(created.id))?.appearance).toEqual(withoutTitle);
+  });
+
+  it('maps reversed dates to explicit validation errors before saving', async () => {
+    const { context, service, offeringRepository } = await createFixture();
+    const input = {
+      capabilityIds: ['capability-1'],
+      title: 'Activity',
+      description: 'Details',
+      requestInstructions: 'Contact us',
+    };
+    const appearance = {
+      appearanceType: 'guest' as const,
+      startsOn: '2026-11-20',
+      endsOn: '2026-11-19',
+      locationDescription: 'Venue',
+      buyerType: 'organizer' as const,
+      requestCallToAction: 'Submit request',
+    };
+    const expected = {
+      category: 'validation',
+      code: 'service_offering_appearance_date_range_invalid',
+    };
+    await expect(service.create({ ...input, appearance }, context)).rejects.toMatchObject(expected);
+    expect(await offeringRepository.findById('offering-1')).toBeUndefined();
+    const created = await service.create(input, context);
+    await expect(
+      service.update({ ...input, offeringId: created.id, appearance }, context),
+    ).rejects.toMatchObject(expected);
+    expect(await offeringRepository.findById(created.id)).toEqual(created);
   });
 
   it('allows a Creator to save an incomplete draft before selecting a Capability', async () => {

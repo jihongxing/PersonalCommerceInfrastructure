@@ -836,3 +836,53 @@ Confirmed Request 之后对已出示履约码的完成确认。后者不改变�
 本节只批准既有 Fulfillment Code & Fulfillment Confirmation 能力的产品定义和恢复，不批准支付、结算、
 退款、Marketplace、CRM、自动履约、平台保证服务交付或新的 SLA / 必经步骤。实现状态和验证证据记录在
 执行台账 `PCI-ENG-020-B2-R1`。
+
+
+## FD-020-C3-BD-01 Amendment — Scoped Service Offering Appearance Capability
+
+> 修订日期：2026-11-16；Founder Decision：`FD-020-C3-BD-01`；工程登记：`DEV-091 / PCI-ENG-020-C3-B1`。
+> 本节追加修订冻结 VS-01；此前决定与文本保留，冲突部分以本节为准，未涉及的规则继续有效。
+
+### A. 定义与适用边界
+
+Appearance 是特定活动出席类 Offering 的可选结构化展示及现有 Request 上下文，不能作为通用价格配置。
+普通 Offering 不要求 Appearance；活动出席 Offering 也可不提供整个对象，不新增发布必填条件。
+当前由 Catalog 明确确认的适用映射仅为 `template-commercial-appearance`（商业演出与活动出席）→
+`capability-commercial-appearance`（商业演出与出席）。依据是现有模板对活动、地点、时间、买方类型和
+合作范围的现场服务描述。其 `active / established / review` 政策保持不变，不因本修订自动开放发布。
+`appearanceType` 枚举不能作为扩大到摄影、主持或未来模板的依据；其他模板须另行确认。
+
+### B. 字段合同
+
+整体 `appearance` 可选；提供时保留当前字段枚举、格式和长度规则：
+
+| 字段                | 必需性           | 限定含义                                                                                          |
+| ------------------- | ---------------- | ------------------------------------------------------------------------------------------------- |
+| appearanceType      | 对象内必需       | convention / guest / brand / photo / signing，描述出席形式，不决定模板资格                        |
+| startsOn            | 对象内必需       | YYYY-MM-DD 活动日期，仅描述                                                                       |
+| endsOn              | 可选             | YYYY-MM-DD，不早于 startsOn；不生成排期、库存、自动过期或日历                                     |
+| locationDescription | 对象内必需       | 地点自由文本，不提供地址认证或场地保证                                                            |
+| buyerType           | 对象内必需       | organizer / brand / fan_group / approved_external_requester，仅为目标请求方类别，不认证或校验资格 |
+| pricingRule         | 可选             | 自由文本，不形成价格、数值报价或交易规则                                                          |
+| requestCallToAction | 对象内必需       | 仅定制现有 Request 入口文案，不创建新的请求步骤或合同                                             |
+| upcomingTitle       | 可选（本次放宽） | 可选展示标题，不形成独立 Upcoming 日历产品                                                        |
+| externalUrl         | 可选             | 外部信息或分发链接，不表示平台承诺或认证                                                          |
+
+不接受 currency / priceRangeMin / priceRangeMax 作为 Appearance 字段；不引入数值价格模型。
+Customer Request 提交合同、Creator Confirm / Decline 的终态影响以及 FD-020-BD-01 履约码、QR 和履约确认
+继续有效。生命周期仍是 Identity → Capability → Service Offering → Publish / Distribution → Customer Request
+→ Creator Confirm / Decline；Confirmed 之后保留已有 Fulfillment Confirmation 能力。
+
+### C. 更新、兼容与验收
+
+Update 未包含 appearance 时保留已有对象，包含完整对象时替换整个对象；Create 省略时仍无 Appearance。
+本次不提供清除操作；null、空对象及不完整对象不是清除指令。历史已存对象（包括带 upcomingTitle 的
+完整对象）继续可读，不删除、不回填、不重写；旧客户端省略字段不得导致数据丢失。
+Domain 继续拒绝 endsOn < startsOn；HTTP 返回明确稳定的 validation 400，不以 internal_error 表示。
+本次仅完成数据保留、合同对齐与相应验证，不实现 Creator 编辑界面或新增 Public UI。模板目录只读，
+现存超出限定映射的数据保留兼容，不因本修订批量绑定、改写或删除；后续界面绑定仅可使用上述确认映射。
+
+验收包括 Domain、Application、Contract、Fastify、Memory 及真实 PostgreSQL 写入/更新/重新读取。
+不新增 Schema/Migration，不改变发布撤回规则、Customer Request、Confirm / Decline 或 Fulfillment。
+明确排除 Payment、Settlement、Refund、Marketplace、CRM、自动履约、平台保证服务交付、商业报价交易、
+新的 SLA、排期或库存能力。本修订不代表生产部署或外部试点授权。

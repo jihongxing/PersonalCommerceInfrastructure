@@ -1,0 +1,3 @@
+
+> personal-commerce-infrastructure@0.2.0 typecheck:active-tests:backend D:\codeSpace\PersonalCommerceInfrastructure
+> tsc -p tsconfig.active-tests.json --noEmit

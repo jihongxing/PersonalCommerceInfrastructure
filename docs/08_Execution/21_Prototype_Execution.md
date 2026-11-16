@@ -11237,3 +11237,54 @@ PCI-ENG-020-C2_AUTH_API_DOMAIN_SCHEMA_VS01_CHANGES = NONE
 PCI-ENG-020-C2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
 PCI-ENG-020-C2_PUSH = NONE
 ```
+
+
+## DEV-091 / PCI-ENG-020-C3-B1 — Appearance Data Preservation & Contract Alignment
+
+Founder Decision `FD-020-C3-BD-01 — Scoped Service Offering Appearance Capability` is approved
+on 2026-11-16. Direction B: optional structured activity appearance context, limited to confirmed
+existing activity attendance templates; not generic pricing or a universal Offering requirement.
+The VS-01 amendment is appended without rewriting previous frozen decisions.
+
+Authorized changes (FR-006–FR-013; existing Public Offering/Request context): omitted update
+`appearance` preserves stored metadata; a supplied complete object replaces it; create omission
+remains absent; no clear operation. `upcomingTitle` becomes optional. Reversed date ranges remain
+invalid and return stable validation HTTP 400. No Request, Confirm/Decline, Fulfillment, publication
+state-machine, Auth/BFF or Schema/Migration changes are authorized. Existing Catalog is read-only;
+only `template-commercial-appearance` / `capability-commercial-appearance` is confirmed by its
+explicit name and description. No template expansion or inference from appearanceType is allowed.
+
+Implemented: Domain preserves omitted Appearance verbatim; explicit objects replace; no clear
+operation. Creator/Public contracts, Domain, PostgreSQL JSONB static type and Public Web type now
+allow omitted upcomingTitle. A dedicated Domain date-range error becomes Application validation
+`service_offering_appearance_date_range_invalid` (HTTP 400) on both POST and PATCH; invalid updates
+do not persist. Existing Memory/PostgreSQL full-aggregate save/mapping already supports the fix;
+no repository merge, Schema/Migration, Catalog write or frontend cache workaround was added.
+
+Validation: 8 focused files / 70 tests passed, including 6 real PostgreSQL cases, plus final
+Application 10/10 and Creator Web 35 files / 110 tests. A separate real HTTP socket Fastify ->
+Application -> PostgreSQL probe recorded 25 observations, independent connection JSONB reads,
+stable 400 errors, policy409 and unchanged Catalog. Disposable PostgreSQL 17.10 used 43 existing
+migrations and synthetic rows only; Operations accounts/sessions stayed zero. API/Web/test
+Typechecks, changed ESLint/Prettier, API build and Creator production build passed. Root core
+Typecheck/build retain six existing TS2339 errors in the unchanged Operations browser script;
+read-only HEAD/current compiler comparison proves identical diagnostics. No browser acceptance
+or real historical-data safety claim is made.
+
+Report: `docs/09_Engineering_Governance/PCI-ENG-020-C3-B1-Appearance-Data-Preservation-Contract-Alignment.md`.
+Evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-020-C3-B1-20261116/README.md`.
+The exact disposable container and secret files were removed after validation. All 47 prior
+untracked files (46 historical plus C3-A report) remain unchanged and excluded; original 56 V1
+ledger lines remain uncommitted. Only this DEV-091 addition is included in the independent
+implementation commit. No Push or history rewrite.
+
+```ini
+FD-020-C3-BD-01 = APPROVED BY FOUNDER — DIRECTION B / SCOPED OPTIONAL APPEARANCE
+PCI-ENG-020-C3-B1 = APPEARANCE DATA PRESERVATION & CONTRACT ALIGNMENT — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-C3-B1_REAL_POSTGRESQL = PASSED / DISPOSABLE SYNTHETIC DATABASE
+PCI-ENG-020-C3-B1_REAL_HISTORICAL_DATA = NOT INSPECTED / IMPACT UNKNOWN
+PCI-ENG-020-C3-B1_SCHEMA_MIGRATION_CHANGES = NONE
+PCI-ENG-020-C3-B1_ALL_REPOSITORY_GATES = NOT CLAIMED / EXISTING CORE ERRORS RECORDED
+PCI-ENG-020-C3-B1_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
+PCI-ENG-020-C3-B1_PUSH = NONE
+```

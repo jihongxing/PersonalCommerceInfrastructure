@@ -1,0 +1,44 @@
+{
+  "task": "PCI-ENG-020-C3-B1",
+  "focused": {
+    "status": "PASS",
+    "files": 8,
+    "tests": 70,
+    "skipped": 0,
+    "postgresCases": 6,
+    "memoryFastifyCases": 6
+  },
+  "applicationFinal": {
+    "status": "PASS",
+    "tests": 10
+  },
+  "creatorWeb": {
+    "status": "PASS",
+    "files": 35,
+    "tests": 110
+  },
+  "socketPostgres": {
+    "status": "PASS",
+    "recordedSteps": 25,
+    "existingMigrations": 43
+  },
+  "apiTypecheck": "PASS",
+  "creatorWebTypecheck": "PASS",
+  "activeBackendTestTypecheck": "PASS",
+  "changedCodeEslint": "PASS",
+  "changedCodePrettier": "PASS",
+  "apiBuild": "PASS",
+  "creatorProductionBuild": "PASS",
+  "coreTypecheck": "FAIL_EXISTING_6_TS2339",
+  "coreBuild": "FAIL_EXISTING_6_TS2339",
+  "headComparison": {
+    "sameDiagnostics": true,
+    "baselineCount": 6,
+    "currentCount": 6,
+    "file": "scripts/test/verify-operations-admin-browser.ts"
+  },
+  "browser": "NOT_RUN",
+  "productionOrSharedHistoricalData": "NOT_ACCESSED_IMPACT_UNKNOWN",
+  "schemaMigrationsChanged": false,
+  "push": false
+}

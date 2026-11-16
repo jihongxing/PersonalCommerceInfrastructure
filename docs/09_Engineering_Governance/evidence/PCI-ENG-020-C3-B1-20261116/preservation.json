@@ -1,0 +1,250 @@
+{
+  "task": "PCI-ENG-020-C3-B1",
+  "priorUntracked": [
+    {
+      "path": "docs/09_Engineering_Governance/PCI-ENG-020-B1-V1-Creator-Session-Browser-Verification.md",
+      "sha256": "78F67309AF35F991E86966ADC8B5827085727EEC496326D8FF8A583D42866519",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/PCI-ENG-020-C3-A-Service-Offering-Appearance-Product-Review.md",
+      "sha256": "69AE1CAAB35E4B39336435A165453388C52B1FC46746D14650D886A250326A71",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-C-browser-1794765242183.json",
+      "sha256": "8931E17D3B75FB0EE22A1642F3D45A3979E9A44530689D7A30E1E1EB7192D891",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-C-pci-018c-fe2a13caaa-postgres.json",
+      "sha256": "20829DF2AD918DFB5F07D357B132D743D85DA5F19D63E244758F8E288FFFCB8F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-DIAG-pci-018br1-337a364339-postgres.json",
+      "sha256": "B47F260667607CA44FBD61EC5E43F454A846215D1581151CC4B5B159004E8D6F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-DIAG-pci-018br1-4a2ce985fd-postgres.json",
+      "sha256": "74663ADCAA4B44FAC682B52D13644D85C42D0F22650D0F3C04575849ED8B71BF",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-browser-1794769509313.json",
+      "sha256": "7C3DB0C3CEACDFC6A2F370957D195AD12D7D1E6D165373F1FE33213F2B94EAFE",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-browser-1794773018211.json",
+      "sha256": "5366813F2E12D7B67D93404FD446D05B4F992276FF8C45D7AB69A1FF44EB3E7F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-pci-018br1-05d01b93ed-postgres.json",
+      "sha256": "832D876E067487D04D7AB7BA1B7A7E18852C233ADAB46BE10FBB1AB35DF61132",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-pci-018br1-261a5b01e7-postgres.json",
+      "sha256": "FA48E5B3E3AC14B0BFD39794912710550A86887C088AAEA54C24C7FCC880C82F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-pci-018br1-88325bb7ad-postgres.json",
+      "sha256": "9F1C395A2235C9C5D6CC92F935B6527EB7EAC9BD6A22B76C600189AD49985AC5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-pci-018br1-95f451891e-postgres.json",
+      "sha256": "15256F6DF66746480BBC7919098D2461066D93C470033267907AB46DF4FEB53F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-018-F-pci-018br1-bda4fc68a0-postgres.json",
+      "sha256": "3069E59EEF912CDD939DFB549BD6E2C74ABBBF9EA6CDF1EE5CE135A71E5C5D4D",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-browser-1794773709139.json",
+      "sha256": "84834E98FB34277D5F4F1B5D40C99DF3AC4FE6DC930373B323285D24AF454BC7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-browser-1794774432903.json",
+      "sha256": "85D7C9B8741FDCA5C073DD8B7C6015F3EE3767316D495DFD100BDC3822954F0B",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-browser-1794774802255.json",
+      "sha256": "07E20E9F9C57C3CA2C579B124C399D24B02054E76E17E52A3551DF5A3DF67F82",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-browser-1794775162327.json",
+      "sha256": "5B3010BE9463B706AC6629CFF34F1AEE1EA0AEA326A6893CAE4C219622C11B26",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-2169684f96-postgres.json",
+      "sha256": "FC12E0BCDDC93A6852E0B129AEC5A609F85BD8912BCDA39A9600AF56D35B09DE",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-6732148954-postgres.json",
+      "sha256": "56EF1BEDD8CD363226970E8094859F4A72BBA3034CC94ED3B68501B532548E02",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-7c55830c05-postgres.json",
+      "sha256": "32C3721E0F3B4C6AC39A47AA53419300552D80ABE5F550BD1B0D3E4591A431F1",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-95d7b3691c-postgres.json",
+      "sha256": "AB6E15D51A280FC280288ABF7A41BA8551D58D1928824AB13831614B89409D72",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-aedbc1eeb5-postgres.json",
+      "sha256": "167628D660946BA254B2F1B234C5E00EDD6AD846A1276A26D72BF46BE00473DD",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-bfe0f3ad43-postgres.json",
+      "sha256": "0C25FFB081A04438DA1E9E398A75255E8811F700A5DE78351A892567BBF6740E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-c719862fc4-postgres.json",
+      "sha256": "DFEB3E2654EEDD4B0AB2ED4EF9CDD2BA62A50FA4704B104494F25597BCE8B032",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-019-A-pci-019a-f3d731b8dc-postgres.json",
+      "sha256": "79039858E28730630D8D0123648DEEFDFBA4EB1A3CB63C0EF4F14C140F189BEF",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/01-authenticated-dashboard.png",
+      "sha256": "4B1FAC25B3B5CC45CB293D4AA59A4F9BB6A194B44462F4FBF4E90EB14D8063E9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/02-fulfillment-confirmed.png",
+      "sha256": "8225B11D3F22525E00A240F94952366113805A0E16ABC9098BECA786F537042B",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/03-logout-login-screen.png",
+      "sha256": "9FB9D49BA48D8061E34355805096D33F48B71BD75FA2CDF17C41E0758023AFB0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/README.md",
+      "sha256": "727543D8410D699971CC9A077DEEBEFE9C005A61A9AB9177DE7E604004637CD7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/baseline.json",
+      "sha256": "50CAA610E0862CC7A1BDBB260FA56A623F95AE72EB51DF08EA5767DC98CBED25",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/browser-context-storage.json",
+      "sha256": "FED0F22AE068AE460EEA9C8FB290DD023F9249CC98CF80712AE5FC38A4F839C6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/browser-fetch-audit.json",
+      "sha256": "769D589D914094EDA9BD916BCB561AFFDDCFC4C36591A9485053A187E5E1D6D6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/browser-observations.json",
+      "sha256": "6D81FB6EF1E0DACE40D747011C59BA1DD2E03FA1064AF522C2931166B3B9C8C9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/browser-probe.js.txt",
+      "sha256": "BCB3296FB2A54C571956A6C3B1A25F428663A662861223B0187D3767A53B5C2E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/cleanup.json",
+      "sha256": "F62A73D81004F1B74996442CC6E55CDE2B168FC71D8ECDF2C516E4FC4ED58D91",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/db-events.jsonl",
+      "sha256": "56FAF030C21E89BB34F2F3ED9D8942103736E9282F64F0D38500B3CBC4F5DD06",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/db-verification-harness.mjs.txt",
+      "sha256": "21E18BCD68EBE39622731CCE513CDD48AA6A25DC5119AB002807E47E5C53233F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/fetch-audit.js.txt",
+      "sha256": "29542C4EAAFD76AE7FE52BD30097B2F48855AC10732A29143573F60F3A978F4C",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/git-final.json",
+      "sha256": "0CAAAA0BFEB218BC685AA40E215EEFACBF36B629A163824D1328016C636F336E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/http-probes.jsonl",
+      "sha256": "1B3E3BD85D11309233F6B720F00E0F78E7ECAAAC43C5D4524DFC1D0EC2E2645F",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/http-verification-harness.mjs.txt",
+      "sha256": "1DE25F6A04DC94BF4E12E85BC0E5FD4F1C904D54810E991D46F977CC15BC1D7C",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/manifest.json",
+      "sha256": "D4476CDBDC99936B025D34E63356FEED364193D63251D5B7534A878B3D09A9DC",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/network-responses.redacted.jsonl",
+      "sha256": "B703C9703CC9AA4F3E45152A7146C30E6BA80018DA4E31B229E5612D62D82CFF",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/runtime-api.redacted.jsonl",
+      "sha256": "DF3E78CC3353333E4589B1D0776ABC52BF4F1364F1DB9E780FA53FAB72AC70D4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/runtime-web.redacted.log.txt",
+      "sha256": "D40B015E1EF02D6D6EE566A10CAE755F77A9E2D4019C3357748C171FF5BA305D",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/token-leak-scan.json",
+      "sha256": "1C7FDB9D469831C8CD55CE18EF90047D13568368919437C7651786C086FEF9A2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/09_Engineering_Governance/evidence/PCI-ENG-020-B1-V1-20261116/validation.json",
+      "sha256": "5CC5A5A688B06F9E6FC3E4C8F8AD47C2839BE59A424EF2FEDC48EC259ABD0EFA",
+      "unchanged": true
+    }
+  ],
+  "priorUntrackedCount": 47,
+  "allUnchanged": true,
+  "originalLedgerPrefixUnchanged": true,
+  "originalLedgerSha256": "3cb0339744ab7f412ed2da5e7f26d9a7358f3e2a9ee8d1bce9557d69ed10a872",
+  "originalLedgerDiff": {
+    "added": 56,
+    "removed": 0
+  },
+  "indexExcludesPriorV1": true,
+  "originalLedgerDiffSha256": "c4b6f64168a3a12b4e49e70515b95301c3277bf9f2420fa5957d06bd1b3c3d88"
+}

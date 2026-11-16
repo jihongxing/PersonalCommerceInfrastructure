@@ -43,4 +43,25 @@ describe('services list', () => {
     fireEvent.click(screen.getByRole('button', { name: '重试' }));
     expect(state.refetch).toHaveBeenCalledOnce();
   });
+
+  it('separates unpublished and archived offerings and exposes only permitted management links', async () => {
+    state.query.data = [
+      { id: 'unpublished-1', title: '可继续管理', description: '撤回说明', state: 'unpublished' },
+      { id: 'archived-1', title: '历史服务', description: '归档说明', state: 'archived' },
+    ];
+    render(<ServicesPage />);
+    await userEvent.click(screen.getByRole('tab', { name: '未发布 (1)' }));
+    expect(screen.getByRole('link', { name: '编辑可继续管理' }).getAttribute('href')).toBe(
+      '/services/unpublished-1/edit',
+    );
+    expect(screen.getByText(/可编辑并按发布条件重新发布/)).toBeTruthy();
+    expect(screen.queryByRole('link', { name: '查看历史服务' })).toBeNull();
+    await userEvent.click(screen.getByRole('tab', { name: '已归档 (1)' }));
+    expect(screen.queryByRole('link', { name: '编辑历史服务' })).toBeNull();
+    expect(screen.getByRole('link', { name: '查看历史服务' }).getAttribute('href')).toBe(
+      '/services/archived-1',
+    );
+    expect(screen.getByText(/不能编辑或重新发布/)).toBeTruthy();
+    expect(screen.queryByRole('link', { name: '编辑可继续管理' })).toBeNull();
+  });
 });

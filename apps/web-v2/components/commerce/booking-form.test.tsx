@@ -20,13 +20,13 @@ describe('visitor request form', () => {
     state.submit.mockResolvedValue({ resultAccessToken: 'result-token' });
     const user = userEvent.setup();
     render(<BookingForm offeringId="service-1" />);
-    await user.click(screen.getByRole('button', { name: '提交预约' }));
+    await user.click(screen.getByRole('button', { name: '提交请求' }));
     expect(await screen.findByText('请输入您的姓名')).toBeInTheDocument();
     expect(state.submit).not.toHaveBeenCalled();
     await user.type(screen.getByLabelText('您的姓名'), 'Visitor');
     await user.type(screen.getByLabelText('联系方式'), 'contact');
-    await user.type(screen.getByLabelText('预约说明'), 'Details');
-    await user.click(screen.getByRole('button', { name: '提交预约' }));
+    await user.type(screen.getByLabelText('请求说明'), 'Details');
+    await user.click(screen.getByRole('button', { name: '提交请求' }));
     await waitFor(() =>
       expect(state.submit).toHaveBeenCalledWith({
         contactName: 'Visitor',

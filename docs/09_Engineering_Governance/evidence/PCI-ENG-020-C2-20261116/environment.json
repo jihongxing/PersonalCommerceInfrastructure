@@ -1,0 +1,23 @@
+{
+  "os": "Windows; PowerShell",
+  "browser": "gstack /browse, real Headless Chromium 145",
+  "web": "Production Next.js 16.4.5, React 19.3.0, http://localhost:3448",
+  "api": "Real Shared API, http://127.0.0.1:18083; local auth in APP_ENV=development",
+  "postgres": {
+    "version": "PostgreSQL 17.10 (Debian 17.10-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "sessionRows": [
+      {
+        "revoked": true,
+        "count": 1
+      }
+    ]
+  },
+  "container": {
+    "database": "pci_ops_migration_fixture_c2",
+    "port": "39271",
+    "container": "pci-020c2-3f9945a5"
+  },
+  "fixtures": "One synthetic Creator, four new Offerings, six new Customer Requests. Archived uses only a new disposable draft fixture changed to archived, because no Creator archive API exists. No real or historical data.",
+  "identity": "No Operations identity used; Operations accounts/sessions both zero",
+  "limitations": "HTTP loopback with forced Secure cookie, not trusted HTTPS or production ACL validation. No external auth/provider acceptance."
+}

@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
 import {
   useCreatorRequests,
   useCreatorConfirmedRequests,
+  type CreatorRequest,
 } from '@/features/creator-dashboard/api/use-creator-requests';
 import {
   useConfirmRequest,
@@ -12,6 +13,10 @@ import {
   useConfirmFulfillment,
 } from '@/features/creator-dashboard/api/use-creator-actions';
 import { RequestCard } from '@/components/creator/request-card';
+import {
+  RequestDecisionDialog,
+  type RequestDecision,
+} from '@/components/creator/request-decision-dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -20,20 +25,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 function CreatorDashboardContent() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('submitted');
-  const [actionMessage, setActionMessage] = useState('');
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    focus?: boolean;
+  } | null>(null);
+  const [decision, setDecision] = useState<{
+    request: CreatorRequest;
+    kind: RequestDecision;
+  } | null>(null);
+  const feedbackElement = useRef<HTMLParagraphElement>(null);
   const submitted = useCreatorRequests();
   const confirmed = useCreatorConfirmedRequests();
   const confirmRequest = useConfirmRequest();
   const declineRequest = useDeclineRequest();
   const confirmFulfillment = useConfirmFulfillment();
 
+  useEffect(() => {
+    // The request's original button disappears after a successful terminal decision.
+    if (feedback?.focus) feedbackElement.current?.focus();
+  }, [feedback]);
+
   async function runAction(action: () => Promise<unknown>, success: string) {
-    setActionMessage('');
+    setFeedback(null);
     try {
       await action();
-      setActionMessage(success);
+      setFeedback({ type: 'success', message: success });
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '操作失败，请重试');
+      setFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '操作失败，请重试',
+      });
     }
   }
 
@@ -63,7 +85,7 @@ function CreatorDashboardContent() {
         ))}
       </div>
     );
-  if (submitted.error || confirmed.error)
+  if ((submitted.error && !submitted.data) || (confirmed.error && !confirmed.data))
     return (
       <div className="creator-list-page">
         <Card>
@@ -96,9 +118,28 @@ function CreatorDashboardContent() {
           <p>查看请求、记录 Creator 决定并确认履约</p>
         </div>
       </header>
-      {actionMessage && (
-        <p role="status" className="mb-4 text-sm">
-          {actionMessage}
+      {(submitted.error || confirmed.error) && (
+        <div role="alert" className="mb-4 space-y-2">
+          <p>最新请求状态加载失败，请刷新后再操作。</p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              void submitted.refetch();
+              void confirmed.refetch();
+            }}
+          >
+            刷新请求
+          </Button>
+        </div>
+      )}
+      {feedback && (
+        <p
+          ref={feedbackElement}
+          tabIndex={-1}
+          role={feedback.type === 'error' ? 'alert' : 'status'}
+          className="mb-4 text-sm"
+        >
+          {feedback.message}
         </p>
       )}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -122,13 +163,17 @@ function CreatorDashboardContent() {
               <RequestCard
                 key={request.action.id}
                 request={request}
-                onConfirm={(actionId) =>
-                  void runAction(() => confirmRequest.mutateAsync(actionId), '已确认请求')
+                onConfirm={() => {
+                  setFeedback(null);
+                  setDecision({ request, kind: 'confirm' });
+                }}
+                onDecline={() => {
+                  setFeedback(null);
+                  setDecision({ request, kind: 'decline' });
+                }}
+                isLoading={
+                  confirmRequest.isPending || declineRequest.isPending || !!submitted.error
                 }
-                onDecline={(actionId) =>
-                  void runAction(() => declineRequest.mutateAsync(actionId), '已拒绝请求')
-                }
-                isLoading={confirmRequest.isPending || declineRequest.isPending}
               />
             ))
           )}
@@ -157,6 +202,30 @@ function CreatorDashboardContent() {
           )}
         </TabsContent>
       </Tabs>
+      {decision && (
+        <RequestDecisionDialog
+          request={decision.request}
+          decision={decision.kind}
+          available={
+            !submitted.error &&
+            submittedRequests.some((request) => request.action.id === decision.request.action.id)
+          }
+          onDismiss={() => setDecision(null)}
+          onCommit={() =>
+            (decision.kind === 'confirm' ? confirmRequest : declineRequest).mutateAsync(
+              decision.request.action.id,
+            )
+          }
+          onSuccess={() => {
+            setFeedback({
+              type: 'success',
+              message: decision.kind === 'confirm' ? '已确认请求' : '已拒绝请求',
+              focus: true,
+            });
+            setDecision(null);
+          }}
+        />
+      )}
     </div>
   );
 }

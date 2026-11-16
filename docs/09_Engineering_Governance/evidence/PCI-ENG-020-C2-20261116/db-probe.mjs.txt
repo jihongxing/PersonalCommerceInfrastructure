@@ -1,0 +1,5 @@
+import{createRequire}from'node:module';import{readFileSync,appendFileSync}from'node:fs';
+const req=createRequire('D:/codeSpace/PersonalCommerceInfrastructure/package.json');
+const sql=req('postgres')(process.env.DATABASE_URL,{max:1});
+const log=e=>{const item={timestamp:new Date().toISOString(),...e};appendFileSync('E:/User/jihx/AppData/Local/Temp/pci-020c2/db-events.jsonl',JSON.stringify(item)+'\n');console.log(JSON.stringify(item));};
+try{log({label:process.argv[2],offerings:await sql`select id,title,state from service_offerings order by title`,requests:await sql`select a.id,a.state,c.contact_name from commerce_actions a join customers c on c.id=a.customer_id order by a.id`,fulfillment:await sql`select action_id,status from fulfillment_codes order by action_id`,operations:await sql`select (select count(*)::int from operations_accounts) accounts,(select count(*)::int from operations_sessions) sessions`,migrationCount:(await sql`select count(*)::int count from drizzle.__drizzle_migrations`)[0].count});}finally{await sql.end();}

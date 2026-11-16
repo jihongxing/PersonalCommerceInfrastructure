@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, ApiError } from '@/lib/api/client';
 
 export interface CreatorDecisionResponse {
   actionId: string;
@@ -12,10 +12,15 @@ async function decide(
   actionId: string,
   fallback: string,
 ): Promise<CreatorDecisionResponse> {
-  const { data, error } = await apiClient.POST<CreatorDecisionResponse>(path, {
+  const { data, error, status } = await apiClient.POST<CreatorDecisionResponse>(path, {
     params: { path: { actionId } },
   });
-  if (error) throw new Error(error.error?.message || fallback);
+  if (error)
+    throw new ApiError(
+      error.error?.message || error.message || fallback,
+      error.error?.code,
+      status,
+    );
   if (!data) throw new Error('No data returned from API');
   return data;
 }
@@ -25,11 +30,12 @@ export function useConfirmRequest(_legacyAccessToken?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (actionId: string) =>
-      decide('/api/v1/creator/requests/{actionId}/confirm', actionId, 'Failed to confirm request'),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['creator-requests'] });
-      void queryClient.invalidateQueries({ queryKey: ['creator-confirmed-requests'] });
-    },
+      decide('/api/v1/creator/requests/{actionId}/confirm', actionId, '确认请求失败，请重试。'),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['creator-requests'] }),
+        queryClient.invalidateQueries({ queryKey: ['creator-confirmed-requests'] }),
+      ]),
   });
 }
 
@@ -38,10 +44,12 @@ export function useDeclineRequest(_legacyAccessToken?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (actionId: string) =>
-      decide('/api/v1/creator/requests/{actionId}/decline', actionId, 'Failed to decline request'),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['creator-requests'] });
-    },
+      decide('/api/v1/creator/requests/{actionId}/decline', actionId, '拒绝请求失败，请重试。'),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['creator-requests'] }),
+        queryClient.invalidateQueries({ queryKey: ['creator-confirmed-requests'] }),
+      ]),
   });
 }
 

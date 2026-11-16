@@ -16,6 +16,7 @@ import {
 } from '@/features/creator-onboarding/api/use-creator-services';
 import { FileText, Edit2, AlertCircle } from 'lucide-react';
 import { PublishChecklist } from '@/features/creator-onboarding/components/publish-checklist';
+import { offeringLifecycle } from '@/features/creator-onboarding/lib/offering-lifecycle';
 
 export default function ServiceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -137,20 +138,21 @@ export default function ServiceDetailPage() {
                   : 'outline'
             }
           >
-            {service.state === 'published'
-              ? '已发布'
-              : service.state === 'draft'
-                ? '草稿'
-                : '已下架'}
+            {offeringLifecycle[service.state].label}
           </Badge>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {offeringLifecycle[service.state].description}
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href={`/services/${service.id}/edit`}>
-              <Edit2 className="w-4 h-4 mr-2" />
-              编辑
-            </Link>
-          </Button>
+          {service.state !== 'archived' && (
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href={`/services/${service.id}/edit`}>
+                <Edit2 className="w-4 h-4 mr-2" />
+                编辑
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -318,7 +320,7 @@ export default function ServiceDetailPage() {
                 <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-200 rounded">
                   <AlertCircle className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-gray-700">
-                    此服务已下架。消费者无法看到。已有的请求仍会保留。
+                    此服务已归档，不能编辑或重新发布。已有的请求仍会保留。
                   </p>
                 </div>
               )}

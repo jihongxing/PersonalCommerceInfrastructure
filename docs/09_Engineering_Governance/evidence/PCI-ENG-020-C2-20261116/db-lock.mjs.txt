@@ -1,0 +1,6 @@
+import {createRequire} from 'node:module';
+import {writeFileSync, existsSync} from 'node:fs';
+const require=createRequire('D:/codeSpace/PersonalCommerceInfrastructure/package.json');
+const sql=require('postgres')(process.env.DATABASE_URL,{max:1});
+const marker='E:/User/jihx/AppData/Local/Temp/pci-020c2/lock-ready';
+try {await sql.begin(async tx=>{await tx`select id from commerce_actions where id='71123914-8743-4635-9439-3a66c988b3ba' for update`;writeFileSync(marker,new Date().toISOString());console.log('Disposable request locked');while(!existsSync('E:/User/jihx/AppData/Local/Temp/pci-020c2/lock-release')) await new Promise(r=>setTimeout(r,200));});console.log('Disposable request released');}finally{await sql.end();}

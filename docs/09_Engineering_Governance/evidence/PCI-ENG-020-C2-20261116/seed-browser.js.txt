@@ -1,0 +1,22 @@
+window.__c2ProbeResults=[];
+window.__c2Probe=async function(name,path,method='GET',body){
+ const csrf=document.cookie.split('; ').find(x=>x.startsWith('pci_creator_csrf='))?.slice('pci_creator_csrf='.length);
+ const response=await fetch(path,{method,credentials:'same-origin',headers:{...(csrf?{'x-csrf-token':decodeURIComponent(csrf)}:{}),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const data=await response.json();window.__c2ProbeResults.push({timestamp:new Date().toISOString(),name,path,method,status:response.status,body:data});return {status:response.status,body:data};
+};
+const p=window.__c2Probe;
+async function ok(name,path,method,body){const r=await p(name,path,method,body);if(r.status>=300)throw Error(name+':'+JSON.stringify(r.body));return r.body;}
+await ok('profile','/api/v1/creator/identity','PATCH',{profile:{displayName:'C2 Disposable Creator',bio:'Core workflow browser verification',socialLinks:[]}});
+const identity=await ok('capability','/api/v1/creator/identity/capabilities','POST',{catalogItemId:'capability-dance-teaching',name:'舞蹈教学',description:'C2 disposable verification'});
+const input={capabilityIds:[identity.capabilityIds.at(-1)],templateId:'template-dance-private-lesson',description:'C2 disposable workflow verification.',availabilityDescription:'Arrange with creator.',requestInstructions:'Describe the request.'};
+const live=await ok('live_create','/api/v1/creator/offerings','POST',{...input,title:'C2 Published Lesson'});
+await ok('live_publish','/api/v1/creator/offerings/'+live.id+'/publish','POST');
+const unpublished=await ok('unpublished_create','/api/v1/creator/offerings','POST',{...input,title:'C2 Unpublished Lesson'});
+await ok('unpublished_publish','/api/v1/creator/offerings/'+unpublished.id+'/publish','POST');
+await ok('unpublish','/api/v1/creator/offerings/'+unpublished.id+'/unpublish','POST');
+const archived=await ok('archive_fixture_create','/api/v1/creator/offerings','POST',{...input,title:'C2 Archived History'});
+const draft=await ok('draft_create','/api/v1/creator/offerings','POST',{...input,title:'C2 Draft Lesson'});
+const requests={};
+for(const name of ['Confirm','Decline','Conflict','Retry']) requests[name]=await ok('request_'+name,'/api/v1/public/offerings/'+live.id+'/requests','POST',{contactName:'C2 '+name+' Visitor',contactMethod:name.toLowerCase()+'@example.test',requestMessage:'C2 '+name+' request: discuss next Tuesday.'});
+window.__c2Seed={live:live.id,unpublished:unpublished.id,archived:archived.id,draft:draft.id,requests};
+return window.__c2Seed;

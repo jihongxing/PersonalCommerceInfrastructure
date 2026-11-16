@@ -1,0 +1,18 @@
+import {createRequire} from 'node:module';
+import {execFileSync} from 'node:child_process';
+import {writeFileSync} from 'node:fs';
+import path from 'node:path';
+const root='D:/codeSpace/PersonalCommerceInfrastructure';
+const require=createRequire(root+'/apps/web-v2/package.json');
+const ts=require('typescript');process.chdir(root+'/apps/web-v2');
+const configPath=root+'/apps/web-v2/tsconfig.tests.json';
+const config=ts.readConfigFile(configPath,ts.sys.readFile);
+const parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,path.dirname(configPath),undefined,configPath);
+const changed=execFileSync('git',['diff','--name-only','--','apps/web-v2'],{encoding:'utf8',cwd:root}).trim().split(/\r?\n/);
+const norm=p=>path.resolve(p).replaceAll('\\','/').toLowerCase();
+const overrides=new Map(changed.filter(p=>/\.[cm]?[jt]sx?$/.test(p)).map(p=>[norm(root+'/'+p),execFileSync('git',['show','HEAD:'+p],{encoding:'utf8',cwd:root})]));
+const added=new Set(['apps/web-v2/components/creator/request-decision-dialog.tsx','apps/web-v2/features/creator-onboarding/components/service-form.test.tsx','apps/web-v2/features/creator-onboarding/lib/offering-lifecycle.ts'].map(p=>norm(root+'/'+p)));
+function diagnose(baseline){const host=ts.createCompilerHost(parsed.options);const read=host.readFile;host.readFile=p=>baseline&&overrides.has(norm(p))?overrides.get(norm(p)):read(p);const program=ts.createProgram(parsed.fileNames.filter(p=>!baseline||!added.has(norm(p))),{...parsed.options,incremental:false},host);return ts.getPreEmitDiagnostics(program).map(d=>({file:d.file?path.relative(root,d.file.fileName).replaceAll('\\','/'):'config',code:d.code,message:ts.flattenDiagnosticMessageText(d.messageText,' ')})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));}
+const current=diagnose(false),baseline=diagnose(true);
+const remaining=baseline.map(x=>JSON.stringify(x));const introduced=current.filter(x=>{const i=remaining.indexOf(JSON.stringify(x));if(i<0)return true;remaining.splice(i,1);return false;});const result={introduced,removedCount:remaining.length,method:'Read-only TypeScript compiler host substitutes HEAD contents for changed tracked Web files; excludes new C2 roots for baseline. Diagnostic file/code/message multisets compared without line-number shifts.',baselineHead:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),baselineCount:baseline.length,currentCount:current.length,equal:JSON.stringify(baseline)===JSON.stringify(current),current};
+writeFileSync('E:/User/jihx/AppData/Local/Temp/pci-020c2/test-typecheck-baseline.json',JSON.stringify(result,null,2));console.log(JSON.stringify({baselineCount:baseline.length,currentCount:current.length,equal:result.equal,introduced:result.introduced.length,removedCount:result.removedCount}));

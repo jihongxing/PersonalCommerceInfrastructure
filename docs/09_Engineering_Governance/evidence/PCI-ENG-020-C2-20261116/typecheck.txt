@@ -1,0 +1,3 @@
+
+> web-v2@0.1.0 typecheck D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2
+> tsc --noEmit

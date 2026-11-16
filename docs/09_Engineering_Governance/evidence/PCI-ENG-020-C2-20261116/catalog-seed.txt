@@ -1,0 +1,5 @@
+
+> personal-commerce-infrastructure@0.2.0 db:seed:service-policy D:\codeSpace\PersonalCommerceInfrastructure
+> tsx scripts/database/import-service-policy-catalog.ts
+
+Imported service policy catalog v1.

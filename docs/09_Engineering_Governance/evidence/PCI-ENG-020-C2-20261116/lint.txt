@@ -1,0 +1,29 @@
+
+> web-v2@0.1.0 lint D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2
+> eslint
+
+
+D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2\components\commerce\order-result-card.tsx
+  111:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2\components\commerce\stable-sharing-tools.tsx
+  80:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2\features\creator-onboarding\components\service-form.tsx
+  219:48  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2\features\creator-onboarding\components\service-form.tsx:219:48
+  217 |                 name="templateId"
+  218 |                 render={({ field }) => {
+> 219 |                   const selectedCapabilityId = form.watch('capabilityIds')[0];
+      |                                                ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  220 |                   const selectedCapability = capabilities?.find(
+  221 |                     (capability) => capability.id === selectedCapabilityId,
+  222 |                   );  react-hooks/incompatible-library
+
+D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2\lib\api\optimization.ts
+  40:7  warning  '_key' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 4 problems (0 errors, 4 warnings)

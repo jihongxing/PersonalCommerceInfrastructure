@@ -11184,3 +11184,56 @@ PCI-ENG-020-B1-V2_ALL_REPOSITORY_GATES = NOT CLAIMED — EXISTING UNRELATED FAIL
 PCI-ENG-020-B1-V2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
 PCI-ENG-020-B1-V2_PUSH = NONE
 ```
+
+
+## DEV-090 / PCI-ENG-020-C2 — Creator Core Workflow UX Improvement
+
+Main Controller authorizes CWD-007, CWD-010 and CWD-TEST-001 on 2026-11-16 after C1 and B1-V2
+acceptance. Scope: distinguish existing Offering lifecycle states (FR-013–FR-022), add explicit
+Creator Confirm/Decline review and safe submission feedback (FR-034–FR-042), and correct stale
+Booking Form test copy against FR-028–FR-032 and FD-020-BD-01. This authorized frontend behavior
+correction does not change Domain states, publishing rules, API, Auth/BFF, Fulfillment or VS-01.
+
+Services now separates Draft, Published, Unpublished and Archived with accurate descriptions,
+counts and allowed links. Archived details and direct edit routes are read-only; no archive API
+was introduced. Confirm/Decline use a native modal to review service/customer/contact/request id
+and message, explain separate terminal effects, allow cancellation before submission and prevent
+duplicate submissions. Pending/result/error focus is explicit. Both request queries reconcile
+after success or failure; 409 and unavailable/refetch failures preserve context and disable stale
+decisions. Fulfillment remains an independent operation. Booking Form component copy was correct;
+only three outdated test queries changed from booking language to Request language.
+
+Final Creator Web suite: 35 files / 110 tests, zero failures or unhandled errors. Application
+Typecheck, ESLint (zero errors, four existing warnings), selected formatting and Production Build
+passed. Closest Domain/Application/Fulfillment regression: 5 files / 50 tests passed. Full Web
+test Typecheck remains an existing matcher problem: read-only HEAD comparison shows 80 to 78
+diagnostics, zero introduced. It is not reported as PASS or silently fixed outside this scope.
+
+Real gstack Chromium + production Next BFF + Shared API + disposable PostgreSQL 17.10 verified
+Confirm/Decline, Cancel/Escape with unchanged submitted SQL, actual 409 competition, actual API
+unavailable 503 followed by refresh/retry, and final-version mobile/error focus. A database row
+lock delayed a new request: two same-turn DOM clicks issued one real Confirm POST; pending Escape
+was blocked. UI republish/unpublish, existing fulfillment confirmation and QR API also passed.
+Archived uses only a new disposable draft fixture set to archived because no Creator archive
+endpoint exists; it does not certify an archive workflow or modify real historical data.
+
+Evidence includes 158 actual responses, 112 application-fetch observations, intermediate/final
+SQL, screenshots and redacted logs. Trusted HTTPS, production ACL, external auth, other browsers,
+screen readers and all AT-001–AT-013 are not claimed. Normal UI logout revoked the test Session;
+task services/browser stopped, exact disposable container and temporary sensitive files removed.
+
+Report: `docs/09_Engineering_Governance/PCI-ENG-020-C2-Creator-Core-Workflow-UX-Improvement.md`.
+Evidence: `docs/09_Engineering_Governance/evidence/PCI-ENG-020-C2-20261116/README.md`.
+All 46 prior untracked files and the original V1 ledger byte prefix were preserved and hash-checked;
+only this DEV-090 addition is staged with C2. Independent implementation commit, no Push.
+
+```ini
+PCI-ENG-020-C2 = CREATOR CORE WORKFLOW UX IMPROVEMENT — AWAITING MAIN CONTROLLER ACCEPTANCE
+PCI-ENG-020-C2_SCOPE = CWD-007 + CWD-010 + CWD-TEST-001
+PCI-ENG-020-C2_CREATOR_WEB_TESTS = 110/110 PASSED
+PCI-ENG-020-C2_APP_TYPECHECK_LINT_FORMAT_BUILD = PASSED
+PCI-ENG-020-C2_FULL_TEST_TYPECHECK = EXISTING MATCHER ERRORS — ZERO INTRODUCED
+PCI-ENG-020-C2_AUTH_API_DOMAIN_SCHEMA_VS01_CHANGES = NONE
+PCI-ENG-020-C2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
+PCI-ENG-020-C2_PUSH = NONE
+```

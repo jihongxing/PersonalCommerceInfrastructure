@@ -5,6 +5,7 @@ import { ArrowRight, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { offeringLifecycle } from '@/features/creator-onboarding/lib/offering-lifecycle';
 import {
   useCreatorServices,
   type ServiceOffering,
@@ -19,6 +20,10 @@ function ServiceList({ services, empty }: { services: ServiceOffering[]; empty: 
           <div className="min-w-0">
             <h3>{service.title}</h3>
             <p>{service.description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {offeringLifecycle[service.state].label}：
+              {offeringLifecycle[service.state].description}
+            </p>
             {service.policyStatus &&
               service.policyStatus !== 'auto_approved' &&
               service.policyStatus !== 'approved' && (
@@ -33,15 +38,17 @@ function ServiceList({ services, empty }: { services: ServiceOffering[]; empty: 
               )}
           </div>
           <div className="creator-service-actions">
-            <Button asChild variant="ghost" size="icon" className="min-h-11 min-w-11">
-              <Link
-                href={`/services/${service.id}/edit`}
-                aria-label={`编辑${service.title}`}
-                title="编辑服务"
-              >
-                <Pencil aria-hidden="true" />
-              </Link>
-            </Button>
+            {service.state !== 'archived' && (
+              <Button asChild variant="ghost" size="icon" className="min-h-11 min-w-11">
+                <Link
+                  href={`/services/${service.id}/edit`}
+                  aria-label={`编辑${service.title}`}
+                  title="编辑服务"
+                >
+                  <Pencil aria-hidden="true" />
+                </Link>
+              </Button>
+            )}
             <Button asChild variant="ghost" size="icon" className="min-h-11 min-w-11">
               <Link
                 href={`/services/${service.id}`}
@@ -63,9 +70,8 @@ export default function ServicesPage() {
   const services = data ?? [];
   const drafts = services.filter((service) => service.state === 'draft');
   const published = services.filter((service) => service.state === 'published');
-  const archived = services.filter(
-    (service) => service.state === 'archived' || service.state === 'unpublished',
-  );
+  const unpublished = services.filter((service) => service.state === 'unpublished');
+  const archived = services.filter((service) => service.state === 'archived');
 
   return (
     <div className="creator-list-page">
@@ -107,15 +113,18 @@ export default function ServicesPage() {
           </div>
         ) : (
           <Tabs defaultValue="draft" className="mt-5">
-            <TabsList className="grid h-auto w-full max-w-md grid-cols-3">
+            <TabsList className="grid h-auto w-full max-w-xl grid-cols-2 sm:grid-cols-4">
               <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="draft">
                 草稿 ({drafts.length})
               </TabsTrigger>
               <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="published">
                 已发布 ({published.length})
               </TabsTrigger>
+              <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="unpublished">
+                未发布 ({unpublished.length})
+              </TabsTrigger>
               <TabsTrigger className="min-h-11 min-w-0 px-1 text-xs sm:text-sm" value="archived">
-                已下架 ({archived.length})
+                已归档 ({archived.length})
               </TabsTrigger>
             </TabsList>
             <TabsContent value="draft">
@@ -125,7 +134,10 @@ export default function ServicesPage() {
               <ServiceList services={published} empty="还没有已发布的服务。" />
             </TabsContent>
             <TabsContent value="archived">
-              <ServiceList services={archived} empty="还没有已下架的服务。" />
+              <ServiceList services={archived} empty="还没有已归档的服务。" />
+            </TabsContent>
+            <TabsContent value="unpublished">
+              <ServiceList services={unpublished} empty="还没有未发布的服务。" />
             </TabsContent>
           </Tabs>
         )}

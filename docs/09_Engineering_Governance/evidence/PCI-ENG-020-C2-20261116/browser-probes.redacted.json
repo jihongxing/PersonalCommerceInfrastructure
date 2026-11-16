@@ -1,0 +1,316 @@
+[
+  {
+    "phase": "browser-phase1-raw.json",
+    "probes": [
+      {
+        "timestamp": "2026-11-16T12:29:47.740Z",
+        "name": "profile",
+        "path": "/api/v1/creator/identity",
+        "method": "PATCH",
+        "status": 200,
+        "body": {
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "profile": {
+            "displayName": "C2 Disposable Creator",
+            "bio": "Core workflow browser verification",
+            "socialLinks": []
+          },
+          "capabilityIds": [],
+          "capabilities": [],
+          "state": "draft"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:47.813Z",
+        "name": "capability",
+        "path": "/api/v1/creator/identity/capabilities",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "profile": {
+            "displayName": "C2 Disposable Creator",
+            "bio": "Core workflow browser verification",
+            "socialLinks": []
+          },
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "capabilities": [
+            {
+              "id": "49a1064a-9b50-4a80-a2e3-90adb7eaff09",
+              "name": "舞蹈教学",
+              "description": "C2 disposable verification",
+              "catalogItemId": "capability-dance-teaching",
+              "catalogStatus": "active",
+              "policyVersion": "v1"
+            }
+          ],
+          "state": "draft"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:47.895Z",
+        "name": "live_create",
+        "path": "/api/v1/creator/offerings",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "id": "5f7feb54-8b73-4e81-bab0-ae563d2fe963",
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "title": "C2 Published Lesson",
+          "description": "C2 disposable workflow verification.",
+          "requestInstructions": "Describe the request.",
+          "state": "draft",
+          "policyStatus": "auto_approved",
+          "missingPublishConditions": [],
+          "templateId": "template-dance-private-lesson",
+          "availabilityDescription": "Arrange with creator.",
+          "policyVersion": "v1"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:47.988Z",
+        "name": "live_publish",
+        "path": "/api/v1/creator/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/publish",
+        "method": "POST",
+        "status": 200,
+        "body": {
+          "offering": {
+            "id": "5f7feb54-8b73-4e81-bab0-ae563d2fe963",
+            "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+            "state": "published"
+          },
+          "distributionAsset": {
+            "offeringId": "5f7feb54-8b73-4e81-bab0-ae563d2fe963",
+            "publicUrl": "http://localhost:3448/public/5f7feb54-8b73-4e81-bab0-ae563d2fe963",
+            "state": "generated"
+          }
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.047Z",
+        "name": "unpublished_create",
+        "path": "/api/v1/creator/offerings",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "id": "fe752827-31cc-4887-9d37-d1a68b6620c0",
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "title": "C2 Unpublished Lesson",
+          "description": "C2 disposable workflow verification.",
+          "requestInstructions": "Describe the request.",
+          "state": "draft",
+          "policyStatus": "auto_approved",
+          "missingPublishConditions": [],
+          "templateId": "template-dance-private-lesson",
+          "availabilityDescription": "Arrange with creator.",
+          "policyVersion": "v1"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.115Z",
+        "name": "unpublished_publish",
+        "path": "/api/v1/creator/offerings/fe752827-31cc-4887-9d37-d1a68b6620c0/publish",
+        "method": "POST",
+        "status": 200,
+        "body": {
+          "offering": {
+            "id": "fe752827-31cc-4887-9d37-d1a68b6620c0",
+            "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+            "state": "published"
+          },
+          "distributionAsset": {
+            "offeringId": "fe752827-31cc-4887-9d37-d1a68b6620c0",
+            "publicUrl": "http://localhost:3448/public/fe752827-31cc-4887-9d37-d1a68b6620c0",
+            "state": "generated"
+          }
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.174Z",
+        "name": "unpublish",
+        "path": "/api/v1/creator/offerings/fe752827-31cc-4887-9d37-d1a68b6620c0/unpublish",
+        "method": "POST",
+        "status": 200,
+        "body": {
+          "id": "fe752827-31cc-4887-9d37-d1a68b6620c0",
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "title": "C2 Unpublished Lesson",
+          "description": "C2 disposable workflow verification.",
+          "requestInstructions": "Describe the request.",
+          "state": "unpublished",
+          "policyStatus": "approved",
+          "missingPublishConditions": [],
+          "templateId": "template-dance-private-lesson",
+          "availabilityDescription": "Arrange with creator.",
+          "policyVersion": "v1"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.232Z",
+        "name": "archive_fixture_create",
+        "path": "/api/v1/creator/offerings",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "id": "eb09371a-a794-4eac-b55c-aaa3cf88d96d",
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "title": "C2 Archived History",
+          "description": "C2 disposable workflow verification.",
+          "requestInstructions": "Describe the request.",
+          "state": "draft",
+          "policyStatus": "auto_approved",
+          "missingPublishConditions": [],
+          "templateId": "template-dance-private-lesson",
+          "availabilityDescription": "Arrange with creator.",
+          "policyVersion": "v1"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.289Z",
+        "name": "draft_create",
+        "path": "/api/v1/creator/offerings",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "id": "3f4b0a25-ce5b-4f65-9a91-78b3d129b4b5",
+          "creatorId": "806c971b-9bd4-4b62-b56e-e91ee6ab11c6",
+          "capabilityIds": [
+            "49a1064a-9b50-4a80-a2e3-90adb7eaff09"
+          ],
+          "title": "C2 Draft Lesson",
+          "description": "C2 disposable workflow verification.",
+          "requestInstructions": "Describe the request.",
+          "state": "draft",
+          "policyStatus": "auto_approved",
+          "missingPublishConditions": [],
+          "templateId": "template-dance-private-lesson",
+          "availabilityDescription": "Arrange with creator.",
+          "policyVersion": "v1"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.353Z",
+        "name": "request_Confirm",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "actionId": "05679559-ab95-4d8f-a146-a81f37de21ae",
+          "resultAccessToken": "[REDACTED]",
+          "state": "submitted",
+          "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.401Z",
+        "name": "request_Decline",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "actionId": "b1d52c92-7b61-4484-ab95-2688a71ad12d",
+          "resultAccessToken": "[REDACTED]",
+          "state": "submitted",
+          "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.448Z",
+        "name": "request_Conflict",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "actionId": "bf564411-666b-4451-b460-e78c9be461d2",
+          "resultAccessToken": "[REDACTED]",
+          "state": "submitted",
+          "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:29:48.525Z",
+        "name": "request_Retry",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "actionId": "1e0c940b-09a9-41cd-b1c3-0c2312eeff3a",
+          "resultAccessToken": "[REDACTED]",
+          "state": "submitted",
+          "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:35:36.076Z",
+        "name": "competing_confirm",
+        "path": "/api/v1/creator/requests/bf564411-666b-4451-b460-e78c9be461d2/confirm",
+        "method": "POST",
+        "status": 200,
+        "body": {
+          "actionId": "bf564411-666b-4451-b460-e78c9be461d2",
+          "state": "confirmed",
+          "resultAccessToken": "[REDACTED]"
+        }
+      }
+    ]
+  },
+  {
+    "phase": "browser-phase2a-raw.json",
+    "probes": [
+      {
+        "timestamp": "2026-11-16T12:52:53.722Z",
+        "name": "final_conflict_create",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "body": {
+          "actionId": "24b535b4-184a-4baf-a4e6-dd2424a2ca61",
+          "resultAccessToken": "[REDACTED]",
+          "state": "submitted",
+          "message": "Your Request was submitted and is waiting for the Creator. This status records only the Creator's response to your Request."
+        }
+      }
+    ]
+  },
+  {
+    "phase": "browser-phase2b-raw.json",
+    "probes": [
+      {
+        "timestamp": "2026-11-16T12:53:22.682Z",
+        "name": "final_competitor_confirm",
+        "path": "/api/v1/creator/requests/24b535b4-184a-4baf-a4e6-dd2424a2ca61/confirm",
+        "method": "POST",
+        "status": 200,
+        "body": {
+          "actionId": "24b535b4-184a-4baf-a4e6-dd2424a2ca61",
+          "state": "confirmed",
+          "resultAccessToken": "[REDACTED]"
+        }
+      },
+      {
+        "timestamp": "2026-11-16T12:54:35.506Z",
+        "name": "qr_regression",
+        "path": "/api/v1/public/fulfillment-code/FC-354262OR/qrcode",
+        "method": "GET",
+        "status": 200,
+        "body": {
+          "dataUrl": "[PNG data URL omitted: 2430 characters]"
+        }
+      }
+    ]
+  }
+]

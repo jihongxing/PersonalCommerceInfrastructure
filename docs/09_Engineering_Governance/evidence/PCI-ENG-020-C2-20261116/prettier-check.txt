@@ -1,0 +1,12 @@
+warning: in the working copy of 'apps/web-v2/app/(creator)/requests/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/app/(creator)/services/[id]/page.test.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/app/(creator)/services/[id]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/app/(creator)/services/page.test.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/app/(creator)/services/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/components/commerce/booking-form.test.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/features/creator-dashboard/api/use-creator-actions.test.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/features/creator-dashboard/api/use-creator-actions.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/features/creator-onboarding/components/service-form.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web-v2/styles/globals.css', LF will be replaced by CRLF the next time Git touches it
+Checking formatting...
+All matched files use Prettier code style!

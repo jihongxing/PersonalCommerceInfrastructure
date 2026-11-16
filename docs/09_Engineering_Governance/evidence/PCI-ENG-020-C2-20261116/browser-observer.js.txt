@@ -1,0 +1,11 @@
+window.__c2Observations=[];
+window.__c2Fetches=[];
+window.__c2OriginalFetch=window.fetch.bind(window);
+window.fetch=async function(input,options){
+ const request=new Request(input,options);
+ const response=await window.__c2OriginalFetch(input,options);
+ if(new URL(request.url).pathname.startsWith('/api/')) window.__c2Fetches.push({timestamp:new Date().toISOString(),path:new URL(request.url).pathname,method:request.method,status:response.status,sameOrigin:new URL(request.url).origin===location.origin,authorizationHeader:request.headers.has('authorization')});
+ return response;
+};
+window.__c2Observe=(name)=>{const dialog=document.querySelector('dialog');const event={timestamp:new Date().toISOString(),name,url:location.pathname,modal:!!dialog?.matches(':modal'),focusTag:document.activeElement?.tagName,focusInDialog:!!dialog?.contains(document.activeElement),focused:document.activeElement?.textContent?.slice(0,160),dialogText:dialog?.innerText,alerts:[...document.querySelectorAll('[role=alert]')].map(x=>x.textContent),statuses:[...document.querySelectorAll('[role=status]')].map(x=>x.textContent),localStorage:Object.keys(localStorage),sessionStorage:Object.keys(sessionStorage),decisionFetches:window.__c2Fetches.filter(x=>/requests\/.+\/(confirm|decline)$/.test(x.path))};window.__c2Observations.push(event);return event;};
+return {observing:true};

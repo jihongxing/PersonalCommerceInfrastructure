@@ -1,0 +1,913 @@
+[
+  {
+    "phase": "browser-phase1-raw.json",
+    "fetches": [
+      {
+        "timestamp": "2026-11-16T12:33:43.549Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:33:53.601Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:03.152Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:03.640Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:13.683Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:17.790Z",
+        "path": "/api/v1/creator/requests/05679559-ab95-4d8f-a146-a81f37de21ae/confirm",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:17.840Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:17.875Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:27.889Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:37.930Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:47.925Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:47.987Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:53.111Z",
+        "path": "/api/v1/creator/requests/b1d52c92-7b61-4484-ab95-2688a71ad12d/decline",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:53.138Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:34:53.152Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:03.185Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:13.232Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:23.191Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:23.271Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:33.316Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:36.076Z",
+        "path": "/api/v1/creator/requests/bf564411-666b-4451-b460-e78c9be461d2/confirm",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:36.315Z",
+        "path": "/api/v1/creator/requests/bf564411-666b-4451-b460-e78c9be461d2/decline",
+        "method": "POST",
+        "status": 409,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:36.351Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:36.360Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:46.399Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:35:56.430Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:06.410Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:06.469Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:15.656Z",
+        "path": "/api/v1/creator/requests/1e0c940b-09a9-41cd-b1c3-0c2312eeff3a/confirm",
+        "method": "POST",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:15.679Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:15.682Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:16.691Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:16.702Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:26.708Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:27.754Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:37.773Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:38.791Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:46.715Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:47.727Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:48.803Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:49.816Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:36:59.833Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:00.844Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:10.862Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:11.906Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:17.750Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:18.759Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:21.931Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:22.956Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:32.976Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:34.003Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:44.024Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:45.040Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:48.777Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:49.793Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:55.063Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:37:56.078Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:06.091Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:07.109Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:17.131Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:18.156Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:19.816Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:20.830Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:28.171Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:29.183Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:39.194Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:40.217Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:50.239Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:50.855Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:51.263Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:38:51.878Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 503,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:01.329Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:11.375Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:16.975Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:17.055Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:17.753Z",
+        "path": "/api/v1/creator/requests/1e0c940b-09a9-41cd-b1c3-0c2312eeff3a/confirm",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:17.787Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:17.824Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:18.164Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:39:55.531Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      }
+    ]
+  },
+  {
+    "phase": "browser-phase2a-raw.json",
+    "fetches": [
+      {
+        "timestamp": "2026-11-16T12:51:48.149Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:51:58.198Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:08.112Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:08.235Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:17.167Z",
+        "path": "/api/v1/creator/requests/71123914-8743-4635-9439-3a66c988b3ba/confirm",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:17.229Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:17.241Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:27.283Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:37.327Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:47.270Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:47.369Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:52:53.721Z",
+        "path": "/api/v1/public/offerings/5f7feb54-8b73-4e81-bab0-ae563d2fe963/requests",
+        "method": "POST",
+        "status": 201,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      }
+    ]
+  },
+  {
+    "phase": "browser-phase2b-raw.json",
+    "fetches": [
+      {
+        "timestamp": "2026-11-16T12:53:04.848Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:14.893Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:22.682Z",
+        "path": "/api/v1/creator/requests/24b535b4-184a-4baf-a4e6-dd2424a2ca61/confirm",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:22.912Z",
+        "path": "/api/v1/creator/requests/24b535b4-184a-4baf-a4e6-dd2424a2ca61/decline",
+        "method": "POST",
+        "status": 409,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:22.944Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:22.986Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:32.987Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:43.019Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:53.025Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:53:53.047Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:03.080Z",
+        "path": "/api/v1/creator/requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:06.805Z",
+        "path": "/api/v1/creator/requests/71123914-8743-4635-9439-3a66c988b3ba/confirm-fulfillment",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:06.847Z",
+        "path": "/api/v1/creator/confirmed-requests",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:07.210Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:35.151Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:54:35.506Z",
+        "path": "/api/v1/public/fulfillment-code/FC-354262OR/qrcode",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:55:08.638Z",
+        "path": "/api/v1/creator/offerings/fe752827-31cc-4887-9d37-d1a68b6620c0/publish",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:55:08.667Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:55:09.330Z",
+        "path": "/api/v1/creator/offerings/fe752827-31cc-4887-9d37-d1a68b6620c0/unpublish",
+        "method": "POST",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      },
+      {
+        "timestamp": "2026-11-16T12:55:09.371Z",
+        "path": "/api/v1/creator/offerings",
+        "method": "GET",
+        "status": 200,
+        "sameOrigin": true,
+        "authorizationHeader": false
+      }
+    ]
+  }
+]

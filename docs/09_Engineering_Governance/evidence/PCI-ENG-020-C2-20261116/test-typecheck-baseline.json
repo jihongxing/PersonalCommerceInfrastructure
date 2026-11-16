@@ -1,0 +1,401 @@
+{
+  "introduced": [],
+  "removedCount": 2,
+  "method": "Read-only TypeScript compiler host substitutes HEAD contents for changed tracked Web files; excludes new C2 roots for baseline. Diagnostic file/code/message multisets compared without line-number shifts.",
+  "baselineHead": "ba2b45ebc6c47d423c84f2d3c889b76b449ca8ac",
+  "baselineCount": 80,
+  "currentCount": 78,
+  "equal": false,
+  "current": [
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/capabilities/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/dashboard/dashboard-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/dashboard/dashboard-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/onboarding/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/homepage-management.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/profile-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/profile/profile-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeDisabled' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/[id]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(creator)/services/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/auth/reset-password/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/auth/reset-password/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/auth/reset-password/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/o/[token]/page.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/app/(public)/r/[commerceRef]/public-homepage-client.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/__tests__/order-result-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/booking-form.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/booking-form.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/commerce/stable-sharing-tools.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/creator/request-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/creator/request-card.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/ui/__tests__/button.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeDisabled' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/ui/__tests__/button.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/ui/__tests__/button.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveAttribute' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/components/ui/__tests__/button.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveClass' does not exist on type 'Assertion<void, HTMLButtonElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/features/creator-onboarding/components/edit-capability-form.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement | null>'."
+    },
+    {
+      "file": "apps/web-v2/features/creator-onboarding/components/edit-capability-form.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/lib/auth/session-restore.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/lib/auth/session-restore.test.tsx",
+      "code": 2339,
+      "message": "Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'."
+    },
+    {
+      "file": "apps/web-v2/lib/auth/session-restore.test.tsx",
+      "code": 2339,
+      "message": "Property 'toHaveTextContent' does not exist on type 'Assertion<void, HTMLElement>'."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+
+> web-v2@0.1.0 test D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2
+> vitest "run"
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.ts:21:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.1.0 D:/codeSpace/PersonalCommerceInfrastructure/apps/web-v2
+
+
+ Test Files  35 passed (35)
+      Tests  110 passed (110)
+   Start at  20:58:35
+   Duration  27.78s (environment 57%, setup 20%, tests 12%, import 8%, transform 1%, worker 1%)
+
+Environment  jsdom was created 35 times · 66.72s total, 57% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

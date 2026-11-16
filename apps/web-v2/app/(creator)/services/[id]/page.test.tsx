@@ -93,3 +93,28 @@ it('records external distribution only after explicit confirmation', async () =>
   expect(mocks.distribute).toHaveBeenCalledOnce();
   expect(await screen.findByRole('status')).toHaveTextContent('已记录实际对外分发');
 });
+
+it.each(['unpublished', 'archived'] as const)(
+  'shows the actual %s lifecycle and allowed actions',
+  (state) => {
+    mocks.service.mockReturnValue({
+      id: 'service-1',
+      state,
+      title: '咨询',
+      description: '描述',
+      capabilityIds: [],
+      requestInstructions: '留言',
+      missingPublishConditions: [],
+    });
+    render(<ServiceDetailPage />);
+    expect(screen.getByText(state === 'archived' ? '已归档' : '未发布')).toBeTruthy();
+    if (state === 'archived') {
+      expect(screen.queryByRole('link', { name: '编辑' })).toBeNull();
+      expect(screen.queryByRole('button', { name: '发布服务' })).toBeNull();
+      expect(screen.queryByRole('button', { name: '下架服务' })).toBeNull();
+    } else {
+      expect(screen.getByRole('link', { name: '编辑' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: '发布服务' }).hasAttribute('disabled')).toBe(false);
+    }
+  },
+);

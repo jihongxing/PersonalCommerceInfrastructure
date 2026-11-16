@@ -1,0 +1,6 @@
+{
+  "timestamp": "2026-11-16T13:26:06.223Z",
+  "jwtOrDatabaseCredentialsOrBearerValues": 0,
+  "method": "Pattern scan of all textual C2 evidence after structured response redaction. Not a proof against all possible secrets.",
+  "sensitiveRuntimeFilesRemoved": true
+}

@@ -1,0 +1,23 @@
+{
+  "task": "PCI-ENG-020-C2",
+  "previousV1PathsTouched": false,
+  "exactTemporaryFilesRemoved": [
+    "runtime.env.ps1",
+    "postgres.env",
+    "seed.json",
+    "browser-phase1-raw.json",
+    "browser-phase2a-raw.json",
+    "browser-phase2b-raw.json",
+    "network-phase1-raw.jsonl",
+    "network-final-raw.jsonl"
+  ],
+  "databaseContainer": "pci-020c2-3f9945a5",
+  "nextStopped": true,
+  "apiStopped": true,
+  "timestamp": "2026-11-16T13:10:51.4459288+00:00",
+  "databaseContainerAbsent": true,
+  "browseExecutableProcessesRemaining": 0,
+  "taskPortsStillListening": [],
+  "browseStopNote": "Stop request returned connection error; no browse executable or task listener remains.",
+  "otherContainersTouched": false
+}

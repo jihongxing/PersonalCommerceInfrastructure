@@ -1,0 +1,28 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "localStorageKeys": [],
+  "sessionStorageKeys": [],
+  "page": "/services/eb09371a-a794-4eac-b55c-aaa3cf88d96d/edit",
+  "inputs": 0,
+  "links": [
+    "/dashboard",
+    "/dashboard",
+    "/profile",
+    "/capabilities",
+    "/services",
+    "/requests",
+    "/",
+    "/profile",
+    "/services/eb09371a-a794-4eac-b55c-aaa3cf88d96d",
+    "/dashboard",
+    "/profile",
+    "/capabilities",
+    "/services",
+    "/requests"
+  ],
+  "body": "编辑服务\n\n更新您的服务信息\n\n此服务已归档\n\n归档服务不能编辑或重新发布，历史信息和已有请求仍会保留。\n\n查看服务"
+}

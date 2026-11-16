@@ -1,0 +1,107 @@
+{
+  "scope": "C2 regression observations, not a repeat of B1-V2 security acceptance",
+  "capturedResponses": 158,
+  "rawJwtResponses": 0,
+  "applicationFetchObservations": 112,
+  "privateFetches": 110,
+  "nonSameOriginObserved": 0,
+  "authorizationHeadersObserved": 0,
+  "storageChecks": [
+    {
+      "name": "keyboard-tab-to-commit",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "keyboard-focus-contained",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "confirm-success",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "decline-cancel",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "decline-success",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "concurrent-conflict",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "api-unreachable",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "api-unreachable-settled",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "api-recovered-retry",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "unpublished-tab",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "archived-tab",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "final-confirm-review-safe-focus",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "db-lock-pending-focus-and-duplicate",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "db-lock-released-one-decision-success",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "final-mobile-decline-review",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "final-mobile-real-409-error-focus",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "fulfillment-confirmation-regression",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "unpublished-republish-ui-success",
+      "localStorage": [],
+      "sessionStorage": []
+    },
+    {
+      "name": "published-unpublish-ui-success",
+      "localStorage": [],
+      "sessionStorage": []
+    }
+  ],
+  "redaction": "Auth credentials, CSRF/cookies, result access references removed. QR PNG payload omitted. Synthetic contacts, object ids, HTTP statuses and fulfillment facts retained."
+}

@@ -25,6 +25,7 @@ import {
 } from '../api/use-creator-services';
 import { useServiceCatalog } from '../api/use-service-catalog';
 import { ServiceFormSchema, ServiceFormData } from '../lib/validation';
+import Link from 'next/link';
 
 interface ServiceFormProps {
   serviceId?: string; // 如果存在则为编辑模式
@@ -66,7 +67,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
 
   // 当编辑服务数据加载完成时，填充表单
   useEffect(() => {
-    if (isEdit && existingService) {
+    if (isEdit && existingService && existingService.state !== 'archived') {
       form.reset({
         capabilityIds: existingService.capabilityIds,
         templateId: existingService.templateId ?? '',
@@ -80,6 +81,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   }, [isEdit, existingService, form]);
 
   async function onSubmit(data: ServiceFormData) {
+    if (existingService?.state === 'archived') return;
     try {
       if (isEdit) {
         await updateMutation.mutateAsync({ ...data, appearance: undefined });
@@ -112,6 +114,22 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     catalog.isLoading ||
     createMutation.isPending ||
     updateMutation.isPending;
+
+  if (isEdit && existingService?.state === 'archived') {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>此服务已归档</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p>归档服务不能编辑或重新发布，历史信息和已有请求仍会保留。</p>
+          <Button asChild variant="outline">
+            <Link href={`/services/${serviceId}`}>查看服务</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (capabilitiesError || (isEdit && serviceError)) {
     return (

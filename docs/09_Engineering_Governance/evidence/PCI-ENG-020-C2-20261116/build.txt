@@ -1,0 +1,59 @@
+
+> web-v2@0.1.0 build D:\codeSpace\PersonalCommerceInfrastructure\apps\web-v2
+> next build
+
+▲ Next.js 16.4.5 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 53ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.9s
+  Running TypeScript ...
+  Finished TypeScript in 4.8s ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/25) ...
+  Generating static pages using 5 workers (6/25)
+  Generating static pages using 5 workers (12/25)
+  Generating static pages using 5 workers (18/25)
+✓ Generating static pages using 5 workers (25/25) in 2.6s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/[...path]
+├ ○ /auth/forgot-password
+├ ○ /auth/login
+├ ○ /auth/reset-password
+├ ○ /auth/signup
+├ ○ /capabilities
+├   /capabilities/[id]/edit
+│ └ ◐ /capabilities/[id]/edit
+├ ○ /capabilities/new
+├ ○ /dashboard
+├   /o/[token]
+│ └ ◐ /o/[token]
+├ ○ /onboarding
+├ ○ /onboarding/welcome
+├ ○ /profile
+├ ○ /profile/edit
+├   /public/[offeringId]
+│ └ ◐ /public/[offeringId]
+├   /r/[commerceRef]
+│ └ ◐ /r/[commerceRef]
+├ ○ /requests
+├   /s/[offeringId]
+│ └ ◐ /s/[offeringId]
+├ ○ /services
+├   /services/[id]
+│ └ ◐ /services/[id]
+├   /services/[id]/edit
+│ └ ◐ /services/[id]/edit
+└ ○ /services/new
+
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand

@@ -12,6 +12,7 @@ import type {
   CustomerRepository,
 } from '../../applications/customer-request/customer-request-repositories.js';
 import type { PaidCommerceRepository } from '../../applications/paid-commerce/paid-commerce-repositories.js';
+import type { IFulfillmentCodeRepository } from '../../applications/fulfillment/fulfillment-repositories.js';
 import type { ReservationRepository } from '../../applications/reservation/reservation-repositories.js';
 import type {
   ContractAcceptanceFactRepository,
@@ -47,6 +48,7 @@ export class InMemoryUnitOfWork implements UnitOfWork {
       readonly distributionAssetRepository?: DistributionAssetRepository;
       readonly customerRepository?: CustomerRepository;
       readonly commerceActionRepository?: CommerceActionRepository;
+      readonly fulfillmentCodeRepository?: IFulfillmentCodeRepository;
       readonly paidCommerceRepository?: PaidCommerceRepository;
       readonly reservationRepository?: ReservationRepository;
       readonly contractRepository?: ContractRepository;

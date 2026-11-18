@@ -2,6 +2,12 @@ export const fulfillmentRuntimeGrant = `
 GRANT UPDATE (fulfillment_status, fulfillment_confirmed_at) ON public.commerce_actions TO pci_api_runtime;
 `;
 
+export const membershipRuntimeGrants = `
+GRANT SELECT, INSERT ON public.membership_offerings, public.membership_applications,
+  public.commercial_memberships, public.membership_facts TO pci_api_runtime;
+GRANT UPDATE (data) ON public.membership_offerings TO pci_api_runtime;
+`;
+
 export const productionRuntimeGrants = `
 GRANT SELECT (id,email,password_hash,name,created_at,is_active), INSERT (id,email,password_hash,name), UPDATE (password_hash) ON public.local_auth_accounts TO pci_api_runtime;
 GRANT SELECT (account_id,creator_id), INSERT (account_id,creator_id) ON public.local_creator_mappings TO pci_api_runtime;
@@ -23,6 +29,7 @@ GRANT SELECT, INSERT ON public.identities, public.account_identity_memberships,
   TO pci_api_runtime;
 GRANT SELECT ON public.service_policy_releases, public.service_policy_capabilities,
   public.service_policy_templates, public.provider_fact_observations TO pci_api_runtime;
+${membershipRuntimeGrants}
 GRANT INSERT (identity_id,homepage_id,window_id,actor_account_id,action) ON public.public_commerce_homepage_version_audit TO pci_api_runtime;
 GRANT DELETE ON public.creator_capabilities TO pci_api_runtime;
 

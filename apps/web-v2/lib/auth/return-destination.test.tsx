@@ -68,4 +68,11 @@ describe('authentication return destination', () => {
       '/services/123/edit?from=list#details',
     );
   });
+
+  it('returns to the Membership offering or workspace after login', () => {
+    expect(safeReturnDestination('/membership/00000000-0000-0000-0000-000000000001')).toBe(
+      '/membership/00000000-0000-0000-0000-000000000001',
+    );
+    expect(safeReturnDestination('/memberships')).toBe('/memberships');
+  });
 });

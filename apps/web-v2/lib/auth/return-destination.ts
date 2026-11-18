@@ -5,6 +5,8 @@ const CREATOR_ROOTS = [
   '/services',
   '/requests',
   '/onboarding',
+  '/memberships',
+  '/membership',
 ];
 
 export function safeReturnDestination(value: string | null): string {

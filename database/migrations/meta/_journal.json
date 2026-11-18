@@ -302,6 +302,13 @@
       "when": 1794777600002,
       "tag": "0042_creator_web_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794777600003,
+      "tag": "0043_membership_first_slice",
+      "breakpoints": true
     }
   ]
 }

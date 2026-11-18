@@ -131,6 +131,11 @@ import { RealMoneyActivationGuard } from '../../../applications/paid-commerce/re
 import { CommercialPilotOperationsService } from '../../../applications/paid-commerce/commercial-pilot-operations.js';
 import { PostgresOperationsActionAuditStore } from './postgres-operations-action-audit-store.js';
 import { PostgresScenarioOperationsStore } from './postgres-scenario-operations-store.js';
+import { createPostgresMembershipStore } from './postgres-membership-store.js';
+import {
+  createMembershipService,
+  type MembershipService,
+} from '../../../applications/membership/membership-service.js';
 import {
   createScenarioOperationsService,
   type ScenarioOperationsService,
@@ -213,6 +218,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly database: PostgresDatabaseConnection;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly scenarioOperationsService: ScenarioOperationsService;
+  readonly membershipService?: MembershipService;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
   readonly operationsFlowReadService: OperationsFlowReadService;
@@ -236,6 +242,7 @@ export function createPostgresCreatorIdentityComposition(
     liveProviderConfigured: false,
   },
   logger?: SafeLogger,
+  membershipEnabled = false,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const operationsIdentityPersistence = createPostgresOperationsIdentityComposition(
@@ -588,7 +595,15 @@ export function createPostgresCreatorIdentityComposition(
     scenarioOperationsService: createScenarioOperationsService(
       serviceIntake,
       servicePolicyCatalogRepository,
+      membershipEnabled,
     ),
+    ...(membershipEnabled
+      ? {
+          membershipService: createMembershipService(
+            createPostgresMembershipStore(database.client),
+          ),
+        }
+      : {}),
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),

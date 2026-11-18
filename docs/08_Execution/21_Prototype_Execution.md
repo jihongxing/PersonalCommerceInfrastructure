@@ -11656,3 +11656,6 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 
 - 2026-11-18：Founder 冻结[首期规则](../07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)。[产品合同](../07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)记录 Offering、申请、批准、会员关系、核验、入场、更正及 Admin 暂停边界。前项待裁决状态为历史记录。
 - 变更单元以 PCI-PD-004 §B6 十七项为验收边界。无 VS-01 状态、规范事件、身份分离或资金变更；本条登记不表示代码或运行验收通过。
+- 实施完成：供给草稿/发布与条款版本、本人申请、供给方现场确认审批、固定期限、独立核验和实际入场、入场误登记追加更正。Admin 通过现有 Operations Human 和审计控制新增申请及待审批申请；不改变存量资格。默认不启用，显式运行时配置和授权运营操作缺一不可。
+- 2026-11-19 验证：B6 十七项在独立 PostgreSQL 17.6、API、Creator BFF、Admin BFF 上通过。空卷 44 份迁移、43 行检查点恢复、受信 PD-003 43→44 升级、安装器再次运行及 API 重启均有隔离证据；Migration 0041 不变。Service 暂停、存量请求确认/结果和恢复通过。
+- 见仓库外 `PCI-PD-004-Membership-First-Slice-Delivery-Report.md`。实地核证由合成身份及操作者声明代表；到期用一次性数据构造边界，真实 API 以数据库时间判断。未做生产 TLS、外部 Pilot 或真实资金验证。

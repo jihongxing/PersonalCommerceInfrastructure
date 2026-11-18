@@ -76,6 +76,7 @@ describe('Admin scenario intake controls', () => {
     ]);
     expect((await api.inject({ method: 'GET', url: adminPath })).statusCode).toBe(401);
     expect((await change('Service', false, 0, observer)).statusCode).toBe(403);
+    expect((await change('Membership', true, 0)).statusCode).toBe(409);
     expect((await change('Service', false, 0, creator)).statusCode).toBe(401);
     expect((await change('Goods', true, 0)).json()).toMatchObject({
       error: { code: 'scenario_not_integrated' },

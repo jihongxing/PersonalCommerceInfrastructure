@@ -3,18 +3,24 @@
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 
+type ScenarioChange = {
+  readonly actorId: string;
+  readonly reason: string;
+  readonly occurredAt: string;
+  readonly correlationId: string;
+};
+
 type Scenario = {
   readonly scenario: string;
   readonly status: 'open' | 'paused' | 'not_integrated';
   readonly canManage: boolean;
   readonly activePolicyVersion?: string;
   readonly revision?: number;
-  readonly lastChange?: {
-    readonly actorId: string;
-    readonly reason: string;
-    readonly occurredAt: string;
-    readonly correlationId: string;
-  };
+  readonly lastChange?: ScenarioChange;
+  readonly history?: readonly (ScenarioChange & {
+    readonly revision: number;
+    readonly open: boolean;
+  })[];
 };
 
 const endpoint = '/api/operations/scenarios';
@@ -32,6 +38,7 @@ export function ScenarioOperationsPanel() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [selected, setSelected] = useState('Service');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -41,7 +48,10 @@ export function ScenarioOperationsPanel() {
     return () => controller.abort();
   }, []);
 
-  const managed = scenarios?.find((item) => item.canManage && item.revision !== undefined);
+  const manageable =
+    scenarios?.filter((item) => item.canManage && item.revision !== undefined) ?? [];
+  const managed = manageable.find((item) => item.scenario === selected) ?? manageable[0];
+  const membershipHistory = scenarios?.find((item) => item.scenario === 'Membership')?.history;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!managed || pending || !reason.trim()) return;
@@ -100,7 +110,8 @@ export function ScenarioOperationsPanel() {
                   <td>
                     {item.activePolicyVersion ? (
                       <Link href="/policy-versions">
-                        Service Catalog · {item.activePolicyVersion}
+                        {item.scenario === 'Service' ? 'Service Catalog' : 'Membership 策略'} ·{' '}
+                        {item.activePolicyVersion}
                       </Link>
                     ) : (
                       '无已接入的策略或入口'
@@ -122,8 +133,10 @@ export function ScenarioOperationsPanel() {
                       </>
                     ) : item.status === 'not_integrated' ? (
                       '不支持开放'
-                    ) : (
+                    ) : item.status === 'open' ? (
                       '沿用初始开放配置'
+                    ) : (
+                      '尚未开放'
                     )}
                   </td>
                 </tr>
@@ -134,8 +147,26 @@ export function ScenarioOperationsPanel() {
       )}
       {managed && (
         <form className="filter-bar" onSubmit={(event) => void submit(event)}>
+          <label>
+            管理场景
+            <select
+              value={managed.scenario}
+              disabled={pending}
+              onChange={(event) => {
+                setSelected(event.target.value);
+                setReason('');
+                setFeedback('');
+              }}
+            >
+              {manageable.map((item) => (
+                <option key={item.scenario}>{item.scenario}</option>
+              ))}
+            </select>
+          </label>
           <p id="scenario-change-impact">
-            暂停会阻止新的 Service 发布和公开 Request；既有 Request、结果和履约继续可用。
+            {managed.scenario === 'Membership'
+              ? '暂停时禁止新申请及待处理申请的批准；已有会员仍可按原有效期核验和入场。'
+              : '暂停会阻止新的 Service 发布和公开 Request；既有 Request、结果和履约继续可用。'}
           </p>
           <label>
             变更理由
@@ -153,11 +184,28 @@ export function ScenarioOperationsPanel() {
           >
             {pending
               ? '正在保存…'
-              : managed.status === 'open'
-                ? '暂停 Service 新增入口'
-                : '恢复 Service 新增入口'}
+              : `${managed.status === 'open' ? '暂停' : managed.revision === 0 ? '开放' : '恢复'} ${managed.scenario} 新增入口`}
           </button>
         </form>
+      )}
+      {membershipHistory && (
+        <details>
+          <summary>Membership 运营变更记录（最近 100 条）</summary>
+          {membershipHistory.length === 0 ? (
+            <p>尚无运营变更。</p>
+          ) : (
+            <ol>
+              {membershipHistory.map((change) => (
+                <li key={change.revision}>
+                  #{change.revision} · {change.open ? '暂停 → 开放' : '开放 → 暂停'} ·{' '}
+                  {change.reason} · {change.actorId} ·{' '}
+                  <time dateTime={change.occurredAt}>{change.occurredAt}</time> ·{' '}
+                  {change.correlationId}
+                </li>
+              ))}
+            </ol>
+          )}
+        </details>
       )}
     </section>
   );

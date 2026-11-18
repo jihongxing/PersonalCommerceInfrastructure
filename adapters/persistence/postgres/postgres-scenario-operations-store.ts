@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import type {
   ScenarioKind,
   ScenarioOperationsStore,
@@ -6,6 +6,7 @@ import type {
 } from '../../../applications/operations-admin/scenario-operations.js';
 import { operationsActionAudits } from '../../../database/schema/paid-commerce.js';
 import type { ProductDatabase } from './postgres-database.js';
+import { membershipIntakeLock } from './postgres-membership-store.js';
 
 const targetType = 'commercial_scenario';
 const action = 'change_scenario_intake';
@@ -17,8 +18,8 @@ function revisionId(scenario: ScenarioKind, revision: number): string {
 export class PostgresScenarioOperationsStore implements ScenarioOperationsStore {
   public constructor(private readonly database: ProductDatabase) {}
 
-  public async latest(scenario: ScenarioKind): Promise<ScenarioRevision | undefined> {
-    const [record] = await this.database
+  private async revisions(scenario: ScenarioKind, limit: number): Promise<ScenarioRevision[]> {
+    const records = await this.database
       .select()
       .from(operationsActionAudits)
       .where(
@@ -29,30 +30,55 @@ export class PostgresScenarioOperationsStore implements ScenarioOperationsStore 
         ),
       )
       .orderBy(desc(operationsActionAudits.id))
-      .limit(1);
-    if (record === undefined) return undefined;
-    const { open, revision } = record.after;
-    if (
-      typeof open !== 'boolean' ||
-      typeof revision !== 'number' ||
-      !Number.isSafeInteger(revision) ||
-      revision < 1 ||
-      record.id !== revisionId(scenario, revision)
-    )
-      throw new Error('Invalid persisted scenario revision');
-    return {
-      scenario,
-      open,
-      revision,
-      reason: record.reason,
-      actorId: record.actorId,
-      occurredAt: new Date(record.occurredAt).toISOString(),
-      correlationId: record.correlationId,
-    };
+      .limit(limit);
+    return records.map((record) => {
+      const { open, revision } = record.after;
+      if (
+        typeof open !== 'boolean' ||
+        typeof revision !== 'number' ||
+        !Number.isSafeInteger(revision) ||
+        revision < 1 ||
+        record.id !== revisionId(scenario, revision)
+      )
+        throw new Error('Invalid persisted scenario revision');
+      return {
+        scenario,
+        open,
+        revision,
+        reason: record.reason,
+        actorId: record.actorId,
+        occurredAt: new Date(record.occurredAt).toISOString(),
+        correlationId: record.correlationId,
+      };
+    });
+  }
+
+  public async latest(scenario: ScenarioKind): Promise<ScenarioRevision | undefined> {
+    return (await this.revisions(scenario, 1))[0];
+  }
+
+  public history(scenario: ScenarioKind): Promise<ScenarioRevision[]> {
+    return this.revisions(scenario, 100);
   }
 
   public async append(record: ScenarioRevision, previousOpen: boolean): Promise<boolean> {
-    const inserted = await this.database
+    if (record.scenario === 'Membership') {
+      return this.database.transaction(async (transaction) => {
+        await transaction.execute(
+          sql`SELECT pg_advisory_xact_lock(${membershipIntakeLock}::bigint)`,
+        );
+        return this.insert(transaction, record, previousOpen);
+      });
+    }
+    return this.insert(this.database, record, previousOpen);
+  }
+
+  private async insert(
+    database: Pick<ProductDatabase, 'insert'>,
+    record: ScenarioRevision,
+    previousOpen: boolean,
+  ): Promise<boolean> {
+    const inserted = await database
       .insert(operationsActionAudits)
       .values({
         id: revisionId(record.scenario, record.revision),

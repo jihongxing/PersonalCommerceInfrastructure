@@ -32,6 +32,7 @@ export const ScenarioOperationsResponseSchema = Type.Object({
       activePolicyVersion: Type.Optional(Type.String()),
       revision: Type.Optional(Type.Integer({ minimum: 0 })),
       lastChange: Type.Optional(ScenarioRevisionSchema),
+      history: Type.Optional(Type.Array(ScenarioRevisionSchema)),
     }),
   ),
 });

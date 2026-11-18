@@ -26,9 +26,10 @@ export const phaseRanges = {
 } as const;
 
 export type ProductionPhase = keyof typeof phaseRanges;
+export const membershipMigrationIndex = phaseRanges.finish[1];
 
 const migrationFolder = 'database/migrations';
-const reviewedManifest = '0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50';
+const reviewedManifest = '3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb';
 
 export function productionMigrations() {
   const journal = JSON.parse(readFileSync(`${migrationFolder}/meta/_journal.json`, 'utf8')) as {

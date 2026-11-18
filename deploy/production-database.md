@@ -34,19 +34,19 @@ migrations, adopt unmarked volumes, or repair catalog drift.
 
 ## Identity and transaction boundaries
 
-| Identity                  | Responsibility                                                                                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `personal_commerce`       | PostgreSQL installer/admin; prepares roles, schemas and extension, verifies catalog and grants. Not injected into API or Web.                          |
-| `pci_ops_bootstrap`       | Independent temporary LOGIN, random expiring credential and SET-only Journal Owner membership. Disabled and password cleared before migrations.        |
-| `pci_ops_journal_owner`   | NOLOGIN; owns `drizzle`, the Journal and its dependent objects only.                                                                                   |
-| `pci_ops_migration`       | Separate LOGIN; SET-only access to approved DDL owners, Journal SELECT/INSERT and serial USAGE. No journal ownership, cluster grants or grant options. |
+| Identity                  | Responsibility                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `personal_commerce`       | PostgreSQL installer/admin; prepares roles, schemas and extension, verifies catalog and grants. Not injected into API or Web.                                |
+| `pci_ops_bootstrap`       | Independent temporary LOGIN, random expiring credential and SET-only Journal Owner membership. Disabled and password cleared before migrations.              |
+| `pci_ops_journal_owner`   | NOLOGIN; owns `drizzle`, the Journal and its dependent objects only.                                                                                         |
+| `pci_ops_migration`       | Separate LOGIN; SET-only access to approved DDL owners, Journal SELECT/INSERT and serial USAGE. No journal ownership, cluster grants or grant options.       |
 | `pci_app_object_owner`    | NOLOGIN; owns ordinary application objects from 0000–0035 and 0042. Its installation-only `CREATE` on `public` is revoked before the volume is marked ready. |
-| `pci_ops_legacy_owner`    | NOLOGIN; owns 0036–0039 and the reviewed legacy DDL in 0041.                                                                                           |
-| `pci_ops_table_owner`     | NOLOGIN; reviewed activation audit/history and 0041 table-stage SQL.                                                                                   |
-| `pci_ops_function_owner`  | NOLOGIN; owns `operations_private` and `operations_api` and executes reviewed function-stage SQL.                                                      |
-| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core and wired Paid/Pilot SQL only.                                                                    |
-| `pci_creator_bff_runtime` | LOGIN; Creator Web Session SELECT/INSERT/UPDATE projections only; no DELETE, business data, Journal, project routines or sequences.                    |
-| `pci_ops_runtime`         | Independent restricted LOGIN for the existing Operations Human auth/session SQL. Only provisioned and connected when explicitly enabled.                 |
+| `pci_ops_legacy_owner`    | NOLOGIN; owns 0036–0039 and the reviewed legacy DDL in 0041.                                                                                                 |
+| `pci_ops_table_owner`     | NOLOGIN; reviewed activation audit/history and 0041 table-stage SQL.                                                                                         |
+| `pci_ops_function_owner`  | NOLOGIN; owns `operations_private` and `operations_api` and executes reviewed function-stage SQL.                                                            |
+| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core and wired Paid/Pilot SQL only.                                                                          |
+| `pci_creator_bff_runtime` | LOGIN; Creator Web Session SELECT/INSERT/UPDATE projections only; no DELETE, business data, Journal, project routines or sequences.                          |
+| `pci_ops_runtime`         | Independent restricted LOGIN for the existing Operations Human auth/session SQL. Only provisioned and connected when explicitly enabled.                     |
 
 The official PostgreSQL entrypoint writes the marker only on a fresh volume. A TCP health check
 waits for entrypoint initialization to finish before the installer connects. The installer serializes
@@ -57,7 +57,7 @@ behavior is not changed.
 
 The manifest pins the indexed original tags, timestamps and Drizzle SQL hashes. Journal rows are
 compared in database `id` order (including 0025 and 0036 timestamp inversions). DDL and Journal writes
-commit together at boundaries 40, 41 and 43. Temporary 0040 `MAINTAIN` on two legacy tables is granted
+commit together at boundaries 40, 41, 43 and 44. Temporary 0040 `MAINTAIN` on two legacy tables is granted
 and revoked within the same transaction; a rollback cannot leave it installed. 0041 still logs in
 as `pci_ops_migration`. The API uses bounded column updates and supports locking, the 0030 invoker
 audit INSERT, and connected Paid/Pilot writes. Pilot can read `provider_fact_observations`;
@@ -94,13 +94,26 @@ refused. Migration 0041's public schema trust check remains unchanged. Fresh ins
 application-owner CREATE during finalization; existing trusted ready volumes verify fingerprint and
 Journal before converging to the same grants. Runtime roles never receive CREATE or owner membership.
 
+## Membership first slice (isolated non-production only)
+
+Leave `MEMBERSHIP_FIRST_SLICE_ENABLED=false` unless running an authorized isolated verification.
+The explicit API opt-in registers the Membership endpoints and Admin policy together. Its initial
+intake is paused; open or resume it via the authenticated Admin Scenarios screen. This does not
+enable money or alter Service intake. The Creator BFF has no direct membership data grants; it
+continues to forward the server-side session to the API. The Operations runtime login does not
+receive access to Membership Offering, application, relationship or activity tables.
+
 ## Recovery and existing volumes
 
 An interruption can resume a trusted `provisioned` installation or a matching committed checkpoint
 (0, 40, 41 or 43 rows with its catalog fingerprint). Do not repair or populate a Journal by hand.
-An initialized volume with all 43 rows verifies without replaying them. Any future migration requires
-a reviewed manifest, owner assignment, and upgrade phase before it can run; unreviewed versions are
-rejected. The catalog fingerprint is an in-place drift check, not a portable backup format.
+Fresh installation applies 0043 atomically with finalization, without a separate checkpoint.
+A trusted ready 43-row volume with matching catalog fingerprint can apply 0043 in one installer
+transaction: DDL under the existing application owner, bounded runtime grants, the Journal entry
+under the migration role, application-owner CREATE revoked, and the ready fingerprint refreshed.
+An initialized volume with all 44 rows verifies without replay. Other future versions still require
+a reviewed manifest, owner assignment and upgrade path. The fingerprint is an in-place drift check,
+not a portable backup format.
 
 Unmarked legacy volumes, unexpected history, or ownership/ACL drift are not adopted. Stop the stack
 without removing the volume, retain a physical snapshot or tested backup, and inspect a disposable

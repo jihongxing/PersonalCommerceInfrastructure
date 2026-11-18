@@ -25,6 +25,7 @@ import { createSafeLogger } from '../../../adapters/observability/safe-logger.js
 import { createPerformanceMonitor } from '../../../adapters/observability/performance-monitor.js';
 import { loadTracingConfiguration, startTracing } from '../../../adapters/observability/tracing.js';
 import { createApiServer } from './create-api-server.js';
+import { verifyMembershipPersistence } from '../../../adapters/persistence/postgres/postgres-membership-store.js';
 import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js';
 import { startPasswordRecoveryWorker } from './password-recovery-worker.js';
 
@@ -118,7 +119,11 @@ export async function startApi(): Promise<ApiRuntime> {
               liveProviderConfigured: realMoneyRuntime.provider !== undefined,
             },
             logger,
+            process.env.MEMBERSHIP_FIRST_SLICE_ENABLED === 'true',
           );
+    if (composition?.membershipService !== undefined) {
+      await verifyMembershipPersistence(composition.database.client);
+    }
     server = await createApiServer(
       composition === undefined
         ? {
@@ -181,6 +186,9 @@ export async function startApi(): Promise<ApiRuntime> {
             servicePolicyCatalogRepository: composition.servicePolicyCatalogRepository,
             servicePolicyAdminService: composition.servicePolicyAdminService,
             scenarioOperationsService: composition.scenarioOperationsService,
+            ...(composition.membershipService === undefined
+              ? {}
+              : { membershipService: composition.membershipService }),
             operationsFlowReadService: composition.operationsFlowReadService,
             operationsQueryRepository: composition.operationsQueryRepository,
             currentUserIdentityService: composition.currentUserIdentityService,

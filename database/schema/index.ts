@@ -11,6 +11,12 @@ export {
   servicePrincipals,
 } from './operations-identity.js';
 export { accountIdentityMemberships } from './account-identity-membership.js';
+export {
+  commercialMemberships,
+  membershipApplications,
+  membershipFacts,
+  membershipOfferings,
+} from './membership.js';
 export { commerceProfiles } from './commerce-profile.js';
 export {
   publicCommerceHomepages,

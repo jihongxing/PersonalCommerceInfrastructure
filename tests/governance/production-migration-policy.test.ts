@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   deploymentRoles,
   internalDatabasePassword,
+  membershipMigrationIndex,
+  phaseRanges,
   productionMigrations,
   productionPhaseRoles,
   verifyProductionHistory,
@@ -15,19 +17,19 @@ describe('production migration policy', () => {
   }));
 
   it('accepts exactly the reviewed Journal order, including both historical timestamp inversions', () => {
-    expect(history).toHaveLength(43);
+    expect(history).toHaveLength(44);
     expect(history[24]!.created_at).toBeGreaterThan(history[25]!.created_at);
     expect(history[35]!.created_at).toBeGreaterThan(history[36]!.created_at);
-    expect(() => verifyProductionHistory(history, migrations, 43)).not.toThrow();
+    expect(() => verifyProductionHistory(history, migrations, 44)).not.toThrow();
     expect(() => verifyProductionHistory(history.slice(0, 40), migrations, 40)).not.toThrow();
     expect(() =>
       verifyProductionHistory(
         [...history].sort((left, right) => left.created_at - right.created_at),
         migrations,
-        43,
+        44,
       ),
     ).toThrow();
-    expect(() => verifyProductionHistory(history.slice(1), migrations, 43)).toThrow();
+    expect(() => verifyProductionHistory(history.slice(1), migrations, 44)).toThrow();
   });
 
   it('binds the Operations chunks to the reviewed owners and isolates the Creator session table', () => {
@@ -52,7 +54,10 @@ describe('production migration policy', () => {
   });
 
   it('distinguishes phase boundaries from a missing or altered historical Journal entry', () => {
-    for (const count of [0, 40, 41, 43]) {
+    const checkpoints = Object.values(phaseRanges).map(([, end]) => end);
+    expect(checkpoints).toEqual([40, 41, 43]);
+    expect(membershipMigrationIndex).toBe(43);
+    for (const count of [0, ...checkpoints, 44]) {
       expect(() =>
         verifyProductionHistory(history.slice(0, count), migrations, count),
       ).not.toThrow();
@@ -62,7 +67,7 @@ describe('production migration policy', () => {
     const wrongTimestamp = history.map((row, index) =>
       index === 25 ? { ...row, created_at: row.created_at + 1 } : row,
     );
-    expect(() => verifyProductionHistory(wrongTimestamp, migrations, 43)).toThrow('index 25');
+    expect(() => verifyProductionHistory(wrongTimestamp, migrations, 44)).toThrow('index 25');
   });
 
   it('accepts only role-specific internal URLs, without logging supplied credentials', () => {

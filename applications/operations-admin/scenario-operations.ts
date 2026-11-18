@@ -26,6 +26,7 @@ export interface ScenarioRevision {
 export interface ScenarioOperationsStore {
   latest(scenario: ScenarioKind): Promise<ScenarioRevision | undefined>;
   append(revision: ScenarioRevision, previousOpen: boolean): Promise<boolean>;
+  history?(scenario: ScenarioKind): Promise<ScenarioRevision[]>;
 }
 
 export type ServiceIntakeReader = Pick<ScenarioOperationsStore, 'latest'>;
@@ -37,14 +38,23 @@ export async function serviceIntakeOpen(reader: ServiceIntakeReader | undefined)
 export function createScenarioOperationsService(
   store: ScenarioOperationsStore,
   catalog: Pick<ServicePolicyCatalogRepository, 'getSnapshot'>,
+  membershipIntegrated = false,
 ) {
   return {
     async list(context: ActorContext) {
       requireOperationsHumanPermission(context, 'catalog:read');
-      const [revision, policy] = await Promise.all([
+      const [revision, policy, membershipHistory] = await Promise.all([
         store.latest('Service'),
         catalog.getSnapshot(),
+        membershipIntegrated ? store.history?.('Membership') : undefined,
       ]);
+      const membership =
+        membershipIntegrated && store.history === undefined
+          ? await store.latest('Membership')
+          : membershipHistory?.[0];
+      const canManage =
+        context.actor.kind === 'operations_human' &&
+        context.actor.permissions.includes('catalog:policy:activate');
       return {
         scenarios: scenarioKinds.map((scenario) =>
           scenario === 'Service'
@@ -54,11 +64,19 @@ export function createScenarioOperationsService(
                 activePolicyVersion: policy.policyVersion,
                 revision: revision?.revision ?? 0,
                 ...(revision === undefined ? {} : { lastChange: revision }),
-                canManage:
-                  context.actor.kind === 'operations_human' &&
-                  context.actor.permissions.includes('catalog:policy:activate'),
+                canManage,
               }
-            : { scenario, status: 'not_integrated' as const, canManage: false },
+            : scenario === 'Membership' && membershipIntegrated
+              ? {
+                  scenario,
+                  status: membership?.open === true ? ('open' as const) : ('paused' as const),
+                  revision: membership?.revision ?? 0,
+                  activePolicyVersion: 'membership-first-slice-v1',
+                  canManage,
+                  ...(membership === undefined ? {} : { lastChange: membership }),
+                  history: membershipHistory ?? [],
+                }
+              : { scenario, status: 'not_integrated' as const, canManage: false },
         ),
       };
     },
@@ -69,7 +87,10 @@ export function createScenarioOperationsService(
     ) {
       requireOperationsHumanPermission(context, 'catalog:policy:activate');
       if (context.actor.kind !== 'operations_human') throw new Error('Expected Operations Human');
-      if (input.scenario !== 'Service') {
+      if (
+        input.scenario !== 'Service' &&
+        !(membershipIntegrated && input.scenario === 'Membership')
+      ) {
         throw new ApplicationError({
           category: 'conflict',
           code: 'scenario_not_integrated',
@@ -86,7 +107,7 @@ export function createScenarioOperationsService(
       }
       const previous = await store.latest(input.scenario);
       const revision = previous?.revision ?? 0;
-      const previousOpen = previous?.open ?? true;
+      const previousOpen = previous?.open ?? input.scenario === 'Service';
       if (input.expectedRevision !== revision) throw staleRevision();
       if (input.open === previousOpen) {
         throw new ApplicationError({

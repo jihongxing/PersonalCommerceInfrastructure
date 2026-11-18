@@ -115,8 +115,10 @@ function responseHeaders(upstream: Response): Headers {
   const headers = new Headers();
   const contentType = upstream.headers.get('content-type');
   const correlationId = upstream.headers.get('x-correlation-id');
+  const cacheControl = upstream.headers.get('cache-control');
   if (contentType) headers.set('content-type', contentType);
   if (correlationId) headers.set('x-correlation-id', correlationId);
+  if (cacheControl === 'no-store') headers.set('cache-control', cacheControl);
   return headers;
 }
 

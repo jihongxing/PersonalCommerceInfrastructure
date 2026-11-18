@@ -141,6 +141,47 @@ describe('Operations shell', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('opens only the selected integrated Membership scenario through its existing BFF', async () => {
+    const service = { scenario: 'Service', status: 'open', canManage: true, revision: 0 };
+    const membership = {
+      scenario: 'Membership',
+      status: 'paused',
+      canManage: true,
+      revision: 0,
+      history: [],
+    };
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ scenarios: [service, membership] }));
+    render(await SectionPage({ params: Promise.resolve({ section: 'scenarios' }) }));
+    fireEvent.change(await screen.findByRole('combobox', { name: '管理场景' }), {
+      target: { value: 'Membership' },
+    });
+    expect(
+      screen.getByText('暂停时禁止新申请及待处理申请的批准；已有会员仍可按原有效期核验和入场。'),
+    ).toBeVisible();
+    fireEvent.change(screen.getByLabelText('变更理由'), {
+      target: { value: 'Open tested intake' },
+    });
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(Response.json({ revision: 1 }))
+      .mockResolvedValueOnce(
+        Response.json({ scenarios: [service, { ...membership, status: 'open', revision: 1 }] }),
+      );
+    fireEvent.click(screen.getByRole('button', { name: '开放 Membership 新增入口' }));
+    expect(await screen.findByRole('button', { name: '暂停 Membership 新增入口' })).toBeVisible();
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/operations/scenarios',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({
+          scenario: 'Membership',
+          open: true,
+          expectedRevision: 0,
+          reason: 'Open tested intake',
+        }),
+      }),
+    );
+  });
+
   it('renders controlled Catalog policy management for Policy Versions', async () => {
     render(await SectionPage({ params: Promise.resolve({ section: 'policy-versions' }) }));
     expect(screen.getByRole('heading', { level: 1, name: '政策版本' })).toBeVisible();

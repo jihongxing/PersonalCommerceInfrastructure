@@ -75,6 +75,8 @@ import { createOperationsWorkspaceReadService } from '../../../applications/oper
 import { registerOperationsWorkspaceReadRoutes } from '../../../adapters/transport/http/operations-workspace-read-routes.js';
 import { registerScenarioOperationsRoutes } from '../../../adapters/transport/http/scenario-operations-routes.js';
 import type { ScenarioOperationsService } from '../../../applications/operations-admin/scenario-operations.js';
+import { registerMembershipRoutes } from '../../../adapters/transport/http/membership-routes.js';
+import type { MembershipService } from '../../../applications/membership/membership-service.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
@@ -116,6 +118,7 @@ export interface ApiServerDependencies {
   readonly servicePolicyCatalogRepository?: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService?: ServicePolicyAdminService;
   readonly scenarioOperationsService?: ScenarioOperationsService;
+  readonly membershipService?: MembershipService;
   readonly operationsFlowReadService?: OperationsFlowReadService;
   readonly operationsQueryRepository?: OperationsQueryRepository;
 }
@@ -412,6 +415,13 @@ export async function createApiServer(
     dependencies.scenarioOperationsService ?? composition.scenarioOperationsService,
     dependencies.operationsHumanAuthenticationRuntime,
   );
+  if (dependencies.membershipService !== undefined) {
+    registerMembershipRoutes(
+      server,
+      dependencies.membershipService,
+      dependencies.authContextProvider ?? composition.authContextProvider,
+    );
+  }
   registerOperationsFlowReadRoutes(server, {
     service:
       dependencies.operationsQueryRepository ??

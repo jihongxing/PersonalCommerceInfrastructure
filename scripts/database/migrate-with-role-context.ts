@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { readMigrationFiles } from 'drizzle-orm/migrator';
+import { activationHistoryRoles, initialAdminRoles } from './operations-migration-phases.js';
 import postgres, { type TransactionSql } from 'postgres';
 
 import {
@@ -243,48 +244,11 @@ export async function migrateWithRoleContext(
               'verify temporary MAINTAIN and fixed role boundary',
             );
           }
-          const activationHistoryRoles = [
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.function,
-          ] as const;
           requireInstallation(
             !activationHistory || migration.sql.length === activationHistoryRoles.length,
             'reviewed 0040 statement count and phase policy',
           );
           const initialAdmin = migration.hash === initialAdminBootstrapHash;
-          const initialAdminRoles = [
-            installationRoles.legacyFixture,
-            installationRoles.table,
-            installationRoles.function,
-            installationRoles.function,
-            installationRoles.legacyFixture,
-            installationRoles.table,
-          ];
           requireInstallation(
             !initialAdmin || migration.sql.length === initialAdminRoles.length,
             'reviewed 0041 phase policy',

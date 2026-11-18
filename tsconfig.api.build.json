@@ -1,4 +1,9 @@
 {
   "extends": "./tsconfig.build.json",
-  "include": ["apps/api/src/main.ts", "scripts/database/migrate.ts"]
+  "include": [
+    "apps/api/src/main.ts",
+    "scripts/database/migrate.ts",
+    "scripts/database/install-production-database.ts",
+    "scripts/database/run-production-migration.ts"
+  ]
 }

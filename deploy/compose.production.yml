@@ -6,21 +6,30 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_USER: personal_commerce
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U personal_commerce -d personal_commerce']
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U personal_commerce -d personal_commerce']
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
       - personal-commerce-postgres:/var/lib/postgresql/data
+      - type: bind
+        source: ./postgres-first-boot.sql
+        target: /docker-entrypoint-initdb.d/00-pci-first-boot.sql
+        read_only: true
+        bind:
+          create_host_path: false
 
   migrate:
     image: ${API_IMAGE:-personal-commerce-api:current}
     build:
       context: ..
       dockerfile: deploy/Dockerfile.api
-    command: ['node', 'dist/scripts/database/migrate.js']
+    command: ['node', 'dist/scripts/database/install-production-database.js']
     environment:
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+      API_DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      CREATOR_BFF_DATABASE_URL: ${CREATOR_BFF_DATABASE_URL:?CREATOR_BFF_DATABASE_URL is required}
     depends_on:
       postgres:
         condition: service_healthy
@@ -95,6 +104,17 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/auth/login').then(r=>{if(!r.ok)process.exit(1)})",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
   personal-commerce-postgres:

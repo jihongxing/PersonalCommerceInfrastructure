@@ -11336,3 +11336,30 @@ PCI-ENG-020-C3-B2_SCHEMA_MIGRATION_AUTH_BFF_STATE_MACHINE_CHANGES = NONE
 PCI-ENG-020-C3-B2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
 PCI-ENG-020-C3-B2_PUSH = NONE
 ```
+
+## PCI-ENG-023 — Production Compose Bootstrap and Creator BFF Runtime
+
+2026-11-18: `FD-PCI-DEPLOY-001` authorizes the empty-volume deployment prerequisite. This
+change affects the infrastructure behind Creator authentication, private Identity and Public
+Commerce Homepage (including its audit write), plus the connected Core and Paid/Pilot database
+paths. No change to product FR semantics, domain objects, state transitions, canonical events,
+or Creator/Operations authorization was made; no `DEV-###` deviation is required. This does not
+reclassify any product acceptance test or authorize production rollout.
+
+- `deploy/production-database.md` records the installer, Journal, migration owner and runtime
+  contracts. Operations schemas retain their Function Owner. Runtime logins receive bounded ACLs;
+  Operations Human remains disabled. The 43 original SQL files and Journal metadata are unchanged.
+- A disposable PostgreSQL 17.6 Compose run completed 0000–0042, kept 0025 and 0036 in manifest
+  order, and started Shared API and Creator Web. A same-volume restart preserved Journal and
+  business rows without replay. An injected 0040 transaction failure blocked API/Web, rolled back
+  temporary `MAINTAIN`, and resumed from 40 committed migrations when the fault was removed.
+- The same Compose stack verified Creator signup, production Cookie attributes, same-origin
+  private Identity, Homepage invoker audit, refresh, confirmed upstream logout and denial after
+  revocation. Both PostgreSQL Session rows were revoked. Origin/CSRF denial, missing server auth
+  and API outage stayed distinct from successful logout.
+- Scoped migration tests, lint, build and BFF configuration verification passed. Two broader
+  import-boundary failures were reproduced unchanged on the accepted PCI-ENG-022-B commit.
+  Setup, fault probes, owner/ACL evidence and Git comparison are in the repository-external
+  `PCI-ENG-023-Execution-and-Verification-Report.md` and its evidence directory.
+- Abnormal/unmarked legacy volumes remain unmodified and blocked; adoption is not authorized.
+  `REAL_MONEY_ENABLED=false`. No real production database, external pilot, push or merge.

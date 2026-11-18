@@ -261,10 +261,7 @@ export async function verifyActivationHistoryPrerequisites(sql: InstallationSql)
   );
 }
 
-export async function verifyJournal(
-  sql: InstallationSql,
-  approvedHashes: readonly string[],
-): Promise<void> {
+export async function verifyJournalStructure(sql: InstallationSql): Promise<void> {
   await verifyInstallationRoles(sql);
   const schema = await sql<{ owner: string; acl: unknown }[]>`
     SELECT pg_get_userbyid(nspowner) AS owner, nspacl AS acl FROM pg_namespace WHERE nspname='drizzle'`;
@@ -367,6 +364,25 @@ export async function verifyJournal(
     NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid='drizzle.__drizzle_migrations'::regclass AND attacl IS NOT NULL)
     AS valid`;
   requireInstallation(privileges[0]!.valid, 'effective Journal privileges');
+  const unexpectedOwner = await sql<{ invalid: boolean }[]>`SELECT
+    EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+      WHERE c.relowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')
+        AND (n.nspname NOT IN ('drizzle','pg_toast') OR
+          (n.nspname='drizzle' AND c.relname NOT IN ('__drizzle_migrations','__drizzle_migrations_id_seq','__drizzle_migrations_pkey')))) OR
+    EXISTS(SELECT 1 FROM pg_namespace WHERE nspowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner') AND nspname<>'drizzle') OR
+    EXISTS(SELECT 1 FROM pg_database WHERE datdba=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')) OR
+    EXISTS(SELECT 1 FROM pg_proc WHERE proowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')) AS invalid`;
+  requireInstallation(
+    !unexpectedOwner[0]!.invalid,
+    'Journal Owner owns no business/database/function objects',
+  );
+}
+
+export async function verifyJournal(
+  sql: InstallationSql,
+  approvedHashes: readonly string[],
+): Promise<void> {
+  await verifyJournalStructure(sql);
   const invalid = await sql<{ invalid: boolean }[]>`SELECT EXISTS(
     SELECT 1 FROM drizzle.__drizzle_migrations WHERE hash !~ '^[0-9a-f]{64}$' OR created_at IS NULL OR created_at<0
     UNION ALL SELECT 1 FROM drizzle.__drizzle_migrations GROUP BY created_at HAVING count(*)>1
@@ -383,17 +399,5 @@ export async function verifyJournal(
         (i === 0 || Number(r.created_at) > Number(history[i - 1]!.created_at)),
     ),
     'unknown or unordered Journal history',
-  );
-  const unexpectedOwner = await sql<{ invalid: boolean }[]>`SELECT
-    EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-      WHERE c.relowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')
-        AND (n.nspname NOT IN ('drizzle','pg_toast') OR
-          (n.nspname='drizzle' AND c.relname NOT IN ('__drizzle_migrations','__drizzle_migrations_id_seq','__drizzle_migrations_pkey')))) OR
-    EXISTS(SELECT 1 FROM pg_namespace WHERE nspowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner') AND nspname<>'drizzle') OR
-    EXISTS(SELECT 1 FROM pg_database WHERE datdba=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')) OR
-    EXISTS(SELECT 1 FROM pg_proc WHERE proowner=(SELECT oid FROM pg_roles WHERE rolname='pci_ops_journal_owner')) AS invalid`;
-  requireInstallation(
-    !unexpectedOwner[0]!.invalid,
-    'Journal Owner owns no business/database/function objects',
   );
 }

@@ -28,6 +28,10 @@ import {
   isPolicyPublishable,
 } from '../../modules/service-policy/catalog.js';
 import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
+import {
+  serviceIntakeOpen,
+  type ServiceIntakeReader,
+} from '../operations-admin/scenario-operations.js';
 import type { AppearanceOfferingMetadata } from '../../modules/service-offering/offering.js';
 import { assertCreatorOwnership } from '../../modules/shared/actors.js';
 import { DomainTransitionError } from '../../modules/shared/domain-error.js';
@@ -73,6 +77,7 @@ export interface CustomerRequestUseCaseDependencies {
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly serviceIntake?: ServiceIntakeReader;
   readonly contractRepository?: ContractRepository;
 }
 
@@ -505,6 +510,7 @@ async function requireRequestableOffering(
   offeringId: string,
   dependencies: CustomerRequestUseCaseDependencies,
 ) {
+  if (!(await serviceIntakeOpen(dependencies.serviceIntake))) throw unavailableOffering();
   const offering = await dependencies.offeringRepository.findById(offeringId);
 
   if (

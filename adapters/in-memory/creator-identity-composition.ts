@@ -95,6 +95,11 @@ import {
 import { InMemoryPaidCommerceRepository } from './in-memory-paid-commerce-repository.js';
 import { InMemoryProviderFactReceiptGuard } from './in-memory-provider-fact-receipt-guard.js';
 import { InMemoryOperationsActionAuditStore } from './in-memory-operations-action-audit-store.js';
+import { InMemoryScenarioOperationsStore } from './in-memory-scenario-operations-store.js';
+import {
+  createScenarioOperationsService,
+  type ScenarioOperationsService,
+} from '../../applications/operations-admin/scenario-operations.js';
 import { CommercialPilotOperationsService } from '../../applications/paid-commerce/commercial-pilot-operations.js';
 import { LocalCommercialPilotOperationsActionExecutor } from '../../applications/paid-commerce/local-commercial-pilot-operations-action-executor.js';
 import { InMemoryProviderWebhookReceiptStore } from './in-memory-provider-webhook-receipt-store.js';
@@ -162,6 +167,7 @@ export interface CreatorIdentityComposition {
   readonly providerWebhookRuntime: ProviderWebhookRuntime;
   readonly notificationAdapter: InMemoryNotificationAdapter;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly scenarioOperationsService: ScenarioOperationsService;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsFlowReadService: OperationsFlowReadService;
 }
@@ -210,6 +216,7 @@ export function createInMemoryCreatorIdentityComposition(
   const paidCommerceRepository = new InMemoryPaidCommerceRepository();
   const reservationRepository = new InMemoryReservationRepository();
   const contractRepository = new InMemoryContractRepository();
+  const serviceIntake = new InMemoryScenarioOperationsStore();
   const servicePolicyCatalogRepository = new InMemoryServicePolicyCatalogRepository(
     initialServicePolicyCatalog,
   );
@@ -464,6 +471,7 @@ export function createInMemoryCreatorIdentityComposition(
       unitOfWork,
     }),
     offeringService: createServiceOfferingService({
+      serviceIntake,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -475,6 +483,7 @@ export function createInMemoryCreatorIdentityComposition(
       unitOfWork,
     }),
     customerRequestService: createCustomerRequestService({
+      serviceIntake,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -517,6 +526,10 @@ export function createInMemoryCreatorIdentityComposition(
     }),
     notificationAdapter,
     servicePolicyCatalogRepository,
+    scenarioOperationsService: createScenarioOperationsService(
+      serviceIntake,
+      servicePolicyCatalogRepository,
+    ),
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),

@@ -130,6 +130,11 @@ import {
 import { RealMoneyActivationGuard } from '../../../applications/paid-commerce/real-money-activation-guard.js';
 import { CommercialPilotOperationsService } from '../../../applications/paid-commerce/commercial-pilot-operations.js';
 import { PostgresOperationsActionAuditStore } from './postgres-operations-action-audit-store.js';
+import { PostgresScenarioOperationsStore } from './postgres-scenario-operations-store.js';
+import {
+  createScenarioOperationsService,
+  type ScenarioOperationsService,
+} from '../../../applications/operations-admin/scenario-operations.js';
 import { LocalCommercialPilotOperationsActionExecutor } from '../../../applications/paid-commerce/local-commercial-pilot-operations-action-executor.js';
 import {
   createReservationService,
@@ -207,6 +212,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly providerWebhookRuntime: ProviderWebhookRuntime;
   readonly database: PostgresDatabaseConnection;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly scenarioOperationsService: ScenarioOperationsService;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
   readonly operationsFlowReadService: OperationsFlowReadService;
@@ -266,6 +272,7 @@ export function createPostgresCreatorIdentityComposition(
   const paidCommerceRepository = new PostgresPaidCommerceRepository(database.database);
   const reservationRepository = new PostgresReservationRepository(database.database);
   const contractRepository = new PostgresContractRepository(database.database);
+  const serviceIntake = new PostgresScenarioOperationsStore(database.database);
   const servicePolicyCatalogRepository = new PostgresServicePolicyCatalogRepository(
     database.database,
   );
@@ -528,6 +535,7 @@ export function createPostgresCreatorIdentityComposition(
       unitOfWork,
     }),
     offeringService: createServiceOfferingService({
+      serviceIntake,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -539,6 +547,7 @@ export function createPostgresCreatorIdentityComposition(
       unitOfWork,
     }),
     customerRequestService: createCustomerRequestService({
+      serviceIntake,
       identityRepository,
       capabilityRepository,
       offeringRepository,
@@ -576,6 +585,10 @@ export function createPostgresCreatorIdentityComposition(
       activationGuard: new RealMoneyActivationGuard(realMoneyRuntimeConfiguration),
     }),
     servicePolicyCatalogRepository,
+    scenarioOperationsService: createScenarioOperationsService(
+      serviceIntake,
+      servicePolicyCatalogRepository,
+    ),
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),

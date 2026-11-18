@@ -34,6 +34,7 @@ import {
 import type { ActorContext } from '../core/actor-context.js';
 import type { ContractRepository } from '../contract-commerce/contract-repositories.js';
 import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
+import type { ServiceIntakeReader } from '../operations-admin/scenario-operations.js';
 
 export interface CustomerRequestService {
   getPublicOffering(
@@ -70,6 +71,7 @@ export function createCustomerRequestService(dependencies: {
   readonly notificationPort: NotificationPort;
   readonly unitOfWork: UnitOfWork;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly serviceIntake?: ServiceIntakeReader;
   readonly contractRepository?: ContractRepository;
 }): CustomerRequestService {
   const getPublicOffering = new GetPublicOfferingUseCase(dependencies);

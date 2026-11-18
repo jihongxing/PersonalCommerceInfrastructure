@@ -1,3 +1,4 @@
+import { inArray } from 'drizzle-orm';
 import type {
   OperationsActionAuditRecord,
   OperationsActionAuditStore,
@@ -28,6 +29,14 @@ export class PostgresOperationsActionAuditStore implements OperationsActionAudit
     const rows = await this.database
       .select()
       .from(operationsActionAudits)
+      .where(
+        inArray(operationsActionAudits.targetType, [
+          'order',
+          'settlement',
+          'withdrawal',
+          'recovery',
+        ]),
+      )
       .orderBy(operationsActionAudits.occurredAt, operationsActionAudits.id);
     return rows.map((row) => ({
       id: row.id,

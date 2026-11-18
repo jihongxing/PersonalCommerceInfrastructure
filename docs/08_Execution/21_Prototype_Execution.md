@@ -11608,3 +11608,22 @@ not change the VS-01 contract or authorize implementation of a global architectu
 - See repository-external `PCI-ENG-024-Integration-and-Delivery-Report.md` for scoped evidence.
   Local delivery candidate only; Main Controller review pending. No push, production deployment
   or external pilot. `REAL_MONEY_ENABLED=false`.
+
+## DEV-093 / PCI-PD-001 — Admin scenario operations control
+
+Registered 2026-11-18 under PCI-PD-001 §§4–7. Scope: the Admin operational access policy for new
+Service publication and public Request intake (FR-015, FR-025–FR-030, AT-005–AT-008). Service starts
+open with its existing Catalog policy. Pausing intake does not change historical Offerings,
+Request decisions or results, fulfillment, identity/session isolation, canonical events, or funds.
+The other five Founder-approved scenarios have no integrated intake policy and cannot be opened
+by this change. No frozen Founder Decision or VS-01 domain contract is rewritten.
+
+- Verified in disposable PostgreSQL with 43 migrations, Fastify, production-built Admin Web and
+  Chromium: authenticated pause/reopen, gated publication and new Requests, existing Request
+  confirmation/result, persistence across API restart, and two attributable audit revisions.
+  Targeted tests also verify the read-only denial, stale/concurrent revision handling and fulfillment.
+- The browser proof uses an isolated Operations runtime fixture. The production bootstrap trust
+  predicate rejects the current `public` ownership grants, and the production API does not enable
+  Operations Human authentication. Neither safeguard was changed. The five unintegrated scenarios
+  remain read-only inventory, not operationally enabled. See repository-external
+  `PCI-PD-001-Admin-Scenario-Operations-Report.md`. No deployment, Pilot, or real-money activation.

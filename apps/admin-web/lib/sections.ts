@@ -2,6 +2,12 @@
 export const sections = [
   { slug: '', label: '概览', english: 'Overview', description: '真实业务指标与近期运营事件。' },
   {
+    slug: 'scenarios',
+    label: '场景运营',
+    english: 'Scenario Operations',
+    description: '查看六类场景的接入与策略。仅已接入业务入口的场景可以开放或暂停。',
+  },
+  {
     slug: 'admin/exceptions',
     label: '异常发现',
     english: 'Evidence Exceptions',

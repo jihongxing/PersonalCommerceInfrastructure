@@ -73,6 +73,8 @@ import type { ServicePolicyCatalogRepository } from '../../../applications/servi
 import type { OperationsQueryRepository } from '../../../applications/operations-admin/operations-query-repository.js';
 import { createOperationsWorkspaceReadService } from '../../../applications/operations-admin/operations-workspace-read-service.js';
 import { registerOperationsWorkspaceReadRoutes } from '../../../adapters/transport/http/operations-workspace-read-routes.js';
+import { registerScenarioOperationsRoutes } from '../../../adapters/transport/http/scenario-operations-routes.js';
+import type { ScenarioOperationsService } from '../../../applications/operations-admin/scenario-operations.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
@@ -113,6 +115,7 @@ export interface ApiServerDependencies {
   readonly rateLimitMax?: number;
   readonly servicePolicyCatalogRepository?: ServicePolicyCatalogRepository;
   readonly servicePolicyAdminService?: ServicePolicyAdminService;
+  readonly scenarioOperationsService?: ScenarioOperationsService;
   readonly operationsFlowReadService?: OperationsFlowReadService;
   readonly operationsQueryRepository?: OperationsQueryRepository;
 }
@@ -404,6 +407,11 @@ export async function createApiServer(
     adminService: servicePolicyAdminService,
     humanOperationsAuthContextProvider: dependencies.operationsHumanAuthenticationRuntime,
   });
+  registerScenarioOperationsRoutes(
+    server,
+    dependencies.scenarioOperationsService ?? composition.scenarioOperationsService,
+    dependencies.operationsHumanAuthenticationRuntime,
+  );
   registerOperationsFlowReadRoutes(server, {
     service:
       dependencies.operationsQueryRepository ??

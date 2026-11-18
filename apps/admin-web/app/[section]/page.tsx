@@ -7,6 +7,7 @@ import { RequestReadPanel } from '../../components/request-read-panel';
 import { sections } from '../../lib/sections';
 import { WorkspaceSearch } from '../../components/workspace-search';
 import { CatalogPolicyPanel } from '../../components/catalog-policy-panel';
+import { ScenarioOperationsPanel } from '../../components/scenario-operations-panel';
 
 export function generateStaticParams() {
   return sections.filter((section) => section.slug).map((section) => ({ section: section.slug }));
@@ -18,6 +19,18 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
   const { section: slug } = await params;
   const section = sections.find((entry) => entry.slug === slug && entry.slug !== '');
   if (!section) notFound();
+  if (slug === 'scenarios') {
+    return (
+      <>
+        <div className="page-heading">
+          <p className="eyebrow">Operations / {section.english}</p>
+          <h1>{section.label}</h1>
+          <p>{section.description}</p>
+        </div>
+        <ScenarioOperationsPanel />
+      </>
+    );
+  }
   if (slug === 'search')
     return (
       <>

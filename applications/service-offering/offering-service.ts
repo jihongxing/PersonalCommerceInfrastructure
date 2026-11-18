@@ -1,3 +1,4 @@
+import type { ServiceIntakeReader } from '../operations-admin/scenario-operations.js';
 import type { ActorContext } from '../core/actor-context.js';
 import type { IdGenerator } from '../core/ports/id-generator.js';
 import type { CanonicalEventRecorder } from '../core/canonical-event-recorder.js';
@@ -49,6 +50,7 @@ export function createServiceOfferingService(dependencies: {
   readonly offeringRepository: OfferingRepository;
   readonly idGenerator: IdGenerator;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly serviceIntake?: ServiceIntakeReader;
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly publicOfferingUrlGenerator?: PublicOfferingUrlGenerator;
   readonly canonicalEventRecorder?: CanonicalEventRecorder;

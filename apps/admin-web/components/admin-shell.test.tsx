@@ -70,7 +70,7 @@ describe('Operations shell', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
     expect(screen.queryByText('Second route')).not.toBeInTheDocument();
   });
-  it('has eleven navigation destinations, an active area and a session control', async () => {
+  it('shows the scenario destination, an active area and a session control', async () => {
     render(
       <AdminShell>
         <Overview />
@@ -78,7 +78,8 @@ describe('Operations shell', () => {
     );
     expect(screen.getByText('正在验证 Session')).toBeVisible();
     const navigation = await screen.findByRole('navigation', { name: '运营管理导航' });
-    expect(navigation.querySelectorAll('a')).toHaveLength(11);
+    expect(navigation.querySelectorAll('a')).toHaveLength(12);
+    expect(screen.getByRole('link', { name: '场景运营' })).toHaveAttribute('href', '/scenarios');
     expect(screen.getByRole('link', { name: '服务模板', current: 'page' })).toHaveAttribute(
       'href',
       '/templates',
@@ -120,6 +121,7 @@ describe('Operations shell', () => {
           'audit',
           'offerings',
           'requests',
+          'scenarios',
         ].includes(section.slug),
     ),
   )('keeps $english unavailable without fabricated data or management actions', async (section) => {
@@ -128,6 +130,15 @@ describe('Operations shell', () => {
     expect(screen.getByText('待实施 · 暂不可用')).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('does not display invented scenario settings when the Admin API is unavailable', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 503 }));
+    render(await SectionPage({ params: Promise.resolve({ section: 'scenarios' }) }));
+    expect(screen.getByRole('heading', { level: 1, name: '场景运营' })).toBeVisible();
+    expect(await screen.findByRole('alert')).toHaveTextContent('无法读取场景设置');
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('renders controlled Catalog policy management for Policy Versions', async () => {

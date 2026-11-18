@@ -108,7 +108,7 @@ export function registerOperationsHumanAuthenticationRoutes(
   );
 }
 
-function authenticationError(error: unknown): ApplicationError {
+export function authenticationError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) return error;
   if (
     error instanceof OperationsHumanAuthenticationError ||

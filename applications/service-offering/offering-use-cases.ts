@@ -36,6 +36,10 @@ import {
   isPolicyPublishable,
 } from '../../modules/service-policy/catalog.js';
 import type { ServicePolicyCatalogRepository } from '../service-policy/service-policy-repositories.js';
+import {
+  serviceIntakeOpen,
+  type ServiceIntakeReader,
+} from '../operations-admin/scenario-operations.js';
 
 export type CreateServiceOfferingCommand = OfferingDraftInput;
 
@@ -58,6 +62,7 @@ export interface ServiceOfferingUseCaseDependencies {
   readonly offeringRepository: OfferingRepository;
   readonly idGenerator: IdGenerator;
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
+  readonly serviceIntake?: ServiceIntakeReader;
   readonly distributionAssetRepository?: DistributionAssetRepository;
   readonly publicOfferingUrlGenerator?: PublicOfferingUrlGenerator;
   readonly canonicalEventRecorder?: CanonicalEventRecorder;
@@ -188,6 +193,13 @@ export class PublishServiceOfferingUseCase implements ApplicationUseCase<
       });
     }
 
+    if (!(await serviceIntakeOpen(this.dependencies.serviceIntake))) {
+      throw new ApplicationError({
+        category: 'conflict',
+        code: 'service_intake_paused',
+        message: 'New Service publication is paused by Operations.',
+      });
+    }
     const evaluated = await evaluatePolicy(offering, this.dependencies);
     if (!isPolicyPublishable(evaluated.policyStatus)) {
       await this.dependencies.offeringRepository.save(evaluated);

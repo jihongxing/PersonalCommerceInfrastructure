@@ -19,6 +19,8 @@ it('preserves registered VS-01 operations alongside governed VS-02 operations', 
       ),
     );
     const expected = {
+      'GET /api/v1/operations/admin/scenarios': 'listOperationsScenarios',
+      'PATCH /api/v1/operations/admin/scenarios': 'changeOperationsScenarioIntake',
       'GET /api/v1/creator/confirmed-requests': 'listCreatorConfirmedRequests',
       'GET /api/v1/creator/identity': 'getCreatorIdentity',
       'GET /api/v1/creator/offerings': 'listCreatorServiceOfferings',

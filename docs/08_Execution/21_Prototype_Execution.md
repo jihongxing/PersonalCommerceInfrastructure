@@ -11645,3 +11645,9 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 
 - 2026-11-18：登记 [FD-PCI-SCENARIO-SEQUENCING-001](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)，同步项目战略、Control25 决定登记及 README 导航。Membership 是 Service 之后的下一个优先运营场景，不表示已接入运营。
 - 验证范围：本次相对链接与导航、文档 diff、F01–F04 / D01–D12 / Conceptual Baseline 41 无改动。仅同步战略，不改变产品行为；无新增 DEV 偏差或运行时验收。
+
+## PCI-PD-004 — Membership 首期切片待裁决
+
+- 2026-11-18：完成[首期切片与待裁决事项](./PCI-PD-004-Membership-First-Slice-Decision-Brief.md)，推荐无费用、固定期的线下创作者空间会员。准入、权益、有效性及暂停对在途申请的影响待 Founder 裁决；该文档不是产品合同。
+- 未实现或验收 Membership 业务闭环，场景保持 `not_integrated`，无 API、数据库或权限变更。裁决后先登记产品合同及 `DEV-###`，再进入实现。
+- 基线回归：API 与 Admin 构建通过，Admin 50 项、Operations 身份/场景/API 合同 3 项通过，43 份迁移完整性通过。这些不是 Membership 验收；未运行外部 Pilot 或生产路径。

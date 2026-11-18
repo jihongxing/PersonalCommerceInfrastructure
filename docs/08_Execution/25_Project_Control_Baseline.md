@@ -1158,3 +1158,7 @@ FOUNDER DECISIONS = AWAITING WHERE REQUIRED
 - 正式决定：[42 — Commercial Scenario Sequencing Founder Decision](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)。
 - 战略导航：[05 — Product Direction：Future Expansion Criteria](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md#20-future-expansion-criteria)。
 - 范围：虚拟和线下优先，逐步接入线上及长周期履约或交付；Service 之后优先 Membership，后续按业务实际排序。只登记战略顺序，不作为架构批准、Membership 产品合同或上线授权；历史及概念决定不回写。
+
+## 21. FD-PCI-MEMBERSHIP-FIRST-SLICE-001 — Membership First Slice
+
+2026-11-18 登记；来源为 Founder 指令 PCI-PD-004 §A1。状态：**FOUNDER APPROVED / FROZEN**。正式决定见 [43 — Membership First Slice Founder Decision](../07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)，实施边界见 [44 — Product Contract](../07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)。仅批准本轮免费、固定期、线下核验的切片，不修改先前决定或开启生产运营。

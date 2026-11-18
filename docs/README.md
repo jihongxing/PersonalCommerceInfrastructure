@@ -9,6 +9,7 @@
 > **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
 > **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；优先级不是运营开放状态）
+> **Membership 首期**：[Founder 决定](./07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md) · [产品合同](./07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
 > 最近执行更新：2026-11-12（PCI-ENG-015-B-R2 持久化完整性与验证闭合）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 

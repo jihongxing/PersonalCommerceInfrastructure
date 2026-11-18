@@ -11651,3 +11651,8 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - 2026-11-18：完成[首期切片与待裁决事项](./PCI-PD-004-Membership-First-Slice-Decision-Brief.md)，推荐无费用、固定期的线下创作者空间会员。准入、权益、有效性及暂停对在途申请的影响待 Founder 裁决；该文档不是产品合同。
 - 未实现或验收 Membership 业务闭环，场景保持 `not_integrated`，无 API、数据库或权限变更。裁决后先登记产品合同及 `DEV-###`，再进入实现。
 - 基线回归：API 与 Admin 构建通过，Admin 50 项、Operations 身份/场景/API 合同 3 项通过，43 份迁移完整性通过。这些不是 Membership 验收；未运行外部 Pilot 或生产路径。
+
+## DEV-094 / PCI-PD-004 — Membership First Slice
+
+- 2026-11-18：Founder 冻结[首期规则](../07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)。[产品合同](../07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)记录 Offering、申请、批准、会员关系、核验、入场、更正及 Admin 暂停边界。前项待裁决状态为历史记录。
+- 变更单元以 PCI-PD-004 §B6 十七项为验收边界。无 VS-01 状态、规范事件、身份分离或资金变更；本条登记不表示代码或运行验收通过。

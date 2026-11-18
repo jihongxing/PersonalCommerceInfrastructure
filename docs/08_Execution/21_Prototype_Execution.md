@@ -11640,3 +11640,8 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
   Overview audit-read limitation does not block Scenarios; no access grants added for it.
 - See external `PCI-PD-002-Production-Operations-Human-and-Admin-Bootstrap-Readiness.md`.
   No production activation, deployment, Pilot or real money.
+
+## PCI-DOC-003 — Founder scenario sequencing synchronization
+
+- 2026-11-18：登记 [FD-PCI-SCENARIO-SEQUENCING-001](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)，同步项目战略、Control25 决定登记及 README 导航。Membership 是 Service 之后的下一个优先运营场景，不表示已接入运营。
+- 验证范围：本次相对链接与导航、文档 diff、F01–F04 / D01–D12 / Conceptual Baseline 41 无改动。仅同步战略，不改变产品行为；无新增 DEV 偏差或运行时验收。

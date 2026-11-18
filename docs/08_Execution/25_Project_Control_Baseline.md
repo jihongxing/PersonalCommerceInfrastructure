@@ -1150,3 +1150,11 @@ FOUNDER DECISIONS = AWAITING WHERE REQUIRED
 ```
 
 这些是授权和文档交付状态，不是运行配置检测。研究交付不等于模型获 Founder 接受；本轮交付后立即停止，等待 Main Controller 审阅。D12、架构、原型、工程和资金均需另行明确授权。
+
+## 20. FD-PCI-SCENARIO-SEQUENCING-001 — Commercial Scenario Sequencing
+
+2026-11-18 登记；来源为 Founder 指令 PCI-DOC-003 §1。状态：**FOUNDER APPROVED / FROZEN**。
+
+- 正式决定：[42 — Commercial Scenario Sequencing Founder Decision](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)。
+- 战略导航：[05 — Product Direction：Future Expansion Criteria](../01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md#20-future-expansion-criteria)。
+- 范围：虚拟和线下优先，逐步接入线上及长周期履约或交付；Service 之后优先 Membership，后续按业务实际排序。只登记战略顺序，不作为架构批准、Membership 产品合同或上线授权；历史及概念决定不回写。

@@ -616,6 +616,8 @@ Prototype != Product Direction completeness。
 
 ## 20. Future Expansion Criteria
 
+商业场景进入顺序以 2026-11-18 登记的 [FD-PCI-SCENARIO-SEQUENCING-001](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md) 为准：优先虚拟和线下场景，再逐步接入线上及长周期履约或交付场景。Service 是首期运营场景，Membership 是第二个优先运营场景。后续以业务形态、交易方式、履约及交付周期排序，不以供给类型名称或开发便利性代替判断。
+
 未来能力只有同时满足以下条件，才可进入正式 Product / Architecture work：
 
 1. 明确服务于个人可控制的 Commerce Infrastructure；
@@ -627,6 +629,8 @@ Prototype != Product Direction completeness。
 7. 不绕过项目暂停、Real Money kill switch 或阶段授权。
 
 ## 21. Founder Decisions Register
+
+已冻结的场景进入决定：[FD-PCI-SCENARIO-SEQUENCING-001](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（FOUNDER APPROVED / FROZEN，仅限进入顺序与运营优先级）。
 
 以下事项仍然需要 Founder 后续决定：
 

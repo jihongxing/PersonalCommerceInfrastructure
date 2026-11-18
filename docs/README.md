@@ -8,6 +8,7 @@
 > **HISTORICAL NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
 > **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
+> **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；优先级不是运营开放状态）
 > 最近执行更新：2026-11-12（PCI-ENG-015-B-R2 持久化完整性与验证闭合）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
@@ -580,3 +581,7 @@ MAIN CONTROLLER REVIEW = AWAITING
 ```
 
 上述为文档和授权状态，不是运行开关检测。完成后停止；后续产品、架构、研究、代码审视或系统性重构须独立授权。
+
+## PCI-DOC-003 — Founder 场景进入战略
+
+[Decision 42 — FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md) 是场景进入顺序的正式决定，状态为 **FOUNDER APPROVED / FROZEN**。见 [05 — Product Direction：Future Expansion Criteria](./01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md#20-future-expansion-criteria) 与 [Control25 决定登记](./08_Execution/25_Project_Control_Baseline.md#20-fd-pci-scenario-sequencing-001--commercial-scenario-sequencing)。概念及领域语义仍以 [Conceptual Baseline 41](./07_Product_Architecture/41_Global_Commercial_System_Conceptual_Baseline.md) 和相应产品合同为准。

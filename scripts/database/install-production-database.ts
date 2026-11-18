@@ -21,6 +21,10 @@ import {
 } from './production-migration-policy.js';
 import { deploymentFingerprint } from './production-database-catalog.js';
 import { fulfillmentRuntimeGrant, productionRuntimeGrants } from './production-runtime-grants.js';
+import {
+  productionOperationsDatabaseUrl,
+  verifyProductionOperationsRuntime,
+} from '../../adapters/persistence/postgres/production-operations-runtime.js';
 
 const childScript = fileURLToPath(new URL('./run-production-migration.js', import.meta.url));
 const restrictedRole = 'NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS';
@@ -194,6 +198,23 @@ async function upgradeFulfillmentGrant(tx: InstallationSql) {
   await tx`UPDATE pci_deployment.installation SET fingerprint=${fingerprint} WHERE singleton`;
 }
 
+async function finalizeOperationsAccess(tx: InstallationSql, password: string | undefined) {
+  await tx`REVOKE CREATE ON SCHEMA public FROM ${tx(roles.applicationOwner)}`;
+  if (password === undefined) return;
+  const [runtime] = await tx<{ provisioned: boolean }[]>`
+    SELECT rolpassword IS NOT NULL AS provisioned FROM pg_authid WHERE rolname=${roles.runtime}`;
+  requireInstallation(runtime, 'missing Operations runtime role');
+  if (!runtime.provisioned) {
+    await tx`SET LOCAL log_statement TO 'none'`;
+    await tx`SET LOCAL log_min_error_statement TO 'panic'`;
+    await tx`SET LOCAL log_parameter_max_length_on_error TO 0`;
+    const [credential] = await tx<{ password: string }[]>`
+      SELECT quote_literal(${password}::text) AS password`;
+    await tx`ALTER ROLE ${tx(roles.runtime)} PASSWORD ${tx.unsafe(credential!.password)}`;
+    await tx`GRANT CONNECT ON DATABASE ${tx(databaseName)} TO ${tx(roles.runtime)}`;
+  }
+}
+
 async function install() {
   const migrations = productionMigrations();
   const adminPassword = process.env.POSTGRES_PASSWORD;
@@ -201,8 +222,18 @@ async function install() {
   const passwords = new Map<string, string>(
     rolePasswords.map(([role, key]) => [role, internalDatabasePassword(process.env[key], role)]),
   );
+  const operationsUrl = productionOperationsDatabaseUrl(process.env);
+  const operationsPassword =
+    operationsUrl === undefined
+      ? undefined
+      : internalDatabasePassword(operationsUrl, roles.runtime);
+  const credentialSet = [
+    adminPassword,
+    ...passwords.values(),
+    ...(operationsPassword === undefined ? [] : [operationsPassword]),
+  ];
   requireInstallation(
-    new Set([adminPassword, ...passwords.values()]).size === 4,
+    new Set(credentialSet).size === credentialSet.length,
     'database roles require distinct credentials',
   );
   const connection = deploymentConnection(roles.installer, adminPassword);
@@ -247,6 +278,9 @@ async function install() {
           'existing database owner, schema or privilege drift',
         );
         await upgradeFulfillmentGrant(tx);
+        await finalizeOperationsAccess(tx, operationsPassword);
+        const fingerprint = await deploymentFingerprint(tx);
+        await tx`UPDATE pci_deployment.installation SET fingerprint=${fingerprint} WHERE singleton AND fingerprint IS DISTINCT FROM ${fingerprint}`;
       });
     } else {
       const [checkpoint] =
@@ -270,11 +304,20 @@ async function install() {
       }
       await connection.begin(async (tx) => {
         await tx.unsafe(productionRuntimeGrants);
+        await finalizeOperationsAccess(tx, operationsPassword);
         await tx`REVOKE INSERT ON pci_deployment.migration_checkpoint FROM ${tx(roles.migration)}`;
         await tx`REVOKE USAGE ON SCHEMA pci_deployment FROM ${tx(roles.migration)}`;
         const fingerprint = await deploymentFingerprint(tx);
         await tx`UPDATE pci_deployment.installation SET state='ready', fingerprint=${fingerprint} WHERE singleton`;
       });
+    }
+    if (operationsPassword !== undefined) {
+      const operations = deploymentConnection(roles.runtime, operationsPassword);
+      try {
+        await verifyProductionOperationsRuntime(operations);
+      } finally {
+        await operations.end();
+      }
     }
     process.stdout.write('Production database: reviewed history and separated logins verified\n');
   } finally {

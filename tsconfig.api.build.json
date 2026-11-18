@@ -4,6 +4,7 @@
     "apps/api/src/main.ts",
     "scripts/database/migrate.ts",
     "scripts/database/install-production-database.ts",
+    "scripts/database/initialize-first-operations-account.ts",
     "scripts/database/run-production-migration.ts"
   ]
 }

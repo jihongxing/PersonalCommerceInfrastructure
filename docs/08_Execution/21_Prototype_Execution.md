@@ -11627,3 +11627,16 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
   Operations Human authentication. Neither safeguard was changed. The five unintegrated scenarios
   remain read-only inventory, not operationally enabled. See repository-external
   `PCI-PD-001-Admin-Scenario-Operations-Report.md`. No deployment, Pilot, or real-money activation.
+
+## PCI-PD-002 — Operations Human and first Admin readiness
+
+- Isolated Production Compose verification: fresh PostgreSQL, migrations 0000–0042 in reviewed
+  order, separate Operations runtime login and pool, unchanged 0041 trust predicate, and controlled
+  first administrator bootstrap. Installer removes the application owner's installation-only
+  `public` CREATE after migration. Disabled by default; no new product states or permissions.
+- Admin and Creator BFF HTTP flows verified Service pause/reopen, prior Request confirmation and
+  result, audit and session persistence across API restart, independent logout and authorization
+  denials. Configuration, identity, ACL and schema-trust fault probes failed closed. Existing
+  Overview audit-read limitation does not block Scenarios; no access grants added for it.
+- See external `PCI-PD-002-Production-Operations-Human-and-Admin-Bootstrap-Readiness.md`.
+  No production activation, deployment, Pilot or real money.

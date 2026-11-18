@@ -40,13 +40,13 @@ migrations, adopt unmarked volumes, or repair catalog drift.
 | `pci_ops_bootstrap`       | Independent temporary LOGIN, random expiring credential and SET-only Journal Owner membership. Disabled and password cleared before migrations.        |
 | `pci_ops_journal_owner`   | NOLOGIN; owns `drizzle`, the Journal and its dependent objects only.                                                                                   |
 | `pci_ops_migration`       | Separate LOGIN; SET-only access to approved DDL owners, Journal SELECT/INSERT and serial USAGE. No journal ownership, cluster grants or grant options. |
-| `pci_app_object_owner`    | NOLOGIN; owns ordinary application objects from 0000–0035 and 0042.                                                                                    |
+| `pci_app_object_owner`    | NOLOGIN; owns ordinary application objects from 0000–0035 and 0042. Its installation-only `CREATE` on `public` is revoked before the volume is marked ready. |
 | `pci_ops_legacy_owner`    | NOLOGIN; owns 0036–0039 and the reviewed legacy DDL in 0041.                                                                                           |
 | `pci_ops_table_owner`     | NOLOGIN; reviewed activation audit/history and 0041 table-stage SQL.                                                                                   |
 | `pci_ops_function_owner`  | NOLOGIN; owns `operations_private` and `operations_api` and executes reviewed function-stage SQL.                                                      |
 | `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core and wired Paid/Pilot SQL only.                                                                    |
 | `pci_creator_bff_runtime` | LOGIN; Creator Web Session SELECT/INSERT/UPDATE projections only; no DELETE, business data, Journal, project routines or sequences.                    |
-| `pci_ops_runtime`         | Separate restricted role for existing SQL contracts; no credential or pool supplied to these services.                                                 |
+| `pci_ops_runtime`         | Independent restricted LOGIN for the existing Operations Human auth/session SQL. Only provisioned and connected when explicitly enabled.                 |
 
 The official PostgreSQL entrypoint writes the marker only on a fresh volume. A TCP health check
 waits for entrypoint initialization to finish before the installer connects. The installer serializes
@@ -65,6 +65,34 @@ production simulation is disabled and the unconfigured provider webhook rejects 
 so Provider Fact INSERT and its serial sequence are not granted. App roles have no owner
 memberships. Compose requires the dedicated BFF URL and does not give Web the API URL credential or
 installer credentials.
+
+## Operations Human readiness (isolated non-production only)
+
+The API and installer default to `OPERATIONS_HUMAN_ENABLED=false`. For an authorized isolation
+test, enable it in both through Compose and inject a distinct, server-only
+`OPERATIONS_DATABASE_URL` using `pci_ops_runtime@postgres:5432/personal_commerce`. The Admin
+`operations-admin` profile uses the internal API origin and a separate browser origin
+(`ADMIN_WEB_ORIGIN`); no database URL is supplied to Admin. The profile alone does not enable
+the API. Password changes are not automatic: an already provisioned role must authenticate with
+its recorded credential or the installer refuses to proceed. The API verifies the database role and
+permissions before listening. Do not expose these services as a production deployment.
+
+After `migrate` completes, run the existing interactive initializer using the migration URL, not
+the Operations, API, or database-owner login. From the same Compose project and secret-injection
+context, run the one-off service below. Set `OPERATIONS_BOOTSTRAP_EVIDENCE_REF` and
+`OPERATIONS_BOOTSTRAP_DECISION_REF` to approved references in the operator environment before
+invocation. The login and password are prompted; enter the password only in the hidden prompt.
+
+```sh
+docker compose -f deploy/compose.production.yml run --rm --no-deps \
+  -e OPERATIONS_BOOTSTRAP_EVIDENCE_REF -e OPERATIONS_BOOTSTRAP_DECISION_REF \
+  migrate sh -ec 'DATABASE_URL="$MIGRATION_DATABASE_URL" exec node dist/scripts/database/initialize-first-operations-account.js'
+```
+
+The initializer creates no Session; sign in through Admin afterward. A second initialization is
+refused. Migration 0041's public schema trust check remains unchanged. Fresh installs revoke
+application-owner CREATE during finalization; existing trusted ready volumes verify fingerprint and
+Journal before converging to the same grants. Runtime roles never receive CREATE or owner membership.
 
 ## Recovery and existing volumes
 

@@ -14,6 +14,12 @@ import {
 } from '../../../adapters/persistence/postgres/postgres-creator-identity-composition.js';
 import { InMemoryAuthContextProvider } from '../../../adapters/auth/testing/in-memory-auth-context-provider.js';
 import { LogNotificationAdapter } from '../../../adapters/notifications/log-notification-adapter.js';
+import { createPostgresDatabase } from '../../../adapters/persistence/postgres/postgres-database.js';
+import { createPostgresOperationsIdentityComposition } from '../../../adapters/persistence/postgres/postgres-operations-identity-composition.js';
+import {
+  productionOperationsDatabaseUrl,
+  verifyProductionOperationsRuntime,
+} from '../../../adapters/persistence/postgres/production-operations-runtime.js';
 import { ResendPasswordResetDelivery } from '../../../adapters/notifications/resend-password-reset-delivery.js';
 import { createSafeLogger } from '../../../adapters/observability/safe-logger.js';
 import { createPerformanceMonitor } from '../../../adapters/observability/performance-monitor.js';
@@ -66,10 +72,23 @@ export async function startApi(): Promise<ApiRuntime> {
     liveProviderConfigured: realMoneyRuntime.provider !== undefined,
   });
   let composition: ReturnType<typeof createPostgresCreatorIdentityComposition> | undefined;
+  let operationsConnection: ReturnType<typeof createPostgresDatabase> | undefined;
   let server: Awaited<ReturnType<typeof createApiServer>> | undefined;
   let passwordRecoveryWorker: ReturnType<typeof startPasswordRecoveryWorker> | undefined;
   const tracing = startTracing(tracingConfiguration, logger);
   try {
+    const operationsUrl =
+      configuration.environment === 'production'
+        ? productionOperationsDatabaseUrl(process.env)
+        : undefined;
+    if (operationsUrl !== undefined) {
+      operationsConnection = createPostgresDatabase(operationsUrl);
+      await verifyProductionOperationsRuntime(operationsConnection.client);
+    }
+    const productionOperations =
+      operationsConnection === undefined
+        ? undefined
+        : createPostgresOperationsIdentityComposition(operationsConnection.database);
     const mailKey = process.env.PASSWORD_RESET_RESEND_API_KEY;
     const mailFrom = process.env.PASSWORD_RESET_FROM;
     if (Boolean(mailKey) !== Boolean(mailFrom))
@@ -137,7 +156,12 @@ export async function startApi(): Promise<ApiRuntime> {
             qrCodeGenerator: new QrCodeGeneratorImpl(),
             operationsAuthContextProvider: composition.operationsAuthContextProvider,
             ...(configuration.environment === 'production'
-              ? {}
+              ? productionOperations === undefined
+                ? {}
+                : {
+                    operationsHumanAuthenticationRuntime:
+                      productionOperations.humanAuthenticationRuntime,
+                  }
               : {
                   operationsHumanAuthenticationRuntime:
                     composition.operationsIdentityPersistence.humanAuthenticationRuntime,
@@ -202,7 +226,7 @@ export async function startApi(): Promise<ApiRuntime> {
     } finally {
       try {
         if (passwordRecoveryWorker !== undefined) await passwordRecoveryWorker.stop();
-        if (composition !== undefined) await composition.database.close();
+        await Promise.all([composition?.database.close(), operationsConnection?.close()]);
       } finally {
         await tracing.shutdown();
       }
@@ -222,7 +246,10 @@ export async function startApi(): Promise<ApiRuntime> {
             await runningServer.close();
           } finally {
             if (passwordRecoveryWorker !== undefined) await passwordRecoveryWorker.stop();
-            if (runningComposition !== undefined) await runningComposition.database.close();
+            await Promise.all([
+              runningComposition?.database.close(),
+              operationsConnection?.close(),
+            ]);
           }
         } finally {
           await tracing.shutdown();

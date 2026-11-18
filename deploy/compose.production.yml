@@ -30,6 +30,8 @@ services:
       MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
       API_DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       CREATOR_BFF_DATABASE_URL: ${CREATOR_BFF_DATABASE_URL:?CREATOR_BFF_DATABASE_URL is required}
+      OPERATIONS_HUMAN_ENABLED: ${OPERATIONS_HUMAN_ENABLED:-false}
+      OPERATIONS_DATABASE_URL: ${OPERATIONS_DATABASE_URL:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,6 +49,8 @@ services:
       RUNTIME_ENV: production
       REAL_MONEY_ENABLED: 'false'
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      OPERATIONS_HUMAN_ENABLED: ${OPERATIONS_HUMAN_ENABLED:-false}
+      OPERATIONS_DATABASE_URL: ${OPERATIONS_DATABASE_URL:-}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CREATOR_BFF_REVOCATION_SECRET: ${CREATOR_BFF_REVOCATION_SECRET:?CREATOR_BFF_REVOCATION_SECRET is required}
       PASSWORD_RESET_RESEND_API_KEY: ${PASSWORD_RESET_RESEND_API_KEY:-}
@@ -111,6 +115,34 @@ services:
           'node',
           '-e',
           "fetch('http://127.0.0.1:3000/auth/login').then(r=>{if(!r.ok)process.exit(1)})",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  admin:
+    profiles: ['operations-admin']
+    image: ${ADMIN_IMAGE:-personal-commerce-admin:current}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.admin-web
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      ADMIN_API_ORIGIN: http://api:8080
+      ADMIN_WEB_ORIGIN: ${ADMIN_WEB_ORIGIN:-http://localhost:3002}
+    ports:
+      - '127.0.0.1:${ADMIN_HOST_PORT:-3002}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/login').then(r=>{if(!r.ok)process.exit(1)})",
         ]
       interval: 5s
       timeout: 5s

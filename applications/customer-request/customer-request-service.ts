@@ -92,16 +92,25 @@ export function createCustomerRequestService(dependencies: {
       if (context.actor.kind !== 'creator') {
         throw new Error('Only creators can confirm fulfillment');
       }
-      return confirmFulfillmentUseCase(
-        {
-          fulfillmentCodeRepository: dependencies.fulfillmentCodeRepository,
-          commerceActionRepository: dependencies.commerceActionRepository,
-        },
-        {
-          actionId,
-          fulfillmentCode,
-          creatorId: context.actor.creatorId,
-        },
+      const creatorId = context.actor.creatorId;
+      return dependencies.unitOfWork.execute(async (scope) =>
+        confirmFulfillmentUseCase(
+          {
+            // PostgreSQL supplies both repositories from the transaction callback. The
+            // fallback keeps lightweight compositions that do not expose a scoped
+            // repository compatible while ensuring the production path never uses the
+            // outer, non-transactional repositories.
+            fulfillmentCodeRepository:
+              scope.fulfillmentCodeRepository ?? dependencies.fulfillmentCodeRepository,
+            commerceActionRepository:
+              scope.commerceActionRepository ?? dependencies.commerceActionRepository,
+          },
+          {
+            actionId,
+            fulfillmentCode,
+            creatorId,
+          },
+        ),
       );
     },
   };

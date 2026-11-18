@@ -874,3 +874,21 @@ Payment / Settlement / Refund
 Marketplace / CRM / apps/app
 REAL_MONEY_ENABLED = true
 ```
+
+## 24. FD-C4A-R1-01 Amendment — Global Commercial Supply Foundation
+
+> Founder决策日期：2026-11-17；F01–F04 `FROZEN / ACCEPTED — CONCEPTUAL DECISIONS ONLY`。
+> 独立权威记录：[FD-C4A-R1-01](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md)。
+> 原文及既有修订保留；本节只替代明确冲突的全球概念解释。
+
+| 受影响原条款                                                        | 本轮有效解释                                                                                                                                                                                   | 保留的边界                                                                                                               |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| §10及§23.4 Offer行：广义Capability及“Offer是Capability组织后的表达” | F02/F03：以Value Source为上位分析概念；Capability窄义为主体创造/组织/交付价值的能力；Resource/Asset/Right是不同且可重叠视角；全球Offering不必显式关联Capability，依领域规则可由Asset/Right主导 | 历史广义Capability文字保留，不否认旧定义；实际资格、合法来源、交付能力、责任主体仍必要；VS01门禁不变                     |
+| §9 Offer owner列、§6–7商业Profile归属表达                           | F04：不据Profile展示/管理关系或Identity持C号推定全球Offering的最终owner；供给治理、提供、资产/权利、管理、合同、履行、授予/受益角色分开                                                        | 1 Identity:N Profiles及Decision29不变；独立Provider实体、owner anchor、基数和转移/委托/共同归属仍未决定；creatorId不改义 |
+| §9 Commerce Commitment示意、§10 Offer及§12承诺                      | F01：Commercial Offering/Offering为同一持续供给概念；具体Proposal/Terms Version与其分开；Commitment依据各域有效接受形成，不将所有Request自动视为承诺或强制统一Request→Confirm→Fulfilled        | 历史Offer保留六类型上位语境，不追溯作法律要约；Product保留广义产品语言，不等于Goods或新增重复对象                        |
+| §10 Right及§12 Terms/Grant表达                                      | F03：Upstream Right Authority、Right-type Commercial Offering/Proposal、Grant三个语义角色分开                                                                                                  | Grant不自动转移资产所有权或证明完整权利链；不冻结权利链/Grant实现                                                        |
+
+Commercial Supply是商业价值来源及供给体系的概念集合，不当然需要独立生命周期实体。
+本节不决定共享可写Offering、Shared Envelope/Domain Aggregates、独立对象数量、持久化、API/DTO/事件/状态机/事务、Inventory统一或全球法律责任。
+F05–F11保持OPEN / NOT DECIDED，下一优先F05/F10，但需另行任务授权；C4-A Model B仍是概念验证候选。
+VS-01及修订、Fulfillment、Creator BFF/Session和身份隔离不因本轮改变。没有工程、迁移、部署、生产、试点或资金授权。

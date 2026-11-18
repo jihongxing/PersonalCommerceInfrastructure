@@ -843,3 +843,310 @@ Migration 0040 now acquires operations_human_principals EXCLUSIVE first and oper
 The disposable PostgreSQL 17.10 verification completed 20/20 targeted tests: external DBA grant/revoke ACL restoration, fail-closed preflight, upgrade and fresh installation, idempotent rerun, Runtime/Function Owner denial, and Principal/Account writer waits, Account creation serialization, rollback lock release, ordinary SELECT, and Runtime denial. Evidence is retained at E:/Users/jihx/AppData/Local/Temp/pci-c2-1-rev1-evidence.json; the run used only loopback disposable containers and ended with no task-labeled containers. This is not production permission certification and does not prove every possible PostgreSQL schedule.
 
 The external DBA runbook is docs/09_Engineering_Governance/126_Operations_Activation_History_Migration_Runbook.md. Migration 0040 remains a separately reviewed bounded engineering unit; no Authentication Runtime, MFA, RBAC, BFF, Pilot, Production or real-money authority is implied.
+
+## 13. Documentation Authority Reconciliation and C3-D Research Acceptance
+
+This section supplements the Historical Decision Register in Section 8. Recording date:
+2026-11-17 (task environment date). The original approval is the Founder's direct decision
+in the current conversation; PCI-ENG-020-C3-E Section 2.1 carries it into execution,
+and this Section 13 records it. Founder approval in the current conversation; no separate
+FD identifier or independent signed approval artifact was supplied. No separate approval
+date is invented. This provenance correction is authorized by PCI-ENG-020-C3-E-R1.
+
+| Record                                                 | Current effect                                                                 | Evidence / scope                                                                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| PCI-ENG-020-C3-D formal research acceptance and freeze | FROZEN / ACCEPTED — RESEARCH ONLY                                              | Founder direct conversation approval; C3-E §2.1 implements acceptance and freeze of the report, evidence index, research findings and recorded conclusions |
+| Original report                                        | Preserved without edits, including its historical submission status            | docs/09_Engineering_Governance/PCI-ENG-020-C3-D-Thesis-Led-Personal-Commerce-Abstraction-Review.md                        |
+| Original SHA-256                                       | 705ACF07F1614A5EB43BD02D5926DB19D7945621F5847C78E6AC9450BC4768F0               | Original bytes and embedded evidence index are protected                                                                  |
+| Excluded authority                                     | No global architecture freeze, model selection or implementation authorization | No new object, cardinality, state machine, API, Schema, UI or commercial workflow is approved                             |
+
+Later research may supplement or challenge C3-D only in a separate file with an explicit
+reference. A later Founder Decision may resolve a specific question without rewriting
+the historical report. C3-C and all other historical evidence remain unchanged.
+
+The [Documentation Baseline and Freeze Register](../09_Engineering_Governance/PCI-ENG-020-C3-E-Project-Documentation-Baseline-and-Freeze-Register.md)
+is the consolidated navigation for scope, approval provenance, precise supersession and
+known conflicts. It does not outrank Founder decisions or promote Proposed ADRs.
+Its own C3-E delivery remains AWAITING MAIN CONTROLLER REVIEW.
+
+CONTROLLED_RECOVERY, NOT_FULLY_CLOSED, named bounded implementation units, no full Stage 2,
+no Stage 3, no Production/external Pilot/real money and apps/app deferred remain unchanged.
+This synchronization does not accept all later engineering reports or expand Admin authority.
+GLOBAL COMMERCIAL SUPPLY DEFINITION begins only after Main Controller / Founder confirmation
+of the documentation baseline; no substantive design is started by this record.
+
+## 14. FD-C4A-R1-01 — Global Commercial Supply Foundation Decisions
+
+Recording date / Founder decision date: 2026-11-17.
+Authority: the Founder's direct `FD-C4A-R1-01` decision in the controller conversation;
+`PCI-ENG-020-C4-A-FD-R1-SYNC` authorizes repository synchronization only.
+
+This section appends to the Section 8 Historical Decision Register using its existing columns.
+It also supplies the current authority update after the frozen C3-E / R1 snapshot, following the Section 13 supplement mechanism.
+No original register row, snapshot, hash, approval provenance or earlier control text is rewritten.
+The Founder's current instructions confirm C3-E / R1 acceptance and the documentation freeze; Section 13's awaiting-review wording records its historical delivery status.
+
+Decision authority: **Founder Decision**.
+Status: **FROZEN / ACCEPTED — CONCEPTUAL DECISIONS ONLY**.
+Scope: **F01–F04**.
+Implementation Authorization: **NOT GRANTED**.
+
+Independent authoritative record:
+[FD-C4A-R1-01](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md).
+Source:
+[C4-A Founder Decision Addendum](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01).
+Synchronization evidence:
+[FD-R1-SYNC Report](../09_Engineering_Governance/PCI-ENG-020-C4-A-FD-R1-SYNC-Founder-Decision-Repository-Synchronization-Report.md).
+
+| Decision ID             | Decision date | Description                                                           | Evidence source                                                                                                                                                                                                                                                                                                                     | Approved scope                                                                                                                   | Exclusions                                                                                                                  | Current effect                                                                | Superseded by |
+| ----------------------- | ------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------- |
+| `FD-C4A-R1-01 / FD-F01` | 2026-11-17    | Canonical Vocabulary; F01 option B                                    | [C4-A Addendum](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01); [FD record §2](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md#2-fd-f01--canonical-vocabulary)                  | Supply / Offering / Product / Proposal-Terms / Commitment distinctions; historical Offer context retained                        | Entity count, schema, version implementation, API                                                                           | FROZEN / ACCEPTED; conceptual only; implementation NOT GRANTED                | None          |
+| `FD-C4A-R1-01 / FD-F02` | 2026-11-17    | Capability is not globally mandatory; F02 option B                    | [C4-A Addendum](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01); [FD record §3](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md#3-fd-f02--capability-is-not-globally-mandatory)  | Asset/Right-led supply may lack explicit Capability under domain rules; real qualifications and responsibility remain necessary  | VS01 gate changes, per-domain relation/qualification/publishing/schema design                                               | FROZEN / ACCEPTED; global conceptual rule only; implementation NOT GRANTED    | None          |
+| `FD-C4A-R1-01 / FD-F03` | 2026-11-17    | Value Source and four overlapping semantic perspectives; F03 option B | [C4-A Addendum](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01); [FD record §4](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md#4-fd-f03--capability--resource--asset--right)    | Narrow Capability; Resource/Asset/Right distinct; upstream authority, rights offering/proposal and Grant separate                | Four-entity/table requirement, Asset/Right storage model, rights-chain/Grant implementation                                 | FROZEN / ACCEPTED; semantic principles only; implementation NOT GRANTED       | None          |
+| `FD-C4A-R1-01 / FD-F04` | 2026-11-17    | Responsibility-role analysis from F04 option C; owner anchor deferred | [C4-A Addendum](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01); [FD record §5](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md#5-fd-f04--offering-ownership-and-responsibility) | Distinct supply, asset/right, management, contracting and performance roles; existing identity and creatorId boundaries retained | Independent Provider entity, final owner anchor/cardinality, transfer/delegation/joint ownership, legal liability structure | FROZEN / ACCEPTED; responsibility separation only; implementation NOT GRANTED | None          |
+
+The four rows are subdecisions of the same parent decision, not four new parent FD records.
+No new columns or independent approval dates are inferred.
+
+Current C4-A status: `RESEARCH ACCEPTED / F01-F04 FROZEN / F05-F11 OPEN`.
+F05–F11 remain **OPEN / NOT DECIDED**. F05 and F10 are next in priority, followed by F06–F09 and then F11;
+this synchronization must stop before starting that research.
+
+C4-A Model B remains a candidate for later conceptual validation, not an accepted architecture.
+The vocabulary option B and responsibility option C do not choose an architecture model.
+No global Offering design/implementation, writable envelope, domain cardinality, API/DTO/event/state-machine/transaction,
+inventory unification, creatorId migration, legal verification module, deployment, production, external pilot or real-money activity is authorized.
+
+Current interpretation supplements C3E-CF-10/11 only for the explicitly decided F01–F04 semantics.
+Owner anchor and the other unresolved dimensions remain open; C3E-CF-12/27 are not closed.
+C3-D, C3-E and R1 content stays frozen. ADR-003/004/005 do not become fully accepted.
+VS-01 and its amendments, controlled Capability/Template gates, Request decisions, Fulfillment Code/QR/confirmation,
+Creator BFF/Session and identity isolation remain unchanged.
+
+## 15. C5 D01–D04 — Founder Approved Conceptual Principles
+
+Recording date: 2026-11-17 (task environment date). Approval source: the current controller instruction,
+PCI-ENG-020-C5 — D01–D04 Founder Decision Sync & D05–D09 Second-Round Preparation, Sections 2–4,
+explicitly records the Founder's acceptance of the complete Main Controller directions for D01–D04.
+No separate signed artifact, parent FD ID or independent approval date was supplied; none is invented.
+The date column below is the recording date of that approval, not an independently verified signing date.
+
+This section follows Sections 13–14's append-only supplement mechanism and the Section 8 decision-index columns.
+The original C5 report and frozen C3-D / C3-E / R1 / C4-A records remain unchanged;
+their submission-time statuses are historical. Only the specified D01–D04 principles are now Founder approved.
+
+Independent authority record: [C5 D01–D04 Founder Decisions](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md).
+Original research: [C5 report](../09_Engineering_Governance/PCI-ENG-020-C5-Global-Commercial-System-Abstraction-and-Shared-Transaction-Infrastructure-Research-and-Founder-Decision-Package.md), Sections 2–7, 11 and 16–17.
+
+| Decision ID          | Decision date          | Description                                                                 | Evidence source                                                            | Approved scope                                                                                                                   | Exclusions                                                                                                      | Current effect                     | Superseded by |
+| -------------------- | ---------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------- |
+| PCI-ENG-020-C5 / D01 | 2026-11-17 (recording) | Shared Commercial Facts Infrastructure + Six Independent Domain Expressions | Current instruction Section 2 D01; Decision37 Section 2; C5 Section 16 D01 | Complete conceptual direction: shared commercial facts with independent Service/Goods/Program/Membership/Project/Right semantics | Unified domain lifecycle/state machine/fulfillment; Core write authority; architecture implementation           | FOUNDER APPROVED — conceptual only | None          |
+| PCI-ENG-020-C5 / D02 | 2026-11-17 (recording) | Contextual Participant Model                                                | Current instruction Section 2 D02; Decision37 Section 3; C5 Section 16 D02 | Complete conceptual direction: shared identity with transaction-context Buyer/Provider/Payer roles                               | Global fixed user roles; disconnected identities; identity/auth changes; Owner Anchor                           | FOUNDER APPROVED — conceptual only | None          |
+| PCI-ENG-020-C5 / D03 | 2026-11-17 (recording) | Professional Domain Models + Common Protocol                                | Current instruction Section 2 D03; Decision37 Section 4; C5 Section 16 D03 | Complete conceptual direction: professional domain models connect through common protocol                                        | Six Service Templates; mandatory common commitment/fulfillment; API/DTO/protocol/aggregate/state-machine design | FOUNDER APPROVED — conceptual only | None          |
+| PCI-ENG-020-C5 / D04 | 2026-11-17 (recording) | Shared Stable References + Typed Domain Definitions                         | Current instruction Section 2 D04; Decision37 Section 5; C5 Section 16 D04 | Complete conceptual direction: stable common commercial references and typed domain semantics/invariants                         | Unique Owner Anchor; shared writable entity; universal writable aggregate; table/cardinality design             | FOUNDER APPROVED — conceptual only | None          |
+
+The qualified D01–D04 references identify the approved C5 items; they do not invent a new parent FD number.
+No approval of the complete SYS/TX/FIN/REV candidates, shared writable Envelope, universal Order/Transaction entity,
+ledger implementation, domain aggregate, API, migration or deployment follows from these rows.
+
+[D05–D09 preparation](../09_Engineering_Governance/PCI-ENG-020-C5-D05-D09-Second-Round-Founder-Decision-Preparation.md)
+uses existing C5 materials only. Recommendations are drafts for Main Controller review and Founder decision.
+[Synchronization and verification](../09_Engineering_Governance/PCI-ENG-020-C5-D01-D04-Decision-Sync-and-Verification-Report.md)
+records the documentation-only execution, Git state and preservation checks.
+
+FD-C4A-R1-01 F01–F04 retain their exact frozen scope; C4-B proposals and other unresolved questions are not approved or closed here.
+VS-01 and its amendments, controlled Capability/Template gates, Request Confirm/Decline,
+Fulfillment Code/QR/confirmation, scoped Appearance, Creator Session/BFF and upstream logout remain unchanged.
+There is no product behavior change or new DEV deviation.
+
+D01–D04 = FOUNDER APPROVED. D05–D09 = PROPOSED / AWAITING FOUNDER DECISION.
+D10–D12 = DEFERRED. IMPLEMENTATION = NOT AUTHORIZED.
+No code, Schema, API or architecture implementation; no Production, external Pilot or real-money authorization.
+
+## 16. C5 D05–D09 — Founder Approved; D10–D12 Preparation
+
+Recording date: 2026-11-17 (task environment date). Approval source: the current controller instruction,
+PCI-ENG-020-C5 — D05–D09 Founder Decision Sync & D10–D12 Final Conceptual Decision Preparation, Sections 1–3.
+Founder approved all five complete Main Controller directions without modification; the explicit principles and exclusions govern.
+No separate parent FD number, signed artifact or independent approval date was supplied or invented.
+The date below is the recording date, not an independently verified signing date.
+
+This append-only supplement updates current effect, not the original C3-D/C3-E/R1/C4-A/C5 research or earlier Founder Decisions.
+The proposed/deferred statuses in Section 15 and earlier preparation/execution documents remain historical;
+only D05–D09 are newly approved, and D10–D12 are now prepared for decision. This is not whole-architecture approval.
+Read the frozen Register together with Sections 14–16 and the independent decision records.
+
+Authority record: [C5 D05–D09 Founder Decisions](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md).
+
+| Decision ID | Decision date | Description | Evidence source | Approved scope | Exclusions | Current effect | Superseded by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PCI-ENG-020-C5 / D05 | 2026-11-17 (recording) | Transaction / Order abstraction | Current instruction Section 2 D05; Decision38 Section 2; C5 Section 16 D05 | Shared transaction association and traceability; authoritative domain records; one procurement may link multiple records | Universal Order; writable Envelope; TX-B default; final TX-C; shared write authority; fixed cardinality/schema | FOUNDER APPROVED — conceptual only | None |
+| PCI-ENG-020-C5 / D06 | 2026-11-17 (recording) | Order and Commitment | Current instruction Section 2 D06; Decision38 Section 3; C5 Section 16 D06 | Order/Commitment/Fulfillment/Payment distinct; domain acceptance determines responsibilities; sourced progress | Global Commitment entity/state machine; line-to-commitment rule; common fulfillment | FOUNDER APPROVED — conceptual only | None |
+| PCI-ENG-020-C5 / D07 | 2026-11-17 (recording) | Financial and Ledger boundary | Current instruction Section 2 D07; Decision38 Section 4; C5 Section 16 D07 | Shared fund facts and traceability; domain obligations/triggers/settlement; no duplicate booking | Wallet; Holder model; global accounting; ledger/payment/refund/settlement/withdrawal implementation; real money | FOUNDER APPROVED — conceptual only | None |
+| PCI-ENG-020-C5 / D08 | 2026-11-17 (recording) | Review and Reputation | Current instruction Section 2 D08; Decision38 Section 5; C5 Section 16 D08 | Shared review evidence; domain eligibility/scales; Review/Rating/Reputation distinct; sourced projection | Global score/stars; unified review rules; publish/delete/appeal/disposition; UI review data migration | FOUNDER APPROVED — conceptual only | None |
+| PCI-ENG-020-C5 / D09 | 2026-11-17 (recording) | Composite and cross-domain transactions | Current instruction Section 2 D09; Decision38 Section 6; C5 Section 16 D09 | Multiple domains/providers/responsibilities; five distinct views; local facts, versions and allocation traceable | Bundle entity; unified composite order/state; distributed transaction/locks/orchestration/API; automatic refund/cancel/remedy | FOUNDER APPROVED — conceptual only | None |
+
+The qualified references identify the existing C5 decision items, not new parent FD IDs.
+D01–D09 together authorize conceptual principles only: no schema/data/history changes, API/DTO/events,
+Shared Core or domain aggregate/write-authority/state-machine implementation, VS-01 refactor,
+Creator/Operations identity/Session/BFF/auth changes, financial functions, Pilot, Production or commercial operation.
+Owner Anchor and concrete shared/domain architecture remain unresolved. C4-B proposals, C3-E conflicts and Proposed ADRs are not automatically accepted or closed.
+
+[D10–D12 third-round preparation](../09_Engineering_Governance/PCI-ENG-020-C5-D10-D12-Third-Round-Founder-Decision-Preparation.md)
+organizes the existing C5 materials only. Recommendations on shared/domain authority, VS-01 continuity and
+T07+T12+T14 with T04/T05 counterexamples are drafts for Main Controller review and Founder decision.
+No conceptual sample execution or prototype was started.
+[Sync and verification report](../09_Engineering_Governance/PCI-ENG-020-C5-D05-D09-Decision-Sync-and-Verification-Report.md)
+records file preservation and documentation checks.
+
+VS-01 and its amendments, Capability/Template publishing gates, Request Confirm/Decline,
+Fulfillment Code/QR/confirmation, scoped Appearance, Creator BFF/Session and upstream logout remain unchanged.
+No product behavior change or new DEV deviation occurs.
+
+D01–D04 = FOUNDER APPROVED. D05–D09 = FOUNDER APPROVED.
+D10–D12 = PROPOSED / AWAITING FOUNDER DECISION. IMPLEMENTATION = NOT AUTHORIZED.
+Stop after documentation delivery; no automatic conceptual validation, engineering design or implementation.
+
+## 17. C5 D10–D12 — Founder Approved; Conceptual Decision Registration Closed
+
+Founder decision date / recording date: 2026-11-17. Source: the current controller instruction,
+PCI-ENG-020-C5 — D10–D12 Founder Decision Sync & C5 Conceptual Decision Closure, Sections 1–3.
+Founder accepted D10, D11 and D12 in full according to the Main Controller recommendations, without changes.
+The decision date is explicitly supplied by that instruction; no independent signed artifact or parent FD ID is inferred.
+
+This append-only supplement continues Sections 13–16 and the Section 8 eight-column decision index.
+Earlier PROPOSED / DEFERRED statuses retain their historical context; current conceptual approval is recorded here.
+C3-D, C3-E / R1, C4-A, original C5 research, Decision37 / Decision38 and preparation documents remain unchanged.
+
+Authority record: [D10–D12 Founder Decisions and unified index](../07_Product_Architecture/39_C5_D10_D12_Founder_Decisions.md).
+Prior records: [D01–D04](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md),
+[D05–D09](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md).
+
+| Decision ID | Decision date | Description | Evidence source | Approved scope | Exclusions | Current effect | Superseded by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PCI-ENG-020-C5 / D10 | 2026-11-17 (instruction-supplied) | Shared Core and Domain authority boundary | Current instruction Section 2 D10; Decision39 Section 2; third-round preparation Section 2 | Shared References / Shared Facts / Domain Facts / Domain Projections; source versus interpretation; domain authority; sourced progress | SYS-A/B/C final selection; Core write structure; aggregates/cardinality/topology/transactions; API/DTO/events; universal Order/Commitment or superaggregate; implementation | FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY | None |
+| PCI-ENG-020-C5 / D11 | 2026-11-17 (instruction-supplied) | VS-01 compatibility and evolution | Current instruction Section 2 D11; Decision39 Section 3; third-round preparation Section 3 | Existing Service implementation slice; contract/security continuity; bounded progressive association; no fabricated history or retroactive semantics | PRD/behavior/auth changes; gates/Appearance/Fulfillment; creatorId/C-number/Owner Anchor; API/adapters/views/events/migration/refactor; Paid Service/funds; implementation | FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY | None |
+| PCI-ENG-020-C5 / D12 | 2026-11-17 (instruction-supplied) | Minimal conceptual validation instance | Current instruction Section 2 D12; Decision39 Section 4; third-round preparation Section 4.6 | T07+T12+T14; T04/T05 counterexamples; all nine success/failure criteria; source evidence; known/unknown/assumption/inference distinctions | Static validation execution; prototype/simulation; database/Schema/API/DTO/events/code; sandbox/funds/auto-refund; architecture/engineering; automatic C4-A F11 decision | FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY | None |
+
+Decision39 Section 5 unifies the twelve conceptual decisions; Decision37 and Decision38 retain their exact definitions and exclusions.
+The nine D12 criteria are incorporated in full from the unchanged third-round preparation Section 4.6.
+The scenarios are constructed conceptual materials, not actual transactions or evidence of completed payments, fulfillment or reviews.
+Accepting objects and criteria does not execute validation. Any later static validation requires a separately scoped authorization.
+
+Shared facts do not give Shared Core exclusive production/write rights. Common progress remains a sourced projection,
+not a second authority for domain success. No SYS/TX architecture, Owner Anchor, writable Envelope, universal Order/Commitment,
+aggregate, database, API or deployment design is selected or authorized. C4-A F11, other open issues and Proposed ADRs do not automatically close.
+VS-01 contracts, Request Confirm/Decline, Fulfillment Code/QR/confirmation, scoped Appearance,
+Capability/Template gates and Creator BFF/Session/Operations isolation remain unchanged.
+
+```text
+D01–D04 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D05–D09 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D10–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+C5 D01–D12 CONCEPTUAL DECISION REGISTRATION = COMPLETED
+
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+CONCEPTUAL VALIDATION EXECUTION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+These are authorization states, not runtime configuration observations.
+[Sync and verification report](../09_Engineering_Governance/PCI-ENG-020-C5-D10-D12-Decision-Sync-and-Verification-Report.md)
+records documentation-only changes and protection checks; Execution21 records the task.
+No product behavior change or new DEV deviation. Stop after delivery for Main Controller review;
+no automatic D12 execution, architecture/Shared Core/data/API design, prototype or engineering.
+
+## 18. Global Commercial System — Conceptual Model Consolidation Direction Approval Only
+
+Recording date: 2026-11-17 (task environment date). Approval source: the current controller instruction,
+PCI-ENG-020 — Founder Approval Sync: Global Commercial System Conceptual Model Consolidation, Sections 1–8.
+Founder approved the next-stage direction and its bounded research scope/deliverables, with repository synchronization first.
+No independent signing date, signed artifact or new parent FD ID is inferred.
+
+Authority record: [Decision40 — direction approval and task gates](../07_Product_Architecture/40_Global_Commercial_System_Conceptual_Model_Consolidation_Founder_Approval.md).
+This append-only supplement preserves Sections 13–17, the frozen documentation baseline and all prior decisions/research.
+The earlier D01–D12 decisions remain conceptual-only: [Decision37](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md),
+[Decision38](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md),
+[Decision39](../07_Product_Architecture/39_C5_D10_D12_Founder_Decisions.md). No historical text is rewritten.
+
+| Decision ID | Decision date | Description | Evidence source | Approved scope | Exclusions | Current effect | Superseded by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PCI-ENG-020 / Conceptual Model Consolidation Direction (task reference, no new FD ID) | 2026-11-17 (recording) | Global Commercial System — Conceptual Model Consolidation | Current instruction Sections 1–6; Decision40 Sections 1–6 | Next-stage conceptual direction; seven bounded scope areas and seven expected deliverables; documentation sync first | Immediate research execution; D12 execution; SYS/TX/FIN selection; Owner Anchor; Core writes; database/API/events/aggregates/topology; prototype/engineering; VS-01/security changes; funds/Pilot/Production | APPROVED DIRECTION; execution AWAITING SEPARATE TASK AUTHORIZATION | None |
+
+Stage A is this authorized documentation sync and read-only Markdown/link/Git/protection verification, followed by an immediate stop.
+Stage B is NOT STARTED: Main Controller must explicitly accept Stage A, then issue a separately scoped execution instruction.
+Review, acceptance, direction approval or elapsed time alone does not start Stage B. D12 execution is independently NOT AUTHORIZED.
+
+Decision40 Sections 2–4 register the future question, Service/Goods/Program/Membership/Project/Right scope,
+concept boundaries, domain mapping, transaction relationships, source/authority analysis, consistency/counterexamples and issue classification.
+Seven future deliverables are registered only; no model, matrix, diagram, research findings or new decision advice is produced now.
+No SYS/TX/FIN architecture, Owner Anchor, Shared Core write structure, schema/API/DTO/event design,
+aggregate/cardinality/transaction/topology, universal Order/Commitment or superaggregate is approved.
+VS-01 contracts and security, Creator/Operations identity/Session/BFF, Capability/Template, Appearance and Fulfillment remain unchanged.
+No payment/refund/settlement/sandbox, prototype, engineering, Pilot, Production or real-money authority is granted.
+
+[Sync and verification report](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Model-Consolidation-Founder-Approval-Sync-and-Verification-Report.md)
+records the fresh baseline and documentation-only changes; Execution21 records this task. No product behavior change or new DEV deviation.
+
+方向批准与执行授权分别登记：
+
+```text
+C5 D01–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+C5 CONCEPTUAL DECISION REGISTRATION = COMPLETE
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION = APPROVED DIRECTION
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION EXECUTION = AWAITING SEPARATE TASK AUTHORIZATION
+D12 CONCEPTUAL VALIDATION EXECUTION = NOT AUTHORIZED
+```
+
+本轮交付与尚未开始的研究状态：
+
+```text
+FOUNDER APPROVAL SYNC = COMPLETED
+MAIN CONTROLLER REVIEW = AWAITING
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION = NOT STARTED
+CONCEPTUAL MODEL RESEARCH = NOT EXECUTED
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+D12 VALIDATION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+上述是方向、授权及文档执行状态，不是运行开关检测。交付后立即停止；必须等待 Main Controller 明确接受本轮同步结果并发出下一阶段独立指令，不能自动进入研究或任何后续设计/实施。
+
+
+## 19. Global Commercial System — Stage B Conceptual Consolidation Research Delivered
+
+记录日期：2026-11-17。当前独立指令 **PCI-ENG-020 — Global Commercial System Conceptual Model Consolidation** §1 明确：Main Controller 已正式接受 Decision40 / Stage A，并独立授权 Stage B 概念综合研究。Stage A = CLOSED。§18 和 Decision40 中当时的 NOT STARTED / AWAITING 保留历史语境，不回写原文；本轮研究授权来自独立指令，不是方向批准自动升级。
+
+本轮完成 WP-01–WP-07，交付[主模型与全部研究入口](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Model.md)、六类×十七维映射、核心关系图、事实来源/权威图与七类责任矩阵、D01–D12 文档一致性与缺口审查、A/B/C/D 未决登记和五项 Founder 研究建议。完整来源及证据性质见[权威索引](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Source-Authority-Index.md)。
+
+本轮综合结果是 RESEARCH PROPOSAL / AWAITING MAIN CONTROLLER REVIEW，不是新的 Founder Decision。现有 D01–D12 仍为概念原则批准；角色/权源、有效接受、混合领域、组合依赖和未知/冲突表达仍有待决。没有将历史 C3-D/C4-A/C5 候选、C4-B S2/P2、SYS/TX/FIN/REV、Owner Anchor、共享写结构或其他 Proposed ADR 升级批准；C4 F05–F11 不自动关闭。
+
+本轮 WP-06 仅做文档原则一致性推理，不运行 D12 指定场景/反例和九项判据，不输出 D12 验证结果。图是概念语义关系，不是实体/数据库/接口/状态机/模块/部署图。没有模拟成交、资金、履行或评价事实；没有架构、原型或工程。VS-01 产品与安全合同、Request Confirm/Decline、Fulfillment Code/QR/确认、限定 Appearance、Capability/Template、Creator/Operations 身份与 Session/BFF 均保持。
+
+[研究与核验报告](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Research-and-Verification-Report.md)记录 fresh Git 基线、1,444 个原文件保护、九份新增 Markdown 和三份追加、只读 Markdown/链接/Git 检查。既有八项 tracked 修改和 67 个原 untracked 保留；不纳入历史 evidence，不 Commit/Push/暂存。没有产品行为变化或新 DEV 偏差。
+
+```text
+STAGE A = CLOSED
+STAGE B = CONCEPTUAL RESEARCH COMPLETED
+GLOBAL CONCEPTUAL MODEL = DELIVERED
+C5 D01–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D12 STATIC VALIDATION = NOT AUTHORIZED
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+MAIN CONTROLLER REVIEW = AWAITING
+FOUNDER DECISIONS = AWAITING WHERE REQUIRED
+```
+
+这些是授权和文档交付状态，不是运行配置检测。研究交付不等于模型获 Founder 接受；本轮交付后立即停止，等待 Main Controller 审阅。D12、架构、原型、工程和资金均需另行明确授权。

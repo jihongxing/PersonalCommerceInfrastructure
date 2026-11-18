@@ -1,3 +1,7 @@
+export const fulfillmentRuntimeGrant = `
+GRANT UPDATE (fulfillment_status, fulfillment_confirmed_at) ON public.commerce_actions TO pci_api_runtime;
+`;
+
 export const productionRuntimeGrants = `
 GRANT SELECT (id,email,password_hash,name,created_at,is_active), INSERT (id,email,password_hash,name), UPDATE (password_hash) ON public.local_auth_accounts TO pci_api_runtime;
 GRANT SELECT (account_id,creator_id), INSERT (account_id,creator_id) ON public.local_creator_mappings TO pci_api_runtime;
@@ -30,6 +34,7 @@ GRANT UPDATE (name, description, catalog_item_id, catalog_status, policy_version
 GRANT UPDATE (capability_ids, template_id, title, description, availability_description, appearance, request_instructions, state, policy_status, policy_reason, policy_version, updated_at) ON public.service_offerings TO pci_api_runtime;
 GRANT UPDATE (public_url, state, updated_at) ON public.distribution_assets TO pci_api_runtime;
 GRANT UPDATE (state, request_message, result_access_token, updated_at) ON public.commerce_actions TO pci_api_runtime;
+${fulfillmentRuntimeGrant}
 GRANT UPDATE (status, fulfilled_at, updated_at) ON public.fulfillment_codes TO pci_api_runtime;
 GRANT UPDATE (commerce_profile_id, state, is_default, updated_at) ON public.public_commerce_homepage_versions TO pci_api_runtime;
 GRANT UPDATE (starts_at, ends_at, time_zone, state, updated_at) ON public.public_commerce_homepage_windows TO pci_api_runtime;

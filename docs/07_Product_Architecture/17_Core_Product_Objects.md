@@ -730,3 +730,28 @@ NotChecked → AutoApproved / ReviewRequired → Approved / Rejected
 能力目录和服务模板是数据库管理的政策配置；JSON 仅用于初始化、恢复和审查。运行时使用
 当前已发布版本，目录项通过 `draft`、`active`、`paused`、`retired` 及选择/发布开关控制
 生命周期。暂停、退休或紧急下架不删除既有对象和历史事实，但会阻止新的选择、发布和公开请求。
+
+## FD-C4A-R1-01 Amendment — 全球供给词汇与归属解释
+
+> 日期：2026-11-17；Authority：[FD-C4A-R1-01](36_Global_Commercial_Supply_Foundation_Decisions.md)。
+> 本节为F01–F04概念决定的追加同步，不改写当前VS-01对象合同、状态机或历史正文。
+
+§4.4“Creator将某项Capability表达为供给”及§5 Rule 1“所有Offering归属于一个Creator”保留为当前服务切片解释，
+不再作为全球强制Capability关联或最终Owner Anchor的依据。
+全球Commercial Offering/Offering为同一可持续定义和管理的供给概念；Asset/Right可依领域规则作为主要来源，
+无显式Capability不等于无合法来源、实际能力/资格/执照、交付能力或责任主体。
+
+全球Capability采用窄义“主体创造、组织或交付价值的能力”；Value Source为上位分析概念。
+Resource/Asset/Right与Capability是不同且可重叠的语义视角，不能混成笼统Capability，也不要求四实体/四表。
+Right的上游权利依据、Right-type Offering/Proposal及Grant分开；Grant不自动转移资产所有权或证明完整权利链。
+
+Product不等于Goods，也不自动新增与Offering重复的对象；具体Proposal/Terms Version与持续Offering区分。
+Commitment按领域有效接受形成，不自动等于所有Request；当前§5 Rule 5及VS01 Confirm/Decline/履约确认的效力不变，
+不得推广成所有领域必经同一Request→Confirm→Fulfilled生命周期。历史Offer保留语境，不追溯解释为法律要约。
+
+Provider、Offering Owner、Asset Owner/Rights Holder、Operator/Manager、Contracting Party、Performer、Grantor、Beneficiary需分别解释，角色可兼任或分属不同主体。
+Identity持C号、多个Profile及历史creatorId规则继续有效；不能据展示、创建或发布账号推断全部权利。
+独立Provider实体、最终Owner Anchor/基数、共同归属/委托/转移/继承及法律责任结构未定。
+
+DEV-082/083的当前受控Capability/Template链、VS01 PRD及Fulfillment修订保持不变。
+本节不冻结实体、Schema、API、事件、状态机、事务或库存统一；F05–F11仍OPEN / NOT DECIDED，Model B非已批架构，Implementation Authorization为NOT GRANTED。

@@ -26,6 +26,12 @@ then run `up`. This reruns the gate even if an old exited migration container pr
 Do not use `up --no-deps`, `restart`, or the generic development `db:migrate` as a replacement for
 the deployment gate. Avoid logging resolved Compose configuration or container environments.
 
+The delivery candidate also supports trusted `ready` volumes from PCI-ENG-023. After validating
+their catalog fingerprint, full Journal and separated logins, the installer adds only the API UPDATE
+grants for `commerce_actions.fulfillment_status` and `commerce_actions.fulfillment_confirmed_at`
+when both are absent. It records the new fingerprint in the same transaction. It does not replay
+migrations, adopt unmarked volumes, or repair catalog drift.
+
 ## Identity and transaction boundaries
 
 | Identity                  | Responsibility                                                                                                                                         |

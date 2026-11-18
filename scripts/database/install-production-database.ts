@@ -20,7 +20,7 @@ import {
   verifyProductionHistory,
 } from './production-migration-policy.js';
 import { deploymentFingerprint } from './production-database-catalog.js';
-import { productionRuntimeGrants } from './production-runtime-grants.js';
+import { fulfillmentRuntimeGrant, productionRuntimeGrants } from './production-runtime-grants.js';
 
 const childScript = fileURLToPath(new URL('./run-production-migration.js', import.meta.url));
 const restrictedRole = 'NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS';
@@ -179,6 +179,21 @@ async function verifyLogins(passwords: ReadonlyMap<string, string>) {
   }
 }
 
+async function upgradeFulfillmentGrant(tx: InstallationSql) {
+  const [grant] = await tx<{ status: boolean; confirmed: boolean }[]>`
+    SELECT has_column_privilege(${roles.api}, 'public.commerce_actions', 'fulfillment_status', 'UPDATE') AS status,
+      has_column_privilege(${roles.api}, 'public.commerce_actions', 'fulfillment_confirmed_at', 'UPDATE') AS confirmed`;
+  requireInstallation(
+    grant && grant.status === grant.confirmed,
+    'inconsistent fulfillment runtime grant',
+  );
+  if (grant.status) return;
+
+  await tx.unsafe(fulfillmentRuntimeGrant);
+  const fingerprint = await deploymentFingerprint(tx);
+  await tx`UPDATE pci_deployment.installation SET fingerprint=${fingerprint} WHERE singleton`;
+}
+
 async function install() {
   const migrations = productionMigrations();
   const adminPassword = process.env.POSTGRES_PASSWORD;
@@ -225,11 +240,14 @@ async function install() {
     let count = await verifyHistory(connection, migrations);
     await verifyLogins(passwords);
     if (installed.state === 'ready') {
-      requireInstallation(
-        installed.fingerprint === (await deploymentFingerprint(connection)),
-        'existing database owner, schema or privilege drift',
-      );
       requireInstallation(count === migrations.length, 'ready database has incomplete Journal');
+      await connection.begin(async (tx) => {
+        requireInstallation(
+          installed.fingerprint === (await deploymentFingerprint(tx)),
+          'existing database owner, schema or privilege drift',
+        );
+        await upgradeFulfillmentGrant(tx);
+      });
     } else {
       const [checkpoint] =
         count === 0

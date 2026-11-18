@@ -304,3 +304,25 @@ Creator Page 不只是 Profile，而是：
 7. 不同商品的退款、取消和确认流程能否共享状态模型？
 
 这些问题应通过实例建模、访谈和 MVP 使用数据解决，不能仅靠概念推演决定。
+
+## 9. FD-C4A-R1-01 Amendment — 全球供给概念边界
+
+> Founder 决策日期：2026-11-17；F01–F04 `FROZEN / ACCEPTED — CONCEPTUAL DECISIONS ONLY`。
+> 权威记录：[FD-C4A-R1-01](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md)。
+> 本节仅追加修订当前解释，原§1–8、历史候选结构和研究问题保留。
+
+1. **F01**：§2.8的Product保留面向客户的广义价值产品化语言，不等于Goods，不据此新增与Offering重复对象。
+   Commercial Offering/Offering是同一持续供给概念；具体Proposal/Terms Version与其分开，Commitment按领域有效接受形成。
+   §1/§3的历史价值链不冻结统一Request→Confirm→Fulfilled流程；历史Offer不追溯解释为法律要约。
+2. **F02/F03**：§2.2和§2.8/§3候选结构中的Capability不构成全球必需关联。
+   全球Capability采用“主体创造、组织或交付价值的能力”的窄义定义，以Value Source为上位分析概念。
+   Resource（可部署/使用/受约束的输入）、Asset（可识别/控制/承载价值的事物或成果）、Right（特定对象/行为/范围的权能或许可）与Capability是可重叠但不能混同的视角。
+   依领域规则，Asset/Right可成为主要来源；这不取消实际能力、资格、执照、合法来源、交付能力或责任主体要求，也不证明权属或授予权限。
+3. **F04**：§2.1“Identity是所有商品和交易的统一归属”不能继续被用来确定全球Offering的最终Owner Anchor或归属基数。
+   Provider、Offering Owner、资产/权利人、操作者、合同当事人、履行者、Grantor及Beneficiary需分别解释，角色可兼任或分属不同主体。
+   Identity持C号及1 Identity:N Profiles规则不变，历史creatorId保留原语义。最终owner、独立Provider实体、共同归属/委托/转移及法律责任结构未定。
+4. Right的上游授权依据、面向客户的Right-type Offering/Proposal与下游Grant须区分；Grant不自动转移资产所有权或证明完整权利链。
+
+本修订只影响上述全球概念解释，不决定实体/表、API、版本模型、状态机、库存统一或任何实施。
+VS-01受控Capability/Template链及既有合同不变。
+F05–F11为OPEN / NOT DECIDED，C4-A Model B不是已批准架构；本节不启动下一轮研究。

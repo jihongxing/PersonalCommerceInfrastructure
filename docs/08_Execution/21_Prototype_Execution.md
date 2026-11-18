@@ -11337,6 +11337,227 @@ PCI-ENG-020-C3-B2_PRODUCTION_EXTERNAL_PILOT = NOT AUTHORIZED
 PCI-ENG-020-C3-B2_PUSH = NONE
 ```
 
+## PCI-ENG-020-C3-E — Project Documentation Authority Reconciliation & Freeze
+
+Recording date: 2026-11-17 (task environment date; not a reconstructed historical approval date).
+Authority: Main Controller / Founder PCI-ENG-020-C3-E. This is documentation governance only,
+with no product behavior change and no new DEV product deviation.
+
+- Enumerated all 225 pre-existing Markdown documents, read full bodies for authority claims, and
+  cross-checked approval, scope and conflict clauses. The register distinguishes original declared
+  status, verified bounded approvals and PROVENANCE_REQUIRES_REVIEW; it does not claim every
+  historical business statement or external fact has been revalidated.
+- Recorded C3-D formal acceptance and research freeze in Control Baseline §13 from the original
+  C3-E instruction §2.1, without inventing an FD number or editing C3-D/C3-C.
+- Added the documentation register and a separate execution/verification report; linked the register
+  from Root AGENTS and docs/README. Existing content is retained as an exact byte prefix.
+- Preserved the inherited V1 ledger edits, the 49 original untracked files and historical evidence.
+  Protected-file hashes, authorized changes and final Git checks are in the verification report.
+- No business code/API/Domain/Application/Schema/Migration/UI/database/deployment/Commit/Push work.
+  No global supply model, new commercial type, relationship cardinality or architecture is decided.
+
+Deliverables:
+[Documentation Baseline and Freeze Register](../09_Engineering_Governance/PCI-ENG-020-C3-E-Project-Documentation-Baseline-and-Freeze-Register.md)
+and [Execution and Verification Report](../09_Engineering_Governance/PCI-ENG-020-C3-E-Execution-and-Verification-Report.md).
+
+PCI-ENG-020-C3-E = PROJECT DOCUMENTATION BASELINE RECONCILED AND FROZEN — AWAITING MAIN CONTROLLER REVIEW
+
+This delivery does not self-accept the documentation freeze. Main Controller review,
+C3-D acceptance-record verification, material ambiguity handling and formal baseline confirmation
+must precede GLOBAL COMMERCIAL SUPPLY DEFINITION.
+
+## PCI-ENG-020-C4-A-FD-R1-SYNC — Founder Decision F01–F04 Repository Synchronization
+
+记录日期：2026-11-17。原始权威为Founder直接会话裁决FD-C4A-R1-01；同步任务只授权文档治理。
+本条追加在全部原台账之后，保留V1及其他既有未提交内容，不改变任何产品行为，因此不新造DEV产品偏差。
+
+- 独立权威记录：[FD-C4A-R1-01](../07_Product_Architecture/36_Global_Commercial_Supply_Foundation_Decisions.md)。
+- 原[C4-A报告](../09_Engineering_Governance/PCI-ENG-020-C4-A-Global-Commercial-Supply-Definition-Research-and-Founder-Decision-Package.md#founder-decision-addendum--fd-c4a-r1-01)只追加裁决，原Part I–V及全部证据/验证/Git记录保持原字节。
+- [Control §14](25_Project_Control_Baseline.md#14-fd-c4a-r1-01--global-commercial-supply-foundation-decisions)按§8既有列结构追加四项子决定，记录Founder权威、FROZEN/ACCEPTED及Implementation Authorization: NOT GRANTED。
+- 当前状态：`C4-A = RESEARCH ACCEPTED / F01-F04 FROZEN / F05-F11 OPEN`。F01–F03采纳各自B；F04仅采纳C的责任角色分析，Owner Anchor等未定。
+- Strategy03/05、Architecture16/Objects17只追加全球概念解释；docs索引增加当前读取入口。C3-D/C3-E/R1、PRD20、Flow18/Specification19、Decision29及业务代码不改。
+- 本轮检查为文档格式/结构、引用/锚点、ID/状态一致性、差异及文件哈希/原字节前缀；不运行业务测试、数据库或产品浏览器验收。
+- 完整范围、逐文件结果、基线/最终Git状态见[执行报告](../09_Engineering_Governance/PCI-ENG-020-C4-A-FD-R1-SYNC-Founder-Decision-Repository-Synchronization-Report.md)。
+
+F05–F11为OPEN / NOT DECIDED；下一轮优先F05/F10不构成启动授权。
+C4-A Model B不是最终架构；无工程实现/迁移/生产/外部试点/真实资金授权，无Commit或Push。
+
+`PCI-ENG-020-C4-A-FD-R1-SYNC = DOCUMENTATION GOVERNANCE SYNC COMPLETED`
+
+## PCI-ENG-020-C4-B — Source Rights, Legal Combination & Platform Eligibility Research
+
+记录日期：2026-11-17。依据本轮 Main Controller 研究授权，仅完成 F05 与 F10 的 Founder 决策准备。
+继承 FD-C4A-R1-01 的 F01–F04 概念冻结，不修改既有 Founder Decision 或产品行为，不新增 DEV 产品偏差。
+
+- 交付：[完整研究报告与证据索引](../09_Engineering_Governance/PCI-ENG-020-C4-B-Global-Source-Rights-Combination-and-Platform-Eligibility-Research-and-Founder-Decision-Package.md)，涵盖权源/共享、主体资格/平台角色、A–J 十二问压力测试、候选治理与待决边界。
+- 以既有中国大陆启动约束为主线，比较美国联邦、欧盟和英国；EEA 纳入、英国法条访问及各地行业/法律主体等缺口在报告中单列。
+- 建议 F05 分级权源证据、F10 Policy-based 有界治理，均为待裁决建议；不批准模型、Owner Anchor、Provider 实体、核验功能或法律担保。
+- 本轮只新增报告并追加本条；既有 55 个 untracked 文件与 8 项 tracked 修改受保护，V1 台账原字节保留。逐文件 SHA-256、前缀及 Git 检查见报告。
+- 执行文档格式、引用、范围与字节保护验证；未运行代码/数据库/产品浏览器测试，未访问生产或共享数据库。
+- 无 Commit、Push 或历史改写；不修改代码、API、Schema、VS-01、C3-D/C3-E/R1 或上轮同步材料。
+
+`C4-B RESEARCH COMPLETED / F05-F10 AWAITING FOUNDER DECISION`（仅指 F05 与 F10）。
+
+`PCI-ENG-020-C4-B = RESEARCH COMPLETED / AWAITING FOUNDER REVIEW`
+
+F06–F09 与 F11 保持 OPEN，不自动启动。PRODUCTION = NOT AUTHORIZED；EXTERNAL_PILOT = NOT AUTHORIZED；REAL_MONEY_ENABLED = false。
+
+## PCI-ENG-020-C5 — Global Commercial System Abstraction & Shared Transaction Infrastructure Research
+
+记录日期：2026-11-17。依据C5专项研究授权，完成统一身份、供给、交易、金融账务、评价与六类领域执行的概念研究及当前代码只读调查。
+
+- 交付：[研究报告、决策准备及证据索引](../09_Engineering_Governance/PCI-ENG-020-C5-Global-Commercial-System-Abstraction-and-Shared-Transaction-Infrastructure-Research-and-Founder-Decision-Package.md)；19部分、六类14维矩阵、15个交易10维场景、10张概念图、12个决策准备条目。
+- 共同事实与领域接受/履行规则分开；条件性建议窄共享Core/交易封套，保留领域交易+共享引用方案，比较失败条件。金融事实/分配/账务与领域触发分开，评价证据与专业维度分开。
+- 所有架构及路线均为PROPOSED / NOT FOUNDER APPROVED，实施NOT AUTHORIZED；D01–D12只是报告条目，不是FD编号。
+- F01–F04保持冻结；C4-B仅历史材料，S2/P2未正式批准，曾表达的选择不形成Founder Decision。本轮不创建FD、不更新Decision Index或冻结SSOT，不继续法律/监管研究，也不改写C4-B原文。
+- 只新增本报告并追加本条；新采样基线的1,433文件中，1,432文件逐字节不变，Execution21原字节保留为完整前缀；原56个未跟踪文件和8项tracked修改完整保留。详细SHA-256保护索引及验证见报告§19。
+- 完成报告与追加片段的Prettier、结构、链接、术语/决策引用、证据对应、diff及范围检查；业务测试、数据库、Typecheck/Lint/Build、产品Browser验证均NOT RUN，本轮不以静态代码证明运行通过。
+- Branch/HEAD保持任务开始值，Index为空；没有Commit/Push或历史改写。没有业务代码、Schema/Migration、API/DTO/Event、认证或运行逻辑变更，不新增DEV产品行为偏差。
+
+`PCI-ENG-020-C5 = RESEARCH COMPLETED / AWAITING MAIN CONTROLLER REVIEW`
+
+交付后停止，等待主控审阅与Founder反馈；不自动开始下一研究或实施。PRODUCTION = NOT AUTHORIZED；EXTERNAL_PILOT = NOT AUTHORIZED；REAL_MONEY_ENABLED = false（授权边界，非本轮运行环境检测结果）。
+
+## PCI-ENG-020-C5 — D01–D04 Founder Decision Sync & D05–D09 Second-Round Preparation
+
+记录日期：2026-11-17。依据本次主控指令 §2–§4，登记 Founder 对 Main Controller 提议完整方向的批准；仅同步概念决策及进行有界材料整理，没有工程实现。
+
+- [独立 Founder Decision 记录](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md)：D01–D04 = FOUNDER APPROVED；引用采用 C5 / D01–D04，不编造父 FD 编号、签署件或独立批准日期。
+- [D05–D09 第二轮建议](../09_Engineering_Governance/PCI-ENG-020-C5-D05-D09-Second-Round-Founder-Decision-Preparation.md)：每项八部分，仅使用原 C5 交易、账务、评价、组合场景，供 Main Controller 审阅及 Founder 决定，没有新增泛化/市场/法律/政策研究。
+- [同步与验证报告](../09_Engineering_Governance/PCI-ENG-020-C5-D01-D04-Decision-Sync-and-Verification-Report.md)：基线、文件清单、格式/链接/状态/保护检查及最终 Git 状态。Control25 仅追加 §15，docs README 仅追加导航；原始研究不改写。
+- 保护本轮开始前 1,434 个文件、57 个未跟踪文件及 8 项 tracked 修改；三份既有文档的原字节保留为完整前缀，其他原文件逐一 SHA-256 检查。本轮新增三份文档，不纳入历史 evidence 为新交付。
+- 本轮仅做文档验证；业务测试、数据库/迁移、Typecheck/Lint/Build、产品 Browser/API 测试均 NOT RUN。没有业务代码、Schema、API、身份、前端、运行配置或架构实施改动，不改变 VS-01，无产品行为变化和新 DEV 偏差。
+- Branch/HEAD 与空 Index 保持开始值；不 Commit、不 Push、不改写历史。Shared Core 写入职责、Owner Anchor、Order/Transaction 实体、资金账本等仍未获实施授权。
+
+D01–D04 = FOUNDER APPROVED
+
+D05–D09 = PROPOSED / AWAITING FOUNDER DECISION
+
+D10–D12 = DEFERRED
+
+IMPLEMENTATION = NOT AUTHORIZED
+
+本轮同步和建议材料交付后等待 Main Controller 审阅及 Founder 第二轮裁决。没有 Production、外部 Pilot 或真实资金授权，不启动 D10–D12。
+
+## PCI-ENG-020-C5 — D05–D09 Founder Decision Sync & D10–D12 Final Conceptual Decision Preparation
+
+记录日期：2026-11-17。本次主控指令 §1–§3 明确 Founder 全部接受第二轮 Main Controller 建议、无修改意见；仅登记概念原则及准备第三轮材料，没有工程实施。
+
+- [D05–D09 独立 Founder Decision](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md)：完整登记交易关联、责任独立、资金追溯、评价证据及跨域组合原则和明确不批准事项；不批准 Universal Order、可写 Envelope、TX-B 默认、TX-C 最终选型或任何实现。
+- [D10–D12 第三轮准备](../09_Engineering_Governance/PCI-ENG-020-C5-D10-D12-Third-Round-Founder-Decision-Preparation.md)：每项八部分，仅整理既有 C5 / D01–D09 / 冻结 SSOT；推荐为 Main Controller 待审稿，不是 Founder 决定。D12 只准备对象和判据，没有执行样本、原型或概念验证。
+- [同步与核验报告](../09_Engineering_Governance/PCI-ENG-020-C5-D05-D09-Decision-Sync-and-Verification-Report.md)：当前基线、逐文件保护、范围检查与 Git 结果。Control25 追加 §16，README 追加导航；原 C5、旧轮准备、既有 Founder Decisions、C3-D/C3-E/R1/C4-A 不改写。前轮 PROPOSED / DEFERRED 为历史状态，当前状态见本条及 Control §16。
+- 开始时实际采样：HEAD 2d99af0c0db8b7b626816e8f1e3d82143e68841f，Index 空，8 个 tracked 修改、60 个未跟踪文件；原有未提交内容保留。以 1,437 个原文件 SHA-256 / 原字节前缀核验保护；本轮仅新增三份文档，追加三份导航/台账文档，不将旧 evidence 纳入新交付。
+- 仅进行只读文档、链接、状态、Git 与文件完整性验证，结果见核验报告；不运行工作区格式化/生成任务。业务测试、Typecheck/Lint/Build、API/Browser/PostgreSQL 均 NOT RUN；没有执行数据库迁移，没有业务代码、Schema、API、身份、Session/BFF、前端或架构实施变更，没有新 DEV 行为偏差。
+- 不 Commit、不 Push、不改写历史，保持既有暂存区和 HEAD。没有新增 Pilot / Production / 真实资金授权。
+
+D01–D04 = FOUNDER APPROVED
+
+D05–D09 = FOUNDER APPROVED
+
+D10–D12 = PROPOSED / AWAITING FOUNDER DECISION
+
+IMPLEMENTATION = NOT AUTHORIZED
+
+交付后停止，等待 Main Controller 审阅及 Founder 第三轮裁决；不自动进入概念验证执行、工程设计或实施。
+
+## PCI-ENG-020-C5 — D10–D12 Founder Decision Sync & C5 Conceptual Decision Closure
+
+记录日期 / 指令提供的 Founder 第三轮裁决日期：2026-11-17。本次指令 §1–§3 明确 D10、D11、D12 按 Main Controller 推荐方案完整接受，无修改或补充意见。本任务只登记决定，不执行概念验证、架构设计或工程实施。
+
+- [Decision39 正式决定与十二项统一索引](../07_Product_Architecture/39_C5_D10_D12_Founder_Decisions.md)：D10 四类概念及事实来源/解释权分离，D11 现有 VS-01 Service 切片及兼容连续性，D12 T07+T12+T14、T04/T05 反例及九项判据；完整保留不批准事项。
+- [Decision37](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md)、[Decision38](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md) 保持原文；D01–D12 仅统一概念批准状态。此前 PROPOSED / DEFERRED 保留为历史记录，不回写 C3-D/C3-E/C4-A/C5 研究或历史准备材料。
+- D12 九项成功/失败判据完整引用未修改的[第三轮准备 §4.6](../09_Engineering_Governance/PCI-ENG-020-C5-D10-D12-Third-Round-Founder-Decision-Preparation.md)。接受对象和判据不产生验证结果；概念场景不是实际交易，不补造历史、资金、履约或评价事实。未来静态验证必须另行明确授权。
+- [本轮核验报告](../09_Engineering_Governance/PCI-ENG-020-C5-D10-D12-Decision-Sync-and-Verification-Report.md)：实际开始值为 HEAD 2d99af0c0db8b7b626816e8f1e3d82143e68841f、Index 空、8 个 tracked 修改、63 个未跟踪文件。记录 1,440 个原文件 SHA-256；三份允许追加文档保留完整原始字节前缀，其余 1,437 个原文件保持哈希。保留 V1 原台账和全部历史未跟踪证据。
+- 本轮新增 Decision39 和核验报告，只追加 Control25 §17、本条和 README 导航。没有其他文件变更；只做 Markdown 结构/链接、逐项裁决对照、状态、Git 和文件完整性只读验证，结果见报告。不运行工作区格式化器/生成器。
+- 业务测试、Typecheck/Lint/Build、Browser/API/PostgreSQL、数据库及迁移、运行环境操作均 NOT RUN；没有业务代码、Schema、API、前端、身份/Session/BFF、产品合同或架构实施变更，没有新 DEV 产品行为偏差。
+- 不 Commit、不 Push、不 Reset/Rebase/Checkout，不删除、不重命名、不暂存历史文件；Branch/HEAD/Parent/Index 保持开始值。C4-A F11、Owner Anchor、SYS/TX 架构与其他未决事项不自动关闭。
+
+```text
+D01–D04 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D05–D09 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D10–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+C5 D01–D12 CONCEPTUAL DECISION REGISTRATION = COMPLETED
+
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+CONCEPTUAL VALIDATION EXECUTION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+以上是授权状态，不是运行开关检测。交付后立即停止，等待 Main Controller 审阅；不自行执行 D12、全球架构/Shared Core/数据模型/API 设计、原型或开发。
+
+## PCI-ENG-020 — Founder Approval Sync: Global Commercial System Conceptual Model Consolidation
+
+记录日期：2026-11-17。批准来源为本次同名主控指令 §1–§8：Founder 已批准下一阶段方向，但要求先仓库同步并等待主控审阅，再由独立指令授权研究。本轮只做文档同步。
+
+- [Decision40 方向登记](../07_Product_Architecture/40_Global_Commercial_System_Conceptual_Model_Consolidation_Founder_Approval.md)：核对产品架构目录后采用序号 40；登记七项未来范围、七项预期交付及全部排除项，不创建或填写研究产物。
+- 阶段 A 是本轮同步及限定只读核验；阶段 B 概念综合尚未开始。Main Controller 明确接受本轮结果后，还须另发独立执行指令；不能把方向批准或主控接受本身解释为研究已获即时授权。D12 验证仍独立未授权。
+- [Decision37](../07_Product_Architecture/37_C5_D01_D04_Founder_Decisions.md)、[Decision38](../07_Product_Architecture/38_C5_D05_D09_Founder_Decisions.md)、[Decision39](../07_Product_Architecture/39_C5_D10_D12_Founder_Decisions.md) 和既有研究/准备/冻结登记均原文保留，D01–D12 仍仅概念原则批准；没有自动验收历史报告或关闭其他未决问题。
+- [本轮同步核验报告](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Model-Consolidation-Founder-Approval-Sync-and-Verification-Report.md)：开始时实际采样 HEAD 2d99af0c0db8b7b626816e8f1e3d82143e68841f、Index 空、8 项 tracked 修改、65 个未跟踪文件；完整记录 1,442 个原文件。三份追加文档原始字节前缀保护，其余 1,439 个文件 SHA-256 保护，保留 V1 及全部既有未提交证据。
+- 本轮只新增 Decision40 和同步核验报告，只追加 Control25 §18、本条及 README；没有概念模型综合、矩阵/关系图、反例推演、静态验证或预填研究结论。仅进行 Markdown 解析、链接、状态和 Git/文件完整性核验，不使用自动写回格式化器或生成器。
+- 没有业务代码、Schema、API、迁移、产品/身份/Session/BFF/前端或架构实施变更；不启动服务，不执行业务运行验证，不进行数据库操作，无产品行为变化或新 DEV 偏差。不 Commit / Push / Reset / Rebase / 覆盖式 Checkout / 清理 / 暂存历史文件。
+
+方向批准与执行授权分别登记：
+
+```text
+C5 D01–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+C5 CONCEPTUAL DECISION REGISTRATION = COMPLETE
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION = APPROVED DIRECTION
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION EXECUTION = AWAITING SEPARATE TASK AUTHORIZATION
+D12 CONCEPTUAL VALIDATION EXECUTION = NOT AUTHORIZED
+```
+
+本轮交付与尚未开始的研究状态：
+
+```text
+FOUNDER APPROVAL SYNC = COMPLETED
+MAIN CONTROLLER REVIEW = AWAITING
+GLOBAL CONCEPTUAL MODEL CONSOLIDATION = NOT STARTED
+CONCEPTUAL MODEL RESEARCH = NOT EXECUTED
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+D12 VALIDATION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+上述是方向、授权及文档执行状态，不是运行开关检测。交付后立即停止；必须等待 Main Controller 明确接受本轮同步结果并发出下一阶段独立指令，不能自动进入研究或任何后续设计/实施。
+
+
+## PCI-ENG-020 — Global Commercial System Conceptual Model Consolidation — Stage B
+
+记录日期：2026-11-17。本轮独立任务 §1 明确接受 Decision40 及 Stage A，并授权 Stage B 概念研究。原 Stage A 同步及 NOT STARTED 记录保留历史语境；Decision36–40、C3-D/C3-E/C4-A/C5 原文和当前 VS-01 PRD 均不修改。
+
+- 完成 WP-01–WP-07：[主模型/七项交付入口](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Model.md)、[来源权威索引](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Source-Authority-Index.md)。新增六类横向矩阵、两类概念图与事实责任矩阵、逐项一致性审查、十七项 A/B/C/D 未决及五项未批准的 Founder 建议。
+- 研究建立共享引用/事实、专业领域权威及有来源投影的整体解释，保持具体条件/责任/履行/资金/评价区别；有效接受、责任权源、组合依赖和不确定性等仍未充分定义。综合结果是待审研究，不是 Founder 新批准或最终架构。
+- [核验报告](../09_Engineering_Governance/PCI-ENG-020-Global-Conceptual-Research-and-Verification-Report.md)：实际开始 Branch codex/pci-eng-015-b-r2-persistence-closure、HEAD 2d99af0c0db8b7b626816e8f1e3d82143e68841f、Parent 884c025d21e1b3668bb7014599b1afdacc332c24、Index 空、八项 tracked 修改、67 个 untracked 文件。对 1,444 个原文件记录 SHA-256，三份追加文档原字节前缀保护，其余 1,441 项哈希保护；保留 V1 原台账与所有未跟踪文件。
+- 本轮只新增九份研究/证据 Markdown，追加 Control25 §19、本条和 README。只读核验 Markdown 结构/链接、状态、Git 差异及文件完整性；未使用写回格式化器/生成器，不启动服务或访问数据库。
+- 没有业务代码、Schema、API/DTO/Event、Migration、身份/Session/BFF/凭据/权限、前端、VS-01/Appearance/Fulfillment 或架构实施变化；无新 DEV 产品行为偏差。业务测试/Typecheck/Lint/Build/Browser/API/PostgreSQL 均 NOT RUN。
+- 未执行 D12 样本/反例/九项判据，没有 D12 成败结论，没有模拟事件或真实交易/资金/评价；无 Owner Anchor、SYS/TX/FIN/REV、Shared Core 写权、聚合/状态机/事务/拓扑方案。未 Commit/Push/Reset/Rebase/Checkout/清理/暂存历史文件。
+
+```text
+STAGE A = CLOSED
+STAGE B = CONCEPTUAL RESEARCH COMPLETED
+GLOBAL CONCEPTUAL MODEL = DELIVERED
+C5 D01–D12 = FOUNDER APPROVED — CONCEPTUAL PRINCIPLES ONLY
+D12 STATIC VALIDATION = NOT AUTHORIZED
+ARCHITECTURE FINALIZATION = NOT AUTHORIZED
+PROTOTYPE = NOT AUTHORIZED
+IMPLEMENTATION = NOT AUTHORIZED
+PILOT = NOT AUTHORIZED
+PRODUCTION = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+MAIN CONTROLLER REVIEW = AWAITING
+FOUNDER DECISIONS = AWAITING WHERE REQUIRED
+```
+
+以上为授权/交付状态，不是运行开关观测。完成后立即停止，等待 Main Controller 审阅，不自动进入 D12、架构、原型或实施；新 Founder 建议均待裁决。
+
 ## PCI-ENG-023 — Production Compose Bootstrap and Creator BFF Runtime
 
 2026-11-18: `FD-PCI-DEPLOY-001` authorizes the empty-volume deployment prerequisite. This
@@ -11363,3 +11584,27 @@ reclassify any product acceptance test or authorize production rollout.
   `PCI-ENG-023-Execution-and-Verification-Report.md` and its evidence directory.
 - Abnormal/unmarked legacy volumes remain unmodified and blocked; adoption is not authorized.
   `REAL_MONEY_ENABLED=false`. No real production database, external pilot, push or merge.
+
+## PCI-ENG-024 — Accepted Work Integration and Delivery Candidate
+
+2026-11-18: `codex/pci-delivery-candidate` preserves the original 022-A, 022-B and 023
+commits. Founder Decisions 36–40, Conceptual Baseline 41, the approved documentation navigation,
+and the applicable Stage B and authority material are synchronized. The conceptual baseline does
+not change the VS-01 contract or authorize implementation of a global architecture.
+
+- In the integrated stack, the 023 API role originally lacked the two column UPDATE grants needed
+  to confirm an existing 022-A service fulfillment. The installer now grants only those columns on
+  fresh or verified `ready` Compose volumes. No changes to product permissions, state transitions,
+  canonical events, or Creator/Operations Session semantics; no `DEV-###` deviation.
+- A disposable PostgreSQL 17.6 Compose stack verified transaction rollback of both writes,
+  same-code retry, concurrent confirmation with one consumer, and upgrade of a trusted 023 volume
+  without Journal replay. A fresh volume applied all 43 migrations; restart preserved Journal and
+  application rows, and the installer blocked wrong-role, owner drift, missing Journal and unmarked
+  volume cases. The unchanged 0040 checkpoint failure/recovery path reuses accepted 023 evidence.
+- Creator signup, production Cookie attributes, same-origin private Identity, Homepage audit,
+  refresh, Origin/CSRF rejection, confirmed Logout Revocation and denial after revocation passed
+  with real API/Web/PostgreSQL containers. The known TypeScript, import-boundary and OpenAPI
+  snapshot failures were reproduced on accepted 023 and left unchanged.
+- See repository-external `PCI-ENG-024-Integration-and-Delivery-Report.md` for scoped evidence.
+  Local delivery candidate only; Main Controller review pending. No push, production deployment
+  or external pilot. `REAL_MONEY_ENABLED=false`.

@@ -788,3 +788,25 @@ Creator OS
 > `Commerce Identity` 是产品的统一入口和聚合面；`Offering` 是主要商业对象；`Distribution` 是 Creator-first 模型的一等能力；`Relationship` 是从一次交易走向 Creator OS 的长期基础。
 
 > VS-01 只实现该架构中最小的 Service Request 子集。接下来的产品化工作应继续定义对象、流程和规格，而不是重新讨论需求或扩张新的战略终局。
+
+## 15. FD-C4A-R1-01 Amendment — 全球概念与当前切片的边界
+
+> 日期：2026-11-17；Authority：[FD-C4A-R1-01](36_Global_Commercial_Supply_Foundation_Decisions.md)，F01–F04概念冻结。
+> 本节追加，原有架构叙述和历史示例不覆盖；不是全球架构批准。
+
+F02明确：§5.2“Offering必须关联至少一个Capability”及“based on one or more capabilities”不得继续作为全球Offering的普遍规则。
+全球可依领域规则由Asset/Right作为主要来源而无显式Capability关联；实际资格、合法来源、交付能力和责任主体不因此免除。
+该原规则在当前VS-01受控Capability/Template服务发布链中的效力保留，不能借本修订绕过门禁。
+
+F01/F03明确：Commercial Offering/Offering为同一持续供给概念，Product保留广义商业产品语言；
+具体Proposal/Terms Version与Offering分开，Commitment依据各域有效接受形成，历史Offer不追溯为法律要约。
+全球使用窄义Capability，以Value Source为上位分析概念；Resource、Asset、Right与Capability是可重叠而不同的语义视角，不要求四实体/四表。
+上游Right authority、Right-type Offering/Proposal及Grant须区分。
+
+F04明确：§5.1的Creator/Commerce Identity聚合与对外展示不决定全球Offering的最终Owner Anchor；
+供给治理、Provider、资产/权利人、管理、合同、履行、授予及受益角色分别解释。
+Identity持C号、1 Identity:N Profiles和历史creatorId语义继续有效。
+最终owner、基数、独立Provider实体、共同归属/转移/委托/继承及法律责任结构未定。
+
+本轮不改变任何VS-01状态、流程或权限，不冻结数据库、API、事务、版本模型或共享Envelope。
+F05–F11仍OPEN / NOT DECIDED；C4-A Model B只是后续概念验证候选，不是批准本文件采用某种全球聚合结构。

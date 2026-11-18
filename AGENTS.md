@@ -29,3 +29,12 @@
 - 单元测试全部通过不代表 VS-01 完成；`AT-001` 至 `AT-013` 仍是最高验收边界。
 - Mock、模拟器、Fixture 或本地 Sandbox 不能作为真实外部服务通过验收的证据。
 - 避免无关格式化变更；没有已记录的偏差与产品决策，不得修改被冻结的产品文档。
+
+## 文档权威基线
+
+开始 PCI 新任务前，先读取
+[项目文档权威基线与冻结登记](docs/09_Engineering_Governance/PCI-ENG-020-C3-E-Project-Documentation-Baseline-and-Freeze-Register.md)，
+再核对相关 Founder Decision、当前产品合同及已知冲突。
+该登记不取代更高层批准，不升级 Proposed ADR，不扩大实施范围。
+C3-D 已由本次 C3-E 指令 §2.1 正式接收并冻结为研究成果；修订或质疑须另文引用，
+不得直接改写原报告，也不得把研究接收解释为架构实施批准。

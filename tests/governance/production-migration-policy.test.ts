@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   deploymentRoles,
   internalDatabasePassword,
@@ -10,11 +14,123 @@ import {
 } from '../../scripts/database/production-migration-policy.js';
 
 describe('production migration policy', () => {
+  const fixtures: string[] = [];
+  const journal = JSON.parse(readFileSync('database/migrations/meta/_journal.json', 'utf8')) as {
+    entries: { idx: number; tag: string; when: number }[];
+  };
+  function fixture() {
+    const folder = mkdtempSync(join(tmpdir(), 'pci-production-migrations-'));
+    fixtures.push(folder);
+    cpSync('database/migrations', folder, { recursive: true });
+    return folder;
+  }
+  afterEach(() => {
+    for (const folder of fixtures.splice(0)) rmSync(folder, { recursive: true });
+  });
   const migrations = productionMigrations();
   const history = migrations.map((migration) => ({
     hash: migration.hash,
     created_at: migration.folderMillis,
   }));
+
+  it('normalizes only CRLF/LF and retains the exact approved historical Journal hashes', () => {
+    const folder = fixture();
+    for (const format of ['lf', 'crlf', 'mixed']) {
+      for (const entry of journal.entries) {
+        const sql = readFileSync(`database/migrations/${entry.tag}.sql`, 'utf8').replaceAll(
+          '\r\n',
+          '\n',
+        );
+        const formatted = sql.replaceAll('\n', (_, offset: number) =>
+          format === 'crlf' || (format === 'mixed' && offset % 2 === 0) ? '\r\n' : '\n',
+        );
+        writeFileSync(join(folder, `${entry.tag}.sql`), formatted);
+      }
+      expect(productionMigrations(folder)).toEqual(migrations);
+    }
+    expect(migrations[0]!.hash).toBe(
+      '226505224d5ae075d980eb1eef9e17ea62127afdcc3c44e3c25c2b024c0d0f36',
+    );
+    expect(migrations[41]!.hash).toBe(
+      'a4f9445de19f685e0386826a565ba2c4d469818507d0f1686675a5a395ff3aec',
+    );
+    const identity = (count: number) =>
+      journal.entries
+        .slice(0, count)
+        .map((entry, index) => `${entry.idx}:${entry.tag}:${entry.when}:${migrations[index]!.hash}`)
+        .join('\n');
+    expect(createHash('sha256').update(identity(43)).digest('hex')).toBe(
+      '0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50',
+    );
+    expect(createHash('sha256').update(identity(44)).digest('hex')).toBe(
+      '3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb',
+    );
+    expect(migrations.every((migration) => migration.sql.every((sql) => !sql.includes('\r')))).toBe(
+      true,
+    );
+  });
+
+  it('rejects an unreviewed SQL change in every migration before returning executable SQL', () => {
+    const folder = fixture();
+    for (const entry of journal.entries) {
+      const path = join(folder, `${entry.tag}.sql`);
+      const original = readFileSync(path);
+      writeFileSync(path, `${original.toString()}\nSELECT 'unreviewed';`);
+      expect(() => productionMigrations(folder)).toThrow(
+        'unreviewed production migration manifest',
+      );
+      writeFileSync(path, original);
+    }
+  });
+
+  it('does not normalize bare CR, BOM, whitespace, encoding or final-newline changes', () => {
+    const folder = fixture();
+    const path = join(folder, `${journal.entries[0]!.tag}.sql`);
+    const original = readFileSync(path);
+    for (const changed of [
+      Buffer.from(original.toString().replace(/\r?\n/, '\r')),
+      Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), original]),
+      Buffer.concat([original, Buffer.from(' ')]),
+      Buffer.concat([original, Buffer.from([0xff])]),
+      Buffer.concat([original, Buffer.from('\n')]),
+    ]) {
+      writeFileSync(path, changed);
+      expect(() => productionMigrations(folder)).toThrow();
+    }
+  });
+
+  it('still pins every Journal identity field, order and migration count', () => {
+    const folder = fixture();
+    const path = join(folder, 'meta/_journal.json');
+    const original = readFileSync(path, 'utf8');
+    for (const change of [
+      (copy: typeof journal) => (copy.entries[0]!.idx = 1),
+      (copy: typeof journal) => (copy.entries[0]!.when += 1),
+      (copy: typeof journal) => copy.entries.reverse(),
+      (copy: typeof journal) => copy.entries.pop(),
+      (copy: typeof journal) => (copy.entries[0]!.tag = copy.entries[1]!.tag),
+    ]) {
+      const copy = JSON.parse(original) as typeof journal;
+      change(copy);
+      writeFileSync(path, JSON.stringify(copy));
+      expect(() => productionMigrations(folder)).toThrow();
+    }
+  });
+
+  it('does not accept a new checkout hash in place of an existing historical Journal hash', () => {
+    const changed = history.map((row, index) =>
+      index === 0
+        ? {
+            ...row,
+            hash: createHash('sha256')
+              .update(migrations[0]!.sql.join('--> statement-breakpoint'))
+              .digest('hex'),
+          }
+        : row,
+    );
+    expect(() => verifyProductionHistory(history.slice(0, 43), migrations, 43)).not.toThrow();
+    expect(() => verifyProductionHistory(changed, migrations, 44)).toThrow('index 0');
+  });
 
   it('accepts exactly the reviewed Journal order, including both historical timestamp inversions', () => {
     expect(history).toHaveLength(44);

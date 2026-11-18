@@ -11659,3 +11659,11 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - 实施完成：供给草稿/发布与条款版本、本人申请、供给方现场确认审批、固定期限、独立核验和实际入场、入场误登记追加更正。Admin 通过现有 Operations Human 和审计控制新增申请及待审批申请；不改变存量资格。默认不启用，显式运行时配置和授权运营操作缺一不可。
 - 2026-11-19 验证：B6 十七项在独立 PostgreSQL 17.6、API、Creator BFF、Admin BFF 上通过。空卷 44 份迁移、43 行检查点恢复、受信 PD-003 43→44 升级、安装器再次运行及 API 重启均有隔离证据；Migration 0041 不变。Service 暂停、存量请求确认/结果和恢复通过。
 - 见仓库外 `PCI-PD-004-Membership-First-Slice-Delivery-Report.md`。实地核证由合成身份及操作者声明代表；到期用一次性数据构造边界，真实 API 以数据库时间判断。未做生产 TLS、外部 Pilot 或真实资金验证。
+
+## PCI-ENG-026 — Migration Manifest Reproducibility
+
+- 2026-11-19，基于 PD-005 已验收提交 `4e9bb688bd2c80a1fefd9e2340a378a5dc8b5d3f` 修复生产迁移输入换行表示。执行 SQL 统一为 LF，仅接受 CRLF/LF 差异。历史 0000–0042 CRLF、0043 LF 的 Journal 身份及既有 reviewed manifest 保持。
+- Windows checkout、默认 Git Archive、显式 `core.autocrlf=false` 的 Git Archive 及实际 Dockerfile 构建输入已核对。显式 LF 归档逐份匹配 44 个 Git SQL blob。各输入重建相同的批准身份。
+- 独立 PostgreSQL 17.6 和正式 Production Compose 的数据库安装入口已通过空卷 44 份迁移、真实旧安装器创建的受信 43→44 升级、重复运行及同卷容器重启。0040 和 0043 注入失败后事务及 Journal 回滚，恢复成功。实质 SQL 篡改被拒绝，LF/CRLF 替换通过且无重放。
+- API 构建、13 项定向测试、44 份迁移完整性、变更 TypeScript 的 ESLint 与定向类型检查通过。SQL、Migration Journal、0041 信任谓词、权限代码及产品合同沿用已验收版本。本项为部署输入修复，产品行为与规范事件维持现行合同。
+- 完整命令、输入摘要、数据库状态及隔离资源清理记录见仓库外 `D:/codeSpace/PCI-ENG-026-evidence-20261119/PCI-ENG-026-Migration-Manifest-Reproducibility-Report.md`。本项完成后单独执行 PCI-WS-001。生产、外部 Pilot 和真实资金维持未授权状态。

@@ -30,12 +30,22 @@ export const membershipMigrationIndex = phaseRanges.finish[1];
 
 const migrationFolder = 'database/migrations';
 const reviewedManifest = '3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb';
+const historicalCrlfMigrationCount = 43;
 
-export function productionMigrations() {
-  const journal = JSON.parse(readFileSync(`${migrationFolder}/meta/_journal.json`, 'utf8')) as {
+export function productionMigrations(migrationsFolder = migrationFolder) {
+  const journal = JSON.parse(readFileSync(`${migrationsFolder}/meta/_journal.json`, 'utf8')) as {
     entries: { idx: number; tag: string; when: number }[];
   };
-  const migrations = readMigrationFiles({ migrationsFolder: migrationFolder });
+  const migrations = readMigrationFiles({ migrationsFolder }).map((migration, index) => {
+    const sql = migration.sql.join('--> statement-breakpoint').replaceAll('\r\n', '\n');
+    requireInstallation(!sql.includes('\r'), 'unsupported production migration line ending');
+    const historicalSql = index < historicalCrlfMigrationCount ? sql.replaceAll('\n', '\r\n') : sql;
+    return {
+      ...migration,
+      sql: sql.split('--> statement-breakpoint'),
+      hash: createHash('sha256').update(historicalSql).digest('hex'),
+    };
+  });
   const identity = journal.entries.map(
     (entry, index) => `${entry.idx}:${entry.tag}:${entry.when}:${migrations[index]?.hash}`,
   );

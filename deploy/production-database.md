@@ -105,6 +105,23 @@ receive access to Membership Offering, application, relationship or activity tab
 
 ## Recovery and existing volumes
 
+### Reproducible migration input (PCI-ENG-026)
+
+The production policy accepts only CRLF/LF representation differences. It replaces each CRLF pair
+with LF before execution, rejects a remaining bare CR, and does not trim whitespace, remove a BOM,
+change encoding, or add/remove final newlines. SQL content, Journal array order, `idx`, `tag` and
+original `when` remain pinned by the unchanged reviewed manifest.
+
+For checksum compatibility, the policy reconstructs the already approved historical representation.
+Migrations 0000–0042 use CRLF and 0043 uses LF. Its SHA-256 values are the Journal identities, independent of
+checkout bytes. The 43-entry identity still hashes to
+`0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50`; the full 44-entry identity
+still hashes to `3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb`.
+This bounded representation mapping preserves the single approved SQL-content manifest and the
+existing Journal rows. The production installer and phase runner use this policy. Generic Drizzle
+tooling continues to hash its raw input, so production deployments must use the production gate.
+A future migration requires a separate reviewed manifest update.
+
 An interruption can resume a trusted `provisioned` installation or a matching committed checkpoint
 (0, 40, 41 or 43 rows with its catalog fingerprint). Do not repair or populate a Journal by hand.
 Fresh installation applies 0043 atomically with finalization, without a separate checkpoint.

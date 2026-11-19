@@ -39,19 +39,25 @@ export function createScenarioOperationsService(
   store: ScenarioOperationsStore,
   catalog: Pick<ServicePolicyCatalogRepository, 'getSnapshot'>,
   membershipIntegrated = false,
+  programIntegrated = false,
 ) {
   return {
     async list(context: ActorContext) {
       requireOperationsHumanPermission(context, 'catalog:read');
-      const [revision, policy, membershipHistory] = await Promise.all([
+      const [revision, policy, membershipHistory, programHistory] = await Promise.all([
         store.latest('Service'),
         catalog.getSnapshot(),
         membershipIntegrated ? store.history?.('Membership') : undefined,
+        programIntegrated ? store.history?.('Program') : undefined,
       ]);
       const membership =
         membershipIntegrated && store.history === undefined
           ? await store.latest('Membership')
           : membershipHistory?.[0];
+      const program =
+        programIntegrated && store.history === undefined
+          ? await store.latest('Program')
+          : programHistory?.[0];
       const canManage =
         context.actor.kind === 'operations_human' &&
         context.actor.permissions.includes('catalog:policy:activate');
@@ -76,6 +82,16 @@ export function createScenarioOperationsService(
                   ...(membership === undefined ? {} : { lastChange: membership }),
                   history: membershipHistory ?? [],
                 }
+              : scenario === 'Program' && programIntegrated
+                ? {
+                    scenario,
+                    status: program?.open === true ? ('open' as const) : ('paused' as const),
+                    revision: program?.revision ?? 0,
+                    activePolicyVersion: 'program-first-slice-v1',
+                    canManage,
+                    ...(program === undefined ? {} : { lastChange: program }),
+                    history: programHistory ?? [],
+                  }
               : { scenario, status: 'not_integrated' as const, canManage: false },
         ),
       };
@@ -89,7 +105,10 @@ export function createScenarioOperationsService(
       if (context.actor.kind !== 'operations_human') throw new Error('Expected Operations Human');
       if (
         input.scenario !== 'Service' &&
-        !(membershipIntegrated && input.scenario === 'Membership')
+        !(
+          (membershipIntegrated && input.scenario === 'Membership') ||
+          (programIntegrated && input.scenario === 'Program')
+        )
       ) {
         throw new ApplicationError({
           category: 'conflict',

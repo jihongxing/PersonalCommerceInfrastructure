@@ -22,14 +22,15 @@ export const deploymentRoles = {
 export const phaseRanges = {
   foundation: [0, 40],
   activation: [40, 41],
-  finish: [41, 43],
+  finish: [41, 45],
 } as const;
 
 export type ProductionPhase = keyof typeof phaseRanges;
-export const membershipMigrationIndex = phaseRanges.finish[1];
+export const membershipMigrationIndex = 43;
+export const previousFinalMigrationIndex = membershipMigrationIndex;
 
 const migrationFolder = 'database/migrations';
-const reviewedManifest = '3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb';
+const reviewedManifest = '308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1';
 const historicalCrlfMigrationCount = 43;
 
 export function productionMigrations(migrationsFolder = migrationFolder) {

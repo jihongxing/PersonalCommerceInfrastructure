@@ -1,0 +1,6 @@
+import { ProgramJoin } from '@/features/program/program-client';
+
+export default async function PublicProgramRunPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProgramJoin runId={id} />;
+}

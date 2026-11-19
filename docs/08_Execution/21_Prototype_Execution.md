@@ -11663,16 +11663,23 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 ## PCI-DOC-004 — Membership First Slice closure and mainline status
 
 - 2026-11-19：Founder 已批准关闭 Membership First Slice 实施任务。当前正式状态为 `IMPLEMENTATION COMPLETED / ACCEPTED`；`PCI-PD-004 = CLOSED`，`PCI-PD-005 = INTEGRATION ACCEPTED`。详见 [PCI-DOC-004 Closure](./PCI-DOC-004-Membership-First-Slice-Closure.md)。
-- 本条是当前状态同步；前面的 PCI-PD-004 待裁决段落保留为历史记录，不再代表当前 Membership 状态。Membership 是第二个已接入并验收的运营场景，Service 是第一个；Goods、Program、Project、Right 继续 `NOT INTEGRATED`。
+- 本条记录 PCI-DOC-004 关闭时的状态；前面的 PCI-PD-004 待裁决段落保留为历史记录。Membership 是第二个已接入并验收的运营场景，Service 是第一个；Program 后续由 PCI-PD-007 接入，Goods、Project、Right 继续 `NOT INTEGRATED`。
 - Implementation Completion 与 Production Readiness 明确分离：Membership Production Readiness = `NOT VERIFIED`；External Pilot、Production Deployment 均 `NOT AUTHORIZED`；`REAL_MONEY_ENABLED = false`。合成身份、真实身份服务、生产 TLS 和真实外部运营环境仍未验证。
 - 本次仅同步文档状态，不改变业务代码、Founder Decisions、D01–D12、Conceptual Baseline 41、Schema、Migration、API、权限、安全策略或生产配置。
 
 ## PCI-DOC-005 — Program First Slice Founder Decision
 
 - 2026-11-19：Founder 正式批准 `FD-PCI-PROGRAM-FIRST-SLICE-001`，首期为单一提供方、线下、短周期、固定期限、有限名额、多场次 Program Run / Cohort。正式决定见 [45 — Program First Slice Founder Decision](../07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)，研究依据见 [PCI-PD-006 Decision Package](./PCI-PD-006-Program-Third-Operational-Scenario-Decision-Package.md)。
-- 当前状态同步为 `PROGRAM = THIRD SCENARIO / BUSINESS BASELINE APPROVED / NOT INTEGRATED`。Program Offering、Run、Enrollment、Session、Participation 和 Completion 语义已获批准，但没有因此开始代码、API、Schema、Migration 或运行时实施。
+- 本条记录 PCI-DOC-005 时的状态 `PROGRAM = THIRD SCENARIO / BUSINESS BASELINE APPROVED / NOT INTEGRATED`。Program Offering、Run、Enrollment、Session、Participation 和 Completion 语义已获批准，但当时尚未开始代码、API、Schema、Migration 或运行时实施。
 - 首期免费，不产生 Payment fact；`REAL_MONEY_ENABLED = false`。候补、补课、转让、证书/学分、线上交付及复杂取消/延期细则仍按 Founder Decision 标记为排除或待决，不得自行补造。Service 与 Membership 既有状态不变。
-- 本条是 Founder Decision 与当前主线状态登记，不是 Program 实施或运行验收；未执行 Program runtime、Production、Pilot 或真实资金验证。
+- 本条是 Founder Decision 与当时主线状态登记；Program 实施由随后独立的 PCI-PD-007 变更单元交付。
+
+## PCI-PD-007 — Program Third Operational Scenario Implementation
+
+- 2026-11-19：按 `FD-PCI-PROGRAM-FIRST-SLICE-001` 和补充 `FD-PCI-PROGRAM-FIRST-SLICE-EXECUTION-RULES-001` 实现首期 Program 业务切片。补充决定见 [46 — Program First Slice Execution Rules Founder Decision](../07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)；原 45 未改写。
+- 实现范围包括独立 Program Offering、Program Run / Cohort、Enrollment Application、Enrollment、Session、Participation / Absence、Completion、取消、场次变更历史、Creator/消费者真实 API 入口、Program Operations 暂停/恢复和服务端 PostgreSQL 持久化。
+- E01–E05 已在应用测试和 HTTP 业务路径测试中覆盖：容量预留/释放、首场前后退出、取消保留事实、场次变更追溯以及暂停仅阻止新申请。未实现候补、补课、支付、退款、证书、线上交付或其他场景扩展。
+- 当前状态为 `PROGRAM = THIRD OPERATIONAL SLICE IMPLEMENTED / AWAITING MAIN CONTROLLER ACCEPTANCE`；Production Readiness = `NOT VERIFIED`，External Pilot / Production Deployment = `NOT AUTHORIZED`，`REAL_MONEY_ENABLED = false`。
 
 ## PCI-ENG-026 — Migration Manifest Reproducibility
 

@@ -44,7 +44,7 @@ migrations, adopt unmarked volumes, or repair catalog drift.
 | `pci_ops_legacy_owner`    | NOLOGIN; owns 0036–0039 and the reviewed legacy DDL in 0041.                                                                                                 |
 | `pci_ops_table_owner`     | NOLOGIN; reviewed activation audit/history and 0041 table-stage SQL.                                                                                         |
 | `pci_ops_function_owner`  | NOLOGIN; owns `operations_private` and `operations_api` and executes reviewed function-stage SQL.                                                            |
-| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core and wired Paid/Pilot SQL only.                                                                          |
+| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core, Program and wired Paid/Pilot SQL only.                                                               |
 | `pci_creator_bff_runtime` | LOGIN; Creator Web Session SELECT/INSERT/UPDATE projections only; no DELETE, business data, Journal, project routines or sequences.                          |
 | `pci_ops_runtime`         | Independent restricted LOGIN for the existing Operations Human auth/session SQL. Only provisioned and connected when explicitly enabled.                     |
 
@@ -57,7 +57,7 @@ behavior is not changed.
 
 The manifest pins the indexed original tags, timestamps and Drizzle SQL hashes. Journal rows are
 compared in database `id` order (including 0025 and 0036 timestamp inversions). DDL and Journal writes
-commit together at boundaries 40, 41, 43 and 44. Temporary 0040 `MAINTAIN` on two legacy tables is granted
+commit together at boundaries 40, 41 and 45. Temporary 0040 `MAINTAIN` on two legacy tables is granted
 and revoked within the same transaction; a rollback cannot leave it installed. 0041 still logs in
 as `pci_ops_migration`. The API uses bounded column updates and supports locking, the 0030 invoker
 audit INSERT, and connected Paid/Pilot writes. Pilot can read `provider_fact_observations`;
@@ -103,6 +103,16 @@ enable money or alter Service intake. The Creator BFF has no direct membership d
 continues to forward the server-side session to the API. The Operations runtime login does not
 receive access to Membership Offering, application, relationship or activity tables.
 
+## Program first slice (isolated non-production only)
+
+Leave `PROGRAM_FIRST_SLICE_ENABLED=false` unless running an authorized isolated verification.
+The explicit API opt-in registers the Program offering, run, enrollment, attendance and completion
+routes together with the Admin Program policy. Program intake starts paused; opening it through the
+authenticated Admin Scenarios screen permits new enrollment applications only. Pausing intake does
+not cancel existing runs, enrollments or committed session facts. The Creator BFF has no direct
+Program data grants and continues to forward the server-side session to the API. The Operations
+runtime login does not receive access to Program offering, enrollment, attendance or audit tables.
+
 ## Recovery and existing volumes
 
 ### Reproducible migration input (PCI-ENG-026)
@@ -113,22 +123,24 @@ change encoding, or add/remove final newlines. SQL content, Journal array order,
 original `when` remain pinned by the unchanged reviewed manifest.
 
 For checksum compatibility, the policy reconstructs the already approved historical representation.
-Migrations 0000–0042 use CRLF and 0043 uses LF. Its SHA-256 values are the Journal identities, independent of
-checkout bytes. The 43-entry identity still hashes to
-`0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50`; the full 44-entry identity
-still hashes to `3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb`.
+Migrations 0000–0042 use CRLF and 0043–0044 use LF. Its SHA-256 values are the Journal identities,
+independent of checkout bytes. The 43-entry identity still hashes to
+`0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50`; the 44-entry identity
+still hashes to `3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb`; the full
+45-entry identity hashes to `308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1`.
 This bounded representation mapping preserves the single approved SQL-content manifest and the
 existing Journal rows. The production installer and phase runner use this policy. Generic Drizzle
 tooling continues to hash its raw input, so production deployments must use the production gate.
 A future migration requires a separate reviewed manifest update.
 
 An interruption can resume a trusted `provisioned` installation or a matching committed checkpoint
-(0, 40, 41 or 43 rows with its catalog fingerprint). Do not repair or populate a Journal by hand.
-Fresh installation applies 0043 atomically with finalization, without a separate checkpoint.
-A trusted ready 43-row volume with matching catalog fingerprint can apply 0043 in one installer
+(0, 40, 41 or 45 rows with its catalog fingerprint). Do not repair or populate a Journal by hand.
+Fresh installation applies 0041–0044 atomically with finalization, without a separate checkpoint.
+A trusted ready 43-row volume with matching catalog fingerprint can apply 0043–0044 in one installer
 transaction: DDL under the existing application owner, bounded runtime grants, the Journal entry
 under the migration role, application-owner CREATE revoked, and the ready fingerprint refreshed.
-An initialized volume with all 44 rows verifies without replay. Other future versions still require
+A trusted ready 44-row volume with matching catalog fingerprint can apply 0044 in the same bounded
+upgrade path. An initialized volume with all 45 rows verifies without replay. Other future versions require
 a reviewed manifest, owner assignment and upgrade path. The fingerprint is an in-place drift check,
 not a portable backup format.
 

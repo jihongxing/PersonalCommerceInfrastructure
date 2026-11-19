@@ -13,7 +13,7 @@ import {
   deploymentConnection,
   deploymentRoles as roles,
   internalDatabasePassword,
-  membershipMigrationIndex,
+  previousFinalMigrationIndex,
   phaseRanges,
   type ProductionPhase,
   productionMigrations,
@@ -24,6 +24,7 @@ import { deploymentFingerprint } from './production-database-catalog.js';
 import {
   fulfillmentRuntimeGrant,
   membershipRuntimeGrants,
+  programRuntimeGrants,
   productionRuntimeGrants,
 } from './production-runtime-grants.js';
 import {
@@ -220,21 +221,24 @@ async function finalizeOperationsAccess(tx: InstallationSql, password: string | 
   }
 }
 
-async function applyMembershipMigration(
+async function applyFinalMigrations(
   tx: InstallationSql,
   migrations: ReturnType<typeof productionMigrations>,
 ) {
   await tx`SELECT pg_advisory_xact_lock(71017211)`;
   const history = await tx<{ hash: string; created_at: string }[]>`
     SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id`;
-  verifyProductionHistory(history, migrations, membershipMigrationIndex);
-  const migration = migrations[membershipMigrationIndex]!;
+  verifyProductionHistory(history, migrations, history.length);
   await tx`GRANT CREATE ON SCHEMA public TO ${tx(roles.applicationOwner)}`;
   await tx`SET LOCAL ROLE ${tx(roles.applicationOwner)}`;
-  for (const statement of migration.sql) await tx.unsafe(statement);
+  for (const migration of migrations.slice(history.length)) {
+    for (const statement of migration.sql) await tx.unsafe(statement);
+  }
   await tx`RESET ROLE`;
   await tx`SET LOCAL ROLE ${tx(roles.migration)}`;
-  await tx`INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES (${migration.hash}, ${migration.folderMillis})`;
+  for (const migration of migrations.slice(history.length)) {
+    await tx`INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES (${migration.hash}, ${migration.folderMillis})`;
+  }
   await tx`RESET ROLE`;
 }
 
@@ -295,7 +299,7 @@ async function install() {
     await verifyLogins(passwords);
     if (installed.state === 'ready') {
       requireInstallation(
-        count === migrations.length || count === membershipMigrationIndex,
+        count === migrations.length || count === previousFinalMigrationIndex,
         'ready database has incomplete Journal',
       );
       await connection.begin(async (tx) => {
@@ -304,9 +308,9 @@ async function install() {
           'existing database owner, schema or privilege drift',
         );
         await upgradeFulfillmentGrant(tx);
-        if (count === membershipMigrationIndex) {
-          await applyMembershipMigration(tx, migrations);
-          await tx.unsafe(membershipRuntimeGrants);
+        if (count === previousFinalMigrationIndex) {
+          await applyFinalMigrations(tx, migrations);
+          await tx.unsafe(`${membershipRuntimeGrants}${programRuntimeGrants}`);
         }
         await finalizeOperationsAccess(tx, operationsPassword);
         const fingerprint = await deploymentFingerprint(tx);
@@ -333,7 +337,7 @@ async function install() {
         count = await verifyHistory(connection, migrations, end);
       }
       await connection.begin(async (tx) => {
-        await applyMembershipMigration(tx, migrations);
+        await applyFinalMigrations(tx, migrations);
         await tx.unsafe(productionRuntimeGrants);
         await finalizeOperationsAccess(tx, operationsPassword);
         await tx`REVOKE INSERT ON pci_deployment.migration_checkpoint FROM ${tx(roles.migration)}`;

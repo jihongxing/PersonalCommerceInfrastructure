@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Award, BriefcaseBusiness, Home, Inbox, LogOut, UserRound, UsersRound } from 'lucide-react';
+import { Award, BriefcaseBusiness, CalendarDays, Home, Inbox, LogOut, UserRound, UsersRound } from 'lucide-react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/lib/auth/context';
 
@@ -12,6 +12,7 @@ const navigation = [
   { href: '/capabilities', label: '能力', icon: Award },
   { href: '/services', label: '服务', icon: BriefcaseBusiness },
   { href: '/memberships', label: '会员', icon: UsersRound },
+  { href: '/program', label: 'Program', icon: CalendarDays },
   { href: '/requests', label: '请求', icon: Inbox },
 ];
 

@@ -166,6 +166,8 @@ export function ScenarioOperationsPanel() {
           <p id="scenario-change-impact">
             {managed.scenario === 'Membership'
               ? '暂停时禁止新申请及待处理申请的批准；已有会员仍可按原有效期核验和入场。'
+              : managed.scenario === 'Program'
+                ? '暂停时只阻止新的 Program Enrollment Application；既有待审批申请、已确认 Run 和履约事实继续保留。'
               : '暂停会阻止新的 Service 发布和公开 Request；既有 Request、结果和履约继续可用。'}
           </p>
           <label>

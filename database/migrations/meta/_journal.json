@@ -309,6 +309,13 @@
       "when": 1794777600003,
       "tag": "0043_membership_first_slice",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794777600004,
+      "tag": "0044_program_first_slice",
+      "breakpoints": true
     }
   ]
 }

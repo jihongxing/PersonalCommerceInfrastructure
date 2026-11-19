@@ -132,6 +132,11 @@ import { CommercialPilotOperationsService } from '../../../applications/paid-com
 import { PostgresOperationsActionAuditStore } from './postgres-operations-action-audit-store.js';
 import { PostgresScenarioOperationsStore } from './postgres-scenario-operations-store.js';
 import { createPostgresMembershipStore } from './postgres-membership-store.js';
+import { createPostgresProgramStore } from './postgres-program-store.js';
+import {
+  createProgramService,
+  type ProgramService,
+} from '../../../applications/program/program-service.js';
 import {
   createMembershipService,
   type MembershipService,
@@ -219,6 +224,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly servicePolicyCatalogRepository: ServicePolicyCatalogRepository;
   readonly scenarioOperationsService: ScenarioOperationsService;
   readonly membershipService?: MembershipService;
+  readonly programService?: ProgramService;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
   readonly operationsFlowReadService: OperationsFlowReadService;
@@ -243,6 +249,7 @@ export function createPostgresCreatorIdentityComposition(
   },
   logger?: SafeLogger,
   membershipEnabled = false,
+  programEnabled = false,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const operationsIdentityPersistence = createPostgresOperationsIdentityComposition(
@@ -284,6 +291,9 @@ export function createPostgresCreatorIdentityComposition(
     database.database,
   );
   const operationsQueryRepository = new PostgresOperationsQueryRepository(database.client);
+  const programService = programEnabled
+    ? createProgramService(createPostgresProgramStore(database.client))
+    : undefined;
   const operationsFlowReadService = createOperationsFlowReadService({
     queries: operationsQueryRepository,
     offeringRepository,
@@ -596,6 +606,7 @@ export function createPostgresCreatorIdentityComposition(
       serviceIntake,
       servicePolicyCatalogRepository,
       membershipEnabled,
+      programEnabled,
     ),
     ...(membershipEnabled
       ? {
@@ -604,6 +615,7 @@ export function createPostgresCreatorIdentityComposition(
           ),
         }
       : {}),
+    ...(programService === undefined ? {} : { programService }),
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),

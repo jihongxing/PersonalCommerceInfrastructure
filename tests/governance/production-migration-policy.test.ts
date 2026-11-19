@@ -65,6 +65,9 @@ describe('production migration policy', () => {
     expect(createHash('sha256').update(identity(44)).digest('hex')).toBe(
       '3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb',
     );
+    expect(createHash('sha256').update(identity(45)).digest('hex')).toBe(
+      '308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1',
+    );
     expect(migrations.every((migration) => migration.sql.every((sql) => !sql.includes('\r')))).toBe(
       true,
     );
@@ -129,20 +132,20 @@ describe('production migration policy', () => {
         : row,
     );
     expect(() => verifyProductionHistory(history.slice(0, 43), migrations, 43)).not.toThrow();
-    expect(() => verifyProductionHistory(changed, migrations, 44)).toThrow('index 0');
+    expect(() => verifyProductionHistory(changed, migrations, 45)).toThrow('index 0');
   });
 
   it('accepts exactly the reviewed Journal order, including both historical timestamp inversions', () => {
-    expect(history).toHaveLength(44);
+    expect(history).toHaveLength(45);
     expect(history[24]!.created_at).toBeGreaterThan(history[25]!.created_at);
     expect(history[35]!.created_at).toBeGreaterThan(history[36]!.created_at);
-    expect(() => verifyProductionHistory(history, migrations, 44)).not.toThrow();
+    expect(() => verifyProductionHistory(history, migrations, 45)).not.toThrow();
     expect(() => verifyProductionHistory(history.slice(0, 40), migrations, 40)).not.toThrow();
     expect(() =>
       verifyProductionHistory(
         [...history].sort((left, right) => left.created_at - right.created_at),
         migrations,
-        44,
+        45,
       ),
     ).toThrow();
     expect(() => verifyProductionHistory(history.slice(1), migrations, 44)).toThrow();
@@ -171,7 +174,7 @@ describe('production migration policy', () => {
 
   it('distinguishes phase boundaries from a missing or altered historical Journal entry', () => {
     const checkpoints = Object.values(phaseRanges).map(([, end]) => end);
-    expect(checkpoints).toEqual([40, 41, 43]);
+    expect(checkpoints).toEqual([40, 41, 45]);
     expect(membershipMigrationIndex).toBe(43);
     for (const count of [0, ...checkpoints, 44]) {
       expect(() =>
@@ -183,7 +186,7 @@ describe('production migration policy', () => {
     const wrongTimestamp = history.map((row, index) =>
       index === 25 ? { ...row, created_at: row.created_at + 1 } : row,
     );
-    expect(() => verifyProductionHistory(wrongTimestamp, migrations, 44)).toThrow('index 25');
+    expect(() => verifyProductionHistory(wrongTimestamp, migrations, 45)).toThrow('index 25');
   });
 
   it('accepts only role-specific internal URLs, without logging supplied credentials', () => {

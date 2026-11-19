@@ -77,6 +77,8 @@ import { registerScenarioOperationsRoutes } from '../../../adapters/transport/ht
 import type { ScenarioOperationsService } from '../../../applications/operations-admin/scenario-operations.js';
 import { registerMembershipRoutes } from '../../../adapters/transport/http/membership-routes.js';
 import type { MembershipService } from '../../../applications/membership/membership-service.js';
+import { registerProgramRoutes } from '../../../adapters/transport/http/program-routes.js';
+import type { ProgramService } from '../../../applications/program/program-service.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
@@ -119,6 +121,7 @@ export interface ApiServerDependencies {
   readonly servicePolicyAdminService?: ServicePolicyAdminService;
   readonly scenarioOperationsService?: ScenarioOperationsService;
   readonly membershipService?: MembershipService;
+  readonly programService?: ProgramService;
   readonly operationsFlowReadService?: OperationsFlowReadService;
   readonly operationsQueryRepository?: OperationsQueryRepository;
 }
@@ -157,7 +160,8 @@ export async function createApiServer(
     dependencies.contractService !== undefined ||
     dependencies.providerWebhookRuntime !== undefined ||
     dependencies.servicePolicyCatalogRepository !== undefined ||
-    dependencies.servicePolicyAdminService !== undefined;
+    dependencies.servicePolicyAdminService !== undefined ||
+    dependencies.programService !== undefined;
   const servicePolicyCatalogRepository =
     dependencies.servicePolicyCatalogRepository ?? composition.servicePolicyCatalogRepository;
   const servicePolicyAdminService =
@@ -419,6 +423,13 @@ export async function createApiServer(
     registerMembershipRoutes(
       server,
       dependencies.membershipService,
+      dependencies.authContextProvider ?? composition.authContextProvider,
+    );
+  }
+  if (dependencies.programService !== undefined) {
+    registerProgramRoutes(
+      server,
+      dependencies.programService,
       dependencies.authContextProvider ?? composition.authContextProvider,
     );
   }

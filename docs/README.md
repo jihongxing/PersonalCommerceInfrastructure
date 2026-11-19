@@ -8,10 +8,11 @@
 > **HISTORICAL NEXT TASK**：RESUME-001 — Identity & External Platform Binding Foundation
 > **NEXT CONTROL ACTION**：Provenance and acceptance reconciliation under the current baseline
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
-> **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；优先级不是运营开放状态）
+> **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；Program 已批准为第三场景；优先级不是运营开放状态）
 > **Membership 首期**：[Founder 决定](./07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md) · [产品合同](./07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
+> **Program 首期**：[FD-PCI-PROGRAM-FIRST-SLICE-001](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)（业务基线已批准；运营路径仍未接入）
 > **Membership 首期关闭状态**：[PCI-DOC-004](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)（IMPLEMENTATION COMPLETE / ACCEPTED；Production Readiness NOT VERIFIED）
-> 最近执行更新：2026-11-19（PCI-DOC-004 Membership First Slice closure）
+> 最近执行更新：2026-11-19（PCI-DOC-005 Program First Slice Founder Decision）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -54,7 +55,7 @@ Identity / Commerce Profile Runtime 已有提交实现；仅具名 change units 
 Service        = FIRST OPERATIONAL SLICE INTEGRATED
 Membership     = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
 Goods          = NOT INTEGRATED
-Program        = NOT INTEGRATED
+Program        = THIRD SCENARIO / BUSINESS BASELINE APPROVED / NOT INTEGRATED
 Project        = NOT INTEGRATED
 Right          = NOT INTEGRATED
 Production Readiness  = NOT VERIFIED
@@ -216,6 +217,7 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
     用简体中文汇总 M1–M9、VS-01 / VS-02、Stage 2、Private Self-Service、Stage 3–5、OV-001、Real Money 和工程治理任务；标注状态、依赖、验收和授权边界。本清单仍待 Founder / Main Control 接受。
 
 - [PCI-DOC-004 — Membership First Slice Closure](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)：记录 Membership 第二运营场景的实施完成、集成验收、主线状态和 Production Readiness 边界。
+- [PCI-DOC-005 — Program First Slice Founder Decision](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)：记录 Program 第三个运营场景及其首期业务基线；不表示 Program 已接入运营或已开始实施。
 
 ### 工程治理
 

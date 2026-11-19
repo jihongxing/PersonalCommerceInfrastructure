@@ -35,8 +35,9 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 ## 工程事实源
 
 - 产品方向层 SSOT：`docs/01_Strategy/05_Personal_Commerce_Infrastructure_Product_Direction.md`
-- 场景进入顺序：[FD-PCI-SCENARIO-SEQUENCING-001](docs/07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Membership 是 Service 之后的第二个优先运营场景）
+- 场景进入顺序：[FD-PCI-SCENARIO-SEQUENCING-001](docs/07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Membership 是 Service 之后的第二个优先运营场景；Program 已批准为第三场景）
 - Membership 首期：[Founder 决定](docs/07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)与[产品合同](docs/07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
+- Program 首期：[Founder 决定](docs/07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)（业务基线已批准；运营路径仍未接入）
 - 产品实现合同：`docs/07_Product_Architecture/20_MVP_PRD_VS01.md`
 - VS-02 产品实现合同：`docs/09_Engineering_Governance/35_VS02_Paid_Service_PRD.md`
 - 执行台账：`docs/08_Execution/21_Prototype_Execution.md`

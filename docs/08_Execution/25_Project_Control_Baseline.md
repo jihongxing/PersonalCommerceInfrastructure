@@ -1182,3 +1182,24 @@ REAL_MONEY_ENABLED = false
 ```
 
 当前 Membership 首期范围、语义边界、验收依据和未验证项见 [PCI-DOC-004 Closure](PCI-DOC-004-Membership-First-Slice-Closure.md)。本状态不表示生产准入、真实身份服务接入、生产 TLS、真实外部运营或真实资金已完成。
+
+## 23. FD-PCI-PROGRAM-FIRST-SLICE-001 — Program First Slice
+
+2026-11-19 登记；来源为 Founder 指令 PCI-DOC-005。状态：**FOUNDER APPROVED / FROZEN**。正式决定见 [45 — Program First Slice Founder Decision](../07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)，研究依据为 [PCI-PD-006 Decision Package](PCI-PD-006-Program-Third-Operational-Scenario-Decision-Package.md)。
+
+Founder 已批准单一提供方、线下、短周期、固定期限、有限名额、多场次的 Program Run / Cohort，以及独立的 Program Offering、Run、Enrollment、Session、Participation 和 Completion 语义。首期免费，不产生 Payment fact，`REAL_MONEY_ENABLED = false`；Program 仍未接入运营。
+
+```text
+PROGRAM = THIRD SCENARIO / BUSINESS BASELINE APPROVED
+PROGRAM OPERATIONAL INTEGRATION = NOT INTEGRATED
+PROGRAM IMPLEMENTATION = NOT AUTHORIZED BY PCI-DOC-005
+SERVICE = FIRST OPERATIONAL SLICE INTEGRATED
+MEMBERSHIP = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
+GOODS / PROJECT / RIGHT = NOT INTEGRATED
+PRODUCTION READINESS = NOT VERIFIED
+EXTERNAL PILOT = NOT AUTHORIZED
+PRODUCTION DEPLOYMENT = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+取消、延期、名额占用时点、待审批申请、通知及既有 Run 在暂停时的处理细则仍待后续明确，不得由工程人员自行补造。本登记不修改 Conceptual Baseline 41、D01–D12、F01–F04、既有领域合同或 PCI-PD-006 历史研究内容，也不授权 Program 实施。

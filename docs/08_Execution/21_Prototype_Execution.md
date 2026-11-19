@@ -11667,6 +11667,13 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - Implementation Completion 与 Production Readiness 明确分离：Membership Production Readiness = `NOT VERIFIED`；External Pilot、Production Deployment 均 `NOT AUTHORIZED`；`REAL_MONEY_ENABLED = false`。合成身份、真实身份服务、生产 TLS 和真实外部运营环境仍未验证。
 - 本次仅同步文档状态，不改变业务代码、Founder Decisions、D01–D12、Conceptual Baseline 41、Schema、Migration、API、权限、安全策略或生产配置。
 
+## PCI-DOC-005 — Program First Slice Founder Decision
+
+- 2026-11-19：Founder 正式批准 `FD-PCI-PROGRAM-FIRST-SLICE-001`，首期为单一提供方、线下、短周期、固定期限、有限名额、多场次 Program Run / Cohort。正式决定见 [45 — Program First Slice Founder Decision](../07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)，研究依据见 [PCI-PD-006 Decision Package](./PCI-PD-006-Program-Third-Operational-Scenario-Decision-Package.md)。
+- 当前状态同步为 `PROGRAM = THIRD SCENARIO / BUSINESS BASELINE APPROVED / NOT INTEGRATED`。Program Offering、Run、Enrollment、Session、Participation 和 Completion 语义已获批准，但没有因此开始代码、API、Schema、Migration 或运行时实施。
+- 首期免费，不产生 Payment fact；`REAL_MONEY_ENABLED = false`。候补、补课、转让、证书/学分、线上交付及复杂取消/延期细则仍按 Founder Decision 标记为排除或待决，不得自行补造。Service 与 Membership 既有状态不变。
+- 本条是 Founder Decision 与当前主线状态登记，不是 Program 实施或运行验收；未执行 Program runtime、Production、Pilot 或真实资金验证。
+
 ## PCI-ENG-026 — Migration Manifest Reproducibility
 
 - 2026-11-19，基于 PD-005 已验收提交 `4e9bb688bd2c80a1fefd9e2340a378a5dc8b5d3f` 修复生产迁移输入换行表示。执行 SQL 统一为 LF，仅接受 CRLF/LF 差异。历史 0000–0042 CRLF、0043 LF 的 Journal 身份及既有 reviewed manifest 保持。

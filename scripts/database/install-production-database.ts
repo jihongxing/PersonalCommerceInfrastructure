@@ -13,11 +13,11 @@ import {
   deploymentConnection,
   deploymentRoles as roles,
   internalDatabasePassword,
-  previousFinalMigrationIndex,
   phaseRanges,
   type ProductionPhase,
   productionMigrations,
   safeDeploymentFailure,
+  supportsReadyMigrationCount,
   verifyProductionHistory,
 } from './production-migration-policy.js';
 import { deploymentFingerprint } from './production-database-catalog.js';
@@ -299,7 +299,7 @@ async function install() {
     await verifyLogins(passwords);
     if (installed.state === 'ready') {
       requireInstallation(
-        count === migrations.length || count === previousFinalMigrationIndex,
+        supportsReadyMigrationCount(count, migrations.length),
         'ready database has incomplete Journal',
       );
       await connection.begin(async (tx) => {
@@ -308,7 +308,7 @@ async function install() {
           'existing database owner, schema or privilege drift',
         );
         await upgradeFulfillmentGrant(tx);
-        if (count === previousFinalMigrationIndex) {
+        if (count < migrations.length) {
           await applyFinalMigrations(tx, migrations);
           await tx.unsafe(`${membershipRuntimeGrants}${programRuntimeGrants}`);
         }

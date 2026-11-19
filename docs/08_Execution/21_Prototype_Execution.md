@@ -11680,6 +11680,7 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - 实现范围包括独立 Program Offering、Program Run / Cohort、Enrollment Application、Enrollment、Session、Participation / Absence、Completion、取消、场次变更历史、Creator/消费者真实 API 入口、Program Operations 暂停/恢复和服务端 PostgreSQL 持久化。
 - E01–E05 已在应用测试和 HTTP 业务路径测试中覆盖：容量预留/释放、首场前后退出、取消保留事实、场次变更追溯以及暂停仅阻止新申请。未实现候补、补课、支付、退款、证书、线上交付或其他场景扩展。
 - 当前状态为 `PROGRAM = THIRD OPERATIONAL SLICE IMPLEMENTED / AWAITING MAIN CONTROLLER ACCEPTANCE`；Production Readiness = `NOT VERIFIED`，External Pilot / Production Deployment = `NOT AUTHORIZED`，`REAL_MONEY_ENABLED = false`。
+- PCI-PD-007-A 追加验证发现并修复一个部署兼容边界：历史 44-row ready Journal（完成 `0043_membership_first_slice`）现在可由当前安装器安全升级至 `0044_program_first_slice`；43-row checkpoint 与全新 45-row 安装路径保持不变。真实隔离 PostgreSQL 17.6 44→45 升级及升级后 API/Program 路径复验记录在仓库外 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-007-Program-Implementation-20261119/PCI-PD-007-A-Acceptance-Closure-Report.md`。
 
 ## PCI-ENG-026 — Migration Manifest Reproducibility
 

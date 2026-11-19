@@ -8,8 +8,10 @@ import {
   internalDatabasePassword,
   membershipMigrationIndex,
   phaseRanges,
+  previousFinalMigrationCount,
   productionMigrations,
   productionPhaseRoles,
+  supportsReadyMigrationCount,
   verifyProductionHistory,
 } from '../../scripts/database/production-migration-policy.js';
 
@@ -187,6 +189,14 @@ describe('production migration policy', () => {
       index === 25 ? { ...row, created_at: row.created_at + 1 } : row,
     );
     expect(() => verifyProductionHistory(wrongTimestamp, migrations, 45)).toThrow('index 25');
+  });
+
+  it('accepts both the reviewed 43-row checkpoint and the historical 44-row ready baseline', () => {
+    expect(previousFinalMigrationCount).toBe(44);
+    expect(supportsReadyMigrationCount(43, 45)).toBe(true);
+    expect(supportsReadyMigrationCount(44, 45)).toBe(true);
+    expect(supportsReadyMigrationCount(45, 45)).toBe(true);
+    expect(supportsReadyMigrationCount(42, 45)).toBe(false);
   });
 
   it('accepts only role-specific internal URLs, without logging supplied credentials', () => {

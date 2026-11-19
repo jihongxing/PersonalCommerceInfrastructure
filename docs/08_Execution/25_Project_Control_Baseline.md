@@ -1203,3 +1203,26 @@ REAL_MONEY_ENABLED = false
 ```
 
 取消、延期、名额占用时点、待审批申请、通知及既有 Run 在暂停时的处理细则仍待后续明确，不得由工程人员自行补造。本登记不修改 Conceptual Baseline 41、D01–D12、F01–F04、既有领域合同或 PCI-PD-006 历史研究内容，也不授权 Program 实施。
+
+## 24. FD-PCI-GOODS-FIRST-SLICE-001 — Goods First Slice
+
+2026-11-20 登记；来源为 Founder 指令 PCI-DOC-006。状态：**FOUNDER APPROVED / FROZEN**。正式决定见 [48 — Goods First Slice Founder Decision](../07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)，研究依据为 [PCI-PD-008 Goods Fourth Operational Scenario Decision Package](PCI-PD-008-Goods-Fourth-Operational-Scenario-Decision-Package.md)。
+
+Founder 已批准 Goods First Slice F01-F09：个人商业主页为 Goods 的主要展示和发现入口；首期为个人卖家、单一 Goods Offering、单件、按需准备、卖家确认接单、卖家自行安排交付；不建立库存、物流、Marketplace 或 PCI 真实 Payment。线下结算保持在 PCI Payment 系统之外，`REAL_MONEY_ENABLED = false`。
+
+```text
+GOODS = FOURTH SCENARIO / BUSINESS BASELINE APPROVED
+GOODS FIRST SLICE RULES = F01-F09 FROZEN
+GOODS OPERATIONAL INTEGRATION = NOT INTEGRATED
+GOODS IMPLEMENTATION = NOT AUTHORIZED BY PCI-DOC-006
+SERVICE = FIRST OPERATIONAL SLICE INTEGRATED
+MEMBERSHIP = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
+PROGRAM = THIRD OPERATIONAL SLICE INTEGRATED
+PROJECT / RIGHT = NOT INTEGRATED
+PRODUCTION READINESS = NOT VERIFIED
+EXTERNAL PILOT = NOT AUTHORIZED
+PRODUCTION DEPLOYMENT = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+本登记只同步 Founder Decision 和项目控制状态，不授权 Goods API、Schema、Migration、Consumer、Creator、Admin 或个人商业主页代码实施；后续实现须由独立 PCI-PD-009 授权。Conceptual Baseline 41、D01-D12、F01-F04、Decision 47 及既有场景决定保持不变。

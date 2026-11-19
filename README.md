@@ -38,6 +38,7 @@ Earnings、真实 Withdrawal 或真实 Refund 证据。受控 Test Transport、F
 - 场景进入顺序：[FD-PCI-SCENARIO-SEQUENCING-001](docs/07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Membership 是 Service 之后的第二个优先运营场景；Program 已批准为第三场景）
 - Membership 首期：[Founder 决定](docs/07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)与[产品合同](docs/07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
 - Program 首期：[Founder 决定](docs/07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)与[执行规则补充](docs/07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)（第三运营场景已实现；Production Readiness 未验证）
+- Goods 首期：[Founder 决定](docs/07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)（F01-F09 已批准；Goods 代码和运营路径尚未接入）
 - 产品实现合同：`docs/07_Product_Architecture/20_MVP_PRD_VS01.md`
 - VS-02 产品实现合同：`docs/09_Engineering_Governance/35_VS02_Paid_Service_PRD.md`
 - 执行台账：`docs/08_Execution/21_Prototype_Execution.md`

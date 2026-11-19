@@ -1,10 +1,10 @@
 # PCI-PD-008 - Goods Fourth Operational Scenario Decision Package
 
-> **Status**: PROPOSED - GOODS BUSINESS RULES AWAIT FOUNDER DECISION; HOMEPAGE POSITIONING ALIGNED
+> **Status**: FOUNDER APPROVED - GOODS FIRST SLICE F01-F09 FROZEN; RESEARCH HISTORY PRESERVED
 >
 > **Task state**: COMPLETED - AWAITING MAIN CONTROLLER ACCEPTANCE
 >
-> **Scope**: bounded product and commerce-pattern research only. This revision aligns the Goods presentation path with the separately recorded Founder Decision [47 — Personal Commercial Homepage](../07_Product_Architecture/47_Personal_Commercial_Homepage_Founder_Decision.md). It does not create a Goods business decision, product contract, API, database schema, migration, architecture, implementation, Pilot, production authorization, or real-money authorization.
+> **Scope**: bounded product and commerce-pattern research with an append-only status synchronization. The Founder-approved Goods First Slice is formally recorded in [48 — Goods First Slice Founder Decision](../07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md). This package preserves the original research, alternatives, and evidence; it does not implement Goods or authorize production, Pilot, or real-money activity.
 
 ## 1. Decision boundary and research result
 
@@ -23,9 +23,9 @@ The Founder-approved direction is preserved:
 
 These directions come from the task authorization and the existing Commercial Scenario Sequencing Founder Decision. They are not re-decided here.
 
-### 1.2 Main Controller recommendation
+### 1.2 Founder-approved first Goods slice
 
-The recommended first Goods slice is:
+The first Goods slice adopted from the research recommendation is:
 
 > **Seller-confirmed, single-offering, single-unit, made-to-order personal goods.**
 >
@@ -33,7 +33,7 @@ The recommended first Goods slice is:
 
 This recommendation adds one seller decision after the buyer action, but it avoids pretending that an individual seller can accept unlimited orders. It is simpler than inventory management and more trustworthy than an always-open direct order. It also keeps the first slice small enough for offline or seller-arranged delivery.
 
-This is a recommendation only. Founder approval is still required for the material commercial rules listed in Section 13.
+The prior research recommendation is now formally adopted through F01-F09 in Decision 48. Section 13 retains the original research questions and alternatives for provenance; it must not be read as reopening the approved first-slice rules.
 
 ### 1.3 Current status boundary
 
@@ -42,7 +42,7 @@ This is a recommendation only. Founder approval is still required for the materi
 | Service | First operational slice integrated | Preserve the VS-01 contract and implementation. |
 | Membership | Second operational slice integrated and accepted | Preserve the accepted free fixed-term offline Membership slice. |
 | Program | Implementation present in the current baseline | Preserve its independent Offering, Run, Enrollment, Session, Participation, and Completion semantics. |
-| Goods | NOT INTEGRATED | Research and proposed first-slice rules only. |
+| Goods | BUSINESS BASELINE APPROVED / NOT INTEGRATED | F01-F09 are frozen in Decision 48; code, API, Schema, Migration, and consumer transaction paths remain unimplemented. |
 | Project | NOT INTEGRATED | No change. |
 | Right | NOT INTEGRATED | No change. Goods is not a Right Grant. |
 
@@ -190,15 +190,15 @@ The Personal Commercial Homepage is a shared presentation surface, not a shared 
 - omit unpublished or not-integrated domains rather than presenting placeholder switches as available supply;
 - avoid cross-seller carts, ranking, advertising, recommendation, or marketplace behavior.
 
-For the current baseline, Service is the homepage's implemented public projection; Membership and Program remain separate public paths; Goods remains a decision package only. This is the minimum evidence-based alignment and not a claim of six-scenario implementation.
+For the current baseline, Service is the homepage's implemented public projection; Membership and Program remain separate public paths; Goods has an approved business baseline but remains operationally not integrated. This is the minimum evidence-based alignment and not a claim of six-scenario implementation.
 
 ## 5. No-inventory operating modes
 
-The absence of an inventory system does not mean that a seller can promise unlimited unavailable items. The first slice needs a small business decision that prevents false promises without importing stock management.
+The absence of an inventory system does not mean that a seller can promise unlimited unavailable items. F01-F05 resolve this boundary through seller confirmation and seller-controlled pause without importing stock management.
 
 | Candidate | Buyer flow | Seller burden | Over-commitment control | Complexity | Assessment |
 | --- | --- | --- | --- | --- | --- |
-| A - Buyer submits, seller confirms | Buyer submits one order; seller accepts or declines before the commitment is formed. | One explicit decision per order. | Human seller acceptance is the supply-capacity gate. No count, reservation, or stock ledger. | Low. | **Recommended first slice.** Best balance between simple buying and honest personal supply. |
+| A - Buyer submits, seller confirms | Buyer submits one order; seller accepts or declines before the commitment is formed. | One explicit decision per order. | Human seller acceptance is the supply-capacity gate. No count, reservation, or stock ledger. | Low. | **Founder-approved first slice.** Best balance between simple buying and honest personal supply. |
 | B - Seller opens intake, buyer orders directly | Seller keeps an offering open and every buyer order immediately becomes accepted. | Lower per-order decision burden. | Seller must pause intake manually; an open offering can still receive more orders than the seller can satisfy. | Low initially, but failure handling becomes necessary quickly. | Suitable as a later optimization after real usage shows that seller confirmation is unnecessary. |
 | C - One-of-one item | Buyer orders a unique item; accepted order closes the offering. | Simple for a single work, but requires a clear availability state. | A coarse available / closed or sold state prevents a second acceptance. | Low for one-off goods, but does not cover repeatable personal products. | Later bounded mode, not the first general Goods slice. |
 
@@ -278,7 +278,7 @@ Goods Fulfillment is a domain fact about the seller providing the accepted item.
 
 ### 7.3 Failure and cancellation
 
-The first slice must preserve an accepted order when delivery fails or the seller cannot provide the item. The minimum proposed behavior is an explicit exception/cancellation fact with actor, reason, time, and correlation ID. Automatic refund or compensation is out of scope because no payment/refund behavior is authorized.
+The first slice must preserve an accepted order when delivery fails or the seller cannot provide the item. The approved minimum behavior is an explicit exception/cancellation fact with actor, reason, time, and correlation ID. Automatic refund or compensation is out of scope because no payment/refund behavior is authorized.
 
 The exact cancellation rights, buyer response, and whether a seller may cancel after acceptance require Founder decision. The implementation must not silently invent a refund, penalty, or dispute process.
 
@@ -288,13 +288,13 @@ The three candidate slices requested by the task are compared below.
 
 | Candidate | Personal-seller usability | Buyer steps | Seller supply risk | Traceability | Payment dependency | Recommendation |
 | --- | --- | --- | --- | --- | --- | --- |
-| A. Made-to-order, seller confirms, then prepares and delivers | Simple publish; one decision per order; works without stock count. | Direct page, authenticated order, wait for accept/decline, coordinate delivery. | Low-to-moderate; seller acceptance is an explicit gate. | Strong: Offering -> Order -> Acceptance -> Commitment -> Fulfillment. | No real Payment required for research slice. | **Main recommendation.** |
+| A. Made-to-order, seller confirms, then prepares and delivers | Simple publish; one decision per order; works without stock count. | Homepage discovery, authenticated order, wait for accept/decline, coordinate delivery. | Low-to-moderate; seller acceptance is an explicit gate. | Strong: Offering -> Order -> Acceptance -> Commitment -> Fulfillment. | No real Payment required for research slice. | **Founder-approved first slice.** |
 | B. Standard repeatable item, seller keeps intake open, direct order | Simplest per-order operation when supply is predictable. | Shortest path; no seller confirmation. | Higher; open intake can exceed personal capacity. | Weaker when no explicit acceptance fact exists. | No real Payment required for research slice. | P1 after evidence that seller confirmation is unnecessary. |
 | C. One unique work, seller confirms and closes offering after acceptance | Easy for a single work. | Similar to A; page becomes unavailable after acceptance. | Low if coarse availability is enforced. | Strong for one-off facts. | No real Payment required for research slice. | Later bounded mode after the general slice. |
 
 ### 8.1 Main recommendation
 
-Choose Candidate A as the first business model, with these deliberately narrow limits:
+Decision 48 adopts Candidate A as the first business model, with these deliberately narrow limits:
 
 - one seller;
 - one published Goods Offering;
@@ -334,9 +334,9 @@ This section distinguishes reusable engineering mechanisms from capabilities tha
 
 No current repository evidence shows a completed Goods-specific Offering, Goods Order, Goods Commitment, Goods Fulfillment, Goods Admin policy, or Goods payment path. The existing Service, Membership, Program, and local paid-commerce implementations are useful reference mechanisms but are not evidence that Goods is already implemented.
 
-## 10. Proposed first-slice rules
+## 10. First-slice rules adopted by Founder Decision 48
 
-The following are implementation-ready recommendations, not Founder-approved rules.
+The following section preserves the original research expression of the first slice. F01-F09 are now Founder-approved and frozen by [48 — Goods First Slice Founder Decision](../07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md). Where the historical research wording and the formal decision differ, Decision 48 controls. This status synchronization does not authorize implementation.
 
 ### 10.1 Offering rules
 
@@ -359,7 +359,7 @@ The following are implementation-ready recommendations, not Founder-approved rul
 
 ### 10.3 Commitment rules
 
-- Seller acceptance is the proposed trigger for a Goods Commitment.
+- Seller acceptance is the approved trigger for a Goods Commitment.
 - The Commitment records the accepted offering/terms version, buyer, seller, order, and correlation identity.
 - Commitment must not be inferred from page view, price display, order submission, Payment, or delivery.
 - The Commitment remains traceable if delivery later fails or the order is cancelled under an approved rule.
@@ -375,7 +375,7 @@ The following are implementation-ready recommendations, not Founder-approved rul
 
 - Goods scenario pause blocks new Goods Order submissions.
 - Pause does not cancel accepted orders, delete commitments, or rewrite delivery history.
-- Resume reopens intake only when the Goods business path and required policy configuration are actually integrated.
+- Resume reopens intake only when the Goods business path and required policy configuration are actually integrated; this decision does not authorize that implementation.
 - Operations changes require Operations Human authorization, persisted state, reason, actor, revision, time, and correlation ID.
 
 ## 11. In scope, P1, and later
@@ -434,9 +434,9 @@ Goods should not be marked integrated because an Admin row or a product page exi
 12. Goods, Project, and Right are not accidentally opened by a shared scenario screen.
 13. The evidence does not claim a Payment, refund, settlement, or real-money transaction that was not authorized and executed.
 
-## 13. Founder decisions required
+## 13. Historical Founder questions and resolution
 
-The following questions are material commercial rules and should not be invented by engineering:
+The following questions are retained as historical research questions and recommendations. PCI-DOC-006 resolved the first-slice business decisions through F01-F09; these entries must not be read as open alternatives or as authorization to invent additional rules.
 
 1. **First business mode**: Approve Candidate A (made-to-order, seller-confirmed) as the first Goods slice, or choose the open-intake or one-of-one alternative?
 2. **Buyer identity**: Must a buyer authenticate at order submission? Recommendation: yes, while public browsing remains anonymous.
@@ -447,7 +447,9 @@ The following questions are material commercial rules and should not be invented
 7. **Post-acceptance failure**: May a seller cancel after acceptance, and what buyer-visible outcome is required? Recommendation: record an explicit exception/cancellation fact; do not invent refund or penalty rules.
 8. **Offline settlement**: Is seller/buyer offline settlement permitted for the first commercial experiment? No Payment implementation is authorized by this package; any permitted external settlement needs a separate evidence and responsibility rule.
 9. **Price policy**: Which currency and price-change rules apply? Recommendation: display one seller price/currency and snapshot it at order submission.
-10. **Goods homepage presentation details**: Define the exact public fields and ordering for a Goods item within the Personal Commercial Homepage and its subordinate detail page. The homepage-first direction and the non-prerequisite status of direct sharing are already frozen by `FD-PCI-PERSONAL-COMMERCIAL-HOMEPAGE-001`; this question must not reopen that direction or create Marketplace behavior.
+10. **Goods homepage presentation details**: The homepage-first direction and the non-prerequisite status of direct sharing are frozen by `FD-PCI-PERSONAL-COMMERCIAL-HOMEPAGE-001` and F01. Exact public field ordering remains an implementation detail within the approved domain and security boundaries; it must not reopen the direction or create Marketplace behavior.
+
+Resolution authority: F01 covers homepage presentation and discovery; F02 covers publication fields; F03 covers consumer identity and order shape; F04 covers Order Acceptance and Commitment; F05 covers no-inventory provision; F06 covers seller-arranged delivery; F07 covers price and Payment boundaries; F08 covers post-acceptance inability; F09 covers seller and Admin pause behavior.
 
 ## 14. Research limits and non-authorization
 
@@ -461,13 +463,13 @@ This package did not:
 - resolve open global architecture questions, legal/compliance rules, or ownership/rights questions;
 - authorize production, Pilot, external sellers, or real-money activity.
 
-The recommendation is based on the current repository evidence and the Founder task direction. It is not a claim that the current repository already supports the Goods flow.
+The research and adopted business baseline are based on the current repository evidence and Founder direction. They are not a claim that the current repository already supports the Goods flow.
 
 ## 15. Control status
 
 ~~~text
 GOODS STRATEGIC POSITION          = FOURTH OPERATIONAL SCENARIO / DIRECTION CONFIRMED
-GOODS FIRST BUSINESS SLICE        = PROPOSED - SELLER-CONFIRMED MADE-TO-ORDER
+GOODS FIRST BUSINESS SLICE        = FOUNDER APPROVED / F01-F09 FROZEN
 GOODS OPERATIONAL INTEGRATION     = NOT INTEGRATED
 RECOMMENDATION                    = ONE SELLER / ONE OFFERING / ONE UNIT / SELLER-ARRANGED DELIVERY
 INVENTORY                         = NOT IN FIRST SLICE
@@ -479,9 +481,10 @@ PROGRAM                           = CURRENT IMPLEMENTATION PRESERVED
 PROJECT / RIGHT                   = NOT INTEGRATED
 PERSONAL HOMEPAGE POSITIONING     = FOUNDER APPROVED / FROZEN (DECISION 47)
 GOODS DISCOVERY                   = HOMEPAGE-FIRST / DETAIL SECONDARY / DIRECT LINK OPTIONAL
-FOUNDER DECISION CREATED HERE     = NO (SEPARATE DECISION 47 IS INCLUDED BY REFERENCE)
+FOUNDER DECISION                  = FD-PCI-GOODS-FIRST-SLICE-001 / DECISION 48
+FOUNDER DECISION CREATED HERE     = NO (SEPARATE DECISION 48 IS INCLUDED BY REFERENCE)
 CODE / API / SCHEMA / MIGRATION   = NONE
 PRODUCTION / PILOT                = NOT AUTHORIZED
 ~~~
 
-This package revision is complete for Main Controller review. The Personal Commercial Homepage direction is frozen separately in Decision 47. Goods implementation must not begin until the first business mode and the remaining material commercial rules above are separately accepted.
+This package revision is complete for Main Controller review. The Personal Commercial Homepage direction remains frozen in Decision 47, and the Goods First Slice business rules are frozen in Decision 48. Goods implementation must not begin without the separate PCI-PD-009 authorization.

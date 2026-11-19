@@ -11689,3 +11689,10 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - 独立 PostgreSQL 17.6 和正式 Production Compose 的数据库安装入口已通过空卷 44 份迁移、真实旧安装器创建的受信 43→44 升级、重复运行及同卷容器重启。0040 和 0043 注入失败后事务及 Journal 回滚，恢复成功。实质 SQL 篡改被拒绝，LF/CRLF 替换通过且无重放。
 - API 构建、13 项定向测试、44 份迁移完整性、变更 TypeScript 的 ESLint 与定向类型检查通过。SQL、Migration Journal、0041 信任谓词、权限代码及产品合同沿用已验收版本。本项为部署输入修复，产品行为与规范事件维持现行合同。
 - 完整命令、输入摘要、数据库状态及隔离资源清理记录见仓库外 `D:/codeSpace/PCI-ENG-026-evidence-20261119/PCI-ENG-026-Migration-Manifest-Reproducibility-Report.md`。本项完成后单独执行 PCI-WS-001。生产、外部 Pilot 和真实资金维持未授权状态。
+
+## PCI-DOC-006 — Goods First Slice Founder Decision
+
+- 2026-11-20：Founder 正式批准 `FD-PCI-GOODS-FIRST-SLICE-001`，冻结 F01-F09。正式决定见 [48 — Goods First Slice Founder Decision](../07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)，研究依据见 [PCI-PD-008 Goods Decision Package](./PCI-PD-008-Goods-Fourth-Operational-Scenario-Decision-Package.md)。
+- Goods First Slice 采用个人商业主页优先展示、单一个人卖家、单一 Offering、单件、按需准备、卖家确认接单和卖家自行安排交付。Order、Order Acceptance、Goods Commitment、Fulfillment、Delivery Confirmation 与 Payment 保持独立；线下结算不属于 PCI Payment，`REAL_MONEY_ENABLED = false`。
+- F01-F09 同时冻结无库存、无仓库、无补货、无 Marketplace、无物流平台、无真实支付，以及卖家 Offering 暂停和 Admin 场景暂停的存量保护规则。Goods 业务基线已批准，但 Goods 代码、API、Schema、Migration、Consumer、Creator、Admin 和个人主页代码仍未实施，状态继续为 `NOT INTEGRATED`。
+- 本条仅同步 Founder Decision、PD-008 状态、Control25 和项目入口；没有代码、API、数据库、Migration、前端、权限、安全或生产配置变化。后续 Goods 实施须由独立 PCI-PD-009 授权。

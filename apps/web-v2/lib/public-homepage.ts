@@ -39,4 +39,15 @@ export type PublicHomepage = {
   commerceReference: string;
   displayName: string;
   offerings: { id: string; title: string; description: string }[];
+  goodsOfferings?: {
+    id: string;
+    sellerId: string;
+    title: string;
+    description: string;
+    priceMinor: string;
+    currency: string;
+    fulfillmentDescription: string;
+    preparationDescription: string;
+    imageUrl?: string;
+  }[];
 };

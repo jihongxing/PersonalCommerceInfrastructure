@@ -60,3 +60,13 @@ export {
   servicePolicyReleases,
   servicePolicyTemplates,
 } from './service-policy.js';
+export {
+  goodsOfferings,
+  goodsOrders,
+  goodsOrderAcceptances,
+  goodsCommitments,
+  goodsDeliveries,
+  goodsBuyerReceipts,
+  goodsCancellationProposals,
+  goodsAudits,
+} from './goods.js';

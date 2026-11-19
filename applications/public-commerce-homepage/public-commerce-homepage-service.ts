@@ -30,6 +30,17 @@ export interface PublicHomepage {
     readonly title: string;
     readonly description: string;
   }[];
+  readonly goodsOfferings?: readonly {
+    readonly id: string;
+    readonly sellerId: string;
+    readonly title: string;
+    readonly description: string;
+    readonly priceMinor: string;
+    readonly currency: string;
+    readonly fulfillmentDescription: string;
+    readonly preparationDescription: string;
+    readonly imageUrl?: string;
+  }[];
 }
 
 /** Operations which change or disclose a homepage must enforce ownership and lifecycle atomically. */

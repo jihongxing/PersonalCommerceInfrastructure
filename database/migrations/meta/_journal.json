@@ -316,6 +316,13 @@
       "when": 1794777600004,
       "tag": "0044_program_first_slice",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1794777600005,
+      "tag": "0045_goods_first_slice",
+      "breakpoints": true
     }
   ]
 }

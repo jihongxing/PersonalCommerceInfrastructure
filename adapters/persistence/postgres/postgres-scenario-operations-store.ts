@@ -7,6 +7,7 @@ import type {
 import { operationsActionAudits } from '../../../database/schema/paid-commerce.js';
 import type { ProductDatabase } from './postgres-database.js';
 import { membershipIntakeLock } from './postgres-membership-store.js';
+import { goodsIntakeLock } from './postgres-goods-store.js';
 
 const targetType = 'commercial_scenario';
 const action = 'change_scenario_intake';
@@ -62,11 +63,10 @@ export class PostgresScenarioOperationsStore implements ScenarioOperationsStore 
   }
 
   public async append(record: ScenarioRevision, previousOpen: boolean): Promise<boolean> {
-    if (record.scenario === 'Membership') {
+    if (record.scenario === 'Membership' || record.scenario === 'Goods') {
+      const lock = record.scenario === 'Membership' ? membershipIntakeLock : goodsIntakeLock;
       return this.database.transaction(async (transaction) => {
-        await transaction.execute(
-          sql`SELECT pg_advisory_xact_lock(${membershipIntakeLock}::bigint)`,
-        );
+        await transaction.execute(sql`SELECT pg_advisory_xact_lock(${lock}::bigint)`);
         return this.insert(transaction, record, previousOpen);
       });
     }

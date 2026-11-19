@@ -142,6 +142,11 @@ import {
   type MembershipService,
 } from '../../../applications/membership/membership-service.js';
 import {
+  createGoodsService,
+  type GoodsService,
+} from '../../../applications/goods/goods-service.js';
+import { createPostgresGoodsStore } from './postgres-goods-store.js';
+import {
   createScenarioOperationsService,
   type ScenarioOperationsService,
 } from '../../../applications/operations-admin/scenario-operations.js';
@@ -225,6 +230,7 @@ export interface PostgresCreatorIdentityComposition {
   readonly scenarioOperationsService: ScenarioOperationsService;
   readonly membershipService?: MembershipService;
   readonly programService?: ProgramService;
+  readonly goodsService?: GoodsService;
   readonly servicePolicyAdminService: ServicePolicyAdminService;
   readonly operationsIdentityPersistence: PostgresOperationsIdentityComposition;
   readonly operationsFlowReadService: OperationsFlowReadService;
@@ -250,6 +256,7 @@ export function createPostgresCreatorIdentityComposition(
   logger?: SafeLogger,
   membershipEnabled = false,
   programEnabled = false,
+  goodsEnabled = false,
 ): PostgresCreatorIdentityComposition {
   const database = createPostgresDatabase(databaseConfiguration.databaseUrl);
   const operationsIdentityPersistence = createPostgresOperationsIdentityComposition(
@@ -293,6 +300,9 @@ export function createPostgresCreatorIdentityComposition(
   const operationsQueryRepository = new PostgresOperationsQueryRepository(database.client);
   const programService = programEnabled
     ? createProgramService(createPostgresProgramStore(database.client))
+    : undefined;
+  const goodsService = goodsEnabled
+    ? createGoodsService(createPostgresGoodsStore(database.client))
     : undefined;
   const operationsFlowReadService = createOperationsFlowReadService({
     queries: operationsQueryRepository,
@@ -607,6 +617,7 @@ export function createPostgresCreatorIdentityComposition(
       servicePolicyCatalogRepository,
       membershipEnabled,
       programEnabled,
+      goodsEnabled,
     ),
     ...(membershipEnabled
       ? {
@@ -616,6 +627,7 @@ export function createPostgresCreatorIdentityComposition(
         }
       : {}),
     ...(programService === undefined ? {} : { programService }),
+    ...(goodsService === undefined ? {} : { goodsService }),
     servicePolicyAdminService: createServicePolicyAdminService({
       repository: servicePolicyCatalogRepository,
     }),

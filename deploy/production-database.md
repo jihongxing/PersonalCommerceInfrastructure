@@ -113,6 +113,10 @@ not cancel existing runs, enrollments or committed session facts. The Creator BF
 Program data grants and continues to forward the server-side session to the API. The Operations
 runtime login does not receive access to Program offering, enrollment, attendance or audit tables.
 
+## Goods first slice (isolated non-production only)
+
+Leave GOODS_FIRST_SLICE_ENABLED=false unless running an authorized isolated verification. The explicit API opt-in registers the Goods Offering, one-unit order, seller decision, Commitment, delivery and buyer receipt paths together with the existing Admin Goods scenario policy. Goods intake starts paused; open or pause it through the authenticated Admin Scenarios screen. Offering pause preserves existing pending orders and the scenario pause blocks only new orders. This slice does not enable payment, refund, settlement, inventory, logistics or real money. The Creator BFF has no direct Goods data grants and continues to forward the server-side session to the API.
+
 ## Recovery and existing volumes
 
 ### Reproducible migration input (PCI-ENG-026)

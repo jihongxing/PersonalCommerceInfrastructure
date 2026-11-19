@@ -40,16 +40,20 @@ export function createScenarioOperationsService(
   catalog: Pick<ServicePolicyCatalogRepository, 'getSnapshot'>,
   membershipIntegrated = false,
   programIntegrated = false,
+  goodsIntegrated = false,
 ) {
   return {
     async list(context: ActorContext) {
       requireOperationsHumanPermission(context, 'catalog:read');
-      const [revision, policy, membershipHistory, programHistory] = await Promise.all([
-        store.latest('Service'),
-        catalog.getSnapshot(),
-        membershipIntegrated ? store.history?.('Membership') : undefined,
-        programIntegrated ? store.history?.('Program') : undefined,
-      ]);
+      const [revision, policy, membershipHistory, programHistory, goodsHistory] = await Promise.all(
+        [
+          store.latest('Service'),
+          catalog.getSnapshot(),
+          membershipIntegrated ? store.history?.('Membership') : undefined,
+          programIntegrated ? store.history?.('Program') : undefined,
+          goodsIntegrated ? store.history?.('Goods') : undefined,
+        ],
+      );
       const membership =
         membershipIntegrated && store.history === undefined
           ? await store.latest('Membership')
@@ -58,6 +62,10 @@ export function createScenarioOperationsService(
         programIntegrated && store.history === undefined
           ? await store.latest('Program')
           : programHistory?.[0];
+      const goods =
+        goodsIntegrated && store.history === undefined
+          ? await store.latest('Goods')
+          : goodsHistory?.[0];
       const canManage =
         context.actor.kind === 'operations_human' &&
         context.actor.permissions.includes('catalog:policy:activate');
@@ -92,7 +100,17 @@ export function createScenarioOperationsService(
                     ...(program === undefined ? {} : { lastChange: program }),
                     history: programHistory ?? [],
                   }
-              : { scenario, status: 'not_integrated' as const, canManage: false },
+                : scenario === 'Goods' && goodsIntegrated
+                  ? {
+                      scenario,
+                      status: goods?.open === true ? ('open' as const) : ('paused' as const),
+                      revision: goods?.revision ?? 0,
+                      activePolicyVersion: 'goods-first-slice-v1',
+                      canManage,
+                      ...(goods === undefined ? {} : { lastChange: goods }),
+                      history: goodsHistory ?? [],
+                    }
+                  : { scenario, status: 'not_integrated' as const, canManage: false },
         ),
       };
     },
@@ -107,7 +125,8 @@ export function createScenarioOperationsService(
         input.scenario !== 'Service' &&
         !(
           (membershipIntegrated && input.scenario === 'Membership') ||
-          (programIntegrated && input.scenario === 'Program')
+          (programIntegrated && input.scenario === 'Program') ||
+          (goodsIntegrated && input.scenario === 'Goods')
         )
       ) {
         throw new ApplicationError({

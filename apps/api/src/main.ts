@@ -27,6 +27,7 @@ import { loadTracingConfiguration, startTracing } from '../../../adapters/observ
 import { createApiServer } from './create-api-server.js';
 import { verifyMembershipPersistence } from '../../../adapters/persistence/postgres/postgres-membership-store.js';
 import { verifyProgramPersistence } from '../../../adapters/persistence/postgres/postgres-program-store.js';
+import { verifyGoodsPersistence } from '../../../adapters/persistence/postgres/postgres-goods-store.js';
 import { installGracefulShutdown, type ApiRuntime } from './runtime-lifecycle.js';
 import { startPasswordRecoveryWorker } from './password-recovery-worker.js';
 
@@ -122,12 +123,16 @@ export async function startApi(): Promise<ApiRuntime> {
             logger,
             process.env.MEMBERSHIP_FIRST_SLICE_ENABLED === 'true',
             process.env.PROGRAM_FIRST_SLICE_ENABLED === 'true',
+            process.env.GOODS_FIRST_SLICE_ENABLED === 'true',
           );
     if (composition?.membershipService !== undefined) {
       await verifyMembershipPersistence(composition.database.client);
     }
     if (composition?.programService !== undefined) {
       await verifyProgramPersistence(composition.database.client);
+    }
+    if (composition?.goodsService !== undefined) {
+      await verifyGoodsPersistence(composition.database.client);
     }
     server = await createApiServer(
       composition === undefined
@@ -187,6 +192,9 @@ export async function startApi(): Promise<ApiRuntime> {
             ...(composition.programService === undefined
               ? {}
               : { programService: composition.programService }),
+            ...(composition.goodsService === undefined
+              ? {}
+              : { goodsService: composition.goodsService }),
             providerWebhookRuntime: composition.providerWebhookRuntime,
             commercialPilotOperationsService: composition.commercialPilotOperationsService,
             reservationService: composition.reservationService,

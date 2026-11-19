@@ -11696,3 +11696,18 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - Goods First Slice 采用个人商业主页优先展示、单一个人卖家、单一 Offering、单件、按需准备、卖家确认接单和卖家自行安排交付。Order、Order Acceptance、Goods Commitment、Fulfillment、Delivery Confirmation 与 Payment 保持独立；线下结算不属于 PCI Payment，`REAL_MONEY_ENABLED = false`。
 - F01-F09 同时冻结无库存、无仓库、无补货、无 Marketplace、无物流平台、无真实支付，以及卖家 Offering 暂停和 Admin 场景暂停的存量保护规则。Goods 业务基线已批准，但 Goods 代码、API、Schema、Migration、Consumer、Creator、Admin 和个人主页代码仍未实施，状态继续为 `NOT INTEGRATED`。
 - 本条仅同步 Founder Decision、PD-008 状态、Control25 和项目入口；没有代码、API、数据库、Migration、前端、权限、安全或生产配置变化。后续 Goods 实施须由独立 PCI-PD-009 授权。
+
+## DEV-095 / PCI-PD-009 — Goods Fourth Operational Scenario Implementation
+
+> Date: 2026-11-20. Status: implementation complete — awaiting Main Controller acceptance.
+> Decision: [48 — Goods First Slice Founder Decision](../07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md), F01-F09. Change unit: PCI-PD-009.
+
+This bounded implementation adds the first Goods operational slice without changing the frozen Goods rules or the shared commercial conceptual baseline. A Creator can create, update, publish and pause an independent Goods Offering; a consumer can discover published Goods through the seller's Personal Commercial Homepage and can browse anonymously but must authenticate before submitting a one-unit order. Order, Order Acceptance, Goods Commitment, Delivery Confirmation, buyer receipt confirmation and seller cancellation proposal remain separate traceable facts. Price, currency and terms are snapshotted at order submission. No inventory, SKU, logistics platform, Marketplace, Payment, refund, settlement or real-money behavior is added.
+
+Operations can open or pause the Goods scenario through the existing Operations Human scenario-control path. Scenario pause blocks new orders while preserving pending orders and allowing accepted orders to continue. Offering pause has the same bounded continuity behavior. Goods API, persistence, migration 0045, runtime grants, homepage projection and Creator Web detail/order path are implemented behind GOODS_FIRST_SLICE_ENABLED=true; Goods remains disabled unless explicitly enabled.
+
+Focused evidence: Goods HTTP tests (including Admin scenario pause continuity), existing Service/Membership/Program/homepage regressions, migration contract and production migration policy tests, pnpm typecheck:api, pnpm build:api, web-v2 typecheck/build, touched-file lint/format checks, migration manifest check, and a disposable PostgreSQL 17 run applying migrations 0000 through 0045. The first empty database attempt reproduced the already-known Operations bootstrap prerequisite (operations_private must be provisioned before migration 0040); the same disposable database then completed the reviewed prerequisite bootstrap and all migrations. Persisted Goods order, acceptance, Commitment, delivery, receipt and cancellation facts were verified; the isolated database contained zero Payment rows and was removed after the run.
+
+The full pnpm check:openapi command remains not completed because its full build is blocked by the existing unrelated scripts/test/verify-operations-admin-browser.ts union typing errors, and the direct compatibility check reports the existing Operations Admin manifest drift. Neither failure is a Goods route failure; the Goods routes are conditionally registered only when the Goods service is enabled. REAL_MONEY_ENABLED=false; production deployment, external Pilot, remote push and master integration are not authorized by this implementation task.
+
+Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-009-Goods-Implementation-20261120/.

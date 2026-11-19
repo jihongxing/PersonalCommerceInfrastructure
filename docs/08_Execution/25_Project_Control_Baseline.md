@@ -1226,3 +1226,25 @@ REAL_MONEY_ENABLED = false
 ```
 
 本登记只同步 Founder Decision 和项目控制状态，不授权 Goods API、Schema、Migration、Consumer、Creator、Admin 或个人商业主页代码实施；后续实现须由独立 PCI-PD-009 授权。Conceptual Baseline 41、D01-D12、F01-F04、Decision 47 及既有场景决定保持不变。
+
+## 25. PCI-PD-009 — Goods Fourth Operational Scenario Implementation
+
+2026-11-20 登记；来源为 PCI-PD-009，业务基线为已冻结的 FD-PCI-GOODS-FIRST-SLICE-001（F01-F09）。本节是当前实现状态更新，不改写第 24 节对 PCI-DOC-006 的历史记录，也不修改 Decision 47、Decision 48、Conceptual Baseline 41、D01-D12 或 F01-F04。
+
+PCI-PD-009 在独立工作树和分支中完成首期 Goods 实现：Goods Offering 的 Creator 发布/修改/暂停、个人商业主页商品投影、匿名浏览和登录后单件下单、价格与条款快照、卖家接受/拒绝、Goods Commitment、交付确认、可选买家收货确认、卖家取消提议，以及既有 Operations Human 对 Goods 场景开放/暂停控制。Goods 与 Service、Membership、Program 保持独立领域语义；没有库存、SKU、物流平台、Marketplace、真实 Payment、退款、结算或真实资金路径。
+
+真实隔离 PostgreSQL 已按既有安装前置约定完成 0000–0045 迁移，并验证 Goods 持久化、Admin 场景暂停连续性、Offering 暂停连续性和零 Payment 行。迁移前置观察到空库直接运行 0040 时缺少 operations_private；该已知安装前置条件在一次性容器内按正式安装约定补齐后通过，未修改迁移或生产代码。
+
+GOODS = FOURTH OPERATIONAL SCENARIO / IMPLEMENTED ON PCI-PD-009 BRANCH
+GOODS ACCEPTANCE = AWAITING MAIN CONTROLLER ACCEPTANCE
+GOODS OPERATIONAL INTEGRATION = NOT YET IN MASTER
+SERVICE = FIRST OPERATIONAL SLICE INTEGRATED
+MEMBERSHIP = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
+PROGRAM = THIRD OPERATIONAL SLICE INTEGRATED
+PROJECT / RIGHT = NOT INTEGRATED
+PRODUCTION READINESS = NOT VERIFIED
+EXTERNAL PILOT = NOT AUTHORIZED
+PRODUCTION DEPLOYMENT = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+
+见仓库外 D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-009-Goods-Implementation-20261120/PCI-PD-009-Goods-Implementation-Report.md。本变更不合并 master，不 Push，不部署生产，不启动外部 Pilot，不启用真实资金。

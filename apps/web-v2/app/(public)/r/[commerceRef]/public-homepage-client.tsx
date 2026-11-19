@@ -115,6 +115,43 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
               </div>
             )}
           </section>
+          <section className="public-homepage-services mt-10" aria-labelledby="goods-heading">
+            <h2 id="goods-heading" className="text-xl font-semibold">
+              可购买的商品
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              商品由卖家按需准备；提交订单后等待卖家确认。
+            </p>
+            {!result.data.goodsOfferings || result.data.goodsOfferings.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">尚无商品</p>
+            ) : (
+              <div className="mt-4 divide-y border-y">
+                {result.data.goodsOfferings.map((offering) => (
+                  <article key={offering.id} className="public-homepage-service">
+                    <div className="min-w-0">
+                      <h3 className="font-medium break-words">{offering.title}</h3>
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                        {offering.description}
+                      </p>
+                      <p className="mt-2 text-sm font-medium">
+                        {offering.priceMinor} {offering.currency}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {offering.fulfillmentDescription}
+                      </p>
+                    </div>
+                    <Link
+                      className="public-service-link"
+                      href={`/goods/${encodeURIComponent(offering.id)}`}
+                      aria-label={`查看商品：${offering.title}`}
+                    >
+                      查看商品 <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
           <p className="mt-6 text-sm text-muted-foreground">
             C 号是公开定位标识，不作为身份凭证、资质认证或平台担保。
           </p>

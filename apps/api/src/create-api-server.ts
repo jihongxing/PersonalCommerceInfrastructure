@@ -79,6 +79,8 @@ import { registerMembershipRoutes } from '../../../adapters/transport/http/membe
 import type { MembershipService } from '../../../applications/membership/membership-service.js';
 import { registerProgramRoutes } from '../../../adapters/transport/http/program-routes.js';
 import type { ProgramService } from '../../../applications/program/program-service.js';
+import { registerGoodsRoutes } from '../../../adapters/transport/http/goods-routes.js';
+import type { GoodsService } from '../../../applications/goods/goods-service.js';
 import type { ServicePolicyAdminService } from '../../../applications/service-policy/service-policy-admin-service.js';
 import type { OperationsHumanAuthenticationRuntime } from '../../../applications/operations-identity/operations-human-authentication.js';
 import type { OperationsFlowReadService } from '../../../applications/operations-admin/operations-flow-read-service.js';
@@ -122,6 +124,7 @@ export interface ApiServerDependencies {
   readonly scenarioOperationsService?: ScenarioOperationsService;
   readonly membershipService?: MembershipService;
   readonly programService?: ProgramService;
+  readonly goodsService?: GoodsService;
   readonly operationsFlowReadService?: OperationsFlowReadService;
   readonly operationsQueryRepository?: OperationsQueryRepository;
 }
@@ -161,7 +164,8 @@ export async function createApiServer(
     dependencies.providerWebhookRuntime !== undefined ||
     dependencies.servicePolicyCatalogRepository !== undefined ||
     dependencies.servicePolicyAdminService !== undefined ||
-    dependencies.programService !== undefined;
+    dependencies.programService !== undefined ||
+    dependencies.goodsService !== undefined;
   const servicePolicyCatalogRepository =
     dependencies.servicePolicyCatalogRepository ?? composition.servicePolicyCatalogRepository;
   const servicePolicyAdminService =
@@ -306,6 +310,7 @@ export async function createApiServer(
           name: 'provider-webhook',
           description: 'Provider-neutral signed event receipt boundary.',
         },
+        { name: 'goods', description: 'Goods first-slice offerings and order facts.' },
       ],
     },
   });
@@ -432,6 +437,12 @@ export async function createApiServer(
       dependencies.programService,
       dependencies.authContextProvider ?? composition.authContextProvider,
     );
+  }
+  if (dependencies.goodsService !== undefined) {
+    registerGoodsRoutes(server, {
+      service: dependencies.goodsService,
+      authContextProvider: dependencies.authContextProvider ?? composition.authContextProvider,
+    });
   }
   registerOperationsFlowReadRoutes(server, {
     service:

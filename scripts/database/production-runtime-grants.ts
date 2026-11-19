@@ -15,6 +15,13 @@ GRANT SELECT, INSERT, UPDATE ON public.program_offerings, public.program_runs,
   TO pci_api_runtime;
 `;
 
+export const goodsRuntimeGrants = `
+GRANT SELECT, INSERT, UPDATE ON public.goods_offerings, public.goods_orders TO pci_api_runtime;
+GRANT SELECT, INSERT ON public.goods_order_acceptances, public.goods_commitments,
+  public.goods_deliveries, public.goods_buyer_receipts, public.goods_cancellation_proposals,
+  public.goods_audits TO pci_api_runtime;
+`;
+
 export const productionRuntimeGrants = `
 GRANT SELECT (id,email,password_hash,name,created_at,is_active), INSERT (id,email,password_hash,name), UPDATE (password_hash) ON public.local_auth_accounts TO pci_api_runtime;
 GRANT SELECT (account_id,creator_id), INSERT (account_id,creator_id) ON public.local_creator_mappings TO pci_api_runtime;
@@ -38,6 +45,7 @@ GRANT SELECT ON public.service_policy_releases, public.service_policy_capabiliti
   public.service_policy_templates, public.provider_fact_observations TO pci_api_runtime;
 ${membershipRuntimeGrants}
 ${programRuntimeGrants}
+${goodsRuntimeGrants}
 GRANT INSERT (identity_id,homepage_id,window_id,actor_account_id,action) ON public.public_commerce_homepage_version_audit TO pci_api_runtime;
 GRANT DELETE ON public.creator_capabilities TO pci_api_runtime;
 
@@ -58,6 +66,8 @@ GRANT UPDATE (availability_slot_id, state, confirmed_at, cancelled_at, cancelled
 GRANT UPDATE (state, current_scope_version_id, proposed_at, proposal_expires_at, accepted_at, accepted_by, contracted_at, order_id, rejected_at, cancelled_at, cancelled_by, updated_at) ON public.commercial_contracts TO pci_api_runtime;
 GRANT UPDATE (state, provider_reference, updated_at) ON public.paid_commerce_payments, public.paid_commerce_withdrawals TO pci_api_runtime;
 GRANT UPDATE (state, fulfilled_at) ON public.paid_commerce_fulfillments TO pci_api_runtime;
+GRANT UPDATE (revision, state, data, updated_at) ON public.goods_offerings TO pci_api_runtime;
+GRANT UPDATE (state, data, updated_at) ON public.goods_orders TO pci_api_runtime;
 
 GRANT SELECT (id_hash,account_id,user_email,access_token_ciphertext,refresh_token_ciphertext,refresh_token_hash,expires_at,revoked_at),
   INSERT (id_hash,account_id,user_email,access_token_ciphertext,refresh_token_ciphertext,refresh_token_hash,expires_at),

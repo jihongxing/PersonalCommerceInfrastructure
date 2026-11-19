@@ -616,12 +616,33 @@ export class PostgresPublicHomepageRepository
         JOIN commerce_identities ci ON ci.creator_id = o.creator_id
         WHERE o.creator_id = ${creatorId} AND o.state = 'published'
           AND o.policy_status = 'approved' AND ci.state = 'published'), '[]'::jsonb) AS offerings`;
+    const goodsOfferingRows = await tx<
+      {
+        goods_offerings: NonNullable<PublicHomepage['goodsOfferings']>;
+      }[]
+    >`
+      SELECT COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+        'id', g.id,
+        'sellerId', g.seller_id,
+        'title', g.data->'terms'->>'title',
+        'description', g.data->'terms'->>'description',
+        'priceMinor', g.data->'terms'->>'priceMinor',
+        'currency', g.data->'terms'->>'currency',
+        'fulfillmentDescription', g.data->'terms'->>'fulfillmentDescription',
+        'preparationDescription', g.data->'terms'->>'preparationDescription',
+        'imageUrl', g.data->'terms'->>'imageUrl'
+      )) ORDER BY g.created_at, g.id)
+      FROM goods_offerings g
+      JOIN commerce_identities ci ON ci.creator_id = g.seller_id
+      WHERE g.seller_id = ${creatorId} AND g.state = 'published' AND ci.state = 'published'),
+      '[]'::jsonb) AS goods_offerings`;
     return {
       creatorId,
       homepage: {
         commerceReference: row.commerce_reference,
         displayName: row.display_name,
         offerings: offeringRows[0]?.offerings ?? [],
+        goodsOfferings: goodsOfferingRows[0]?.goods_offerings ?? [],
       },
     };
   }

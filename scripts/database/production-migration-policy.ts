@@ -22,20 +22,27 @@ export const deploymentRoles = {
 export const phaseRanges = {
   foundation: [0, 40],
   activation: [40, 41],
-  finish: [41, 45],
+  finish: [41, 46],
 } as const;
 
 export type ProductionPhase = keyof typeof phaseRanges;
 export const membershipMigrationIndex = 43;
-export const previousFinalMigrationIndex = membershipMigrationIndex;
+export const programMigrationIndex = 44;
+export const goodsMigrationIndex = 45;
+export const previousFinalMigrationIndex = programMigrationIndex;
 export const previousFinalMigrationCount = previousFinalMigrationIndex + 1;
 
 export function supportsReadyMigrationCount(count: number, total: number): boolean {
-  return count === total || count === previousFinalMigrationIndex || count === previousFinalMigrationCount;
+  return (
+    count === total ||
+    count === membershipMigrationIndex ||
+    count === previousFinalMigrationIndex ||
+    count === previousFinalMigrationCount
+  );
 }
 
 const migrationFolder = 'database/migrations';
-const reviewedManifest = '308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1';
+const reviewedManifest = 'c18a68a9e8f3fbdb7ba7ce190b1b24675843beed0f9d55185bf4d0467b99bd25';
 const historicalCrlfMigrationCount = 43;
 
 export function productionMigrations(migrationsFolder = migrationFolder) {

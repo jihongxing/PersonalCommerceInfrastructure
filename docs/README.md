@@ -11,9 +11,9 @@
 > **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；Program 已批准为第三场景；优先级不是运营开放状态）
 > **Membership 首期**：[Founder 决定](./07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md) · [产品合同](./07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
 > **Program 首期**：[FD-PCI-PROGRAM-FIRST-SLICE-001](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md) · [执行规则补充](./07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)（第三运营场景已进入主线；Production Readiness 未验证）
-> **Goods 首期**：[FD-PCI-GOODS-FIRST-SLICE-001](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)（F01-F09 已批准；Goods 仍未接入运营）
+> **Goods 首期**：[FD-PCI-GOODS-FIRST-SLICE-001](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)（F01-F09 已批准；PCI-PD-009 独立分支已完成首期实现，等待验收，尚未进入 master）
 > **Membership 首期关闭状态**：[PCI-DOC-004](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)（IMPLEMENTATION COMPLETE / ACCEPTED；Production Readiness NOT VERIFIED）
-> 最近执行更新：2026-11-20（PCI-DOC-006 Goods First Slice Founder Decision）
+> 最近执行更新：2026-11-20（PCI-PD-009 Goods Fourth Operational Scenario Implementation）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -55,7 +55,7 @@ Identity / Commerce Profile Runtime 已有提交实现；仅具名 change units 
 ```text
 Service        = FIRST OPERATIONAL SLICE INTEGRATED
 Membership     = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
-Goods          = FOURTH SCENARIO / BUSINESS BASELINE APPROVED / NOT INTEGRATED
+Goods          = FOURTH SCENARIO / IMPLEMENTED ON PD-009 BRANCH / ACCEPTANCE PENDING
 Program        = THIRD OPERATIONAL SLICE INTEGRATED
 Project        = NOT INTEGRATED
 Right          = NOT INTEGRATED
@@ -65,7 +65,7 @@ Production Deployment = NOT AUTHORIZED
 REAL_MONEY_ENABLED    = false
 ```
 
-Admin 对六类供给的展示不表示六类场景均已开放；Goods、Project、Right 仍无已接入的实际运营业务路径。
+Admin 对六类供给的展示不表示六类场景均已开放；Goods 已在 PD-009 独立分支实现首期后端控制和主页展示，但尚未合并 master 或获得生产授权；Project、Right 仍未接入实际运营业务路径。
 
 当前产品状态：
 
@@ -220,7 +220,7 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
 - [PCI-DOC-004 — Membership First Slice Closure](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)：记录 Membership 第二运营场景的实施完成、集成验收、主线状态和 Production Readiness 边界。
 - [PCI-DOC-005 — Program First Slice Founder Decision](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)：记录 Program 第三个运营场景及其首期业务基线。
 - [PCI-PD-007 — Program Third Operational Scenario Implementation](./07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)：记录五项执行规则补充及第三运营场景实现状态；Production Readiness 仍未验证。
-- [PCI-DOC-006 — Goods First Slice Founder Decision](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)：记录 Goods 第四场景 F01-F09 业务基线；不表示 Goods 已接入运营或已开始实施。
+- [PCI-DOC-006 — Goods First Slice Founder Decision](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)：记录 Goods 第四场景 F01-F09 业务基线；PCI-PD-009 在独立分支完成首期实现，等待 Main Controller 验收。
 
 ### 工程治理
 

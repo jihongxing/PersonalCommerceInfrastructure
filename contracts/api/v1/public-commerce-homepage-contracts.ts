@@ -37,6 +37,24 @@ export const PublicHomepageSchema = Type.Object(
         { additionalProperties: false },
       ),
     ),
+    goodsOfferings: Type.Optional(
+      Type.Array(
+        Type.Object(
+          {
+            id: Type.String(),
+            sellerId: Type.String(),
+            title: Type.String(),
+            description: Type.String(),
+            priceMinor: Type.String({ pattern: '^\\d+$' }),
+            currency: Type.String({ pattern: '^[A-Z]{3}$' }),
+            fulfillmentDescription: Type.String(),
+            preparationDescription: Type.String(),
+            imageUrl: Type.Optional(Type.String()),
+          },
+          { additionalProperties: false },
+        ),
+      ),
+    ),
   },
   { additionalProperties: false },
 );

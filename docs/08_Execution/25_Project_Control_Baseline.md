@@ -1162,3 +1162,23 @@ FOUNDER DECISIONS = AWAITING WHERE REQUIRED
 ## 21. FD-PCI-MEMBERSHIP-FIRST-SLICE-001 — Membership First Slice
 
 2026-11-18 登记；来源为 Founder 指令 PCI-PD-004 §A1。状态：**FOUNDER APPROVED / FROZEN**。正式决定见 [43 — Membership First Slice Founder Decision](../07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md)，实施边界见 [44 — Product Contract](../07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)。仅批准本轮免费、固定期、线下核验的切片，不修改先前决定或开启生产运营。
+
+## 22. PCI-DOC-004 — Membership First Slice Closure
+
+2026-11-19 登记；来源为 Founder 批准的 PCI-DOC-004。该登记同步已验收实现与集成状态，不修改 Founder Decision 或产品合同。
+
+```text
+MEMBERSHIP FIRST SLICE IMPLEMENTATION = COMPLETED
+MEMBERSHIP FIRST SLICE ACCEPTANCE = ACCEPTED
+PCI-PD-004 = CLOSED
+PCI-PD-005 = INTEGRATION ACCEPTED
+MEMBERSHIP PRODUCTION READINESS = NOT VERIFIED
+SERVICE = FIRST OPERATIONAL SLICE INTEGRATED
+MEMBERSHIP = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
+GOODS / PROGRAM / PROJECT / RIGHT = NOT INTEGRATED
+EXTERNAL PILOT = NOT AUTHORIZED
+PRODUCTION DEPLOYMENT = NOT AUTHORIZED
+REAL_MONEY_ENABLED = false
+```
+
+当前 Membership 首期范围、语义边界、验收依据和未验证项见 [PCI-DOC-004 Closure](PCI-DOC-004-Membership-First-Slice-Closure.md)。本状态不表示生产准入、真实身份服务接入、生产 TLS、真实外部运营或真实资金已完成。

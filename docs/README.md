@@ -10,7 +10,8 @@
 > **开发任务总清单**：[24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
 > **场景进入战略**：[FD-PCI-SCENARIO-SEQUENCING-001](./07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md)（Service 之后优先 Membership；优先级不是运营开放状态）
 > **Membership 首期**：[Founder 决定](./07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md) · [产品合同](./07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
-> 最近执行更新：2026-11-12（PCI-ENG-015-B-R2 持久化完整性与验证闭合）
+> **Membership 首期关闭状态**：[PCI-DOC-004](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)（IMPLEMENTATION COMPLETE / ACCEPTED；Production Readiness NOT VERIFIED）
+> 最近执行更新：2026-11-19（PCI-DOC-004 Membership First Slice closure）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -46,6 +47,23 @@ Real Money                         Disabled
 Native App                         Deferred
 Identity / Commerce Profile Runtime 已有提交实现；仅具名 change units 可在原范围内继续核验
 ```
+
+当前运营场景交付状态（PCI-DOC-004，2026-11-19）：
+
+```text
+Service        = FIRST OPERATIONAL SLICE INTEGRATED
+Membership     = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
+Goods          = NOT INTEGRATED
+Program        = NOT INTEGRATED
+Project        = NOT INTEGRATED
+Right          = NOT INTEGRATED
+Production Readiness  = NOT VERIFIED
+External Pilot        = NOT AUTHORIZED
+Production Deployment = NOT AUTHORIZED
+REAL_MONEY_ENABLED    = false
+```
+
+Admin 对六类供给的展示不表示六类场景均已开放；Goods、Program、Project、Right 仍无已接入的实际运营业务路径。
 
 当前产品状态：
 
@@ -196,6 +214,8 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
 
 24. [24 — 项目开发任务总清单](./08_Execution/24_Development_Backlog.md)
     用简体中文汇总 M1–M9、VS-01 / VS-02、Stage 2、Private Self-Service、Stage 3–5、OV-001、Real Money 和工程治理任务；标注状态、依赖、验收和授权边界。本清单仍待 Founder / Main Control 接受。
+
+- [PCI-DOC-004 — Membership First Slice Closure](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)：记录 Membership 第二运营场景的实施完成、集成验收、主线状态和 Production Readiness 边界。
 
 ### 工程治理
 

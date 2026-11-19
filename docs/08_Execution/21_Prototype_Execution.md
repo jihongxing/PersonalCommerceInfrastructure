@@ -11660,6 +11660,13 @@ by this change. No frozen Founder Decision or VS-01 domain contract is rewritten
 - 2026-11-19 验证：B6 十七项在独立 PostgreSQL 17.6、API、Creator BFF、Admin BFF 上通过。空卷 44 份迁移、43 行检查点恢复、受信 PD-003 43→44 升级、安装器再次运行及 API 重启均有隔离证据；Migration 0041 不变。Service 暂停、存量请求确认/结果和恢复通过。
 - 见仓库外 `PCI-PD-004-Membership-First-Slice-Delivery-Report.md`。实地核证由合成身份及操作者声明代表；到期用一次性数据构造边界，真实 API 以数据库时间判断。未做生产 TLS、外部 Pilot 或真实资金验证。
 
+## PCI-DOC-004 — Membership First Slice closure and mainline status
+
+- 2026-11-19：Founder 已批准关闭 Membership First Slice 实施任务。当前正式状态为 `IMPLEMENTATION COMPLETED / ACCEPTED`；`PCI-PD-004 = CLOSED`，`PCI-PD-005 = INTEGRATION ACCEPTED`。详见 [PCI-DOC-004 Closure](./PCI-DOC-004-Membership-First-Slice-Closure.md)。
+- 本条是当前状态同步；前面的 PCI-PD-004 待裁决段落保留为历史记录，不再代表当前 Membership 状态。Membership 是第二个已接入并验收的运营场景，Service 是第一个；Goods、Program、Project、Right 继续 `NOT INTEGRATED`。
+- Implementation Completion 与 Production Readiness 明确分离：Membership Production Readiness = `NOT VERIFIED`；External Pilot、Production Deployment 均 `NOT AUTHORIZED`；`REAL_MONEY_ENABLED = false`。合成身份、真实身份服务、生产 TLS 和真实外部运营环境仍未验证。
+- 本次仅同步文档状态，不改变业务代码、Founder Decisions、D01–D12、Conceptual Baseline 41、Schema、Migration、API、权限、安全策略或生产配置。
+
 ## PCI-ENG-026 — Migration Manifest Reproducibility
 
 - 2026-11-19，基于 PD-005 已验收提交 `4e9bb688bd2c80a1fefd9e2340a378a5dc8b5d3f` 修复生产迁移输入换行表示。执行 SQL 统一为 LF，仅接受 CRLF/LF 差异。历史 0000–0042 CRLF、0043 LF 的 Journal 身份及既有 reviewed manifest 保持。

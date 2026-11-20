@@ -121,3 +121,80 @@ pnpm test:deployment
   16 个字符，不得进入客户端构建、日志、截图或 Git；
 - 不写入镜像、Compose 文件、日志、截图或 Git；
 - 日志必须继续遵守 Safe Logger 脱敏规则。
+
+## 9. PCI-ENG-029 Isolated Full Recovery Validation
+
+The existing plain-SQL `backup-postgres.ps1` and `restore-postgres.ps1` procedures do not include
+cluster globals. For a complete isolated recovery drill, use the task-scoped scripts below. This
+procedure was added under the 2026-11-21 PCI-ENG-029 authorization and is not a production
+deployment authorization.
+
+### 9.1 Prerequisites
+
+- Use only a task-controlled non-production PostgreSQL 17 source and a separate clean target.
+- Bind any temporary host port to loopback only; do not connect to production or shared databases.
+- Generate task-local credentials at runtime and never commit them, the backup artifacts or resolved
+  environment files.
+- Provision the source with the existing database-installation contract: required restricted
+  Operations roles and the `operations_api` / `operations_private` schemas must exist before
+  migrations 0040+. The plain `db:migrate` command does not create those pristine-database
+  prerequisites by itself.
+- Confirm the target database name is new and includes `integration` when using the existing
+  `db:integration:check` gate.
+
+### 9.2 Full backup
+
+```powershell
+./scripts/operations/backup-postgres-full.ps1 `
+  -ContainerName pci-eng-029-source `
+  -OutputDirectory ./output/pci-eng-029/recovery `
+  -DatabaseName personal_commerce_integration `
+  -DatabaseAdminUser pci_eng029_source_admin
+```
+
+The output contains `database.dump` in PostgreSQL custom format, `globals.sql` from
+`pg_dumpall --globals-only`, and `manifest.json` with SHA-256 hashes and non-secret database
+metadata. The globals artifact is required for roles and role memberships; the custom dump retains
+object ownership and database objects.
+
+### 9.3 Clean-target restore
+
+```powershell
+./scripts/operations/restore-postgres-full.ps1 `
+  -ContainerName pci-eng-029-target `
+  -InputDirectory ./output/pci-eng-029/recovery `
+  -DatabaseName personal_commerce_integration_restore `
+  -DatabaseAdminUser pci_eng029_restore_admin
+```
+
+The restore refuses the source database name, verifies artifact hashes before copying, restores
+globals before creating the target database, restores without `--no-owner`, reapplies captured
+database ACL entries, and removes the target database on a failed attempt when it was created by
+the script. Because PostgreSQL cluster-global role creation is not transactional with database
+creation, retry a failed restore only against a fresh target container or after independently
+removing any roles created by the failed globals step.
+
+### 9.4 Post-restore verification
+
+```powershell
+./scripts/operations/verify-postgres-recovery.ps1 `
+  -SourceContainerName pci-eng-029-source `
+  -SourceDatabaseName personal_commerce_integration `
+  -SourceDatabaseUser pci_eng029_source_admin `
+  -TargetContainerName pci-eng-029-target `
+  -TargetDatabaseName personal_commerce_integration_restore `
+  -TargetDatabaseUser pci_eng029_restore_admin
+```
+
+The comparison covers PostgreSQL version, database owner and ACLs, extensions, role definitions
+and password-presence metadata, role memberships, schema and relation owners/ACLs, function ACLs,
+column structure, migration Journal rows and table row counts. The existing
+`PCI_INTEGRATION_DATABASE=1 pnpm db:integration:check` gate and a direct connection as the
+restricted runtime role are separate required checks; neither is implied by the comparison script.
+
+### 9.5 Limitations
+
+This procedure validates an isolated local recovery only. It does not verify production storage,
+secret management, external backup durability, TLS, monitoring, RPO/RTO, a production cloud
+provider, external Pilot or real-money operations. Failure of any check is recorded as `BLOCKED`,
+not relabeled as `PASS`.

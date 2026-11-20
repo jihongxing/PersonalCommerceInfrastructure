@@ -11757,3 +11757,19 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 `pnpm typecheck:core`、`pnpm test:contracts`、`pnpm check:openapi`、冻结安装、三个应用宿主机构建、迁移清单和 Compose 配置检查通过。全仓格式仍有 88 个既有问题；定向 lint 有两条既有二维码测试断言错误，治理 Preflight 仍受既有环境读取规则阻断。恢复演练、生产机密与外部入口未核实，不宣称生产就绪。证据和容器检查的实际结果见 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-ENG-028-Engineering-Quality-Gates-and-Deployment-Readiness-20261120/`。
 
 正式 `master`、PD-010 历史研究环境和冻结决定保持不变。保留 ENG-028 分支与 Worktree 待验收；无合并、Push、生产部署或外部 Pilot。Goods 默认关闭、`REAL_MONEY_ENABLED=false`，Project 和 Right 继续搁置。
+
+## PCI-ENG-029 — PostgreSQL Backup, Restore & Recovery Validation
+
+2026-11-21：Main Controller 授权启动新的工程恢复验证任务。授权来源、任务范围和非目标见 [PCI-ENG-029 PostgreSQL Backup, Restore & Recovery Validation](../09_Engineering_Governance/PCI-ENG-029-PostgreSQL-Backup-Restore-Recovery-Validation.md)。本条不是旧 Founder Decision，不扩大产品、身份、支付或生产授权。
+
+任务使用独立 Worktree `D:/codeSpace/PersonalCommerceInfrastructure-PCI-ENG-029` 和分支
+`codex/pci-eng-029-postgres-backup-restore-recovery-validation`，基线为正式 `master`
+`ce954a799e141b2e5c0a5b6e8747b520e8ffa1ea`。目标是使用 PostgreSQL custom-format dump 与
+`pg_dumpall --globals-only` 完成非生产隔离源库到干净目标库的恢复验证，并核对角色、所有权、
+权限、扩展、Migration Journal、数据和现有运行时边界。
+
+最终状态：`COMPLETED — RECOVERY VALIDATED / AWAITING MAIN CONTROLLER ACCEPTANCE`。
+源库到独立干净目标库的 PostgreSQL 17.10 恢复演练已完成；custom dump、cluster globals、角色、
+所有权、ACL、扩展、Migration Journal、schema、数据行数和受限 API Runtime 连接均有独立证据。
+证据归档于 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-ENG-029-PostgreSQL-Backup-Restore-Recovery-Validation-20261121/`。
+不执行生产部署、外部 Pilot、真实资金操作、生产数据连接或 RPO/RTO 承诺；`REAL_MONEY_ENABLED=false`。

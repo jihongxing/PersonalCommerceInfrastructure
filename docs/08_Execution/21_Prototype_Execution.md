@@ -11735,3 +11735,15 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 范围：Program Decision 45 F02–F03、F05–F08 与 Decision 46 E01–E05；独立于 VS-01，不新增其 FR 或 Canonical Event。补齐 Creator 审批、独立场次交付、逐人出席/缺席及结束确认。新增受保护的场次交付写入，扩充提供方读取；复用既有 Program Session、Attendance、Completion 与 audit 持久化。保留现有逐人确认与整期结束同一事务、相反出席结果冲突保护及匿名字段白名单。不更改冻结规则或历史事实。
 
 实测：Creator 通过本地登录进入自有 Run，经既有 BFF、Fastify 和隔离 PostgreSQL 在暂停期间批准两份申请、拒绝一份；随后独立记录开展、取消、出席、缺席、整期结束和两种完成结果。复核跨提供方拒绝、重复写入、相反事实冲突、历史重读及匿名字段隔离。联测发现并修复 Program 写入的 JSONB 双重编码；读取兼容历史 JSON 字符串，不回填、不批量改写历史行。定向回归 21 项通过；API 与 Creator Web 构建通过；迁移无变更，隔离库 journal 为 46 条。既有 `typecheck:core` Operations 类型错误未处理，完整 `check:openapi` 未执行。证据追加在原 PD-012 归档，待 Main Controller 最终验收；master 不变。
+
+## PCI-ENG-027 — Repository Root Organization & Deployment Readiness
+
+2026-11-20：在正式 `master` `1a78e14dbe2566445c50369de2f80570e8afb9e1`（Tree `b1f57222ffcee975f84800a8a7631b20f42f4234`）基础上创建独立 Worktree `D:/codeSpace/PersonalCommerceInfrastructure-PCI-ENG-027` 和分支 `codex/pci-eng-027-root-cleanup`。正式 Worktree 保持未修改；PD-010 Project 研究 Worktree、分支和历史证据保留。
+
+本次仅做根目录治理和部署准备度检查。确认 `lib/` 是 2026-11-07 至 2026-11-08 认证/邮件实现遗留的根级 TypeScript 辅助代码：`auth/token-service.ts`、`auth/password-reset-service.ts`、`email/email-service.ts`。它被根目录历史认证测试和 `tsconfig.historical*.json` 纳入；旧认证适配器也有静态相对引用，但当前 API/Core 构建配置明确排除这些旧适配器文件，三个活动应用的 TypeScript 文件清单不纳入根 `lib/`。没有证据证明它可安全删除或迁移，因此保留原位，不改变运行时语义。
+
+根目录清理仅修正已失效的 `format` / `format:check` 中不存在的 `design-system` 路径；补充本地场景开关和 Creator/Admin BFF 变量模板；补强生成物、测试产物和部署测试环境文件的 Git/Docker 忽略规则；更新根 README 的活动应用、目录职责、安装/构建/运行、数据库和部署入口说明。未删除、迁移或覆盖任何历史证据、用户本地未跟踪资料、活动应用或其他 Worktree。
+
+验证：`pnpm install --frozen-lockfile` 通过；API、Creator Web、Admin Web 构建通过；API `/health`、Creator `/auth/login`、Admin `/login` 本地启动烟测通过；三个现有 Dockerfile 的 API 镜像构建和 production/external-pilot Compose config 校验通过；根 `lib/` 认证/邮件定向测试 108 项通过；迁移清单检查通过；`git diff --check` 和变更文件格式检查通过。既有 `pnpm typecheck:core` Operations union `.body` 错误仍存在；契约测试仍暴露既有 Operations 路由清单漂移；`pnpm check:design-tokens` 因仓库中已不存在的 `design-system/tokens/design-tokens.json` 阻断；这些问题未在本任务扩大修复。完整报告见 `docs/09_Engineering_Governance/PCI-ENG-027-Repository-Root-and-Deployment-Readiness.md`。
+
+状态：`COMPLETED — REPOSITORY ROOT CLEANUP AND DEPLOYMENT READINESS REVIEW / AWAITING MAIN CONTROLLER ACCEPTANCE`。未执行 Push、生产部署、外部 Pilot、Goods 开放或真实资金；`REAL_MONEY_ENABLED=false`；Project、Right 继续搁置。

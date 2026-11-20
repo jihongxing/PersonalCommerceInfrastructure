@@ -5,6 +5,7 @@ coverage/
 .next-*/
 output/playwright/
 output/backups/
+/output/m9-*.env
 apps/web-v2/playwright-report/
 apps/web-v2/test-results/
 tests/historical/retired-reference-client/browser/fixtures/auth-state.json

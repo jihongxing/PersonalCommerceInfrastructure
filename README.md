@@ -1,6 +1,25 @@
 # Personal Commerce Infrastructure
 
-**为被平台封禁的 Creator 提供永不失效的商业身份**
+PCI 是个人商业主页（Personal Commercial Homepage）。消费者可以在个人主页发现经营者已发布且可见的商业供给，不必先收到单项分享链接。当前维护范围为 **Service、Membership、Program、Goods**；Goods 默认关闭，**Project 和 Right 已搁置**。产品定位见 [Decision 47](docs/07_Product_Architecture/47_Personal_Commercial_Homepage_Founder_Decision.md)，执行范围见 [Decision 49](docs/07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)。
+
+## 仓库导航
+
+| 位置 | 职责 |
+| --- | --- |
+| `apps/api/` | 共享 Fastify API、认证、业务编排入口、健康检查和 OpenAPI。 |
+| `apps/web-v2/` | Creator Web：个人主页、消费者入口和经营工作台；Creator BFF 在服务端处理会话。 |
+| `apps/admin-web/` | 独立 Operations Admin Web 和 Admin BFF；通过 API 工作，不直连数据库。 |
+| `applications/`、`modules/`、`domain/` | 应用用例、领域模块、仍在使用的履约码模型。 |
+| `adapters/`、`contracts/`、`database/` | HTTP/认证/持久化适配器、API 契约、Schema、迁移与种子。 |
+| `lib/` | 旧认证与邮件辅助源码，保留给历史编译范围及根测试；不是三应用的共享运行时。 |
+| `scripts/`、`tests/`、`deploy/`、`.github/` | 维护与验证、测试、现有容器入口、CI。 |
+| `docs/`、`artifacts/`、`stitch/`、`output/` | 正式文档、历史截图及工具、设计原型、历史截图及被忽略的本地输出。不是应用部署入口。 |
+
+`apps/prototype/` 不是第四个应用；API 和数据库工具仍消费其中的配置/组装代码。
+包管理、Workspace、TypeScript、测试、代码规范及构建上下文配置保留在根目录。
+完整盘点及验证限制见 [PCI-ENG-027 报告](docs/09_Engineering_Governance/PCI-ENG-027-Repository-Root-and-Deployment-Readiness.md)。
+
+## 历史交付背景
 
 当前仓库已完成 VS-01 Product Proof、VS-02A Provider-neutral Money Domain、VS-02B Provider
 Integration Readiness 和 VS-02E Local Commercial Simulation。VS-02C 微信支付 Adapter 仅完成本地
@@ -56,8 +75,7 @@ PCI-ENG-012 已落实 Founder 的三应用架构：`apps/api` 为共享后端，
 Creator Web，`apps/admin-web` 为独立 Operations Admin Web。`apps/web` 和 `apps/api-mock`
 已退休并移出活动工作区，不再开发。当前实现事实不等于生产批准。
 
-Admin 仅有七个导航页面、加载、错误和不可用状态；身份验证与业务流程尚未接入，不读取
-运营数据、不提供管理操作。架构和权限边界见
+Admin 最初以七页导航壳交付；当前独立 BFF 已接入受控 Operations 登录及管理入口。架构来源见
 [121 — Operations Admin Web Architecture](docs/09_Engineering_Governance/121_Operations_Admin_Web_Architecture.md)。
 Operations Human/Machine 领域合同见
 [122 — Operations Identity Domain Contract](docs/09_Engineering_Governance/122_Operations_Identity_Domain_Contract.md)；纯领域合同不接入认证或 Admin API。
@@ -103,8 +121,12 @@ PCI-ENG-007 的 [活动测试类型基线](docs/09_Engineering_Governance/118_Ac
 ### 工作台本地启动
 
 工作台前端位于 `apps/web-v2`，后端使用 `apps/api` 和 PostgreSQL。以下示例使用 PowerShell，
-需要 Node.js 22、pnpm 和已启动的 PostgreSQL；请根据本机情况设置数据库地址，并使用随机生成的
-至少 32 字节的 `JWT_SECRET`。迁移会修改所指定的数据库，已有数据库请先审查迁移历史。
+在仓库根使用 Node.js 22 和 `package.json` 固定的 pnpm `10.22.0`，先运行
+`pnpm install --frozen-lockfile`。使用隔离的 PostgreSQL（已有容器基线为 PostgreSQL 17）。
+`.env.example` 解释本地变量；以下 API/迁移命令从进程环境读取值，不会自动导入根 `.env`。
+先确认数据库目标和迁移历史；空库需要先满足 Operations bootstrap 的 `operations_private`
+前置条件（迁移 `0040`），不要把普通 `db:migrate` 当作生产安装器。数据库角色和受控初始化见
+[数据库准备](deploy/production-database.md)。
 
 ```powershell
 $env:DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/personal_commerce'
@@ -113,50 +135,59 @@ $env:OPERATIONS_ACCESS_TOKEN = '<至少 16 字符的随机令牌>'
 $env:OPERATIONS_OPERATOR_ID = 'local-operator'
 $env:API_PORT = '8080'
 $env:WEB_REFERENCE_CLIENT_ORIGIN = 'http://localhost:3000'
+$env:REAL_MONEY_ENABLED = 'false'
+$env:GOODS_FIRST_SLICE_ENABLED = 'false'
 pnpm db:migrate
 pnpm dev:api
 ```
 
-另开一个 PowerShell 窗口启动前端：
+另开一个 PowerShell 窗口启动 Creator Web。在该进程设置 Creator BFF 的服务端
+`CREATOR_BFF_DATABASE_URL` 和至少 32 字节的 `CREATOR_BFF_SESSION_SECRET`（本地可分别回退到
+`DATABASE_URL` 和 `JWT_SECRET`）。需要 BFF 注销时，API 与 Creator BFF 配置相同的独立
+`CREATOR_BFF_REVOCATION_SECRET`。不要用 `NEXT_PUBLIC_` 传递任何秘密。
 
 ```powershell
 $env:NEXT_PUBLIC_API_BASE_URL = 'http://localhost:8080'
-pnpm --dir apps/web-v2 exec next dev -p 3000
+pnpm dev:creator-web
 ```
 
 打开 `http://localhost:3000/dashboard`。Supabase 和 mock 中的既有账号不会自动迁移到自建认证；
 当前自建认证已包含密码找回 API 和前端流程。没有邮件 Provider 时，系统报告 delivery unavailable，
 不把本地实现解释为外部邮件交付或生产验收。
 
+另开一个 PowerShell 窗口启动 Admin Web（页面可以独立启动；联通的 Operations 流程仍需适当初始化与授权）：
+
 ```powershell
-pnpm install
-pnpm dev
-pnpm dev:api
-pnpm dev:creator-web
-pnpm build:creator-web
-pnpm typecheck:creator-web
+$env:ADMIN_API_ORIGIN = 'http://localhost:8080'
+$env:ADMIN_WEB_ORIGIN = 'http://127.0.0.1:3002'
 pnpm dev:admin-web
-pnpm build:admin-web
-pnpm typecheck:admin-web
-pnpm lint:admin-web
-pnpm test:admin-web
-pnpm verify:admin-web
-pnpm build:api
-pnpm typecheck:api
-pnpm test:domain
-pnpm test:contracts
-pnpm test:acceptance
-pnpm test:acceptance:browser
-pnpm preflight
 ```
 
-`pnpm preflight` 依次执行工程治理检查、格式检查、Lint、类型检查、测试、服务端构建、
-OpenAPI 兼容检查、Creator 类型和构建，以及 Admin lint/类型/冒烟/构建与安全检查。
-浏览器门禁现指向既有 Creator Playwright 配置，需要安装浏览器和受控 API fixture；
-不再启动退休 Reference Client，也不代表旧 AT 已迁移。全仓库门禁历史问题仍保留。
+分别构建三个应用：
+
+```powershell
+pnpm build:api
+pnpm build:creator-web
+pnpm build:admin-web
+```
+
+已构建的 API 用 `pnpm start:api`，两个 Web 应用分别用 `pnpm --filter web-v2 start`
+和 `pnpm --filter admin-web start`。`pnpm test:contracts`、`pnpm test:creator-web` 和
+`pnpm test:admin-web` 是相应应用的定向验证入口；`pnpm test:acceptance:browser` 需要浏览器和受控 API fixture。
 `dev:web` / `build:web` / `web:typecheck` 是 Creator 兼容别名；默认 `dev` / `start` 指向 API。
-Admin 在 `http://127.0.0.1:3002` 启动，不需要业务凭据；`verify:admin-web` 用虚构服务端
-密钥标记构建并检查浏览器产物，不连接数据库。
+`verify:admin-web` 用虚构服务端密钥标记构建并检查浏览器产物，不连接数据库。
+
+### 部署入口与限制
+
+现有 [Compose 配置](deploy/compose.production.yml) 使用仓库根作为三个镜像的构建上下文。API 和
+Creator Web 独立构建；Admin 通过 `operations-admin` profile 独立构建和启用。运行依赖专用
+PostgreSQL、迁移与角色授予、服务端身份/会话配置；真实环境还需要正确配置 HTTPS 和对外 Origin。
+邮件仅在启用密码恢复交付时需要邮件 Provider。部署模板为 `deploy/.env.production.example`；已有卷由
+[受控安装器说明](deploy/production-database.md)约束，不使用通用 `pnpm db:migrate` 代替部署门禁。
+
+本地构建与 Compose 配置可用性不等于生产就绪。`pnpm typecheck:core` 的既有 Operations 类型错误、
+完整 `pnpm check:openapi` 的未闭合状态，以及 `pnpm preflight` 中缺少历史设计令牌输入均不在本次补修范围。
+不授权生产部署、外部 Pilot、Goods 开放或真实资金；`REAL_MONEY_ENABLED=false`。
 
 开发 API 以 `APP_ENV=development` 启动时，需要 `DATABASE_URL`、`JWT_SECRET` 和上述运营认证配置。
 

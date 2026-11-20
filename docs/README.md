@@ -18,6 +18,8 @@
 > 最近执行更新：2026-11-20（PCI-PD-012 Four-Scenario Focus）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
+> 根目录治理与部署准备度：[PCI-ENG-027 报告](./09_Engineering_Governance/PCI-ENG-027-Repository-Root-and-Deployment-Readiness.md)（结构整理完成；生产部署仍未授权）
+
 ```text
 PROJECT_CONTROL_MODE = CONTROLLED_RECOVERY
 FORMAL_RESUME_GATE = NOT_FULLY_CLOSED

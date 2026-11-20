@@ -30,17 +30,21 @@ export const ProgramSessionSchema = Type.Object({
   reason: Type.Optional(Type.String({ maxLength: 500 })),
 }, { additionalProperties: false });
 export const ProgramApplicationSchema = Type.Object({}, { additionalProperties: false });
+export const ProgramSessionDeliverySchema = Type.Object({
+  status: Type.Union([Type.Literal('held'), Type.Literal('cancelled')]),
+}, { additionalProperties: false });
 export const ProgramAttendanceSchema = Type.Object({
   entries: Type.Array(Type.Object({ enrollmentId: id, status: Type.Union([Type.Literal('attended'), Type.Literal('absent')]) }, { additionalProperties: false }), { minItems: 1 }),
 }, { additionalProperties: false });
 export const ProgramCancelSchema = Type.Object({ reason: Type.String({ minLength: 1, maxLength: 500 }) }, { additionalProperties: false });
 export const ProgramCompletionSchema = Type.Object({
-  entries: Type.Array(Type.Object({ enrollmentId: id, completed: Type.Boolean(), reason: Type.String({ minLength: 1, maxLength: 500 }) }, { additionalProperties: false }), { minItems: 1 }),
+  entries: Type.Array(Type.Object({ enrollmentId: id, completed: Type.Boolean(), reason: Type.String({ minLength: 1, maxLength: 500 }) }, { additionalProperties: false })),
 }, { additionalProperties: false });
 
 export type ProgramOfferingTermsBody = Static<typeof ProgramOfferingTermsSchema>;
 export type ProgramRunCreateBody = Static<typeof ProgramRunCreateSchema>;
 export type ProgramSessionBody = Static<typeof ProgramSessionSchema>;
+export type ProgramSessionDeliveryBody = Static<typeof ProgramSessionDeliverySchema>;
 export type ProgramAttendanceBody = Static<typeof ProgramAttendanceSchema>;
 export type ProgramCancelBody = Static<typeof ProgramCancelSchema>;
 export type ProgramCompletionBody = Static<typeof ProgramCompletionSchema>;

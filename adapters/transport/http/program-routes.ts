@@ -13,6 +13,7 @@ import {
   ProgramPublishOfferingSchema,
   ProgramRunCreateSchema,
   ProgramSessionParameters,
+  ProgramSessionDeliverySchema,
   ProgramSessionSchema,
   type ProgramAttendanceBody,
   type ProgramCancelBody,
@@ -20,6 +21,7 @@ import {
   type ProgramOfferingTermsBody,
   type ProgramRunCreateBody,
   type ProgramSessionBody,
+  type ProgramSessionDeliveryBody,
 } from '../../../contracts/api/v1/program-contracts.js';
 import { extractBearerToken } from '../../auth/transport/bearer-token.js';
 
@@ -70,7 +72,14 @@ export function registerProgramRoutes(server: FastifyInstance, service: ProgramS
   server.post<{ Params: ApplicationId }>(`${creatorPath}/applications/:applicationId/reject`, { schema: { operationId: 'rejectCreatorProgramApplication', params: ProgramApplicationParameters } }, async (request) => { const actor = await provider(request); return service.rejectApplication(actor.providerId, request.params.applicationId, actor.actorAccountId, request.id); });
   server.post<{ Params: Id; Body: ProgramSessionBody }>(`${creatorPath}/runs/:id/sessions`, { schema: { operationId: 'createCreatorProgramSession', params: ProgramIdParameters, body: ProgramSessionSchema } }, async (request, reply) => reply.code(201).send(await service.addSession((await provider(request)).providerId, request.params.id, request.body, request.id)));
   server.patch<{ Params: SessionId; Body: ProgramSessionBody }>(`${creatorPath}/sessions/:sessionId`, { schema: { operationId: 'changeCreatorProgramSession', params: ProgramSessionParameters, body: ProgramSessionSchema } }, async (request) => service.changeSession((await provider(request)).providerId, request.params.sessionId, request.body, request.id));
-  server.post<{ Params: SessionId; Body: ProgramAttendanceBody }>(`${creatorPath}/sessions/:sessionId/attendance`, { schema: { operationId: 'recordCreatorProgramAttendance', params: ProgramSessionParameters, body: ProgramAttendanceSchema } }, async (request) => service.recordAttendance((await provider(request)).providerId, request.params.sessionId, request.body.entries, request.id));
+  server.post<{ Params: SessionId; Body: ProgramSessionDeliveryBody }>(`${creatorPath}/sessions/:sessionId/delivery`, { schema: { operationId: 'recordCreatorProgramSessionDelivery', params: ProgramSessionParameters, body: ProgramSessionDeliverySchema } }, async (request) => {
+    const actor = await provider(request);
+    return service.recordSessionDelivery(actor.providerId, request.params.sessionId, request.body.status, actor.actorAccountId, request.id);
+  });
+  server.post<{ Params: SessionId; Body: ProgramAttendanceBody }>(`${creatorPath}/sessions/:sessionId/attendance`, { schema: { operationId: 'recordCreatorProgramAttendance', params: ProgramSessionParameters, body: ProgramAttendanceSchema } }, async (request) => {
+    const actor = await provider(request);
+    return service.recordAttendance(actor.providerId, request.params.sessionId, request.body.entries, request.id, actor.actorAccountId);
+  });
   server.get<{ Params: Id }>(`${creatorPath}/runs/:id/attendance`, { schema: { operationId: 'listCreatorProgramAttendance', params: ProgramIdParameters } }, async (request) => service.runAttendance((await provider(request)).providerId, request.params.id));
   server.post<{ Params: Id; Body: ProgramCancelBody }>(`${creatorPath}/runs/:id/cancel`, { schema: { operationId: 'cancelCreatorProgramRun', params: ProgramIdParameters, body: ProgramCancelSchema } }, async (request) => service.cancelRun((await provider(request)).providerId, request.params.id, request.body.reason, request.id));
   server.post<{ Params: Id; Body: ProgramCompletionBody }>(`${creatorPath}/runs/:id/complete`, { schema: { operationId: 'completeCreatorProgramRun', params: ProgramIdParameters, body: ProgramCompletionSchema } }, async (request) => { const actor = await provider(request); return service.completeRun(actor.providerId, request.params.id, request.body.entries, actor.actorAccountId, request.id); });

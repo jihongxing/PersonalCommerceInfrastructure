@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, describe, expect, it } from 'vitest';
 import { chromium, expect as expectBrowser } from '@playwright/test';
+import postgres from 'postgres';
 import { createPostgresCreatorIdentityComposition } from '../../adapters/persistence/postgres/postgres-creator-identity-composition.js';
 import { createPostgresDatabase } from '../../adapters/persistence/postgres/postgres-database.js';
 import { createPostgresGoodsStore } from '../../adapters/persistence/postgres/postgres-goods-store.js';
@@ -402,4 +403,40 @@ describe.skipIf(!databaseUrl)('Four-scenario public homepage with PostgreSQL', (
       await changeIntake('Goods', false);
     }
   }, 180_000);
+
+  it('keeps repeated Program writes as JSON objects and reads legacy encoded Run history', async () => {
+    const sessionSql = postgres(databaseUrl, { max: 1 });
+    const program = createProgramService(createPostgresProgramStore(sessionSql));
+    const providerId = `delivery-${randomUUID()}`;
+    const schedule = {
+      scheduledStart: '2000-01-01T09:00:00.000Z',
+      scheduledEnd: '2000-01-01T10:00:00.000Z',
+      location: 'Studio A',
+    };
+    try {
+      const offering = await program.createOffering(providerId, { title: 'Program', description: 'Offline workshop', location: schedule.location });
+      await program.publishOffering(providerId, offering.id, offering.revision);
+      const run = await program.createRun(providerId, { offeringId: offering.id, startsAt: schedule.scheduledStart, endsAt: schedule.scheduledEnd, location: schedule.location, capacity: 1 });
+      const held = await program.addSession(providerId, run.id, schedule, 'session-held');
+      const cancelled = await program.addSession(providerId, run.id, schedule, 'session-cancelled');
+      await program.publishRun(providerId, run.id);
+      await sessionSql`UPDATE program_runs SET data = to_jsonb(data::text) WHERE id = ${run.id}`;
+      const [current] = await program.providerRuns(providerId);
+      expect(current).toMatchObject({ id: run.id, status: 'published' });
+
+      const retries = await Promise.all([
+        program.recordSessionDelivery(providerId, held.id, 'held', providerId, 'held-first'),
+        program.recordSessionDelivery(providerId, held.id, 'held', providerId, 'held-retry'),
+      ]);
+      expect(retries[0]).toEqual(retries[1]);
+      await program.recordSessionDelivery(providerId, cancelled.id, 'cancelled', providerId, 'cancelled');
+      expect(await sessionSql`SELECT jsonb_typeof(data) AS kind FROM program_sessions WHERE run_id = ${run.id}`).toEqual([{ kind: 'object' }, { kind: 'object' }]);
+      expect(await sessionSql`SELECT jsonb_typeof(after_state) AS kind FROM program_audits WHERE target_id = ${held.id} AND action = 'record_program_session_delivery'`).toEqual([{ kind: 'object' }]);
+      expect(await program.providerRuns(providerId)).toMatchObject([{ sessions: [{ status: 'held' }, { status: 'cancelled' }], attendance: [], completions: [] }]);
+      await program.completeRun(providerId, run.id, [], providerId, 'end');
+      expect(await sessionSql`SELECT jsonb_typeof(data) AS kind FROM program_runs WHERE id = ${run.id}`).toEqual([{ kind: 'object' }]);
+    } finally {
+      await sessionSql.end();
+    }
+  });
 });

@@ -18,6 +18,7 @@ describe('Program HTTP business paths', () => {
       programService: service,
       authContextProvider: new InMemoryAuthContextProvider([
         { accessToken: 'program-creator-token', actor: { kind: 'creator', creatorId: 'provider-a' } },
+        { accessToken: 'other-creator-token', actor: { kind: 'creator', creatorId: 'provider-b' } },
         { accessToken: 'program-customer-token', actor: { kind: 'customer', customerId: 'customer-a' } },
       ]),
     });
@@ -41,6 +42,8 @@ describe('Program HTTP business paths', () => {
     const applicationResponse = await api.inject({ method: 'POST', url: `/api/v1/private/program/runs/${run.id}/applications`, headers: customer, payload: {} });
     expect(applicationResponse.statusCode).toBe(201);
     const application = applicationResponse.json<{ id: string }>();
+    const outsider = { authorization: 'Bearer other-creator-token' };
+    expect((await api.inject({ method: 'POST', url: `/api/v1/creator/program/applications/${application.id}/approve`, headers: outsider })).statusCode).toBe(404);
     const approvalResponse = await api.inject({ method: 'POST', url: `/api/v1/creator/program/applications/${application.id}/approve`, headers: creator });
     expect(approvalResponse.statusCode).toBe(200);
     const enrollment = approvalResponse.json<{ id: string }>();
@@ -65,5 +68,20 @@ describe('Program HTTP business paths', () => {
     expect((await api.inject({ method: 'GET', url: `/api/v1/public/program-runs/${run.id}` })).json()).toMatchObject({ acceptsApplications: false });
     const attendance = await api.inject({ method: 'POST', url: `/api/v1/creator/program/sessions/${session.id}/attendance`, headers: creator, payload: { entries: [{ enrollmentId: enrollment.id, status: 'attended' }] } });
     expect(attendance.statusCode).toBe(200);
+    const privateRun = async () => (await api.inject({ url: '/api/v1/creator/program/runs', headers: creator })).json<unknown[]>()[0];
+    expect(await privateRun()).toMatchObject({ sessions: [{ status: 'planned' }], attendance: [{ status: 'attended' }], completions: [] });
+    const deliveryPath = `/api/v1/creator/program/sessions/${session.id}/delivery`;
+    expect((await api.inject({ method: 'POST', url: deliveryPath, headers: outsider, payload: { status: 'held' } })).statusCode).toBe(404);
+    expect((await api.inject({ method: 'POST', url: deliveryPath, headers: creator, payload: { status: 'planned' } })).statusCode).toBe(400);
+    const held = await api.inject({ method: 'POST', url: deliveryPath, headers: creator, payload: { status: 'held' } });
+    expect(held.statusCode).toBe(200);
+    expect(held.json()).toMatchObject({ status: 'held', delivery: { actorId: 'provider-a', recordedAt: '2026-12-01T08:00:00.000Z' } });
+    expect((await api.inject({ method: 'POST', url: deliveryPath, headers: creator, payload: { status: 'held' } })).json()).toEqual(held.json());
+    expect((await api.inject({ method: 'POST', url: deliveryPath, headers: creator, payload: { status: 'cancelled' } })).statusCode).toBe(409);
+    expect(await privateRun()).toMatchObject({ status: 'published', sessions: [{ status: 'held' }], attendance: [{ status: 'attended' }], completions: [] });
+    const participantHistory = (await api.inject({ url: '/api/v1/private/program/enrollments', headers: customer })).json<{ sessions: object[] }[]>();
+    expect(participantHistory[0]?.sessions[0]).toMatchObject({ status: 'held' });
+    expect(participantHistory[0]?.sessions[0]).not.toHaveProperty('delivery');
+    expect((await api.inject(`/api/v1/public/program-runs/${run.id}`)).json()).toEqual({ ...expectedPublicRun, acceptsApplications: false });
   });
 });

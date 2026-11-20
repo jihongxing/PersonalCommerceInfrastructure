@@ -55,6 +55,7 @@ export interface ProgramSession {
   scheduledEnd: string;
   location: string;
   status: ProgramSessionStatus;
+  delivery?: { recordedAt: string; actorId: string; actorAccountId: string; correlationId: string };
   changes: ProgramSessionChange[];
 }
 
@@ -340,7 +341,13 @@ export function createProgramService(store: ProgramStore) {
     myEnrollments(accountId: string) {
       return store.transact(async (transaction) => {
         const enrollments = await transaction.enrollmentsForAccount(accountId);
-        return Promise.all(enrollments.map(async (enrollment) => ({ ...enrollment, sessions: await transaction.sessions(enrollment.runId), completion: await transaction.completion(enrollment.id) })));
+        return Promise.all(enrollments.map(async (enrollment) => ({
+          ...enrollment,
+          sessions: (await transaction.sessions(enrollment.runId)).map(({ id, runId, sequence, scheduledStart, scheduledEnd, location, status, changes }) => ({
+            id, runId, sequence, scheduledStart, scheduledEnd, location, status, changes,
+          })),
+          completion: await transaction.completion(enrollment.id),
+        })));
       });
     },
     apply(accountId: string, runId: string, correlationId: string) {
@@ -384,6 +391,7 @@ export function createProgramService(store: ProgramStore) {
         const application = await transaction.application(applicationId);
         if (application === undefined) notFound('Program application not found.');
         const run = await ownedRun(transaction, application.runId, providerId);
+        requirePublishedRun(run);
         if (application.status !== 'pending') fail('conflict', 'program_application_already_decided', 'This application has already been decided.');
         const now = await transaction.now();
         const updatedApplication = { ...application, status: 'approved' as const, decidedAt: now };
@@ -398,7 +406,7 @@ export function createProgramService(store: ProgramStore) {
       return store.transact(async (transaction) => {
         const application = await transaction.application(applicationId);
         if (application === undefined) notFound('Program application not found.');
-        await ownedRun(transaction, application.runId, providerId);
+        requirePublishedRun(await ownedRun(transaction, application.runId, providerId));
         if (application.status !== 'pending') fail('conflict', 'program_application_already_decided', 'This application has already been decided.');
         const now = await transaction.now();
         const updated = { ...application, status: 'rejected' as const, decidedAt: now };
@@ -454,24 +462,44 @@ export function createProgramService(store: ProgramStore) {
         return updated;
       });
     },
-    recordAttendance(providerId: string, sessionId: string, entries: readonly { enrollmentId: string; status: ProgramAttendanceStatus }[], correlationId: string) {
+    recordSessionDelivery(providerId: string, sessionId: string, status: Exclude<ProgramSessionStatus, 'planned'>, actorAccountId: string, correlationId: string) {
       return store.transact(async (transaction) => {
         const session = await transaction.session(sessionId);
         if (session === undefined) notFound('Program session not found.');
-        await ownedRun(transaction, session.runId, providerId);
+        const run = await ownedRun(transaction, session.runId, providerId);
+        if (session.status === status) return session;
+        requirePublishedRun(run);
+        if (session.status !== 'planned') fail('conflict', 'program_session_delivery_conflict', 'A different session outcome is already recorded.');
+        const now = await transaction.now();
+        const updated = { ...session, status, delivery: { recordedAt: now, actorId: providerId, actorAccountId, correlationId } };
+        await transaction.saveSession(updated);
+        await transaction.audit(auditContext('program_session', session.id, 'record_program_session_delivery', providerId, correlationId, now, session, updated, 'Program session outcome recorded', actorAccountId));
+        return updated;
+      });
+    },
+    recordAttendance(providerId: string, sessionId: string, entries: readonly { enrollmentId: string; status: ProgramAttendanceStatus }[], correlationId: string, actorAccountId = providerId) {
+      return store.transact(async (transaction) => {
+        const session = await transaction.session(sessionId);
+        if (session === undefined) notFound('Program session not found.');
+        requirePublishedRun(await ownedRun(transaction, session.runId, providerId));
+        requireInput(session.status !== 'cancelled', 'program_session_cancelled', 'Cannot record attendance for a cancelled session.');
         const now = await transaction.now();
         const enrollments = await transaction.enrollments(session.runId);
         const allowed = new Set(enrollments.filter((item) => item.status === 'confirmed').map((item) => item.id));
         const result: ProgramAttendance[] = [];
+        const recorded: ProgramAttendance[] = [];
         for (const entry of entries) {
           requireInput(allowed.has(entry.enrollmentId), 'program_enrollment_not_found', 'Enrollment is not part of this Program run.');
           const existing = await transaction.attendance(session.id, entry.enrollmentId);
           if (existing !== undefined && existing.status !== entry.status) fail('conflict', 'program_attendance_conflict', 'Attendance already has a different recorded status.');
           const attendance = existing ?? { id: randomUUID(), sessionId: session.id, enrollmentId: entry.enrollmentId, status: entry.status, recordedAt: now, actorId: providerId, correlationId };
-          await transaction.saveAttendance(attendance);
+          if (existing === undefined) {
+            await transaction.saveAttendance(attendance);
+            recorded.push(attendance);
+          }
           result.push(attendance);
         }
-        await transaction.audit(auditContext('program_session', session.id, 'record_program_attendance', providerId, correlationId, now, {}, { entries: result }, 'Program attendance recorded', providerId));
+        if (recorded.length > 0) await transaction.audit(auditContext('program_session', session.id, 'record_program_attendance', providerId, correlationId, now, {}, { entries: recorded }, 'Program attendance recorded', actorAccountId));
         return result;
       });
     },
@@ -496,7 +524,7 @@ export function createProgramService(store: ProgramStore) {
         requireInput(run.status === 'published', 'program_run_not_completable', 'Only a published Program run can be completed.');
         const sessions = await transaction.sessions(runId);
         const now = await transaction.now();
-        requireInput(Date.parse(now) >= Date.parse(sessions.reduce((latest, item) => item.scheduledEnd > latest ? item.scheduledEnd : latest, run.endsAt)), 'program_run_not_finished', 'The final Program session has not ended.');
+        requireInput(Date.parse(now) >= completionOpensAt(run, sessions), 'program_run_not_finished', 'The final Program session has not ended.');
         const enrollments = (await transaction.enrollments(runId)).filter(
           (item) => item.status === 'confirmed',
         );
@@ -510,6 +538,7 @@ export function createProgramService(store: ProgramStore) {
           if (existing !== undefined) { completions.push(existing); continue; }
           const completion: ProgramCompletion = { id: randomUUID(), enrollmentId: enrollment.id, completed: entry.completed, reason: entry.reason.trim(), recordedAt: now, actorId: providerId, correlationId };
           await transaction.saveCompletion(completion);
+          await transaction.audit(auditContext('program_enrollment', enrollment.id, 'record_program_completion', providerId, correlationId, now, {}, completion, completion.reason, actorAccountId));
           completions.push(completion);
         }
         const updated = { ...run, status: 'completed' as const, completedAt: now };
@@ -525,6 +554,14 @@ async function ownedRun(transaction: ProgramTransaction, runId: string, provider
   const run = await transaction.run(runId, true);
   if (run?.providerId !== providerId) notFound('Program run not found.');
   return run;
+}
+
+function requirePublishedRun(run: ProgramRun): void {
+  if (run.status !== 'published') fail('conflict', 'program_run_not_active', 'This action requires a published Program run.');
+}
+
+function completionOpensAt(run: ProgramRun, sessions: ProgramSession[]): number {
+  return Math.max(Date.parse(run.endsAt), ...sessions.map((session) => Date.parse(session.scheduledEnd)));
 }
 
 async function publicRunView(
@@ -554,7 +591,9 @@ async function hydrateRun(transaction: ProgramTransaction, run: ProgramRun) {
   const applications = await transaction.applications(run.id);
   const enrollments = await transaction.enrollments(run.id);
   const occupancy = enrollments.filter((item) => item.status === 'confirmed').length + applications.filter((item) => item.status === 'pending').length;
-  return { ...run, sessions, applications, enrollments, occupancy, remainingCapacity: Math.max(0, run.capacity - occupancy) };
+  const attendance = await transaction.attendances(run.id);
+  const completions = await transaction.completions(run.id);
+  return { ...run, sessions, applications, enrollments, attendance, completions, completionOpensAt: new Date(completionOpensAt(run, sessions)).toISOString(), occupancy, remainingCapacity: Math.max(0, run.capacity - occupancy) };
 }
 
 async function occupiedCount(transaction: ProgramTransaction, runId: string): Promise<number> {

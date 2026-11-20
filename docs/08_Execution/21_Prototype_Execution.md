@@ -11729,3 +11729,9 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 范围：Decision 47、VS-01 `FR-005` / `FR-010` / `FR-023`、Membership Decision 43 / Contract 44、Program Decisions 45–46、Goods Decision 48。主页缺少 Membership 和 Program 入口，且 Service、Goods 的投影未反映场景暂停；Program 两个公开读取复用了包含消费者申请、Enrollment 和内部场次变更信息的运营读取。仅按现有发布、时间、名额、场景开放和身份归属条件修复公开投影；Program 公开详情只返回浏览、排期和报名入口所需字段。主页 API 新字段是可选增量；Program 公开读取不再返回私人及运营字段，其授权读取不变。不修改业务合同、写入流程、状态、事件、角色、Schema、Migration 或开关默认值。
 
 交付：从同一个 C 号主页可发现并打开四类业务详情。Membership 与 Program 详情采用已有的流式加载模式，Program 面向消费者区分加载失败、不可达、暂不开放和提交成功。隔离 PostgreSQL、Fastify、Creator BFF 与 Chromium 实测四类发现和详情；隔离库验证状态过滤、Program 末席并发、Membership 到期及暂停连续性、Goods 存量订单交付、Payment 记录为零。API 和 Creator Web 构建通过。既有 Core 类型错误仍阻断完整 OpenAPI 检查；Program 独立 Session Delivery 写入及 Creator 审批/参与记录界面仍待收口，不以已有 Attendance 验证代替。证据见仓库外 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-012-Four-Scenario-Focus-20261120/`。保留任务分支及 Worktree 待验收，不合并 master。
+
+### DEV-097 — PCI-PD-012-A Program 经营者履约收口
+
+范围：Program Decision 45 F02–F03、F05–F08 与 Decision 46 E01–E05；独立于 VS-01，不新增其 FR 或 Canonical Event。补齐 Creator 审批、独立场次交付、逐人出席/缺席及结束确认。新增受保护的场次交付写入，扩充提供方读取；复用既有 Program Session、Attendance、Completion 与 audit 持久化。保留现有逐人确认与整期结束同一事务、相反出席结果冲突保护及匿名字段白名单。不更改冻结规则或历史事实。
+
+实测：Creator 通过本地登录进入自有 Run，经既有 BFF、Fastify 和隔离 PostgreSQL 在暂停期间批准两份申请、拒绝一份；随后独立记录开展、取消、出席、缺席、整期结束和两种完成结果。复核跨提供方拒绝、重复写入、相反事实冲突、历史重读及匿名字段隔离。联测发现并修复 Program 写入的 JSONB 双重编码；读取兼容历史 JSON 字符串，不回填、不批量改写历史行。定向回归 21 项通过；API 与 Creator Web 构建通过；迁移无变更，隔离库 journal 为 46 条。既有 `typecheck:core` Operations 类型错误未处理，完整 `check:openapi` 未执行。证据追加在原 PD-012 归档，待 Main Controller 最终验收；master 不变。

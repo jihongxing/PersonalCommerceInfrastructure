@@ -51,9 +51,16 @@ describe('Program first slice', () => {
     const changed = await service.changeSession('provider-a', session.id, { scheduledStart: '2026-12-11T09:00:00.000Z', scheduledEnd: '2026-12-11T10:00:00.000Z', location: 'Hall D', reason: 'Venue maintenance' }, 'change-c');
     expect(changed.changes).toHaveLength(1);
     await service.publishRun('provider-a', run.id);
+    const pending = await service.apply('account-c', run.id, 'apply-cancelled-run');
+    await service.recordSessionDelivery('provider-a', session.id, 'cancelled', 'provider-account', 'cancel-session');
     const cancelled = await service.cancelRun('provider-a', run.id, 'Venue unavailable', 'cancel-c');
     expect(cancelled.status).toBe('cancelled');
-    expect((await service.providerRuns('provider-a'))[0]?.sessions[0]?.changes).toHaveLength(1);
+    await expect(service.approveApplication('provider-a', pending.id, 'provider-account', 'approve-cancelled-run')).rejects.toMatchObject({ code: 'program_run_not_active' });
+    await expect(service.rejectApplication('provider-a', pending.id, 'provider-account', 'reject-cancelled-run')).rejects.toMatchObject({ code: 'program_run_not_active' });
+    await expect(service.completeRun('provider-a', run.id, [], 'provider-account', 'complete-cancelled-run')).rejects.toMatchObject({ code: 'program_run_not_completable' });
+    const history = (await service.providerRuns('provider-a'))[0];
+    expect(history?.sessions[0]?.changes).toHaveLength(1);
+    expect(history).toMatchObject({ status: 'cancelled', sessions: [{ status: 'cancelled', delivery: { actorAccountId: 'provider-account' } }], applications: [{ id: pending.id, status: 'pending' }], attendance: [], completions: [] });
   });
 
   it('allows a run to complete after a confirmed participant withdraws', async () => {
@@ -73,8 +80,11 @@ describe('Program first slice', () => {
     current = '2026-12-10T13:00:00.000Z';
     await service.withdrawEnrollment('account-a', enrollmentA.id, 'withdraw-d-a');
     await service.recordAttendance('provider-a', session.id, [{ enrollmentId: enrollmentB.id, status: 'attended' }], 'attendance-d');
+    await expect(service.recordAttendance('provider-a', session.id, [{ enrollmentId: enrollmentB.id, status: 'absent' }], 'attendance-conflict')).rejects.toMatchObject({ code: 'program_attendance_conflict' });
+    expect((await service.providerRuns('provider-a'))[0]).toMatchObject({ status: 'published', sessions: [{ status: 'planned' }], completions: [] });
     const result = await service.completeRun('provider-a', run.id, [{ enrollmentId: enrollmentB.id, completed: true, reason: 'Completed the cohort.' }], 'provider-account', 'complete-d');
     expect(result.run.status).toBe('completed');
     expect(result.completions).toHaveLength(1);
+    expect((await service.providerRuns('provider-a'))[0]).toMatchObject({ status: 'completed', sessions: [{ status: 'planned' }], attendance: [{ status: 'attended' }], completions: [{ completed: true }] });
   });
 });

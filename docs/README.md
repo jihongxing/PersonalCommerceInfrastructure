@@ -227,6 +227,7 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
 - [PCI-DOC-006 — Goods First Slice Founder Decision](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)：记录 Goods 第四场景 F01-F09 业务基线；已验收实现由 PCI-PD-009-I 快进至主线。
 - [PCI-PD-011 — Right Sixth Commercial Scenario Research](./08_Execution/PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)：已接收的历史研究；首期候选和待裁决项未批准。
 - [PCI-PD-012 — 四场景聚焦](./07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)：保留四个已集成场景，正式搁置 Project、Right。
+- [PCI-PD-012-A — Program 经营者履约收口](./08_Execution/21_Prototype_Execution.md#dev-097--pci-pd-012-a-program-经营者履约收口)：补齐审批、场次交付、逐人出缺席与结束确认，待 Main Controller 验收。
 
 ### 工程治理
 

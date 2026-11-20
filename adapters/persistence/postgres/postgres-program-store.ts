@@ -14,7 +14,11 @@ import type {
 export const programIntakeLock = 71017214;
 
 interface DataRow<Data> {
-  data: Data;
+  data: Data | string;
+}
+
+function readProgramData<Data>(row: DataRow<Data>): Data {
+  return typeof row.data === 'string' ? (JSON.parse(row.data) as Data) : row.data;
 }
 
 export async function verifyProgramPersistence(sql: Sql): Promise<void> {
@@ -52,105 +56,105 @@ function transactionPort(sql: TransactionSql): ProgramTransaction {
     },
     async offering(id) {
       const [row] = await sql<DataRow<ProgramOffering>[]>`SELECT data FROM public.program_offerings WHERE id=${id}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async offerings(providerId) {
-      return (await sql<DataRow<ProgramOffering>[]>`SELECT data FROM public.program_offerings WHERE provider_id=${providerId} ORDER BY id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramOffering>[]>`SELECT data FROM public.program_offerings WHERE provider_id=${providerId} ORDER BY id`).map(readProgramData);
     },
     async saveOffering(offering) {
-      await sql`INSERT INTO public.program_offerings (id, provider_id, data) VALUES (${offering.id}, ${offering.providerId}, ${JSON.stringify(offering)}::jsonb)
+      await sql`INSERT INTO public.program_offerings (id, provider_id, data) VALUES (${offering.id}, ${offering.providerId}, ${JSON.stringify(offering)}::text::jsonb)
         ON CONFLICT (id) DO UPDATE SET data=excluded.data, provider_id=excluded.provider_id`;
     },
     async run(id, lock = false) {
       const rows = lock
         ? await sql<DataRow<ProgramRun>[]>`SELECT data FROM public.program_runs WHERE id=${id} FOR UPDATE`
         : await sql<DataRow<ProgramRun>[]>`SELECT data FROM public.program_runs WHERE id=${id}`;
-      return rows[0]?.data;
+      return rows[0] && readProgramData(rows[0]);
     },
     async runs(providerId) {
       const rows = providerId === undefined
         ? await sql<DataRow<ProgramRun>[]>`SELECT data FROM public.program_runs ORDER BY created_at, id`
         : await sql<DataRow<ProgramRun>[]>`SELECT data FROM public.program_runs WHERE provider_id=${providerId} ORDER BY created_at, id`;
-      return rows.map((row) => row.data);
+      return rows.map(readProgramData);
     },
     async saveRun(run) {
       await sql`INSERT INTO public.program_runs (id, offering_id, provider_id, status, starts_at, ends_at, capacity, created_at, data)
-        VALUES (${run.id}, ${run.offeringId}, ${run.providerId}, ${run.status}, ${run.startsAt}, ${run.endsAt}, ${run.capacity}, ${run.createdAt}, ${JSON.stringify(run)}::jsonb)
+        VALUES (${run.id}, ${run.offeringId}, ${run.providerId}, ${run.status}, ${run.startsAt}, ${run.endsAt}, ${run.capacity}, ${run.createdAt}, ${JSON.stringify(run)}::text::jsonb)
         ON CONFLICT (id) DO UPDATE SET status=excluded.status, starts_at=excluded.starts_at, ends_at=excluded.ends_at, capacity=excluded.capacity, data=excluded.data`;
     },
     async sessions(runId) {
-      return (await sql<DataRow<ProgramSession>[]>`SELECT data FROM public.program_sessions WHERE run_id=${runId} ORDER BY sequence, id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramSession>[]>`SELECT data FROM public.program_sessions WHERE run_id=${runId} ORDER BY sequence, id`).map(readProgramData);
     },
     async session(id) {
       const [row] = await sql<DataRow<ProgramSession>[]>`SELECT data FROM public.program_sessions WHERE id=${id}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async saveSession(session) {
       await sql`INSERT INTO public.program_sessions (id, run_id, sequence, scheduled_start, scheduled_end, data)
-        VALUES (${session.id}, ${session.runId}, ${session.sequence}, ${session.scheduledStart}, ${session.scheduledEnd}, ${JSON.stringify(session)}::jsonb)
+        VALUES (${session.id}, ${session.runId}, ${session.sequence}, ${session.scheduledStart}, ${session.scheduledEnd}, ${JSON.stringify(session)}::text::jsonb)
         ON CONFLICT (id) DO UPDATE SET scheduled_start=excluded.scheduled_start, scheduled_end=excluded.scheduled_end, data=excluded.data`;
     },
     async applications(runId) {
-      return (await sql<DataRow<ProgramApplication>[]>`SELECT data FROM public.program_applications WHERE run_id=${runId} ORDER BY created_at, id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramApplication>[]>`SELECT data FROM public.program_applications WHERE run_id=${runId} ORDER BY created_at, id`).map(readProgramData);
     },
     async applicationsForAccount(accountId) {
-      return (await sql<DataRow<ProgramApplication>[]>`SELECT data FROM public.program_applications WHERE account_id=${accountId} ORDER BY created_at, id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramApplication>[]>`SELECT data FROM public.program_applications WHERE account_id=${accountId} ORDER BY created_at, id`).map(readProgramData);
     },
     async application(id) {
       const [row] = await sql<DataRow<ProgramApplication>[]>`SELECT data FROM public.program_applications WHERE id=${id}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async saveApplication(application) {
       await sql`INSERT INTO public.program_applications (id, run_id, account_id, status, data, created_at)
-        VALUES (${application.id}, ${application.runId}, ${application.accountId}, ${application.status}, ${JSON.stringify(application)}::jsonb, ${application.createdAt})
+        VALUES (${application.id}, ${application.runId}, ${application.accountId}, ${application.status}, ${JSON.stringify(application)}::text::jsonb, ${application.createdAt})
         ON CONFLICT (id) DO UPDATE SET status=excluded.status, data=excluded.data`;
     },
     async enrollmentByApplication(applicationId) {
       const [row] = await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE application_id=${applicationId}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async enrollment(id) {
       const [row] = await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE id=${id}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async enrollments(runId) {
-      return (await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE run_id=${runId} ORDER BY confirmed_at, id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE run_id=${runId} ORDER BY confirmed_at, id`).map(readProgramData);
     },
     async enrollmentsForAccount(accountId) {
-      return (await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE account_id=${accountId} ORDER BY confirmed_at, id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramEnrollment>[]>`SELECT data FROM public.program_enrollments WHERE account_id=${accountId} ORDER BY confirmed_at, id`).map(readProgramData);
     },
     async saveEnrollment(enrollment) {
       await sql`INSERT INTO public.program_enrollments (id, application_id, run_id, account_id, status, data, confirmed_at)
-        VALUES (${enrollment.id}, ${enrollment.applicationId}, ${enrollment.runId}, ${enrollment.accountId}, ${enrollment.status}, ${JSON.stringify(enrollment)}::jsonb, ${enrollment.confirmedAt})
+        VALUES (${enrollment.id}, ${enrollment.applicationId}, ${enrollment.runId}, ${enrollment.accountId}, ${enrollment.status}, ${JSON.stringify(enrollment)}::text::jsonb, ${enrollment.confirmedAt})
         ON CONFLICT (id) DO UPDATE SET status=excluded.status, data=excluded.data`;
     },
     async attendance(sessionId, enrollmentId) {
       const [row] = await sql<DataRow<ProgramAttendance>[]>`SELECT data FROM public.program_attendance WHERE session_id=${sessionId} AND enrollment_id=${enrollmentId}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async attendances(runId) {
-      return (await sql<DataRow<ProgramAttendance>[]>`SELECT a.data FROM public.program_attendance a JOIN public.program_sessions s ON s.id=a.session_id WHERE s.run_id=${runId} ORDER BY a.recorded_at, a.id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramAttendance>[]>`SELECT a.data FROM public.program_attendance a JOIN public.program_sessions s ON s.id=a.session_id WHERE s.run_id=${runId} ORDER BY a.recorded_at, a.id`).map(readProgramData);
     },
     async saveAttendance(attendance) {
       await sql`INSERT INTO public.program_attendance (id, session_id, enrollment_id, status, data, recorded_at)
-        VALUES (${attendance.id}, ${attendance.sessionId}, ${attendance.enrollmentId}, ${attendance.status}, ${JSON.stringify(attendance)}::jsonb, ${attendance.recordedAt})
+        VALUES (${attendance.id}, ${attendance.sessionId}, ${attendance.enrollmentId}, ${attendance.status}, ${JSON.stringify(attendance)}::text::jsonb, ${attendance.recordedAt})
         ON CONFLICT (session_id, enrollment_id) DO UPDATE SET status=excluded.status, data=excluded.data`;
     },
     async completion(enrollmentId) {
       const [row] = await sql<DataRow<ProgramCompletion>[]>`SELECT data FROM public.program_completions WHERE enrollment_id=${enrollmentId}`;
-      return row?.data;
+      return row && readProgramData(row);
     },
     async completions(runId) {
-      return (await sql<DataRow<ProgramCompletion>[]>`SELECT c.data FROM public.program_completions c JOIN public.program_enrollments e ON e.id=c.enrollment_id WHERE e.run_id=${runId} ORDER BY c.recorded_at, c.id`).map((row) => row.data);
+      return (await sql<DataRow<ProgramCompletion>[]>`SELECT c.data FROM public.program_completions c JOIN public.program_enrollments e ON e.id=c.enrollment_id WHERE e.run_id=${runId} ORDER BY c.recorded_at, c.id`).map(readProgramData);
     },
     async saveCompletion(completion) {
       await sql`INSERT INTO public.program_completions (id, enrollment_id, completed, data, recorded_at)
-        VALUES (${completion.id}, ${completion.enrollmentId}, ${completion.completed}, ${JSON.stringify(completion)}::jsonb, ${completion.recordedAt})
+        VALUES (${completion.id}, ${completion.enrollmentId}, ${completion.completed}, ${JSON.stringify(completion)}::text::jsonb, ${completion.recordedAt})
         ON CONFLICT (enrollment_id) DO NOTHING`;
     },
     async audit(audit) {
       await sql`INSERT INTO public.program_audits (id, target_type, target_id, action, before_state, after_state, reason, actor_id, actor_account_id, occurred_at, correlation_id)
-        VALUES (${audit.id}, ${audit.targetType}, ${audit.targetId}, ${audit.action}, ${JSON.stringify(audit.before)}::jsonb, ${JSON.stringify(audit.after)}::jsonb, ${audit.reason}, ${audit.actorId}, ${audit.actorAccountId ?? null}, ${audit.occurredAt}, ${audit.correlationId})`;
+        VALUES (${audit.id}, ${audit.targetType}, ${audit.targetId}, ${audit.action}, ${JSON.stringify(audit.before)}::text::jsonb, ${JSON.stringify(audit.after)}::text::jsonb, ${audit.reason}, ${audit.actorId}, ${audit.actorAccountId ?? null}, ${audit.occurredAt}, ${audit.correlationId})`;
     },
   };
 }

@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
+import { ProgramRunOperations, type RunOperations } from './program-run-operations';
 
 type Terms = { title: string; description: string; location: string };
 type Offering = { id: string; revision: number; draft: Terms; published?: { version: number; terms: Terms } };
 type Session = { id: string; sequence: number; scheduledStart: string; scheduledEnd: string; location: string; changes: unknown[] };
-type Run = { id: string; offeringId: string; status: string; startsAt: string; endsAt: string; location: string; capacity: number; sessions: Session[]; occupancy: number; remainingCapacity: number };
+type Run = RunOperations & { offeringId: string; startsAt: string; endsAt: string; location: string; capacity: number; occupancy: number; remainingCapacity: number };
 type PublicRun = {
   id: string;
   location: string;
@@ -33,8 +34,10 @@ export function ProgramManagement() {
   const [terms, setTerms] = useState<Terms>({ title: '', description: '', location: '' });
   const [runInput, setRunInput] = useState({ offeringId: '', startsAt: '', endsAt: '', location: '', capacity: 10 });
   const [sessionInput, setSessionInput] = useState({ runId: '', scheduledStart: '', scheduledEnd: '', location: '' });
+  const [selectedRunId, setSelectedRunId] = useState('');
+  const selectedRun = runs.find((run) => run.id === selectedRunId);
 
-  async function load() {
+  async function load(reportFailure = true) {
     try {
       setError('');
       const [offeringResult, runResult] = await Promise.all([
@@ -44,6 +47,7 @@ export function ProgramManagement() {
       setOfferings(readData(offeringResult));
       setRuns(readData(runResult));
     } catch (failure) {
+      if (!reportFailure) throw failure;
       setError(failure instanceof Error ? failure.message : '加载 Program 失败。');
     }
   }
@@ -57,7 +61,7 @@ export function ProgramManagement() {
 
   async function createRun(event: FormEvent) {
     event.preventDefault();
-    try { readData(await apiClient.POST<Run>('/api/v1/creator/program/runs', { body: runInput })); await load(); } catch (failure) { setError(failure instanceof Error ? failure.message : '创建一期失败。'); }
+    try { readData(await apiClient.POST<Run>('/api/v1/creator/program/runs', { body: { ...runInput, startsAt: new Date(runInput.startsAt).toISOString(), endsAt: new Date(runInput.endsAt).toISOString() } })); await load(); } catch (failure) { setError(failure instanceof Error ? failure.message : '创建一期失败。'); }
   }
 
   async function addSession(event: FormEvent) {
@@ -77,13 +81,14 @@ export function ProgramManagement() {
     <section className={panel}><h2>我的 Offering</h2><ul className="space-y-2">{offerings.map((offering) => <li key={offering.id} className="flex flex-wrap items-center justify-between gap-2"><span>{offering.draft.title} · {offering.published ? '已发布' : '草稿'}</span>{!offering.published && <Button type="button" variant="outline" onClick={() => void apiClient.POST(`/api/v1/creator/program/offerings/{id}/publish`, { params: { path: { id: offering.id } }, body: { expectedRevision: offering.revision } }).then(() => load())}>发布</Button>}</li>)}</ul></section>
     <section className={panel}><h2>创建一期 Run</h2><form className="space-y-3" onSubmit={(event) => { void createRun(event); }}>
       <select className={field} required value={runInput.offeringId} onChange={(event) => setRunInput({ ...runInput, offeringId: event.target.value })}><option value="">选择已发布 Offering</option>{offerings.filter((item) => item.published).map((item) => <option key={item.id} value={item.id}>{item.published?.terms.title}</option>)}</select>
-      <input className={field} required type="datetime-local" value={runInput.startsAt} onChange={(event) => setRunInput({ ...runInput, startsAt: new Date(event.target.value).toISOString() })} />
-      <input className={field} required type="datetime-local" value={runInput.endsAt} onChange={(event) => setRunInput({ ...runInput, endsAt: new Date(event.target.value).toISOString() })} />
+      <input className={field} required type="datetime-local" aria-label="一期开始时间" value={runInput.startsAt} onChange={(event) => setRunInput({ ...runInput, startsAt: event.target.value })} />
+      <input className={field} required type="datetime-local" aria-label="一期结束时间" value={runInput.endsAt} onChange={(event) => setRunInput({ ...runInput, endsAt: event.target.value })} />
       <input className={field} required placeholder="地点" value={runInput.location} onChange={(event) => setRunInput({ ...runInput, location: event.target.value })} />
       <input className={field} required type="number" min={1} value={runInput.capacity} onChange={(event) => setRunInput({ ...runInput, capacity: Number(event.target.value) })} />
       <Button type="submit">创建一期</Button>
     </form></section>
-    <section className={panel}><h2>一期与场次</h2><ul className="space-y-4">{runs.map((run) => <li key={run.id} className="space-y-2 border-b pb-4"><p>{run.status} · {run.location} · 已占用 {run.occupancy}/{run.capacity}</p><p>{run.sessions.length} 个计划场次</p><div className="flex flex-wrap gap-2">{run.status === 'draft' && run.sessions.length > 0 && <Button type="button" onClick={() => void apiClient.POST(`/api/v1/creator/program/runs/{id}/publish`, { params: { path: { id: run.id } } }).then(() => load())}>发布一期</Button>}<Button type="button" variant="outline" onClick={() => setSessionInput({ ...sessionInput, runId: run.id })}>为此期添加场次</Button><Link className="underline" href={`/programs/${run.id}`}>查看公开页面</Link></div></li>)}</ul></section>
+    <section className={panel}><h2>一期与场次</h2><ul className="space-y-4">{runs.map((run) => <li key={run.id} className="space-y-2 border-b pb-4"><h3>{offerings.find((offering) => offering.id === run.offeringId)?.draft.title ?? 'Program'}</h3><p>{run.status} · {run.location} · {new Date(run.startsAt).toLocaleString()}</p><p>{run.sessions.length} 个计划场次 · 已占用 {run.occupancy}/{run.capacity} · 剩余 {run.remainingCapacity}</p><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" aria-pressed={selectedRunId === run.id} onClick={() => setSelectedRunId(run.id)}>管理此期</Button>{run.status === 'draft' && run.sessions.length > 0 && <Button type="button" onClick={() => void apiClient.POST(`/api/v1/creator/program/runs/{id}/publish`, { params: { path: { id: run.id } } }).then(() => load())}>发布一期</Button>}{(run.status === 'draft' || run.status === 'published') && <Button type="button" variant="outline" onClick={() => setSessionInput({ ...sessionInput, runId: run.id })}>为此期添加场次</Button>}{run.status === 'published' && <Link className="underline" href={`/programs/${run.id}`}>查看公开页面</Link>}</div></li>)}</ul></section>
+    {selectedRun && <ProgramRunOperations key={selectedRun.id} run={selectedRun} reload={() => load(false)} />}
     {sessionInput.runId && <section className={panel}><h2>添加计划场次</h2><form className="space-y-3" onSubmit={(event) => { void addSession(event); }}><input className={field} required type="datetime-local" onChange={(event) => setSessionInput({ ...sessionInput, scheduledStart: new Date(event.target.value).toISOString() })} /><input className={field} required type="datetime-local" onChange={(event) => setSessionInput({ ...sessionInput, scheduledEnd: new Date(event.target.value).toISOString() })} /><input className={field} required placeholder="场次地点" value={sessionInput.location} onChange={(event) => setSessionInput({ ...sessionInput, location: event.target.value })} /><Button type="submit">保存场次</Button></form></section>}
   </div>;
 }

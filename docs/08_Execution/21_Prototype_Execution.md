@@ -11711,3 +11711,11 @@ Focused evidence: Goods HTTP tests (including Admin scenario pause continuity), 
 The full pnpm check:openapi command remains not completed because its full build is blocked by the existing unrelated scripts/test/verify-operations-admin-browser.ts union typing errors, and the direct compatibility check reports the existing Operations Admin manifest drift. Neither failure is a Goods route failure; the Goods routes are conditionally registered only when the Goods service is enabled. REAL_MONEY_ENABLED=false; production deployment, external Pilot, remote push and master integration are not authorized by this implementation task.
 
 Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-009-Goods-Implementation-20261120/.
+
+## PCI-PD-011 — Right Sixth Commercial Scenario Research
+
+2026-11-20：以 PCI-PD-009-I 已快进整合的正式 `master` / `ea229b342317d6f00637a269f669462ca0c5a0eb` 为研究基线。上一条 DEV-095 保留实施当时状态。遵循 Founder 调整后的研究安排：Right 当前优先研究，Project 暂停；不推进或整合既有 Project 研究分支。
+
+[PCI-PD-011 Right 研究与决策建议包](./PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md) 区分权源、供给、接受、授予、生效和使用，比较作品许可、场地用益、标识许可及复杂权利来源。优先考虑既有原创插画的有界线下宣传许可，供需与专业审查条件未满足前不进入实施。
+
+`COMPLETED — RIGHT SIXTH SCENARIO RESEARCH / AWAITING MAIN CONTROLLER REVIEW`。仅研究、导航和状态文档变更，核验引用与提交范围；无代码、技术架构、业务行为变化或运行验收。未冻结新规则，未合并、未推送、未部署、未开展 Pilot，不启用真实资金。

@@ -1248,3 +1248,11 @@ PRODUCTION DEPLOYMENT = NOT AUTHORIZED
 REAL_MONEY_ENABLED = false
 
 见仓库外 D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-009-Goods-Implementation-20261120/PCI-PD-009-Goods-Implementation-Report.md。本变更不合并 master，不 Push，不部署生产，不启动外部 Pilot，不启用真实资金。
+
+## 26. PCI-PD-011 — Right Research and Project Pause
+
+2026-11-20：依据本任务中的 Founder 场景安排，Right 为当前研究对象；Project 暂停，等待未来重新明确商业定义。此处登记的是研究优先级，不变更 [Decision 42](../07_Product_Architecture/42_Commercial_Scenario_Sequencing_Founder_Decision.md) 的进入原则，也不改写既有研究或批准的领域规则。
+
+Service、Membership、Program、Goods 已集成。上一节保留 Goods 实施当时状态；PCI-PD-009-I 已将 `ea229b342317d6f00637a269f669462ca0c5a0eb` 快进至正式主线，Goods 默认关闭。Right 和 Project 均未接入。完成 [PCI-PD-011 Right 研究与决策建议](./PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)，待 Main Controller 审阅；其后由 Founder 裁决业务规则，实施须另行授权。
+
+Production Readiness 未验证；生产部署、外部 Pilot、真实资金未授权，`REAL_MONEY_ENABLED=false`。

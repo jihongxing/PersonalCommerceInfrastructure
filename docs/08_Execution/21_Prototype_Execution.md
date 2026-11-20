@@ -11773,3 +11773,11 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 所有权、ACL、扩展、Migration Journal、schema、数据行数和受限 API Runtime 连接均有独立证据。
 证据归档于 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-ENG-029-PostgreSQL-Backup-Restore-Recovery-Validation-20261121/`。
 不执行生产部署、外部 Pilot、真实资金操作、生产数据连接或 RPO/RTO 承诺；`REAL_MONEY_ENABLED=false`。
+
+最终验收记录（2026-11-21）：环境管理员确认以下三个 PCI-ENG-029 敏感临时路径均已物理不存在：
+`E:\User\jihx\AppData\Local\Temp\pci-eng-029-secrets.json`、
+`E:\User\jihx\AppData\Local\Temp\pci-eng-029-bootstrap.sql`、
+`E:\User\jihx\AppData\Local\Temp\pci-eng-029-recovery`。敏感材料清理状态为
+`COMPLETED`；此前被执行策略拒绝的清理记录保持不变。Main Controller 已接受清理确认及
+PostgreSQL 隔离恢复验证交付。最终任务状态：`COMPLETED — ACCEPTED`。不代表生产就绪，
+不授权生产部署、外部 Pilot、真实资金操作或 RPO/RTO 承诺。

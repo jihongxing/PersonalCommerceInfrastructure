@@ -23,6 +23,7 @@ import {
 import { deploymentFingerprint } from './production-database-catalog.js';
 import {
   fulfillmentRuntimeGrant,
+  goodsRuntimeGrants,
   membershipRuntimeGrants,
   programRuntimeGrants,
   productionRuntimeGrants,
@@ -312,6 +313,7 @@ async function install() {
           await applyFinalMigrations(tx, migrations);
           await tx.unsafe(`${membershipRuntimeGrants}${programRuntimeGrants}`);
         }
+        await tx.unsafe(goodsRuntimeGrants);
         await finalizeOperationsAccess(tx, operationsPassword);
         const fingerprint = await deploymentFingerprint(tx);
         await tx`UPDATE pci_deployment.installation SET fingerprint=${fingerprint} WHERE singleton AND fingerprint IS DISTINCT FROM ${fingerprint}`;

@@ -20,6 +20,8 @@ GRANT SELECT, INSERT, UPDATE ON public.goods_offerings, public.goods_orders TO p
 GRANT SELECT, INSERT ON public.goods_order_acceptances, public.goods_commitments,
   public.goods_deliveries, public.goods_buyer_receipts, public.goods_cancellation_proposals,
   public.goods_audits TO pci_api_runtime;
+GRANT UPDATE (revision, state, data, updated_at) ON public.goods_offerings TO pci_api_runtime;
+GRANT UPDATE (state, data, updated_at) ON public.goods_orders TO pci_api_runtime;
 `;
 
 export const productionRuntimeGrants = `
@@ -66,9 +68,6 @@ GRANT UPDATE (availability_slot_id, state, confirmed_at, cancelled_at, cancelled
 GRANT UPDATE (state, current_scope_version_id, proposed_at, proposal_expires_at, accepted_at, accepted_by, contracted_at, order_id, rejected_at, cancelled_at, cancelled_by, updated_at) ON public.commercial_contracts TO pci_api_runtime;
 GRANT UPDATE (state, provider_reference, updated_at) ON public.paid_commerce_payments, public.paid_commerce_withdrawals TO pci_api_runtime;
 GRANT UPDATE (state, fulfilled_at) ON public.paid_commerce_fulfillments TO pci_api_runtime;
-GRANT UPDATE (revision, state, data, updated_at) ON public.goods_offerings TO pci_api_runtime;
-GRANT UPDATE (state, data, updated_at) ON public.goods_orders TO pci_api_runtime;
-
 GRANT SELECT (id_hash,account_id,user_email,access_token_ciphertext,refresh_token_ciphertext,refresh_token_hash,expires_at,revoked_at),
   INSERT (id_hash,account_id,user_email,access_token_ciphertext,refresh_token_ciphertext,refresh_token_hash,expires_at),
   UPDATE (access_token_ciphertext,refresh_token_ciphertext,refresh_token_hash,updated_at,revoked_at)

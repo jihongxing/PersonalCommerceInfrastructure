@@ -11,7 +11,9 @@ installer, migration, API, and BFF database passwords. Percent-encode special ch
 passwords; the installer password is a raw value. All three database URLs must use their designated
 username and `postgres:5432/personal_commerce`, without options. Supply secrets at runtime, not as
 public build arguments. Set the BFF allowed origin and browser API URL to the intended external
-addresses. `Secure` cookies require HTTPS for real deployment; Compose publishes Web and API on
+addresses. Set the public build argument `NEXT_PUBLIC_WEB_ORIGIN` to the Creator HTTPS origin for
+generated homepage links; keeping it unset suppresses link generation. `Secure` cookies require
+HTTPS for real deployment; Compose publishes Web and API on
 loopback for the reverse proxy. `REAL_MONEY_ENABLED` remains `false`.
 
 ```sh
@@ -44,7 +46,7 @@ migrations, adopt unmarked volumes, or repair catalog drift.
 | `pci_ops_legacy_owner`    | NOLOGIN; owns 0036–0039 and the reviewed legacy DDL in 0041.                                                                                                 |
 | `pci_ops_table_owner`     | NOLOGIN; reviewed activation audit/history and 0041 table-stage SQL.                                                                                         |
 | `pci_ops_function_owner`  | NOLOGIN; owns `operations_private` and `operations_api` and executes reviewed function-stage SQL.                                                            |
-| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core, Program and wired Paid/Pilot SQL only.                                                               |
+| `pci_api_runtime`         | LOGIN; current Shared API auth, Creator/Public, Core, Program and wired Paid/Pilot SQL only.                                                                 |
 | `pci_creator_bff_runtime` | LOGIN; Creator Web Session SELECT/INSERT/UPDATE projections only; no DELETE, business data, Journal, project routines or sequences.                          |
 | `pci_ops_runtime`         | Independent restricted LOGIN for the existing Operations Human auth/session SQL. Only provisioned and connected when explicitly enabled.                     |
 
@@ -127,26 +129,32 @@ change encoding, or add/remove final newlines. SQL content, Journal array order,
 original `when` remain pinned by the unchanged reviewed manifest.
 
 For checksum compatibility, the policy reconstructs the already approved historical representation.
-Migrations 0000–0042 use CRLF and 0043–0044 use LF. Its SHA-256 values are the Journal identities,
+Migrations 0000–0042 use CRLF and 0043–0045 use LF. Their SHA-256 values are the Journal identities,
 independent of checkout bytes. The 43-entry identity still hashes to
 `0d00481825e4bb5e731826eb6d4689b8a668d8ac12f9a88f4fa8150a34301d50`; the 44-entry identity
 still hashes to `3a0ddca1b9a8000ecfb4c05f56d8abd9ba4e483d0a5d3a4ae3b264083d91bafb`; the full
-45-entry identity hashes to `308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1`.
+historical 45-entry identity hashes to `308cb862603fe5b7e890fa601508f697b1a18a7b60631bc0dac9d922233720d1`.
+The current 46-entry manifest is pinned in `scripts/database/production-migration-policy.ts`.
 This bounded representation mapping preserves the single approved SQL-content manifest and the
 existing Journal rows. The production installer and phase runner use this policy. Generic Drizzle
 tooling continues to hash its raw input, so production deployments must use the production gate.
 A future migration requires a separate reviewed manifest update.
 
-An interruption can resume a trusted `provisioned` installation or a matching committed checkpoint
-(0, 40, 41 or 45 rows with its catalog fingerprint). Do not repair or populate a Journal by hand.
-Fresh installation applies 0041–0044 atomically with finalization, without a separate checkpoint.
-A trusted ready 43-row volume with matching catalog fingerprint can apply 0043–0044 in one installer
-transaction: DDL under the existing application owner, bounded runtime grants, the Journal entry
-under the migration role, application-owner CREATE revoked, and the ready fingerprint refreshed.
-A trusted ready 44-row volume with matching catalog fingerprint can apply 0044 in the same bounded
-upgrade path. An initialized volume with all 45 rows verifies without replay. Other future versions require
-a reviewed manifest, owner assignment and upgrade path. The fingerprint is an in-place drift check,
-not a portable backup format.
+The current fresh installer resumes a trusted `provisioned` installation or a matching committed
+checkpoint (0, 40, 41 or 46 rows). The finish phase applies 0041–0045 and commits the 46-row
+checkpoint. Runtime grants and ready-state finalization then run in a separate transaction. A
+volume first booted with the older checkpoint constraint does not gain the new constraint when
+its container is replaced. If it is still unfinished, preserve the volume and review recovery
+on an isolated clone; do not alter the marker or Journal by hand.
+
+Trusted `ready` volumes with 43, 44 or 45 rows and a matching catalog fingerprint apply the
+remaining migrations through 0045 in a single transaction. The installer uses the existing
+application owner for DDL and migration role for Journal inserts; it then applies the approved
+runtime grants, revokes temporary application-owner schema CREATE, and updates the fingerprint.
+A matching `ready` volume with 46 rows is verified without replaying migration SQL. The same
+Goods grants used for a fresh install are also applied idempotently to a ready database, including
+one previously upgraded without them. This does not activate Goods or grant the Creator BFF access
+to Goods data. Other versions require a reviewed manifest, owner assignment and upgrade path.
 
 Unmarked legacy volumes, unexpected history, or ownership/ACL drift are not adopted. Stop the stack
 without removing the volume, retain a physical snapshot or tested backup, and inspect a disposable
@@ -157,3 +165,26 @@ reconciliation. Do not copy legacy role grants, installation markers, or Journal
 target; do not remove the source volume. If a new installation stops while a temporary Bootstrap
 window is active, stop the installer before investigation; the ephemeral password expires even if
 the process is killed. Do not manually renew it or reuse it for application traffic.
+
+## Before a production authorization
+
+- Pin the API, Creator and Admin image digests and retain the matching Compose file and restricted
+  environment configuration. Keep browser-visible `NEXT_PUBLIC_*` build values separate from
+  runtime credentials. Rebuild Creator Web when its browser-facing API origin changes.
+- Before a migration, quiesce writes, stop the stack without `--volumes`, and take an encrypted,
+  access-controlled backup of the dedicated cluster with its roles, owners, and ACLs. Record the
+  PostgreSQL major version, checksums, Journal count and deployment version. The legacy `pg_dump
+--no-owner` drill is not a substitute for a restorable cluster backup.
+- Rehearse recovery to a separate PostgreSQL instance: verify the backup, restore with the matching
+  server version, keep network access isolated, and compare row counts, Journal history, fingerprint,
+  runtime-role permissions and application smoke results before any switch. Recovery time and data
+  loss objectives require owner sign-off. Do not restore over the source volume.
+- On migration failure, leave dependent services stopped and retain the source volume and the
+  `migrate` logs. Retry the same installer only when the committed checkpoint and failure reason
+  are understood. Do not roll an older application image onto a newer schema without a verified
+  compatibility check; use a rehearsed restore to a separate target if the older version requires
+  the older schema.
+- Use `docker compose ps -a` and `docker compose logs --tail 100 migrate api web admin` with the
+  same project, profile and environment options used at startup. API `/api/v1/readiness` checks
+  database connectivity; Web `/auth/login` and Admin `/login` only confirm HTTP availability and
+  do not attest to database access, upstream authentication, or production readiness.

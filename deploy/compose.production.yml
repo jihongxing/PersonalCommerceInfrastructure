@@ -95,6 +95,7 @@ services:
       dockerfile: deploy/Dockerfile.web-v2
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?NEXT_PUBLIC_API_BASE_URL is required}
+        NEXT_PUBLIC_WEB_ORIGIN: ${NEXT_PUBLIC_WEB_ORIGIN:-}
         NEXT_PUBLIC_OTEL_BROWSER_TRACING_ENABLED: ${NEXT_PUBLIC_OTEL_BROWSER_TRACING_ENABLED:-false}
     environment:
       HOSTNAME: 0.0.0.0

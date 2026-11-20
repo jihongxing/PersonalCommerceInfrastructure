@@ -11747,3 +11747,13 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 验证：`pnpm install --frozen-lockfile` 通过；API、Creator Web、Admin Web 构建通过；API `/health`、Creator `/auth/login`、Admin `/login` 本地启动烟测通过；三个现有 Dockerfile 的 API 镜像构建和 production/external-pilot Compose config 校验通过；根 `lib/` 认证/邮件定向测试 108 项通过；迁移清单检查通过；`git diff --check` 和变更文件格式检查通过。既有 `pnpm typecheck:core` Operations union `.body` 错误仍存在；契约测试仍暴露既有 Operations 路由清单漂移；`pnpm check:design-tokens` 因仓库中已不存在的 `design-system/tokens/design-tokens.json` 阻断；这些问题未在本任务扩大修复。完整报告见 `docs/09_Engineering_Governance/PCI-ENG-027-Repository-Root-and-Deployment-Readiness.md`。
 
 状态：`COMPLETED — REPOSITORY ROOT CLEANUP AND DEPLOYMENT READINESS REVIEW / AWAITING MAIN CONTROLLER ACCEPTANCE`。未执行 Push、生产部署、外部 Pilot、Goods 开放或真实资金；`REAL_MONEY_ENABLED=false`；Project、Right 继续搁置。
+
+## PCI-ENG-028 — Engineering Quality Gates & Deployment Readiness
+
+2026-11-20：基于正式 `master` `19a3faaeab1b0194f894d54039c03c5eff1cc08d`，在独立 ENG-028 Worktree 修复 Operations 浏览器验证的请求体类型收窄；按现行已批准路由补齐 OpenAPI 的 20 个操作（18 个路径）及精确路径断言。未修改路由、权限、业务合同或 VS-01 FR。已退役的参考客户端令牌校准无活动消费者，移除丢失 JSON 输入的检查及 Preflight 调用，保留 ENG-027 格式检查范围。
+
+部署配置：修正 PostgreSQL 首次启动对 46 条迁移检查点的约束；已验证的 `ready` 库复用新装已有的 Goods grants，覆盖 45→46 升级及此前遗漏 grants 的 46 条库，不改变角色边界、Migration 或 Journal。Creator 镜像接入公开主页 origin 构建参数。空库、升级、重复执行、角色隔离、受控 Operations 第一账户和隔离三应用 HTTP 烟测均有单独证据；API readiness 在数据库停止后返回 503，恢复后返回 200。
+
+`pnpm typecheck:core`、`pnpm test:contracts`、`pnpm check:openapi`、冻结安装、三个应用宿主机构建、迁移清单和 Compose 配置检查通过。全仓格式仍有 88 个既有问题；定向 lint 有两条既有二维码测试断言错误，治理 Preflight 仍受既有环境读取规则阻断。恢复演练、生产机密与外部入口未核实，不宣称生产就绪。证据和容器检查的实际结果见 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-ENG-028-Engineering-Quality-Gates-and-Deployment-Readiness-20261120/`。
+
+正式 `master`、PD-010 历史研究环境和冻结决定保持不变。保留 ENG-028 分支与 Worktree 待验收；无合并、Push、生产部署或外部 Pilot。Goods 默认关闭、`REAL_MONEY_ENABLED=false`，Project 和 Right 继续搁置。

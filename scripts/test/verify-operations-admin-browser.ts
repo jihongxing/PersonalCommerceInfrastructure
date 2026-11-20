@@ -188,14 +188,15 @@ try {
     const before = await catalogSnapshot();
     const results: unknown[] = [];
     for (const route of legacyRoutes) {
+      const requestBody = 'body' in route ? JSON.stringify(route.body) : undefined;
       for (const authorization of ['Bearer test-operations-token', 'Bearer invalid-token']) {
         const response = await fetch(apiOrigin + route.path, {
           method: route.method,
           headers: {
             authorization,
-            ...(route.body === undefined ? {} : { 'content-type': 'application/json' }),
+            ...(requestBody === undefined ? {} : { 'content-type': 'application/json' }),
           },
-          ...(route.body === undefined ? {} : { body: JSON.stringify(route.body) }),
+          ...(requestBody === undefined ? {} : { body: requestBody }),
         });
         const body = (await response.json()) as { error?: { code?: string } };
         assert.equal(response.status, 410);
@@ -213,9 +214,9 @@ try {
         headers: {
           'x-principal-id': 'forged-principal',
           'x-permissions': 'catalog:policy:activate',
-          ...(route.body === undefined ? {} : { 'content-type': 'application/json' }),
+          ...(requestBody === undefined ? {} : { 'content-type': 'application/json' }),
         },
-        ...(route.body === undefined ? {} : { body: JSON.stringify(route.body) }),
+        ...(requestBody === undefined ? {} : { body: requestBody }),
       });
       const body = (await forged.json()) as { error?: { code?: string } };
       assert.equal(forged.status, 410);

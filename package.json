@@ -60,7 +60,6 @@
     "test:auth:provider": "vitest run tests/integration/supabase-auth-provider.integration.test.ts",
     "test:acceptance": "vitest run tests/acceptance",
     "test:acceptance:browser": "pnpm --filter web-v2 exec playwright test",
-    "check:design-tokens": "node scripts/design/check-token-calibration.mjs",
     "preflight": "powershell.exe -File scripts/test/preflight.ps1",
     "dev:admin-web": "pnpm --filter admin-web dev",
     "build:admin-web": "pnpm --filter admin-web build",

@@ -193,6 +193,14 @@ describe('production migration policy', () => {
     expect(() => verifyProductionHistory(wrongTimestamp, migrations, 46)).toThrow('index 25');
   });
 
+  it('allows the current phase checkpoints in the Compose first-boot schema', () => {
+    const firstBoot = readFileSync('deploy/postgres-first-boot.sql', 'utf8');
+    const checkpointValues = /CHECK \(migration_count IN \(([^)]+)\)\)/u.exec(firstBoot)?.[1];
+    expect(checkpointValues?.split(',').map(Number)).toEqual(
+      expect.arrayContaining(Object.values(phaseRanges).map(([, end]) => end)),
+    );
+  });
+
   it('accepts the reviewed 43-row checkpoint and historical 44/45-row ready baselines', () => {
     expect(previousFinalMigrationCount).toBe(45);
     expect(supportsReadyMigrationCount(43, 46)).toBe(true);

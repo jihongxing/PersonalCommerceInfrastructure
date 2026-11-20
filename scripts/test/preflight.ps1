@@ -21,7 +21,6 @@ function Invoke-Checked {
 Write-Host "== Engineering governance =="
 & "$PSScriptRoot\check-engineering-governance.ps1"
 Invoke-Checked { node scripts/test/check-import-boundaries.mjs } "Import boundary check"
-Invoke-Checked { node scripts/design/check-token-calibration.mjs } "Design Token calibration"
 
 if (-not $SkipProjectTests) {
   Write-Host "== Project validation =="

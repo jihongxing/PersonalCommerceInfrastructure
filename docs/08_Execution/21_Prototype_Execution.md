@@ -11719,3 +11719,7 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 [PCI-PD-011 Right 研究与决策建议包](./PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md) 区分权源、供给、接受、授予、生效和使用，比较作品许可、场地用益、标识许可及复杂权利来源。优先考虑既有原创插画的有界线下宣传许可，供需与专业审查条件未满足前不进入实施。
 
 `COMPLETED — RIGHT SIXTH SCENARIO RESEARCH / AWAITING MAIN CONTROLLER REVIEW`。仅研究、导航和状态文档变更，核验引用与提交范围；无代码、技术架构、业务行为变化或运行验收。未冻结新规则，未合并、未推送、未部署、未开展 Pilot，不启用真实资金。
+
+## PCI-PD-012 — Four-Scenario Focus & Targeted Improvement
+
+2026-11-20：先登记 [FD-PCI-FOUR-SCENARIO-FOCUS-001](../07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)，再按各领域现行合同定向检查。`ACTIVE SCENARIOS: SERVICE / MEMBERSHIP / PROGRAM / GOODS`；`DEFERRED SCENARIOS: PROJECT / RIGHT`。上一节保留历史交付快照，不代表当前研究授权。Goods 默认关闭；无生产、外部 Pilot 或真实资金授权。

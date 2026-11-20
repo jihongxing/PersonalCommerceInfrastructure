@@ -1256,3 +1256,17 @@ REAL_MONEY_ENABLED = false
 Service、Membership、Program、Goods 已集成。上一节保留 Goods 实施当时状态；PCI-PD-009-I 已将 `ea229b342317d6f00637a269f669462ca0c5a0eb` 快进至正式主线，Goods 默认关闭。Right 和 Project 均未接入。完成 [PCI-PD-011 Right 研究与决策建议](./PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)，待 Main Controller 审阅；其后由 Founder 裁决业务规则，实施须另行授权。
 
 Production Readiness 未验证；生产部署、外部 Pilot、真实资金未授权，`REAL_MONEY_ENABLED=false`。
+
+## 27. PCI-PD-012 — Four-Scenario Focus
+
+2026-11-20：[FD-PCI-FOUR-SCENARIO-FOCUS-001](../07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md) 覆盖第 26 节的研究推进安排，不改写当时的交付快照。当前停止新场景扩张，依据已知业务问题维护四个已集成场景。
+
+```text
+PCI STRATEGY — FOUR-SCENARIO FOCUS
+ACTIVE SCENARIOS: SERVICE / MEMBERSHIP / PROGRAM / GOODS
+DEFERRED SCENARIOS: PROJECT / RIGHT
+GOODS = DISABLED BY DEFAULT
+REAL_MONEY_ENABLED = false
+```
+
+保留 PCI-PD-010 与已进入主线的 PCI-PD-011 研究及证据；恢复 Project 或 Right 须 Founder 重新明确授权。不改变六类供给的概念或四个场景的冻结合同；不授权生产部署、外部 Pilot 或真实资金。

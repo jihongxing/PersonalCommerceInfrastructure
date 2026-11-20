@@ -12,9 +12,10 @@
 > **Membership 首期**：[Founder 决定](./07_Product_Architecture/43_Membership_First_Slice_Founder_Decision.md) · [产品合同](./07_Product_Architecture/44_Membership_First_Slice_Product_Contract.md)
 > **Program 首期**：[FD-PCI-PROGRAM-FIRST-SLICE-001](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md) · [执行规则补充](./07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)（第三运营场景已进入主线；Production Readiness 未验证）
 > **Goods 首期**：[FD-PCI-GOODS-FIRST-SLICE-001](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)（第四场景已进入主线，默认关闭）
-> **Right**：[PCI-PD-011 研究与决策建议](./08_Execution/PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)（待 Main Controller 审阅，未接入；Project 暂停）
+> **当前战略**：[FD-PCI-FOUR-SCENARIO-FOCUS-001](./07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)（四场景聚焦；Project、Right 正式搁置）
+> **Right**：[PCI-PD-011 历史研究](./08_Execution/PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)（已接收，未接入，不再推进）
 > **Membership 首期关闭状态**：[PCI-DOC-004](./08_Execution/PCI-DOC-004-Membership-First-Slice-Closure.md)（IMPLEMENTATION COMPLETE / ACCEPTED；Production Readiness NOT VERIFIED）
-> 最近执行更新：2026-11-20（PCI-PD-011 Right Sixth Commercial Scenario Research）
+> 最近执行更新：2026-11-20（PCI-PD-012 Four-Scenario Focus）
 > 文档性质：战略、商业选择与 MVP 产品定义；不是最终 PRD 或技术方案
 
 ```text
@@ -51,22 +52,24 @@ Native App                         Deferred
 Identity / Commerce Profile Runtime 已有提交实现；仅具名 change units 可在原范围内继续核验
 ```
 
-当前运营场景交付状态（PCI-PD-011，2026-11-20）：
+当前运营场景交付状态（PCI-PD-012，2026-11-20）：
 
 ```text
 Service        = FIRST OPERATIONAL SLICE INTEGRATED
 Membership     = SECOND OPERATIONAL SLICE INTEGRATED / ACCEPTED
 Program        = THIRD OPERATIONAL SLICE INTEGRATED
 Goods          = FOURTH OPERATIONAL SLICE INTEGRATED / DISABLED BY DEFAULT
-Right          = RESEARCH COMPLETE / AWAITING MAIN CONTROLLER REVIEW / NOT INTEGRATED
-Project        = PAUSED / NOT INTEGRATED
+Right          = DEFERRED / NOT INTEGRATED
+Project        = DEFERRED / NOT INTEGRATED
+ACTIVE SCENARIOS: SERVICE / MEMBERSHIP / PROGRAM / GOODS
+DEFERRED SCENARIOS: PROJECT / RIGHT
 Production Readiness  = NOT VERIFIED
 External Pilot        = NOT AUTHORIZED
 Production Deployment = NOT AUTHORIZED
 REAL_MONEY_ENABLED    = false
 ```
 
-Admin 对六类供给的展示不表示六类场景均已开放。Goods 已经 PCI-PD-009-I 进入主线，但未获生产授权。依 Founder 调整后的安排，Right 是当前研究对象，未接入；Project 暂停，等待未来重新明确商业定义。
+Admin 对六类供给的展示不表示六类场景均已开放。Goods 已进入主线，继续默认关闭。Project、Right 的历史研究保留，仅在 Founder 明确重新授权后恢复工作。
 
 当前产品状态：
 
@@ -222,7 +225,8 @@ Manager / Delegated Manager、Profile Transfer、外部 Pilot、生产和真实�
 - [PCI-DOC-005 — Program First Slice Founder Decision](./07_Product_Architecture/45_Program_First_Slice_Founder_Decision.md)：记录 Program 第三个运营场景及其首期业务基线。
 - [PCI-PD-007 — Program Third Operational Scenario Implementation](./07_Product_Architecture/46_Program_First_Slice_Execution_Rules_Founder_Decision.md)：记录五项执行规则补充及第三运营场景实现状态；Production Readiness 仍未验证。
 - [PCI-DOC-006 — Goods First Slice Founder Decision](./07_Product_Architecture/48_Goods_First_Slice_Founder_Decision.md)：记录 Goods 第四场景 F01-F09 业务基线；已验收实现由 PCI-PD-009-I 快进至主线。
-- [PCI-PD-011 — Right Sixth Commercial Scenario Research](./08_Execution/PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)：独立商业价值、权源与责任、首期候选及 Founder 待裁决项；不授权实施。
+- [PCI-PD-011 — Right Sixth Commercial Scenario Research](./08_Execution/PCI-PD-011-Right-Sixth-Commercial-Scenario-Decision-Package.md)：已接收的历史研究；首期候选和待裁决项未批准。
+- [PCI-PD-012 — 四场景聚焦](./07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)：保留四个已集成场景，正式搁置 Project、Right。
 
 ### 工程治理
 

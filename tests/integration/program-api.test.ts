@@ -48,6 +48,21 @@ describe('Program HTTP business paths', () => {
     expect(mine.statusCode).toBe(200);
     expect(mine.json<{ id: string }[]>()[0]?.id).toBe(enrollment.id);
     const session = sessionResponse.json<{ id: string }>();
+    const publicDetail = await api.inject({ method: 'GET', url: `/api/v1/public/program-runs/${run.id}` });
+    expect(publicDetail.statusCode).toBe(200);
+    const expectedPublicRun = {
+      id: run.id,
+      location: 'Hall A',
+      startsAt: '2026-12-10T09:00:00.000Z',
+      endsAt: '2026-12-10T12:00:00.000Z',
+      remainingCapacity: 1,
+      acceptsApplications: true,
+      sessions: [{ id: session.id, sequence: 1, scheduledStart: '2026-12-10T09:00:00.000Z', scheduledEnd: '2026-12-10T10:00:00.000Z', location: 'Hall A' }],
+    };
+    expect(publicDetail.json()).toEqual(expectedPublicRun);
+    expect((await api.inject({ method: 'GET', url: '/api/v1/public/program-runs' })).json()).toEqual([expectedPublicRun]);
+    store.setIntakeOpen(false);
+    expect((await api.inject({ method: 'GET', url: `/api/v1/public/program-runs/${run.id}` })).json()).toMatchObject({ acceptsApplications: false });
     const attendance = await api.inject({ method: 'POST', url: `/api/v1/creator/program/sessions/${session.id}/attendance`, headers: creator, payload: { entries: [{ enrollmentId: enrollment.id, status: 'attended' }] } });
     expect(attendance.statusCode).toBe(200);
   });

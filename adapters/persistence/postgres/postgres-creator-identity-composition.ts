@@ -330,6 +330,7 @@ export function createPostgresCreatorIdentityComposition(
     repository: new PostgresPublicHomepageRepository(
       database.client,
       'localAuthSecret' in authConfiguration ? undefined : authConfiguration.creatorActorMappings,
+      { membership: membershipEnabled, program: programEnabled, goods: goodsEnabled },
     ),
   });
   const selfServiceIdentityInitializationService = createSelfServiceIdentityInitializationService({

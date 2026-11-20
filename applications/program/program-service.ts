@@ -320,13 +320,18 @@ export function createProgramService(store: ProgramStore) {
       });
     },
     publicRuns() {
-      return store.transact(async (transaction) => Promise.all((await transaction.runs()).filter((run) => run.status === 'published').map((run) => hydrateRun(transaction, run))));
+      return store.transact(async (transaction) => {
+        const runs = (await transaction.runs()).filter((run) => run.status === 'published');
+        const intakeOpen = await transaction.intakeOpen();
+        const now = await transaction.now();
+        return Promise.all(runs.map((run) => publicRunView(transaction, run, intakeOpen, now)));
+      });
     },
     publicRun(runId: string) {
       return store.transact(async (transaction) => {
         const run = await transaction.run(runId);
         if (run?.status !== 'published') notFound('Published Program run not found.');
-        return hydrateRun(transaction, run);
+        return publicRunView(transaction, run, await transaction.intakeOpen(), await transaction.now());
       });
     },
     myApplications(accountId: string) {
@@ -520,6 +525,28 @@ async function ownedRun(transaction: ProgramTransaction, runId: string, provider
   const run = await transaction.run(runId, true);
   if (run?.providerId !== providerId) notFound('Program run not found.');
   return run;
+}
+
+async function publicRunView(
+  transaction: ProgramTransaction,
+  run: ProgramRun,
+  intakeOpen: boolean,
+  now: string,
+) {
+  const sessions = await transaction.sessions(run.id);
+  const remainingCapacity = Math.max(0, run.capacity - await occupiedCount(transaction, run.id));
+  const firstStart = firstSession(sessions)?.scheduledStart ?? run.startsAt;
+  return {
+    id: run.id,
+    location: run.location,
+    startsAt: run.startsAt,
+    endsAt: run.endsAt,
+    remainingCapacity,
+    acceptsApplications: intakeOpen && remainingCapacity > 0 && Date.parse(now) < Date.parse(firstStart),
+    sessions: sessions.map(({ id, sequence, scheduledStart, scheduledEnd, location }) => ({
+      id, sequence, scheduledStart, scheduledEnd, location,
+    })),
+  };
 }
 
 async function hydrateRun(transaction: ProgramTransaction, run: ProgramRun) {

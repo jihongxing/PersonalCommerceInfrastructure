@@ -115,6 +115,64 @@ export function PublicHomepageClient({ reference }: { reference: string | null }
               </div>
             )}
           </section>
+          {!!result.data.membershipOfferings?.length && (
+            <section
+              className="public-homepage-services mt-10"
+              aria-labelledby="membership-heading"
+            >
+              <h2 id="membership-heading" className="text-xl font-semibold">
+                可申请的会员
+              </h2>
+              <div className="mt-4 divide-y border-y">
+                {result.data.membershipOfferings.map((offering) => (
+                  <article key={offering.id} className="public-homepage-service">
+                    <div className="min-w-0">
+                      <h3 className="font-medium break-words">{offering.title}</h3>
+                      <p className="mt-2 break-words text-sm text-muted-foreground">
+                        {offering.location}
+                      </p>
+                    </div>
+                    <Link
+                      className="public-service-link"
+                      href={`/membership/${encodeURIComponent(offering.id)}`}
+                      aria-label={`查看会员：${offering.title}`}
+                    >
+                      查看会员 <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+          {!!result.data.programRuns?.length && (
+            <section className="public-homepage-services mt-10" aria-labelledby="program-heading">
+              <h2 id="program-heading" className="text-xl font-semibold">
+                可报名的计划
+              </h2>
+              <div className="mt-4 divide-y border-y">
+                {result.data.programRuns.map((run) => (
+                  <article key={run.id} className="public-homepage-service">
+                    <div className="min-w-0">
+                      <h3 className="font-medium break-words">{run.title}</h3>
+                      <p className="mt-2 break-words text-sm text-muted-foreground">
+                        {run.location} ·{' '}
+                        <time dateTime={run.startsAt}>
+                          {new Date(run.startsAt).toLocaleString('zh-CN')}
+                        </time>
+                      </p>
+                    </div>
+                    <Link
+                      className="public-service-link"
+                      href={`/programs/${encodeURIComponent(run.id)}`}
+                      aria-label={`查看计划：${run.title}`}
+                    >
+                      查看计划 <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
           <section className="public-homepage-services mt-10" aria-labelledby="goods-heading">
             <h2 id="goods-heading" className="text-xl font-semibold">
               可购买的商品

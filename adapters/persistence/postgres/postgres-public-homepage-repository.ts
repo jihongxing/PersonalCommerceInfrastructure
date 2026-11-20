@@ -120,6 +120,11 @@ export class PostgresPublicHomepageRepository
   constructor(
     private readonly sql: Sql,
     private readonly creatorActorMappings: ReadonlyMap<string, string> = new Map(),
+    private readonly enabledScenarios: {
+      membership?: boolean;
+      program?: boolean;
+      goods?: boolean;
+    } = {},
   ) {}
 
   async configuration(identityId: string): Promise<HomepageConfiguration> {
@@ -610,17 +615,55 @@ export class PostgresPublicHomepageRepository
     const identityRows = await tx<{ creator_id: string }[]>`
       SELECT creator_id FROM commerce_identities WHERE creator_id = ${creatorId} FOR SHARE`;
     if (!identityRows.length) return undefined;
-    const offeringRows = await tx<{ offerings: PublicHomepage['offerings'] }[]>`
+    const intake = await tx<{ target_id: string; open: boolean }[]>`
+      SELECT DISTINCT ON (target_id) target_id, after_state->'open' = 'true'::jsonb AS open
+      FROM operations_action_audits
+      WHERE target_type = 'commercial_scenario' AND action = 'change_scenario_intake'
+        AND target_id IN ('Service', 'Membership', 'Program', 'Goods')
+      ORDER BY target_id, id DESC`;
+    const open = new Map(intake.map((row) => [row.target_id, row.open]));
+    const offeringRows =
+      open.get('Service') === false
+        ? []
+        : await tx<{ offerings: PublicHomepage['offerings'] }[]>`
       SELECT COALESCE((SELECT jsonb_agg(jsonb_build_object('id', o.id, 'title', o.title, 'description', o.description)
         ORDER BY o.created_at, o.id) FROM service_offerings o
         JOIN commerce_identities ci ON ci.creator_id = o.creator_id
         WHERE o.creator_id = ${creatorId} AND o.state = 'published'
           AND o.policy_status = 'approved' AND ci.state = 'published'), '[]'::jsonb) AS offerings`;
-    const goodsOfferingRows = await tx<
-      {
-        goods_offerings: NonNullable<PublicHomepage['goodsOfferings']>;
-      }[]
-    >`
+    const membershipOfferings =
+      this.enabledScenarios.membership && open.get('Membership') === true
+        ? await tx<NonNullable<PublicHomepage['membershipOfferings']>[number][]>`
+          SELECT id, data->'published'->'terms'->>'title' AS title,
+            data->'published'->'terms'->>'location' AS location
+          FROM membership_offerings
+          WHERE provider_id = ${creatorId} AND jsonb_typeof(data->'published') = 'object'
+          ORDER BY id`
+        : [];
+    const programRuns =
+      this.enabledScenarios.program && open.get('Program') === true
+        ? await tx<NonNullable<PublicHomepage['programRuns']>[number][]>`
+          SELECT r.id, o.data->'published'->'terms'->>'title' AS title,
+            r.data->>'location' AS location, r.data->>'startsAt' AS "startsAt"
+          FROM program_runs r
+          JOIN program_offerings o ON o.id = r.offering_id AND o.provider_id = r.provider_id
+          WHERE r.provider_id = ${creatorId} AND r.status = 'published'
+            AND jsonb_typeof(o.data->'published') = 'object'
+            AND now() < COALESCE((SELECT s.scheduled_start FROM program_sessions s
+              WHERE s.run_id = r.id ORDER BY s.sequence, s.id LIMIT 1), r.starts_at)
+            AND r.capacity > (SELECT count(*) FROM program_applications a
+              WHERE a.run_id = r.id AND a.status = 'pending')
+              + (SELECT count(*) FROM program_enrollments e
+                WHERE e.run_id = r.id AND e.status = 'confirmed')
+          ORDER BY r.starts_at, r.id`
+        : [];
+    const goodsOfferingRows =
+      this.enabledScenarios.goods && open.get('Goods') === true
+        ? await tx<
+            {
+              goods_offerings: NonNullable<PublicHomepage['goodsOfferings']>;
+            }[]
+          >`
       SELECT COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
         'id', g.id,
         'sellerId', g.seller_id,
@@ -635,14 +678,18 @@ export class PostgresPublicHomepageRepository
       FROM goods_offerings g
       JOIN commerce_identities ci ON ci.creator_id = g.seller_id
       WHERE g.seller_id = ${creatorId} AND g.state = 'published' AND ci.state = 'published'),
-      '[]'::jsonb) AS goods_offerings`;
+      '[]'::jsonb) AS goods_offerings`
+        : [];
+    const goodsOfferings = goodsOfferingRows[0]?.goods_offerings ?? [];
     return {
       creatorId,
       homepage: {
         commerceReference: row.commerce_reference,
         displayName: row.display_name,
         offerings: offeringRows[0]?.offerings ?? [],
-        goodsOfferings: goodsOfferingRows[0]?.goods_offerings ?? [],
+        ...(membershipOfferings.length > 0 ? { membershipOfferings } : {}),
+        ...(programRuns.length > 0 ? { programRuns } : {}),
+        ...(goodsOfferings.length > 0 ? { goodsOfferings } : {}),
       },
     };
   }

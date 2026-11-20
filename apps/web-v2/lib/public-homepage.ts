@@ -39,6 +39,8 @@ export type PublicHomepage = {
   commerceReference: string;
   displayName: string;
   offerings: { id: string; title: string; description: string }[];
+  membershipOfferings?: { id: string; title: string; location: string }[];
+  programRuns?: { id: string; title: string; location: string; startsAt: string }[];
   goodsOfferings?: {
     id: string;
     sellerId: string;

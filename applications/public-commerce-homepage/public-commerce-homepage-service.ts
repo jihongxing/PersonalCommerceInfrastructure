@@ -30,6 +30,17 @@ export interface PublicHomepage {
     readonly title: string;
     readonly description: string;
   }[];
+  readonly membershipOfferings?: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly location: string;
+  }[];
+  readonly programRuns?: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly location: string;
+    readonly startsAt: string;
+  }[];
   readonly goodsOfferings?: readonly {
     readonly id: string;
     readonly sellerId: string;

@@ -11,7 +11,7 @@ vi.mock('@/lib/api/tracing', () => ({
 afterEach(() => vi.unstubAllGlobals());
 
 describe('public homepage', () => {
-  it('shows public data and links to the corresponding service', async () => {
+  it('links each public supply from the same homepage to its own detail', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -21,6 +21,11 @@ describe('public homepage', () => {
           displayName: '创作者',
           commerceReference: 'TEST',
           offerings: [{ id: 'service-1', title: '咨询', description: '说明' }],
+          membershipOfferings: [{ id: 'member-1', title: '工作室会员', location: '工作室' }],
+          programRuns: [
+            { id: 'run-1', title: '工作坊', location: '工作室', startsAt: '2026-12-01T10:00:00Z' },
+          ],
+          goodsOfferings: [{ id: 'goods-1', title: '手账', priceMinor: '2500', currency: 'CNY' }],
         }),
       }),
     );
@@ -30,6 +35,34 @@ describe('public homepage', () => {
       'href',
       '/s/service-1',
     );
+    expect(screen.getByRole('link', { name: '查看会员：工作室会员' })).toHaveAttribute(
+      'href',
+      '/membership/member-1',
+    );
+    expect(screen.getByRole('link', { name: '查看计划：工作坊' })).toHaveAttribute(
+      'href',
+      '/programs/run-1',
+    );
+    expect(screen.getByRole('link', { name: '查看商品：手账' })).toHaveAttribute(
+      'href',
+      '/goods/goods-1',
+    );
+  });
+
+  it('does not advertise available transactions when the projection is empty', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ displayName: '创作者', commerceReference: 'TEST', offerings: [] }),
+      }),
+    );
+    render(<PublicHomepageClient reference="TEST" />);
+    expect(await screen.findByRole('heading', { name: '创作者' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /查看(服务|会员|计划|商品)/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('distinguishes an unavailable homepage from a failed request and retries failures', async () => {

@@ -37,6 +37,27 @@ export const PublicHomepageSchema = Type.Object(
         { additionalProperties: false },
       ),
     ),
+    membershipOfferings: Type.Optional(
+      Type.Array(
+        Type.Object(
+          { id: Type.String(), title: Type.String(), location: Type.String() },
+          { additionalProperties: false },
+        ),
+      ),
+    ),
+    programRuns: Type.Optional(
+      Type.Array(
+        Type.Object(
+          {
+            id: Type.String(),
+            title: Type.String(),
+            location: Type.String(),
+            startsAt: Type.String(),
+          },
+          { additionalProperties: false },
+        ),
+      ),
+    ),
     goodsOfferings: Type.Optional(
       Type.Array(
         Type.Object(

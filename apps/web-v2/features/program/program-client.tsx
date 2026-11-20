@@ -9,6 +9,13 @@ type Terms = { title: string; description: string; location: string };
 type Offering = { id: string; revision: number; draft: Terms; published?: { version: number; terms: Terms } };
 type Session = { id: string; sequence: number; scheduledStart: string; scheduledEnd: string; location: string; changes: unknown[] };
 type Run = { id: string; offeringId: string; status: string; startsAt: string; endsAt: string; location: string; capacity: number; sessions: Session[]; occupancy: number; remainingCapacity: number };
+type PublicRun = {
+  id: string;
+  location: string;
+  remainingCapacity: number;
+  acceptsApplications: boolean;
+  sessions: Omit<Session, 'changes'>[];
+};
 type Application = { id: string; runId: string; status: string; createdAt: string };
 
 const field = 'block min-h-10 w-full rounded-md border border-input bg-background px-3 py-2';
@@ -82,17 +89,57 @@ export function ProgramManagement() {
 }
 
 export function ProgramBrowser() {
-  const [runs, setRuns] = useState<Run[]>([]);
-  useEffect(() => { void apiClient.GET<Run[]>('/api/v1/public/program-runs').then((result) => { if (result.data) setRuns(result.data); }); }, []);
+  const [runs, setRuns] = useState<PublicRun[]>([]);
+  useEffect(() => { void apiClient.GET<PublicRun[]>('/api/v1/public/program-runs').then((result) => { if (result.data) setRuns(result.data.filter((run) => run.acceptsApplications)); }); }, []);
   return <main className="mx-auto max-w-4xl space-y-6 p-6"><h1 className="text-3xl font-semibold">Program</h1><p>查找可报名的线下 Program。</p><ul className="space-y-4">{runs.map((run) => <li key={run.id} className={panel}><Link className="text-lg underline" href={`/programs/${run.id}`}>查看一期 Program</Link><p>{run.location} · 剩余名额 {run.remainingCapacity}</p><p>{run.sessions.length} 个计划场次</p></li>)}</ul>{runs.length === 0 && <p>当前没有可公开报名的一期 Program。</p>}</main>;
 }
 
 export function ProgramJoin({ runId }: { runId: string }) {
-  const [run, setRun] = useState<Run | null>(null);
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [run, setRun] = useState<PublicRun | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [application, setApplication] = useState<Application>();
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  useEffect(() => { void apiClient.GET<Run>('/api/v1/public/program-runs/{id}', { params: { path: { id: runId } } }).then((result) => { if (result.data) setRun(result.data); }); }, [runId]);
-  async function apply() { const result = await apiClient.POST<Application>('/api/v1/private/program/runs/{id}/applications', { params: { path: { id: runId } }, body: {} }); if (result.data) { setApplications([...applications, result.data]); setMessage('报名申请已提交，等待提供方审批。'); } else setMessage(result.error?.error?.message ?? '报名未完成。'); }
+  useEffect(() => {
+    let active = true;
+    void apiClient.GET<PublicRun>('/api/v1/public/program-runs/{id}', { params: { path: { id: runId } } })
+      .then((result) => {
+        if (!active) return;
+        if (result.data) setRun(result.data);
+        else setLoadError(result.status === 404 ? '此期计划暂不可访问。' : '加载失败，请刷新重试。');
+      })
+      .catch(() => { if (active) setLoadError('加载失败，请刷新重试。'); });
+    return () => { active = false; };
+  }, [runId]);
+  async function apply() {
+    setSubmitting(true);
+    try {
+      const result = await apiClient.POST<Application>('/api/v1/private/program/runs/{id}/applications', { params: { path: { id: runId } }, body: {} });
+      if (result.data) {
+        setApplication(result.data);
+        setMessage('报名申请已提交，等待提供方审批。');
+      } else {
+        setMessage(result.error?.error?.message ?? '报名未完成。');
+      }
+    } catch {
+      setMessage('报名未完成，请重试。');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+  if (loadError) return <main className="mx-auto max-w-4xl p-6"><p role="alert">{loadError}</p></main>;
   if (!run) return <main className="mx-auto max-w-4xl p-6"><p>正在加载 Program…</p></main>;
-  return <main className="mx-auto max-w-4xl space-y-6 p-6"><h1 className="text-3xl font-semibold">Program Run</h1><p>{run.location} · 剩余名额 {run.remainingCapacity}</p><ul>{run.sessions.map((session) => <li key={session.id}>{session.sequence}. {new Date(session.scheduledStart).toLocaleString('zh-CN')} · {session.location}</li>)}</ul><Button type="button" onClick={() => void apply()}>提交 Enrollment Application</Button>{message && <p role="status">{message}</p>}{applications.map((item) => <p key={item.id}>申请状态：{item.status}</p>)}</main>;
+  return (
+    <main className="mx-auto max-w-4xl space-y-6 p-6">
+      <h1 className="text-3xl font-semibold">计划详情</h1>
+      <p className="break-words">{run.location} · 剩余名额 {run.remainingCapacity}</p>
+      <ul>{run.sessions.map((session) => <li key={session.id}>{session.sequence}. {new Date(session.scheduledStart).toLocaleString('zh-CN')} · {session.location}</li>)}</ul>
+      {!run.acceptsApplications ? <p>此期计划目前不接受新报名。</p> : !application && (
+        <Button type="button" disabled={submitting} onClick={() => void apply()}>
+          {submitting ? '正在提交…' : '提交报名申请'}
+        </Button>
+      )}
+      {message && <p role="status">{message}</p>}
+    </main>
+  );
 }

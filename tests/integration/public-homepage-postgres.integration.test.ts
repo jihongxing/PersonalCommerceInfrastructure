@@ -81,7 +81,7 @@ describe.skipIf(!databaseUrl)('PostgreSQL public homepage repository', () => {
     expect(
       await sql`SELECT id FROM product_events WHERE name = 'storefront_viewed' AND correlation_id = ${view}`,
     ).toHaveLength(1);
-    await sql`INSERT INTO service_offerings (id, creator_id, title, description, request_instructions, state) VALUES (${`published-${id}`}, ${creator}, 'Published', 'Public', '', 'published'), (${`draft-${id}`}, ${creator}, 'Draft', 'Private', '', 'draft')`;
+    await sql`INSERT INTO service_offerings (id, creator_id, title, description, request_instructions, state, policy_status) VALUES (${`published-${id}`}, ${creator}, 'Published', 'Public', '', 'published', 'approved'), (${`draft-${id}`}, ${creator}, 'Draft', 'Private', '', 'draft', 'approved')`;
     expect((await repository.resolve(number, randomUUID()))?.offerings).toEqual([
       { id: `published-${id}`, title: 'Published', description: 'Public' },
     ]);

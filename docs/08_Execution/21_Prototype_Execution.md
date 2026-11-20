@@ -11723,3 +11723,9 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 ## PCI-PD-012 — Four-Scenario Focus & Targeted Improvement
 
 2026-11-20：先登记 [FD-PCI-FOUR-SCENARIO-FOCUS-001](../07_Product_Architecture/49_Four_Scenario_Focus_Founder_Decision.md)，再按各领域现行合同定向检查。`ACTIVE SCENARIOS: SERVICE / MEMBERSHIP / PROGRAM / GOODS`；`DEFERRED SCENARIOS: PROJECT / RIGHT`。上一节保留历史交付快照，不代表当前研究授权。Goods 默认关闭；无生产、外部 Pilot 或真实资金授权。
+
+### DEV-096 — 四场景主页发现及 Program 公开字段
+
+范围：Decision 47、VS-01 `FR-005` / `FR-010` / `FR-023`、Membership Decision 43 / Contract 44、Program Decisions 45–46、Goods Decision 48。主页缺少 Membership 和 Program 入口，且 Service、Goods 的投影未反映场景暂停；Program 两个公开读取复用了包含消费者申请、Enrollment 和内部场次变更信息的运营读取。仅按现有发布、时间、名额、场景开放和身份归属条件修复公开投影；Program 公开详情只返回浏览、排期和报名入口所需字段。主页 API 新字段是可选增量；Program 公开读取不再返回私人及运营字段，其授权读取不变。不修改业务合同、写入流程、状态、事件、角色、Schema、Migration 或开关默认值。
+
+交付：从同一个 C 号主页可发现并打开四类业务详情。Membership 与 Program 详情采用已有的流式加载模式，Program 面向消费者区分加载失败、不可达、暂不开放和提交成功。隔离 PostgreSQL、Fastify、Creator BFF 与 Chromium 实测四类发现和详情；隔离库验证状态过滤、Program 末席并发、Membership 到期及暂停连续性、Goods 存量订单交付、Payment 记录为零。API 和 Creator Web 构建通过。既有 Core 类型错误仍阻断完整 OpenAPI 检查；Program 独立 Session Delivery 写入及 Creator 审批/参与记录界面仍待收口，不以已有 Attendance 验证代替。证据见仓库外 `D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-012-Four-Scenario-Focus-20261120/`。保留任务分支及 Worktree 待验收，不合并 master。

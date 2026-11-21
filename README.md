@@ -9,9 +9,8 @@ PCI 是个人商业主页（Personal Commercial Homepage）。消费者可以在
 | `apps/api/` | 共享 Fastify API、认证、业务编排入口、健康检查和 OpenAPI。 |
 | `apps/web-v2/` | Creator Web：个人主页、消费者入口和经营工作台；Creator BFF 在服务端处理会话。 |
 | `apps/admin-web/` | 独立 Operations Admin Web 和 Admin BFF；通过 API 工作，不直连数据库。 |
-| `applications/`、`modules/`、`domain/` | 应用用例、领域模块、仍在使用的履约码模型。 |
+| `applications/`、`modules/` | 应用用例和领域模块（含履约码模型）。 |
 | `adapters/`、`contracts/`、`database/` | HTTP/认证/持久化适配器、API 契约、Schema、迁移与种子。 |
-| `lib/` | 旧认证与邮件辅助源码，保留给历史编译范围及根测试；不是三应用的共享运行时。 |
 | `scripts/`、`tests/`、`deploy/`、`.github/` | 维护与验证、测试、现有容器入口、CI。 |
 | `docs/`、`artifacts/`、`stitch/`、`output/` | 正式文档、历史截图及工具、设计原型、历史截图及被忽略的本地输出。不是应用部署入口。 |
 
@@ -83,19 +82,18 @@ Operations Principal 持久化基线见
 [123 — Operations Identity Persistence Baseline](docs/09_Engineering_Governance/123_Operations_Identity_Persistence_Baseline.md)；仅记录三张表、Repository 和本地 PostgreSQL 验证，不代表认证、生产或真实资金授权。
 PCI-ENG-015-A 已接受；PCI-ENG-015-B-R2 已完成持久化完整性修复与两轮 PostgreSQL 验证，
 但仍保持 `IMPLEMENTED / ACCEPTANCE_PENDING`，不代表认证、生产或真实资金授权。
-旧测试分类、保留方式和门禁变化见[历史测试清单](tests/historical/retired-reference-client/README.md)。
+旧参考客户端的保留方式见[历史测试清单](tests/historical/retired-reference-client/README.md)。
+旧认证与邮件源码和测试归档于 `tests/historical/legacy-auth/`。五份测试仍随 `pnpm test` 运行，
+也可用 `pnpm exec vitest run tests/historical/legacy-auth` 单独运行。
 
-PCI-ENG-006 的 [TypeScript 质量门禁基线](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)
-记录了各门禁的完整范围、排除项和遗留错误。`pnpm typecheck:active` 验证当前服务端、Creator Web 与 Admin Web；
-`pnpm typecheck:tests` 和 `pnpm typecheck:web-v2:tests` 分别验证根测试与 Web V2 测试/E2E 类型；
-`pnpm typecheck:historical:backend` 和 `pnpm typecheck:historical:tests` 保留其余历史范围；
-退休 Web 的独立编译入口已移除。
-原始 `pnpm typecheck` 命令保留；其历史问题未在本次任务全面关闭。active 通过不代表根门禁、全仓库质量或生产验收通过。
-
-PCI-ENG-007 的 [活动测试类型基线](docs/09_Engineering_Governance/118_Active_Test_TypeScript_Baseline.md)
-逐条分类了 57 条测试诊断。`pnpm typecheck:active-tests` 检查当前 Backend、根目录 Web V2
-测试、Web V2 原生测试和 Admin 测试；`pnpm test:web-bridge` 在 jsdom 中执行根目录的当前 Web 测试。
-`pnpm typecheck:historical` 会执行全部历史范围并保留失败。原始根和混合测试命令均未替换。
+CI 预检运行 `pnpm typecheck`。`pnpm typecheck:active` 分别检查核心后端、API、Creator Web 和 Admin Web。
+`pnpm typecheck:tests` 分别检查后端和 Creator Web 测试。
+`pnpm typecheck:active-tests` 还检查 Admin Web 测试。
+根目录的 `pnpm test` 执行后端和归档测试，`pnpm test:creator-web` 执行 Creator Web 测试。
+原 Web 桥接测试已归入 Creator Web，CI 通过 `pnpm test:web-bridge` 在 jsdom 中定向执行这三份测试。
+`pnpm typecheck:historical` 使用归档目录的配置检查旧认证和邮件源码及测试，并报告历史类型错误。
+类型检查分工的来历见 [PCI-ENG-006](docs/09_Engineering_Governance/117_TypeScript_Quality_Baseline.md)
+和 [PCI-ENG-007](docs/09_Engineering_Governance/118_Active_Test_TypeScript_Baseline.md)。
 
 ## 技术基线
 

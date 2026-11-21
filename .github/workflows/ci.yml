@@ -18,6 +18,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Typecheck Creator Web tests
+        run: pnpm typecheck:web-v2:tests
+      - name: Run Creator Web session, optimization and security tests
+        run: pnpm test:web-bridge
       - run: pnpm exec playwright install ffmpeg
       - name: Run governance and project checks
         shell: pwsh

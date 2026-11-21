@@ -4,7 +4,7 @@
  * Persistence layer for fulfillment codes
  */
 
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import { FulfillmentCode } from '../../modules/customer-request/fulfillment-code.js';
 import type { IFulfillmentCodeRepository } from '../../applications/fulfillment/fulfillment-repositories.js';
 
 export interface IDatabaseClient {

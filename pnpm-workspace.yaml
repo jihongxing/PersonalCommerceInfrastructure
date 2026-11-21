@@ -1,11 +1,6 @@
 packages:
   - apps/web-v2
   - apps/admin-web
-  - applications/*
-  - contracts/*
-  - modules/*
-  - adapters/*
-  - packages/*
 
 ignoredBuiltDependencies:
   - sharp

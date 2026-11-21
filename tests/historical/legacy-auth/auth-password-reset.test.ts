@@ -5,8 +5,8 @@ import {
   validatePasswordStrength,
   arePasswordsIdentical,
   isNewPasswordSameAsOld,
-} from '../lib/auth/password-reset-service.js';
-import { hashToken } from '../lib/auth/token-service.js';
+} from './password-reset-service.js';
+import { hashToken } from './token-service.js';
 
 /**
  * ========================================================================

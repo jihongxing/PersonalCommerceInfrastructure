@@ -2,7 +2,7 @@
  * In-Memory Fulfillment Code Repository for Testing
  */
 
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import { FulfillmentCode } from '../../modules/customer-request/fulfillment-code.js';
 import type { IFulfillmentCodeRepository } from '../../applications/fulfillment/fulfillment-repositories.js';
 import type { TransactionParticipant } from './transaction-participant.js';
 

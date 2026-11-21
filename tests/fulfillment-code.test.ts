@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { FulfillmentCode } from '../domain/fulfillment-code.js';
+import { FulfillmentCode } from '../modules/customer-request/fulfillment-code.js';
 import {
   confirmFulfillmentUseCase,
   ConfirmFulfillmentError,

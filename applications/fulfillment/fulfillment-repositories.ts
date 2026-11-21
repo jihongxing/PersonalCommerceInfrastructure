@@ -4,7 +4,7 @@
  * Application layer ports for fulfillment-related persistence
  */
 
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import type { FulfillmentCode } from '../../modules/customer-request/fulfillment-code.js';
 
 /**
  * Repository for fulfillment codes

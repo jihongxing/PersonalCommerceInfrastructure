@@ -9,7 +9,7 @@ import {
   PasswordSecurityPolicy,
   RateLimitManager,
   SecurityHeadersValidator,
-} from '../apps/web-v2/lib/security/security-manager.js';
+} from './security-manager.js';
 
 describe('Security Audit', () => {
   describe('XSS Protection', () => {

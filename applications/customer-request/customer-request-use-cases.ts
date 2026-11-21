@@ -1,4 +1,4 @@
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import { FulfillmentCode } from '../../modules/customer-request/fulfillment-code.js';
 import type { IFulfillmentCodeRepository } from '../fulfillment/fulfillment-repositories.js';
 import {
   createCustomer,

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { ApplicationError } from '../../applications/core/application-error.js';
+import { ApplicationError } from '../../../applications/core/application-error.js';
 import type {
   SignUpRequest,
   LoginRequest,
@@ -7,7 +7,7 @@ import type {
   LogoutRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-} from '../../contracts/api/v1/auth-contracts.js';
+} from '../../../contracts/api/v1/auth-contracts.js';
 import {
   SignUpRequestSchema,
   SignUpResponseSchema,
@@ -21,14 +21,14 @@ import {
   ForgotPasswordResponseSchema,
   ResetPasswordRequestSchema,
   ResetPasswordResponseSchema,
-} from '../../contracts/api/v1/auth-contracts.js';
-import { ApiErrorEnvelopeSchema } from '../../contracts/api/v1/system-contracts.js';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, hashToken } from '../../lib/auth/token-service.js';
+} from '../../../contracts/api/v1/auth-contracts.js';
+import { ApiErrorEnvelopeSchema } from '../../../contracts/api/v1/system-contracts.js';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken, hashToken } from './token-service.js';
 import {
   generatePasswordResetToken,
   verifyPasswordResetToken,
   validatePasswordStrength,
-} from '../../lib/auth/password-reset-service.js';
+} from './password-reset-service.js';
 
 // ========================================================================
 // 密码验证

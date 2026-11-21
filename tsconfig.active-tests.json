@@ -1,21 +1,15 @@
 {
-  "extends": "./tsconfig.tests.json",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["adapters/**/*.test.ts", "modules/**/*.test.ts", "tests/**/*.ts", "vitest.config.ts"],
   "exclude": [
     "apps/web-v2",
     "apps/admin-web",
     "tests/historical",
     "dist",
     "node_modules",
-    "coverage",
-    "tests/acceptance/browser",
-    "playwright.config.ts",
-    "tests/auth-e2e-frontend.test.ts",
-    "tests/auth-integration.test.ts",
-    "tests/auth-password-reset.test.ts",
-    "tests/auth-token-service.test.ts",
-    "tests/email-service.test.ts",
-    "tests/auth-integration-e2e.test.ts",
-    "tests/optimization.test.ts",
-    "tests/security.test.ts"
+    "coverage"
   ]
 }

@@ -81,9 +81,7 @@ beforeEach(() => {
 });
 async function choose(scoped = true) {
   const user = userEvent.setup();
-  await user.click(
-    screen.getByRole('button', { name: scoped ? '活动出席' : '舞蹈教学', exact: true }),
-  );
+  await user.click(screen.getByRole('button', { name: scoped ? '活动出席' : '舞蹈教学' }));
   await user.selectOptions(
     screen.getByLabelText(/服务模板/),
     scoped ? templates[0]!.id : templates[1]!.id,

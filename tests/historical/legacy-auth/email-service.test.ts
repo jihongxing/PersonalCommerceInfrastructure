@@ -10,7 +10,7 @@ import {
   SupabaseMailProvider,
   createEmailService,
   createEmailProvider,
-} from '../lib/email/email-service';
+} from './email-service.js';
 
 describe('Email Service', () => {
   let emailService: EmailService;

@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["adapters/**/*.test.ts", "modules/**/*.test.ts", "tests/**/*.ts", "vitest.config.ts"]
-}

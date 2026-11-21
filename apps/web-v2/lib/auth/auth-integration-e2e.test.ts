@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { clearSession, getSession, setSession } from '../apps/web-v2/lib/auth/session.js';
+import { clearSession, getSession, setSession } from './session.js';
 
 /**
  * 会话管理测试
@@ -13,52 +13,53 @@ import { clearSession, getSession, setSession } from '../apps/web-v2/lib/auth/se
 describe('Session Management', () => {
   beforeEach(() => {
     clearSession();
-    if (typeof localStorage !== 'undefined') {
+    if (typeof window !== 'undefined') {
       localStorage.clear();
+      sessionStorage.clear();
     }
   });
 
   afterEach(() => {
     clearSession();
-    if (typeof localStorage !== 'undefined') {
+    if (typeof window !== 'undefined') {
       localStorage.clear();
+      sessionStorage.clear();
     }
   });
 
-  it('应该保存会话到 localStorage', () => {
-    if (typeof window === 'undefined') {
-      expect(true).toBe(true);
-      return;
-    }
-
+  it('只保留邮箱会话摘要且不写入浏览器存储', () => {
     const session = {
       accessToken: 'test-token',
+      refreshToken: 'test-refresh-token',
       userEmail: 'test@example.com',
       expiresAt: Math.floor(Date.now() / 1000) + 3600,
     };
 
     setSession(session);
 
-    const retrieved = getSession();
-    expect(retrieved).toEqual(session);
+    expect(getSession()).toEqual({ userEmail: 'test@example.com' });
+    if (typeof window !== 'undefined') {
+      expect(localStorage.length).toBe(0);
+      expect(sessionStorage.length).toBe(0);
+    }
   });
 
-  it('应该检索有效的会话', () => {
-    if (typeof localStorage === 'undefined') {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const session = {
+  it.skipIf(typeof window === 'undefined')('不会从浏览器存储恢复旧会话', () => {
+    const legacySession = {
       accessToken: 'test-token',
-      userEmail: 'test@example.com',
+      userEmail: 'legacy@example.com',
       expiresAt: Math.floor(Date.now() / 1000) + 3600,
     };
 
-    localStorage.setItem('pci.auth.session', JSON.stringify(session));
+    const serializedSession = JSON.stringify(legacySession);
+    localStorage.setItem('pci.auth.session', serializedSession);
+    sessionStorage.setItem('pci.auth.session', serializedSession);
 
-    const retrieved = getSession();
-    expect(retrieved).toEqual(session);
+    expect(getSession()).toBeNull();
+    setSession({ userEmail: 'current@example.com' });
+    expect(getSession()).toEqual({ userEmail: 'current@example.com' });
+    clearSession();
+    expect(getSession()).toBeNull();
   });
 
   it('应该清除会话', () => {
@@ -148,17 +149,13 @@ describe('Email Validation', () => {
  */
 describe('Error Handling', () => {
   it('应该处理网络错误', async () => {
-    const simulateNetworkError = async () => {
-      throw new Error('Network error');
-    };
+    const simulateNetworkError = () => Promise.reject(new Error('Network error'));
 
     await expect(simulateNetworkError()).rejects.toThrow('Network error');
   });
 
   it('应该处理无效凭证', async () => {
-    const simulateInvalidCredentials = async () => {
-      throw new Error('401: Invalid credentials');
-    };
+    const simulateInvalidCredentials = () => Promise.reject(new Error('401: Invalid credentials'));
 
     await expect(simulateInvalidCredentials()).rejects.toThrow('Invalid credentials');
   });

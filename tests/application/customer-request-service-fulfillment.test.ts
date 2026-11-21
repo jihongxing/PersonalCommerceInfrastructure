@@ -14,7 +14,7 @@ import { InMemoryUnitOfWork } from '../../adapters/in-memory/in-memory-unit-of-w
 import { FixedClock } from '../../adapters/in-memory/fixed-clock.js';
 import { SequentialIdGenerator } from '../../adapters/in-memory/sequential-id-generator.js';
 import { initialServicePolicyCatalog } from '../../modules/service-policy/catalog-seed.js';
-import { FulfillmentCode } from '../../domain/fulfillment-code.js';
+import { FulfillmentCode } from '../../modules/customer-request/fulfillment-code.js';
 import type {
   Capability,
   CommerceIdentity,

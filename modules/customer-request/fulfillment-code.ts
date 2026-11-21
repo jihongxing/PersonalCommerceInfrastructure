@@ -1,9 +1,9 @@
 /**
  * FulfillmentCode Domain Entity
- * 
+ *
  * Represents proof of offline service completion.
  * Used in scenarios like personal training, tour guiding, etc.
- * 
+ *
  * Lifecycle:
  * 1. Generated when customer submits a request (pending)
  * 2. Shared with creator via QR code or text
@@ -15,12 +15,12 @@
 function generateRandomCode(length: number): string {
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
-  
+
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * ALPHABET.length);
     code += ALPHABET[randomIndex];
   }
-  
+
   return code;
 }
 
@@ -136,7 +136,7 @@ export class FulfillmentCode {
     if (this.props.status === 'fulfilled') {
       throw new Error('Fulfillment code already fulfilled');
     }
-    
+
     if (this.isExpired()) {
       throw new Error('Fulfillment code expired');
     }

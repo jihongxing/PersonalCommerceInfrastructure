@@ -8,6 +8,6 @@ export default defineConfig({
     fileParallelism: false,
     maxWorkers: 1,
     include: ['adapters/**/*.test.ts', 'modules/**/*.test.ts', 'tests/**/*.test.ts'],
-    exclude: [...configDefaults.exclude, 'tests/historical/**'],
+    exclude: [...configDefaults.exclude, 'tests/historical/!(legacy-auth)/**'],
   },
 });

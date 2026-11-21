@@ -1,7 +1,7 @@
 import type { FastifyRequest } from 'fastify';
-import { ApplicationError } from '../../applications/core/application-error.js';
-import { extractBearerToken } from '../auth/transport/bearer-token.js';
-import { verifyAccessToken } from '../../lib/auth/token-service.js';
+import { ApplicationError } from '../../../applications/core/application-error.js';
+import { extractBearerToken } from '../../../adapters/auth/transport/bearer-token.js';
+import { verifyAccessToken } from './token-service.js';
 
 /**
  * ========================================================================

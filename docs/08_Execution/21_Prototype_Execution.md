@@ -11781,3 +11781,59 @@ Evidence is repository-external under D:/codeSpace/_PCI_ARCHIVE/evidence/PCI-PD-
 `COMPLETED`；此前被执行策略拒绝的清理记录保持不变。Main Controller 已接受清理确认及
 PostgreSQL 隔离恢复验证交付。最终任务状态：`COMPLETED — ACCEPTED`。不代表生产就绪，
 不授权生产部署、外部 Pilot、真实资金操作或 RPO/RTO 承诺。
+
+## 顶层旧认证与邮件源码归档
+
+- 2026-11-21：按当前仓库目录治理移除顶层 `lib/`。Git 记录显示，2026-11-07 的
+  `09f995c` 引入令牌服务，`d3d7ec4` 加入密码重置辅助代码，`283bdb3` 加入旧邮件辅助代码。
+  本条补充 PCI-ENG-027 当时保留原位的记录。
+- 三份辅助源码、两份未注册的旧认证适配器和五份测试移至 `tests/historical/legacy-auth/`。
+  `pnpm test` 继续发现并运行这五份测试，历史 TypeScript 检查使用归档路径。
+  现行 API 认证、Operations 认证和 Resend 重置邮件的运行时路径未变。
+  无产品需求、领域对象、状态转换、规范事件或验收标准变化，无新增 DEV 偏差。
+- 验证：现行应用和后端测试的类型检查、核心构建、OpenAPI 兼容性检查及定向认证与邮件测试通过
+  （116 项通过，6 项 Creator PostgreSQL 用例因缺少测试数据库配置跳过）。
+  VS-01 的 13 项历史验收入口清单检查通过；浏览器 AT 与真实邮件交付未执行。
+  历史类型检查仍报告归档实现的类型问题，迁移后的模块导入均可解析。
+- 默认 `pnpm test` 通过 1,356 项，跳过 244 项。8 个用例失败，另有 1 个套件初始化失败。
+  排除归档目录后，Web 性能优化测试、导入边界检查和旧 Operations Catalog 测试初始化
+  的相同失败均可复现。
+
+## 履约码模型迁入 Customer Request 模块
+
+- 2026-11-21：将 `FulfillmentCode` 移至 `modules/customer-request/`，与 `CommerceAction` 同属该模块。
+  同步应用、持久化适配器和测试的导入，移除顶层空 `domain/`，更新 README 导航。
+  对照 VS-01 的 `FD-020-BD-01` 修订，模型生成的 JavaScript 完全一致。
+  履约码格式、状态转换、权限、规范事件、API 与数据库结构沿用现行合同，无新增 DEV 偏差。
+- 验证：66 项定向测试通过，覆盖履约码生成、记录还原、过期、HTTP 二维码、履约确认、重复确认及事务回滚。
+  其中 13 项为 VS-01 历史验收入口清单检查。核心构建、OpenAPI 兼容性、后端测试类型检查
+  和变更 TypeScript 文件的格式检查通过。未运行真实 PostgreSQL 履约数据回读和浏览器验收。
+  定向 ESLint 在两份持久化适配器和既有履约码测试的未修改行仍报告 70 项问题。
+
+## 根目录 TypeScript 配置收敛
+
+- 2026-11-21：根目录的 `tsconfig*.json` 从 8 份减到 5 份。活动后端测试直接继承根配置，
+  `pnpm typecheck:tests` 调用后端和 Web 桥接检查，原混合配置的 174 个入口仍被覆盖，并纳入
+  原先由 Web 桥接单独检查的 `vitest.web-bridge.config.ts`。CI 预检继续调用 `pnpm typecheck`。
+- 两份旧认证和邮件配置合并为 `tests/historical/legacy-auth/tsconfig.json`。
+  `pnpm typecheck:historical` 仍覆盖全部 10 个归档入口，报告的 47 条去重诊断与合并前一致。
+- 修正会话和性能测试，验证 BFF 模式下浏览器只保留邮箱摘要，旧存储无法恢复会话，浏览器兼容接口
+  不缓存或刷新凭据。修正 Creator 表单测试的按钮查询选项。变更归属测试与工具配置，
+  无产品需求、领域对象、状态转换、规范事件或验收标准变化，无新增 DEV 偏差。
+- 验证：`pnpm typecheck`、`pnpm typecheck:active` 和 `pnpm typecheck:active-tests` 通过。
+  Web 桥接 60 项、Creator 表单 12 项通过。默认 Vitest 定向执行会话、性能和归档测试，
+  135 项通过，1 项只在 jsdom 执行的浏览器存储测试按预期跳过。
+
+## Workspace 规则清理与 Creator Web 测试归属
+
+- 2026-11-21：移除 `pnpm-workspace.yaml` 中 5 条无匹配的包规则。递归清单仍为根项目、
+  Creator Web 和 Admin Web。使用 pnpm 10.22.0 执行 `pnpm install --frozen-lockfile` 成功，
+  锁文件 SHA-256 一致，安装保留现有依赖构建脚本策略。
+- 将会话、请求优化和安全的三份 Web 测试迁入 `apps/web-v2/lib/`，由 Creator Web 的 Vitest
+  和 TypeScript 配置负责，删除根目录两份桥接配置。保留 `pnpm test:web-bridge` 定向入口，
+  原桥接类型检查命令转接至 Creator Web 测试类型检查。CI 在预检之前分别运行这两个检查。
+  根 `pnpm test` 按后端和归档范围执行。产品需求、领域对象、状态转换、规范事件和验收标准
+  沿用现行合同，无新增 DEV 偏差。
+- 验证：Creator Web 原生 jsdom 环境通过原有 60 项定向测试，`pnpm typecheck` 和
+  `pnpm typecheck:active-tests` 通过，迁入文件的 ESLint 和变更配置及测试的格式检查通过。
+  CI 命令在本地执行验证，未触发远端流水线或浏览器验收。

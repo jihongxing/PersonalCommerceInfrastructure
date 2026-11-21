@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken, hashToken, verifyTokenHash } from '../lib/auth/token-service.js';
+import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken, hashToken, verifyTokenHash } from './token-service.js';
 
 /**
  * ========================================================================

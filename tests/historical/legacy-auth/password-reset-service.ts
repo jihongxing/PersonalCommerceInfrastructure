@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { ApplicationError } from '../../applications/core/application-error.js';
+import { ApplicationError } from '../../../applications/core/application-error.js';
 import { hashToken } from './token-service.js';
 
 /**

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken, hashToken } from '../lib/auth/token-service.js';
-import { generatePasswordResetToken, verifyPasswordResetToken, validatePasswordStrength } from '../lib/auth/password-reset-service.js';
+import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken, hashToken } from './token-service.js';
+import { generatePasswordResetToken, verifyPasswordResetToken, validatePasswordStrength } from './password-reset-service.js';
 
 /**
  * ========================================================================
